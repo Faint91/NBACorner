@@ -252,7 +252,7 @@ def create_bracket_for_user():
     link("west", 8, 10, "a")
     link("west", 9, 10, "b")
 
-    # ---- Conference Finals → NBA Finals ----
+    # ----- Conference Finals → NBA Finals -----
     nba_final = next((m for m in inserted if m["conference"] == "nba" and m["slot"] == 11), None)
     if nba_final:
         east_final = next((m for m in inserted if m["conference"] == "east" and m["slot"] == 10), None)
