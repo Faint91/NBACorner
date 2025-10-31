@@ -19,7 +19,7 @@ jobs:
           python-version: '3.11.9'
 
       - name: Install dependencies
-        run: pip install requests supabase apscheduler pytz
+        run: pip install nba_api supabase pytz
 
       - name: Run updater
         env:
