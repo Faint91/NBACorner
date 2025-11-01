@@ -271,59 +271,87 @@ def create_bracket_for_user():
     return jsonify({"message": "Bracket created successfully", "bracket": bracket})
 
 
-
-@app.route("/bracket", methods=["GET"])
-def get_bracket():
+@app.route("/bracket/<bracket_id>/save", methods=["PATCH"])
+def save_bracket(bracket_id):
     user_id = request.headers.get("x-user-id")
     if not user_id:
         return jsonify({"error": "Missing x-user-id header"}), 400
 
-    # Retrieve user's bracket
-    bracket_data = supabase.table("brackets").select("*").eq("user_id", user_id).execute().data
+    # ✅ Fetch the requesting user's admin status
+    user_res = supabase.table("users").select("id, is_admin").eq("id", user_id).execute().data
+    if not user_res:
+        return jsonify({"error": "User not found"}), 404
+    is_admin = user_res[0].get("is_admin", False)
+
+    # ✅ Retrieve target bracket by ID
+    bracket_data = supabase.table("brackets").select("id, user_id, is_done").eq("id", bracket_id).execute().data
     if not bracket_data:
-        return jsonify({"error": "No bracket found for user"}), 404
+        return jsonify({"error": "Bracket not found"}), 404
     bracket = bracket_data[0]
 
-    # Retrieve and sort matches
-    matches = (
-        supabase.table("matches")
-        .select("*")
-        .eq("bracket_id", bracket["id"])
-        .order("round", desc=False)
-        .execute()
-        .data
-    )
+    # 🔒 Ownership or admin check
+    if str(bracket["user_id"]) != str(user_id) and not is_admin:
+        return jsonify({"error": "Unauthorized: Only the owner or an admin can save this bracket"}), 403
 
-    # Group matches by conference + round
-    grouped = {}
-    for match in matches:
-        conf = match["conference"].lower() if match["conference"] else "unknown"
-        rnd = match["round"]
-        if conf not in grouped:
-            grouped[conf] = {}
-        if rnd not in grouped[conf]:
-            grouped[conf][rnd] = []
-        grouped[conf][rnd].append(match)
+    # Prevent re-saving an already done bracket
+    if bracket.get("is_done"):
+        return jsonify({"error": "Bracket already saved"}), 400
 
-    return jsonify({"bracket": bracket, "matches": grouped})
+    # ✅ Mark as done and add timestamp
+    saved_at = datetime.utcnow().isoformat()
+    supabase.table("brackets").update({
+        "is_done": True,
+        "saved_at": saved_at
+    }).eq("id", bracket_id).execute()
+
+    return jsonify({
+        "message": "Bracket successfully saved!",
+        "bracket_id": bracket_id,
+        "saved_at": saved_at
+    }), 200
 
 
 @app.route("/bracket/<bracket_id>", methods=["GET"])
 def get_bracket_by_id(bracket_id):
     """
     Allows any user to view a specific bracket by ID (read-only).
-    The format is identical to /bracket but does not require ownership.
+    Rules:
+      - Owner and admins can view their bracket even if it's not finished.
+      - Other users can only view if is_done = True.
     """
-    # Get viewer info (optional)
     viewer_id = request.headers.get("x-user-id")
 
-    # Retrieve the target bracket
-    bracket_data = supabase.table("brackets").select("*").eq("id", bracket_id).execute().data
+    # ✅ Fetch viewer info (to check admin rights)
+    viewer_data = (
+        supabase.table("users")
+        .select("id, is_admin")
+        .eq("id", viewer_id)
+        .execute()
+        .data
+    )
+    is_admin = viewer_data[0]["is_admin"] if viewer_data else False
+
+    # ✅ Fetch the bracket (no is_done filter yet)
+    bracket_data = (
+        supabase.table("brackets")
+        .select("*")
+        .eq("id", bracket_id)
+        .execute()
+        .data
+    )
     if not bracket_data:
         return jsonify({"error": "Bracket not found"}), 404
+
     bracket = bracket_data[0]
 
-    # Retrieve matches for that bracket
+    # ✅ Access control:
+    #   - Owner or admin → allowed even if not done
+    #   - Other users → allowed only if is_done = True
+    is_owner = str(viewer_id) == str(bracket["user_id"])
+    if not is_owner and not is_admin and not bracket.get("is_done", False):
+        return jsonify({"error": "Bracket not yet saved or not accessible"}), 403
+
+    # ✅ Retrieve matches
     matches = (
         supabase.table("matches")
         .select("*")
@@ -333,7 +361,7 @@ def get_bracket_by_id(bracket_id):
         .data
     )
 
-    # Group matches by conference + round
+    # ✅ Group matches by conference + round
     grouped = {}
     for match in matches:
         conf = match["conference"].lower() if match["conference"] else "unknown"
@@ -344,12 +372,15 @@ def get_bracket_by_id(bracket_id):
             grouped[conf][rnd] = []
         grouped[conf][rnd].append(match)
 
-    # Fetch bracket owner info
-    owner_data = supabase.table("users").select("id, username, email").eq("id", bracket["user_id"]).execute().data
+    # ✅ Fetch bracket owner info
+    owner_data = (
+        supabase.table("users")
+        .select("id, username, email")
+        .eq("id", bracket["user_id"])
+        .execute()
+        .data
+    )
     owner = owner_data[0] if owner_data else {}
-
-    # Determine if the viewer is the owner
-    is_owner = viewer_id == bracket["user_id"]
 
     return jsonify({
         "bracket": {
@@ -369,12 +400,19 @@ def get_bracket_by_id(bracket_id):
 @app.route("/brackets", methods=["GET"])
 def list_all_brackets():
     """
-    Returns a list of all brackets and the user who created each one.
-    Only basic info: bracket_id, created_at, and user info.
+    Returns a list of all brackets that are marked as is_done = True,
+    along with the user who created each one.
+    Only basic info: bracket_id, saved_at, and user info.
     """
     try:
-        # Fetch all brackets
-        brackets_res = supabase.table("brackets").select("id, user_id, created_at").execute()
+        # ✅ Fetch only saved brackets (is_done = True)
+        brackets_res = (
+            supabase.table("brackets")
+            .select("id, user_id, saved_at, created_at")
+            .eq("is_done", True)
+            .order("saved_at", desc=True)
+            .execute()
+        )
         brackets = brackets_res.data
 
         if not brackets:
@@ -384,16 +422,22 @@ def list_all_brackets():
         user_ids = list({b["user_id"] for b in brackets if b.get("user_id")})
 
         # Fetch user info
-        users_res = supabase.table("users").select("id, username, email").in_("id", user_ids).execute()
+        users_res = (
+            supabase.table("users")
+            .select("id, username, email")
+            .in_("id", user_ids)
+            .execute()
+        )
         users = {u["id"]: u for u in users_res.data}
 
-        # Merge user info into brackets
+        # Merge user info into output
         output = []
         for b in brackets:
             user_info = users.get(b["user_id"], {})
             output.append({
                 "bracket_id": b["id"],
-                "created_at": b["created_at"],
+                "saved_at": b.get("saved_at"),
+                "created_at": b.get("created_at"),
                 "user": {
                     "id": b["user_id"],
                     "username": user_info.get("username"),
@@ -409,25 +453,29 @@ def list_all_brackets():
 
 # ---------------- DELETE BRACKET ----------------
 
-@app.route("/bracket/delete", methods=["DELETE"])
-def delete_bracket():
+@app.route("/bracket/<bracket_id>", methods=["DELETE"])
+def delete_bracket(bracket_id):
     user_id = request.headers.get("x-user-id")
     if not user_id:
         return jsonify({"error": "Missing x-user-id header"}), 400
 
-    # Retrieve the bracket belonging to this user
-    existing = supabase.table("brackets").select("id, user_id").eq("user_id", user_id).execute()
-    if not existing.data:
-        return jsonify({"error": "No bracket found"}), 404
+    # ✅ Fetch user and admin status
+    user_res = supabase.table("users").select("id, is_admin").eq("id", user_id).execute().data
+    if not user_res:
+        return jsonify({"error": "User not found"}), 404
+    is_admin = user_res[0].get("is_admin", False)
 
-    bracket = existing.data[0]
-    bracket_id = bracket["id"]
+    # ✅ Fetch target bracket
+    bracket_res = supabase.table("brackets").select("id, user_id").eq("id", bracket_id).execute().data
+    if not bracket_res:
+        return jsonify({"error": "Bracket not found"}), 404
+    bracket = bracket_res[0]
 
-    # ✅ Ownership check (redundant protection)
-    if bracket["user_id"] != user_id:
-        return jsonify({"error": "Unauthorized: You are not the owner of this bracket"}), 403
+    # ✅ Check permissions
+    if bracket["user_id"] != user_id and not is_admin:
+        return jsonify({"error": "Unauthorized: Only the owner or an admin can delete this bracket"}), 403
 
-    # Cascade delete will handle matches
+    # ✅ Perform deletion (cascade deletes matches)
     supabase.table("brackets").delete().eq("id", bracket_id).execute()
 
     return jsonify({"message": "Bracket deleted successfully"})
@@ -435,8 +483,8 @@ def delete_bracket():
 
 # ---------------- UPDATE PREDICTION ----------------
 
-@app.route("/bracket/match/<match_id>", methods=["PATCH"])
-def update_match(match_id):
+@app.route("/bracket/<bracket_id>/match/<match_id>", methods=["PATCH"])
+def update_match(bracket_id, match_id):
     user_id = request.headers.get("x-user-id")
     if not user_id:
         return jsonify({"error": "Missing x-user-id header"}), 400
@@ -453,13 +501,24 @@ def update_match(match_id):
         return jsonify({"error": "Match not found"}), 404
     match = res[0]
 
-    # ✅ Ownership check — ensure user owns this bracket
-    bracket_check = supabase.table("brackets").select("user_id").eq("id", match["bracket_id"]).execute().data
+    # ✅ Verify match belongs to this bracket
+    if str(match["bracket_id"]) != str(bracket_id):
+        return jsonify({"error": "Match does not belong to the specified bracket"}), 400
+
+    # ✅ Ownership and admin check
+    user_res = supabase.table("users").select("id, is_admin").eq("id", user_id).execute().data
+    if not user_res:
+        return jsonify({"error": "User not found"}), 404
+    is_admin = user_res[0].get("is_admin", False)
+
+    bracket_check = supabase.table("brackets").select("user_id").eq("id", bracket_id).execute().data
     if not bracket_check:
         return jsonify({"error": "Bracket not found"}), 404
     bracket_owner_id = bracket_check[0]["user_id"]
-    if bracket_owner_id != user_id:
-        return jsonify({"error": "Unauthorized: You are not the owner of this bracket"}), 403
+
+    if bracket_owner_id != user_id and not is_admin:
+        return jsonify({"error": "Unauthorized: You are not allowed to modify this bracket"}), 403
+
 
     # --- helper functions (unchanged) ---
     def clear_dest(dest_id):
@@ -569,6 +628,11 @@ def update_match(match_id):
                 m3 = get_match(match["conference"], 0, 3)
                 if m3 and m3.get("team_b") != loser:
                     set_in_dest(m3["id"], "b", loser)
+            # ✅ Mark bracket as not saved
+            supabase.table("brackets").update({
+                "is_done": False,
+                "saved_at": None
+            }).eq("id", match["bracket_id"]).execute()
             return jsonify({"message": "Winner updated"}), 200
 
         supabase.table("matches").update({
@@ -584,6 +648,12 @@ def update_match(match_id):
             m3 = get_match(match["conference"], 0, 3)
             if m3:
                 set_in_dest(m3["id"], "b", loser)
+
+        # ✅ Mark bracket as not saved
+        supabase.table("brackets").update({
+            "is_done": False,
+            "saved_at": None
+        }).eq("id", match["bracket_id"]).execute()
 
         return jsonify({"message": "Winner set"}), 200
 
@@ -610,10 +680,17 @@ def update_match(match_id):
                     "updated_at": datetime.utcnow().isoformat()
                 }).eq("id", m3["id"]).execute()
 
+        # ✅ Mark bracket as not saved
+        supabase.table("brackets").update({
+            "is_done": False,
+            "saved_at": None
+        }).eq("id", match["bracket_id"]).execute()
+
         return jsonify({"message": "Prediction undone"}), 200
 
     else:
         return jsonify({"error": "Invalid or unsupported action"}), 400
+
 
 
 # Lightweight endpoint: set only predicted_winner_games for a match (already covered by set_games above)
@@ -645,6 +722,9 @@ def set_match_games(match_id):
 def home():
     return jsonify({"message":"NBACorner backend running"}), 200
 
+@app.route("/health", methods=["GET"])
+def health():
+    return "OK", 200
 
 if __name__ == "__main__":
     app.run(debug=True)
