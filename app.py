@@ -1,6 +1,6 @@
 # app.py
 from datetime import datetime
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, make_response
 from flask_cors import CORS
 from supabase import create_client
 from dotenv import load_dotenv
@@ -722,9 +722,14 @@ def set_match_games(match_id):
 def home():
     return jsonify({"message":"NBACorner backend running"}), 200
 
-@app.route("/health", methods=["GET"])
+
+@app.route("/health", methods=["GET", "HEAD"])
 def health():
-    return "OK", 200
+    resp = make_response("OK", 200)
+    resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
+    resp.headers["Pragma"] = "no-cache"
+    return resp
+
 
 if __name__ == "__main__":
     app.run(debug=True)
