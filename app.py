@@ -124,7 +124,7 @@ def forgot_password():
     if not identifier:
         return jsonify({"error": "Email or username required"}), 400
 
-    # Find user by email or username
+    # Find user by email OR username
     user_res = (
         supabase.table("users")
         .select("id, email, username")
@@ -133,7 +133,7 @@ def forgot_password():
         .data
     )
 
-    # Generate reset token only if user exists
+    # Only generate token + send email if user exists
     if user_res:
         user = user_res[0]
         token = secrets.token_urlsafe(32)
@@ -145,27 +145,26 @@ def forgot_password():
             "expires_at": expires_at
         }).execute()
 
-        # Send reset email
-        msg = Message(
-            subject="NBACorner Password Reset",
-            recipients=[user["email"]],
-            body=f"""Hello {user['username']},
+        # Build email body
+        reset_link = f"https://nbacorner.onrender.com/reset-password?token={token}"
+        subject = "NBACorner Password Reset"
+        body = f"""
+        <p>Hello {user['username']},</p>
+        <p>A reset password has been requested. Please click the link below to set a new password:</p>
+        <p><a href="{reset_link}">{reset_link}</a></p>
+        <p>This link will stay active for 24 hours or until the password has been successfully reset.</p>
+        <p>Thanks,<br>NBA Corner</p>
+        """
 
-A reset password has been requested. Please click the link below to set a new password:
-https://nbacorner.com/reset-password?token={token}
+        # ✅ Use Brevo instead of Flask-Mail
+        success = send_email_via_brevo(user["email"], subject, body)
+        print(f"📧 Forgot password email sent: {success} for {user['email']}")
 
-This link will stay active for 24 hours or until the password has been successfully reset.
-
-Thanks,
-NBA Corner
-"""
-        )
-        mail.send(msg)
-
-    # Always return the same response
+    # Always return same response for security
     return jsonify({
         "message": "If a username or email exists, a reset password email will be sent."
     }), 200
+
 
 @app.route("/auth/reset-password", methods=["POST"])
 def reset_password():
