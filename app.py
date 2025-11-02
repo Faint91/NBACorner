@@ -104,43 +104,6 @@ def login():
     }), 200
 
 
-
-@app.route("/login", methods=["POST"])
-def login():
-    data = request.get_json()
-    identifier = (data.get("email") or data.get("username") or "").strip().lower()
-    password = data.get("password")
-
-    if not identifier or not password:
-        return jsonify({"error": "Username or email and password are required"}), 400
-
-    # Find user by email or username
-    user_res = (
-        supabase.table("users")
-        .select("*")
-        .or_(f"email.eq.{identifier},username.eq.{identifier}")
-        .execute()
-        .data
-    )
-    if not user_res:
-        return jsonify({"error": "Invalid username/email or password"}), 401
-
-    user = user_res[0]
-    stored_password = user.get("password")
-
-    if not bcrypt.checkpw(password.encode("utf-8"), stored_password.encode("utf-8")):
-        return jsonify({"error": "Invalid username/email or password"}), 401
-
-    return jsonify({
-        "message": "Login successful",
-        "user": {
-            "id": user["id"],
-            "email": user["email"],
-            "username": user["username"]
-        }
-    }), 200
-
-
 # ------------------------------------------------------------------
 # ----------------- End registration/login unchanged ----------------
 # ------------------------------------------------------------------
