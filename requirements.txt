@@ -2,6 +2,7 @@ flask
 flask-cors
 flask-bcrypt
 flask-mail==0.9.1
+requests
 python-dotenv
 supabase
 bcrypt
