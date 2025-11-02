@@ -206,18 +206,26 @@ def reset_password():
 
 @app.route("/test-email", methods=["POST"])
 def test_email():
-    data = request.get_json() or {}
-    recipient = data.get("to")
-    if not recipient:
-        return jsonify({"error": "Missing recipient email"}), 400
+    try:
+        data = request.get_json() or {}
+        recipient = data.get("to")
+        if not recipient:
+            return jsonify({"error": "Missing recipient email"}), 400
 
-    msg = Message(
-        "NBACorner test email",
-        recipients=[recipient],
-        body="✅ If you receive this, Brevo SMTP is configured correctly!"
-    )
-    mail.send(msg)
-    return jsonify({"message": f"Test email sent to {recipient}"}), 200
+        msg = Message(
+            "NBACorner test email",
+            recipients=[recipient],
+            body="✅ If you receive this, Brevo SMTP is configured correctly!"
+        )
+
+        mail.send(msg)
+        print(f"[TEST EMAIL] Successfully sent to {recipient}")
+        return jsonify({"message": f"Test email sent to {recipient}"}), 200
+
+    except Exception as e:
+        print(f"🚨 Error sending test email: {e}")
+        return jsonify({"error": str(e)}), 500
+
     
     
 # ------------------------------------------------------------------
