@@ -22,7 +22,7 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 app = Flask(__name__)
 CORS(app)
 
-@app.route("/register", methods=["POST"])
+@app.route("/auth/register", methods=["POST"])
 def register():
     data = request.get_json()
     email = (data.get("email") or "").strip().lower()
@@ -30,7 +30,7 @@ def register():
     password = data.get("password")
 
     if not email or not username or not password:
-        return jsonify({"error": "email, username, and password are required"}), 400
+        return jsonify({"error": "Email, username, and password are required"}), 400
 
     # Check if email or username already exists
     existing_user = (
@@ -43,7 +43,6 @@ def register():
     if existing_user:
         return jsonify({"error": "Email or username already in use"}), 400
 
-    # Hash password
     hashed_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
     try:
@@ -67,6 +66,43 @@ def register():
         }), 201
     except Exception as e:
         return jsonify({"error": str(e)}), 400
+
+
+@app.route("/auth/login", methods=["POST"])
+def login():
+    data = request.get_json()
+    identifier = (data.get("email") or data.get("username") or "").strip().lower()
+    password = data.get("password")
+
+    if not identifier or not password:
+        return jsonify({"error": "Username or email and password are required"}), 400
+
+    user_res = (
+        supabase.table("users")
+        .select("*")
+        .or_(f"email.eq.{identifier},username.eq.{identifier}")
+        .execute()
+        .data
+    )
+
+    if not user_res:
+        return jsonify({"error": "Invalid username/email or password"}), 401
+
+    user = user_res[0]
+    stored_password = user.get("password")
+
+    if not bcrypt.checkpw(password.encode("utf-8"), stored_password.encode("utf-8")):
+        return jsonify({"error": "Invalid username/email or password"}), 401
+
+    return jsonify({
+        "message": "Login successful",
+        "user": {
+            "id": user["id"],
+            "email": user["email"],
+            "username": user["username"]
+        }
+    }), 200
+
 
 
 @app.route("/login", methods=["POST"])
