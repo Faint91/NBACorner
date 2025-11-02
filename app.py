@@ -150,13 +150,26 @@ def forgot_password():
             return jsonify({"error": "Failed to save reset token"}), 500
 
         reset_link = f"https://nbacorner.onrender.com/reset-password?token={token}"
-        subject = "NBACorner Password Reset"
+        subject = "NBA Corner Password Reset"
         body = f"""
-        <p>Hello {user['username']},</p>
-        <p>A reset password has been requested. Please click the link below to set a new password:</p>
-        <p><a href="{reset_link}">{reset_link}</a></p>
-        <p>This link will stay active for 24 hours or until the password has been successfully reset.</p>
-        <p>Thanks,<br>NBA Corner</p>
+        <html>
+          <body style="font-family: Arial, sans-serif; line-height: 1.6;">
+            <p>Hello <strong>{user['username']}</strong>,</p>
+            <p>A reset password has been requested. Please click the button below to set a new password:</p>
+            <p>
+              <a href="{reset_link}"
+                 style="display:inline-block; background-color:#007bff; color:#ffffff; text-decoration:none;
+                        padding:10px 20px; border-radius:5px; font-weight:bold;"
+                 target="_blank">
+                 Reset Password
+              </a>
+            </p>
+            <p>If the button doesn't work, you can also copy and paste this link into your browser:</p>
+            <p><a href="{reset_link}" target="_blank">{reset_link}</a></p>
+            <p>This link will stay active for 24 hours or until the password has been successfully reset.</p>
+            <p>Thanks,<br>NBA Corner Team</p>
+          </body>
+        </html>
         """
 
         print("🟢 [DEBUG] Sending Brevo email...")
