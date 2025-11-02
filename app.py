@@ -1,9 +1,11 @@
 # app.py
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import Flask, request, jsonify, make_response
 from flask_cors import CORS
+from flask_mail import Mail, Message
 from supabase import create_client
 from dotenv import load_dotenv
+import secrets
 import os
 import bcrypt
 import uuid
@@ -21,6 +23,7 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 app = Flask(__name__)
 CORS(app)
+mail = Mail(app)
 
 @app.route("/auth/register", methods=["POST"])
 def register():
@@ -67,7 +70,6 @@ def register():
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
-
 @app.route("/auth/login", methods=["POST"])
 def login():
     data = request.get_json()
@@ -102,6 +104,96 @@ def login():
             "username": user["username"]
         }
     }), 200
+
+@app.route("/auth/forgot-password", methods=["POST"])
+def forgot_password():
+    data = request.get_json()
+    identifier = (data.get("email") or data.get("username") or "").strip().lower()
+
+    if not identifier:
+        return jsonify({"error": "Email or username required"}), 400
+
+    # Find user by email or username
+    user_res = (
+        supabase.table("users")
+        .select("id, email, username")
+        .or_(f"email.eq.{identifier},username.eq.{identifier}")
+        .execute()
+        .data
+    )
+
+    # Generate reset token only if user exists
+    if user_res:
+        user = user_res[0]
+        token = secrets.token_urlsafe(32)
+        expires_at = (datetime.utcnow() + timedelta(hours=24)).isoformat()
+
+        supabase.table("password_resets").insert({
+            "user_id": user["id"],
+            "token": token,
+            "expires_at": expires_at
+        }).execute()
+
+        # Send reset email
+        msg = Message(
+            subject="NBACorner Password Reset",
+            recipients=[user["email"]],
+            body=f"""Hello {user['username']},
+
+A reset password has been requested. Please click the link below to set a new password:
+https://nbacorner.com/reset-password?token={token}
+
+This link will stay active for 24 hours or until the password has been successfully reset.
+
+Thanks,
+NBA Corner
+"""
+        )
+        mail.send(msg)
+
+    # Always return the same response
+    return jsonify({
+        "message": "If a username or email exists, a reset password email will be sent."
+    }), 200
+
+@app.route("/auth/reset-password", methods=["POST"])
+def reset_password():
+    data = request.get_json()
+    token = data.get("token")
+    new_password = data.get("new_password")
+
+    if not token or not new_password:
+        return jsonify({"error": "Token and new password are required"}), 400
+
+    # Lookup token
+    token_res = (
+        supabase.table("password_resets")
+        .select("id, user_id, expires_at, used")
+        .eq("token", token)
+        .execute()
+        .data
+    )
+
+    if not token_res:
+        return jsonify({"error": "Invalid or expired token"}), 400
+
+    reset = token_res[0]
+    if reset["used"]:
+        return jsonify({"error": "Token already used"}), 400
+
+    # Check expiry
+    if datetime.utcnow() > datetime.fromisoformat(reset["expires_at"]):
+        return jsonify({"error": "Token expired"}), 400
+
+    hashed_password = bcrypt.hashpw(new_password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+    # Update user password
+    supabase.table("users").update({"password": hashed_password}).eq("id", reset["user_id"]).execute()
+
+    # Mark token as used
+    supabase.table("password_resets").update({"used": True}).eq("id", reset["id"]).execute()
+
+    return jsonify({"message": "Password reset successfully"}), 200
 
 
 # ------------------------------------------------------------------
