@@ -107,34 +107,48 @@ def login():
 
 @app.route("/auth/forgot-password", methods=["POST"])
 def forgot_password():
-    data = request.get_json()
-    identifier = (data.get("email") or data.get("username") or "").strip().lower()
+    print("🟢 [DEBUG] /auth/forgot-password called")
 
+    data = request.get_json()
+    print(f"🟢 [DEBUG] Received data: {data}")
+
+    identifier = (data.get("email") or data.get("username") or "").strip().lower()
     if not identifier:
+        print("🔴 [DEBUG] Missing identifier")
         return jsonify({"error": "Email or username required"}), 400
 
     # Find user by email OR username
-    user_res = (
-        supabase.table("users")
-        .select("id, email, username")
-        .or_(f"email.eq.{identifier},username.eq.{identifier}")
-        .execute()
-        .data
-    )
+    try:
+        user_res = (
+            supabase.table("users")
+            .select("id, email, username")
+            .or_(f"email.eq.{identifier},username.eq.{identifier}")
+            .execute()
+            .data
+        )
+        print(f"🟢 [DEBUG] User lookup result: {user_res}")
+    except Exception as e:
+        print(f"🔴 [DEBUG] Error querying Supabase: {e}")
+        return jsonify({"error": "Database error"}), 500
 
-    # Only generate token + send email if user exists
     if user_res:
         user = user_res[0]
+        print(f"🟢 [DEBUG] Found user: {user}")
         token = secrets.token_urlsafe(32)
         expires_at = (datetime.utcnow() + timedelta(hours=24)).isoformat()
+        print(f"🟢 [DEBUG] Generated token: {token[:8]}...")
 
-        supabase.table("password_resets").insert({
-            "user_id": user["id"],
-            "token": token,
-            "expires_at": expires_at
-        }).execute()
+        try:
+            supabase.table("password_resets").insert({
+                "user_id": user["id"],
+                "token": token,
+                "expires_at": expires_at
+            }).execute()
+            print("🟢 [DEBUG] Token inserted successfully")
+        except Exception as e:
+            print(f"🔴 [DEBUG] Error inserting token: {e}")
+            return jsonify({"error": "Failed to save reset token"}), 500
 
-        # Build email body
         reset_link = f"https://nbacorner.onrender.com/reset-password?token={token}"
         subject = "NBACorner Password Reset"
         body = f"""
@@ -145,14 +159,17 @@ def forgot_password():
         <p>Thanks,<br>NBA Corner</p>
         """
 
-        # ✅ Use Brevo instead of Flask-Mail
+        print("🟢 [DEBUG] Sending Brevo email...")
         success = send_email_via_brevo(user["email"], subject, body)
-        print(f"📧 Forgot password email sent: {success} for {user['email']}")
+        print(f"🟢 [DEBUG] Email sent: {success}")
+    else:
+        print("🟡 [DEBUG] No user found for identifier")
 
-    # Always return same response for security
+    print("✅ [DEBUG] Returning success message")
     return jsonify({
         "message": "If a username or email exists, a reset password email will be sent."
     }), 200
+
 
 
 @app.route("/auth/reset-password", methods=["POST"])
