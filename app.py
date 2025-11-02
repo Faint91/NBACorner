@@ -5,7 +5,7 @@ from flask_cors import CORS
 from flask_mail import Mail, Message
 from supabase import create_client
 from dotenv import load_dotenv
-import secrets
+import secrets, requests
 import os
 import bcrypt
 import uuid
@@ -23,7 +23,7 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 app = Flask(__name__)
 CORS(app)
-
+BREVO_API_KEY = os.getenv("BREVO_API_KEY")
 app.config.update(
     MAIL_SERVER=os.getenv("MAIL_SERVER"),
     MAIL_PORT=int(os.getenv("MAIL_PORT", 587)),
@@ -33,6 +33,8 @@ app.config.update(
     MAIL_DEFAULT_SENDER=os.getenv("MAIL_DEFAULT_SENDER"),
 )
 mail = Mail(app)
+
+
 
 @app.route("/auth/register", methods=["POST"])
 def register():
@@ -206,28 +208,52 @@ def reset_password():
 
 @app.route("/test-email", methods=["POST"])
 def test_email():
-    try:
-        data = request.get_json() or {}
-        recipient = data.get("to")
-        if not recipient:
-            return jsonify({"error": "Missing recipient email"}), 400
+    """Test email sending via Brevo API."""
+    data = request.get_json() or {}
+    recipient = data.get("to")
 
-        msg = Message(
-            "NBACorner test email",
-            recipients=[recipient],
-            body="✅ If you receive this, Brevo SMTP is configured correctly!"
-        )
+    if not recipient:
+        return jsonify({"error": "Missing recipient email"}), 400
 
-        mail.send(msg)
-        print(f"[TEST EMAIL] Successfully sent to {recipient}")
+    subject = "NBACorner test email"
+    body = """
+    <h3>✅ NBACorner email test successful!</h3>
+    <p>If you're reading this, the Brevo API integration works perfectly.</p>
+    <br/>
+    <p>Cheers,<br/>NBA Corner</p>
+    """
+
+    success = send_email_via_brevo(recipient, subject, body)
+
+    if success:
         return jsonify({"message": f"Test email sent to {recipient}"}), 200
+    else:
+        return jsonify({"error": "Failed to send email"}), 500
+    
+    
+def send_email_via_brevo(to_email, subject, body):
+    """Send an email using Brevo's transactional email API."""
+    url = "https://api.brevo.com/v3/smtp/email"
+    headers = {
+        "accept": "application/json",
+        "api-key": BREVO_API_KEY,
+        "content-type": "application/json"
+    }
+    data = {
+        "sender": {"name": "NBA Corner", "email": "donotreply@nbacorner.com"},
+        "to": [{"email": to_email}],
+        "subject": subject,
+        "htmlContent": body
+    }
 
+    try:
+        response = requests.post(url, json=data, headers=headers, timeout=20)
+        print(f"📬 Brevo response: {response.status_code} – {response.text}")
+        return response.status_code == 201
     except Exception as e:
-        print(f"🚨 Error sending test email: {e}")
-        return jsonify({"error": str(e)}), 500
+        print(f"🚨 Error sending email via Brevo: {e}")
+        return False 
 
-    
-    
 # ------------------------------------------------------------------
 # ----------------- End registration/login unchanged ----------------
 # ------------------------------------------------------------------
