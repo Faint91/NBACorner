@@ -23,6 +23,15 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 app = Flask(__name__)
 CORS(app)
+
+app.config.update(
+    MAIL_SERVER=os.getenv("MAIL_SERVER"),
+    MAIL_PORT=int(os.getenv("MAIL_PORT", 587)),
+    MAIL_USE_TLS=os.getenv("MAIL_USE_TLS", "True") == "True",
+    MAIL_USERNAME=os.getenv("MAIL_USERNAME"),
+    MAIL_PASSWORD=os.getenv("MAIL_PASSWORD"),
+    MAIL_DEFAULT_SENDER=os.getenv("MAIL_DEFAULT_SENDER"),
+)
 mail = Mail(app)
 
 @app.route("/auth/register", methods=["POST"])
@@ -195,7 +204,15 @@ def reset_password():
 
     return jsonify({"message": "Password reset successfully"}), 200
 
-
+@app.route("/test-email")
+def test_email():
+    msg = Message("NBACorner test email",
+                  recipients=["yourpersonalemail@gmail.com"],
+                  body="✅ If you receive this, Brevo SMTP is configured correctly!")
+    mail.send(msg)
+    return "Test email sent successfully!"
+    
+    
 # ------------------------------------------------------------------
 # ----------------- End registration/login unchanged ----------------
 # ------------------------------------------------------------------
