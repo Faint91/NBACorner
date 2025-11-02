@@ -2,7 +2,6 @@
 from datetime import datetime, timedelta
 from flask import Flask, request, jsonify, make_response
 from flask_cors import CORS
-from flask_mail import Mail, Message
 from supabase import create_client
 from dotenv import load_dotenv
 import secrets, requests
@@ -24,16 +23,6 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 app = Flask(__name__)
 CORS(app)
 BREVO_API_KEY = os.getenv("BREVO_API_KEY")
-app.config.update(
-    MAIL_SERVER=os.getenv("MAIL_SERVER"),
-    MAIL_PORT=int(os.getenv("MAIL_PORT", 587)),
-    MAIL_USE_TLS=os.getenv("MAIL_USE_TLS", "True") == "True",
-    MAIL_USERNAME=os.getenv("MAIL_USERNAME"),
-    MAIL_PASSWORD=os.getenv("MAIL_PASSWORD"),
-    MAIL_DEFAULT_SENDER=os.getenv("MAIL_DEFAULT_SENDER"),
-)
-mail = Mail(app)
-
 
 
 @app.route("/auth/register", methods=["POST"])
