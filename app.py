@@ -240,7 +240,10 @@ def send_email_via_brevo(to_email, subject, body):
         "content-type": "application/json"
     }
     data = {
-        "sender": {"name": "NBA Corner", "email": "donotreply@nbacorner.com"},
+        "sender": {
+            "name": "NBA Corner",
+            "email": os.getenv("BREVO_SENDER_EMAIL", "nbacorner91@gmail.com")
+        },
         "to": [{"email": to_email}],
         "subject": subject,
         "htmlContent": body
@@ -249,10 +252,10 @@ def send_email_via_brevo(to_email, subject, body):
     try:
         response = requests.post(url, json=data, headers=headers, timeout=20)
         print(f"📬 Brevo response: {response.status_code} – {response.text}")
-        return response.status_code == 201
+        return response.status_code in (200, 201)
     except Exception as e:
         print(f"🚨 Error sending email via Brevo: {e}")
-        return False 
+        return False
 
 # ------------------------------------------------------------------
 # ----------------- End registration/login unchanged ----------------
