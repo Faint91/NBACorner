@@ -25,51 +25,75 @@ CORS(app)
 @app.route("/register", methods=["POST"])
 def register():
     data = request.get_json()
-    email = data.get("email")
+    email = (data.get("email") or "").strip().lower()
+    username = (data.get("username") or "").strip()
     password = data.get("password")
-    username = data.get("username")  # ✅ add this line
 
-    if not email or not password or not username:
-        return jsonify({"error": "email, password, and username are required"}), 400
+    if not email or not username or not password:
+        return jsonify({"error": "email, username, and password are required"}), 400
 
-    hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    # Check if email or username already exists
+    existing_user = (
+        supabase.table("users")
+        .select("id")
+        .or_(f"email.eq.{email},username.eq.{username}")
+        .execute()
+        .data
+    )
+    if existing_user:
+        return jsonify({"error": "Email or username already in use"}), 400
+
+    # Hash password
+    hashed_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
     try:
-        supabase.table("users").insert({
-            "email": email,
-            "password": hashed_password,
-            "username": username
-        }).execute()
-        return jsonify({"message": "User registered successfully"})
+        user = (
+            supabase.table("users")
+            .insert({
+                "email": email,
+                "username": username,
+                "password": hashed_password
+            })
+            .execute()
+            .data[0]
+        )
+        return jsonify({
+            "message": "User registered successfully",
+            "user": {
+                "id": user["id"],
+                "email": user["email"],
+                "username": user["username"]
+            }
+        }), 201
     except Exception as e:
         return jsonify({"error": str(e)}), 400
+
 
 @app.route("/login", methods=["POST"])
 def login():
     data = request.get_json()
-    email = data.get("email")
-    username = data.get("username")
+    identifier = (data.get("email") or data.get("username") or "").strip().lower()
     password = data.get("password")
 
-    # Must include password AND either email or username
-    if not password or (not email and not username):
-        return jsonify({"error": "You must provide either email or username and password"}), 400
+    if not identifier or not password:
+        return jsonify({"error": "Username or email and password are required"}), 400
 
-    # Look up user by email or username
-    if email:
-        response = supabase.table("users").select("*").eq("email", email).execute()
-    else:
-        response = supabase.table("users").select("*").eq("username", username).execute()
+    # Find user by email or username
+    user_res = (
+        supabase.table("users")
+        .select("*")
+        .or_(f"email.eq.{identifier},username.eq.{identifier}")
+        .execute()
+        .data
+    )
+    if not user_res:
+        return jsonify({"error": "Invalid username/email or password"}), 401
 
-    if not response.data:
-        return jsonify({"error": "User not found"}), 404
-
-    user = response.data[0]
+    user = user_res[0]
     stored_password = user.get("password")
 
-    # Verify hashed password
     if not bcrypt.checkpw(password.encode("utf-8"), stored_password.encode("utf-8")):
-        return jsonify({"error": "Invalid password"}), 401
+        return jsonify({"error": "Invalid username/email or password"}), 401
 
     return jsonify({
         "message": "Login successful",
@@ -79,6 +103,7 @@ def login():
             "username": user["username"]
         }
     }), 200
+
 
 # ------------------------------------------------------------------
 # ----------------- End registration/login unchanged ----------------
