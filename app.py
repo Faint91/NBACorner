@@ -24,6 +24,77 @@ app = Flask(__name__)
 CORS(app)
 BREVO_API_KEY = os.getenv("BREVO_API_KEY")
 
+SENSITIVE_TOKENS = [t for t in [
+    os.getenv("SUPABASE_KEY"),
+    os.getenv("SUPABASE_SERVICE_ROLE_KEY"),
+    os.getenv("SUPABASE_ANON_KEY"),
+    os.getenv("BREVO_API_KEY"),
+] if t]
+
+@app.route("/admin/env-check", methods=["GET"])
+def admin_env_check():
+    """
+    Admin-only: returns a sanitized snapshot indicating which critical env vars exist.
+    Does NOT return actual secret values.
+    """
+    user_id = request.headers.get("x-user-id")
+    if not user_id:
+        return jsonify({"error": "Missing x-user-id header"}), 400
+
+    # check admin flag
+    u = supabase.table("users").select("id, is_admin").eq("id", user_id).execute().data
+    if not u or not u[0].get("is_admin"):
+        return jsonify({"error": "Forbidden"}), 403
+
+    def mask_present(name):
+        return {
+            "name": name,
+            "present": bool(os.getenv(name)),
+            "preview": ("set" if os.getenv(name) else "unset")
+        }
+
+    env_summary = [
+        mask_present("SUPABASE_URL"),
+        mask_present("SUPABASE_KEY"),                # service role (server only)
+        mask_present("SUPABASE_SERVICE_ROLE_KEY"),   # if you keep both names
+        mask_present("SUPABASE_ANON_KEY"),           # optional (future RLS switch)
+        mask_present("BREVO_API_KEY"),
+        mask_present("BREVO_SENDER_EMAIL"),
+    ]
+
+    return jsonify({
+        "ok": True,
+        "env": env_summary
+    }), 200
+
+def redact(s: str) -> str:
+    if not isinstance(s, str):
+        return s
+    redacted = s
+    for token in SENSITIVE_TOKENS:
+        if token and token in redacted:
+            redacted = redacted.replace(token, "[REDACTED]")
+    return redacted
+
+def safe_print(*args, **kwargs):
+    parts = []
+    for a in args:
+        parts.append(redact(str(a)))
+    print(*parts, **kwargs)
+
+# --- Safe error handler (add this) ---
+@app.errorhandler(500)
+def handle_500(e):
+    # Do not leak internals in responses
+    safe_print("🔴 500 error:", e)
+    return jsonify({"error": "Internal server error"}), 500
+
+# Optional: cover all uncaught exceptions similarly
+@app.errorhandler(Exception)
+def handle_any(e):
+    safe_print("🔴 Unhandled exception:", e)
+    return jsonify({"error": "Internal server error"}), 500
+
 
 @app.route("/auth/register", methods=["POST"])
 def register():
@@ -107,14 +178,14 @@ def login():
 
 @app.route("/auth/forgot-password", methods=["POST"])
 def forgot_password():
-    print("🟢 [DEBUG] /auth/forgot-password called")
+    safe_print("🟢 [DEBUG] /auth/forgot-password called")
 
     data = request.get_json()
-    print(f"🟢 [DEBUG] Received data: {data}")
+    safe_print(f"🟢 [DEBUG] Received data: {data}")
 
     identifier = (data.get("email") or data.get("username") or "").strip().lower()
     if not identifier:
-        print("🔴 [DEBUG] Missing identifier")
+        safe_print("🔴 [DEBUG] Missing identifier")
         return jsonify({"error": "Email or username required"}), 400
 
     # Find user by email OR username
@@ -126,17 +197,17 @@ def forgot_password():
             .execute()
             .data
         )
-        print(f"🟢 [DEBUG] User lookup result: {user_res}")
+        safe_print(f"🟢 [DEBUG] User lookup result: {user_res}")
     except Exception as e:
-        print(f"🔴 [DEBUG] Error querying Supabase: {e}")
+        safe_print(f"🔴 [DEBUG] Error querying Supabase: {e}")
         return jsonify({"error": "Database error"}), 500
 
     if user_res:
         user = user_res[0]
-        print(f"🟢 [DEBUG] Found user: {user}")
+        safe_print(f"🟢 [DEBUG] Found user: {user}")
         token = secrets.token_urlsafe(32)
         expires_at = (datetime.utcnow() + timedelta(hours=24)).isoformat()
-        print(f"🟢 [DEBUG] Generated token: {token[:8]}...")
+        safe_print(f"🟢 [DEBUG] Generated token: {token[:8]}...")
 
         try:
             supabase.table("password_resets").insert({
@@ -144,9 +215,9 @@ def forgot_password():
                 "token": token,
                 "expires_at": expires_at
             }).execute()
-            print("🟢 [DEBUG] Token inserted successfully")
+            safe_print("🟢 [DEBUG] Token inserted successfully")
         except Exception as e:
-            print(f"🔴 [DEBUG] Error inserting token: {e}")
+            safe_print(f"🔴 [DEBUG] Error inserting token: {e}")
             return jsonify({"error": "Failed to save reset token"}), 500
 
         reset_link = f"https://nbacorner.onrender.com/reset-password?token={token}"
@@ -172,13 +243,13 @@ def forgot_password():
         </html>
         """
 
-        print("🟢 [DEBUG] Sending Brevo email...")
+        safe_print("🟢 [DEBUG] Sending Brevo email...")
         success = send_email_via_brevo(user["email"], subject, body)
-        print(f"🟢 [DEBUG] Email sent: {success}")
+        safe_print(f"🟢 [DEBUG] Email sent: {success}")
     else:
-        print("🟡 [DEBUG] No user found for identifier")
+        safe_print("🟡 [DEBUG] No user found for identifier")
 
-    print("✅ [DEBUG] Returning success message")
+    safe_print("✅ [DEBUG] Returning success message")
     return jsonify({
         "message": "If a username or email exists, a reset password email will be sent."
     }), 200
@@ -269,10 +340,10 @@ def send_email_via_brevo(to_email, subject, body):
 
     try:
         response = requests.post(url, json=data, headers=headers, timeout=20)
-        print(f"📬 Brevo response: {response.status_code} – {response.text}")
+        safe_print(f"📬 Brevo response: {response.status_code}")
         return response.status_code in (200, 201)
     except Exception as e:
-        print(f"🚨 Error sending email via Brevo: {e}")
+        safe_print(f"🚨 Error sending email via Brevo: {e}")
         return False
 
 # ------------------------------------------------------------------
