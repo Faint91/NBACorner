@@ -55,7 +55,8 @@ def admin_env_check():
         return jsonify({"error": "User not found"}), 404
 
     user = users[0]
-    is_admin = bool(user.get("is_admin"))
+    val = user.get("is_admin")
+    is_admin = (val is True) or (str(val).lower() in ("true", "t", "1", "yes"))
     safe_print(f"🧩 [DEBUG] Checking user {user.get('username')} ({user_id}) → is_admin raw={user.get('is_admin')} | coerced={is_admin}")
 
     if not is_admin:
