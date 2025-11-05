@@ -41,9 +41,19 @@ def admin_env_check():
     if not user_id:
         return jsonify({"error": "Missing x-user-id header"}), 400
 
-    # check admin flag
-    u = supabase.table("users").select("id, is_admin").eq("id", user_id).execute().data
-    if not u or not u[0].get("is_admin"):
+    # 🔒 Robust admin validation
+    try:
+        u_res = supabase.table("users").select("id, is_admin").eq("id", user_id).execute()
+        users = u_res.data or []
+    except Exception as e:
+        safe_print("🔴 [DEBUG] Supabase error in admin_env_check:", e)
+        return jsonify({"error": "Database error"}), 500
+
+    if len(users) == 0:
+        return jsonify({"error": "User not found"}), 404
+
+    user = users[0]
+    if not user.get("is_admin"):
         return jsonify({"error": "Forbidden"}), 403
 
     def mask_present(name):
@@ -55,9 +65,9 @@ def admin_env_check():
 
     env_summary = [
         mask_present("SUPABASE_URL"),
-        mask_present("SUPABASE_KEY"),                # service role (server only)
-        mask_present("SUPABASE_SERVICE_ROLE_KEY"),   # if you keep both names
-        mask_present("SUPABASE_ANON_KEY"),           # optional (future RLS switch)
+        mask_present("SUPABASE_KEY"),
+        mask_present("SUPABASE_SERVICE_ROLE_KEY"),
+        mask_present("SUPABASE_ANON_KEY"),
         mask_present("BREVO_API_KEY"),
         mask_present("BREVO_SENDER_EMAIL"),
     ]
@@ -66,6 +76,7 @@ def admin_env_check():
         "ok": True,
         "env": env_summary
     }), 200
+
 
 def redact(s: str) -> str:
     if not isinstance(s, str):
