@@ -31,6 +31,7 @@ SENSITIVE_TOKENS = [t for t in [
     os.getenv("BREVO_API_KEY"),
 ] if t]
 
+
 @app.route("/admin/env-check", methods=["GET"])
 def admin_env_check():
     """
@@ -42,19 +43,20 @@ def admin_env_check():
         return jsonify({"error": "Missing x-user-id header"}), 400
 
     try:
-        res = supabase.table("users").select("id, is_admin").eq("id", user_id).execute()
+        res = supabase.table("users").select("id, username, is_admin").eq("id", user_id).execute()
+        safe_print("🟢 [DEBUG] Supabase raw data:", res.data)
         users = res.data or []
     except Exception as e:
-        safe_print("🔴 [DEBUG] Supabase error in admin_env_check:", e)
+        safe_print("🔴 [DEBUG] Supabase error:", e)
         return jsonify({"error": "Database error"}), 500
 
-    # ✅ Explicitly handle each case
     if len(users) == 0:
+        safe_print("🟡 [DEBUG] User not found for id", user_id)
         return jsonify({"error": "User not found"}), 404
 
     user = users[0]
     is_admin = bool(user.get("is_admin"))
-    safe_print(f"🧩 [DEBUG] env-check user_id={user_id}, is_admin={is_admin}")
+    safe_print(f"🧩 [DEBUG] Checking user {user.get('username')} ({user_id}) → is_admin raw={user.get('is_admin')} | coerced={is_admin}")
 
     if not is_admin:
         return jsonify({"error": "Forbidden"}), 403
