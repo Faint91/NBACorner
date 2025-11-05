@@ -41,19 +41,22 @@ def admin_env_check():
     if not user_id:
         return jsonify({"error": "Missing x-user-id header"}), 400
 
-    # 🔒 Robust admin validation
     try:
-        u_res = supabase.table("users").select("id, is_admin").eq("id", user_id).execute()
-        users = u_res.data or []
+        res = supabase.table("users").select("id, is_admin").eq("id", user_id).execute()
+        users = res.data or []
     except Exception as e:
         safe_print("🔴 [DEBUG] Supabase error in admin_env_check:", e)
         return jsonify({"error": "Database error"}), 500
 
+    # ✅ Explicitly handle each case
     if len(users) == 0:
         return jsonify({"error": "User not found"}), 404
 
     user = users[0]
-    if not user.get("is_admin"):
+    is_admin = bool(user.get("is_admin"))
+    safe_print(f"🧩 [DEBUG] env-check user_id={user_id}, is_admin={is_admin}")
+
+    if not is_admin:
         return jsonify({"error": "Forbidden"}), 403
 
     def mask_present(name):
@@ -76,6 +79,7 @@ def admin_env_check():
         "ok": True,
         "env": env_summary
     }), 200
+
 
 
 def redact(s: str) -> str:
