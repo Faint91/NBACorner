@@ -81,7 +81,6 @@ def admin_env_check():
     }), 200
 
 
-
 def redact(s: str) -> str:
     if not isinstance(s, str):
         return s
