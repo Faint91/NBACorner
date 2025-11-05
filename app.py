@@ -40,24 +40,23 @@ def admin_env_check():
     """
     user_id = request.headers.get("x-user-id")
     if not user_id:
+        # explicitly block query parameter misuse
+        if request.args.get("x-user-id"):
+            return jsonify({"error": "x-user-id must be sent as a header, not a query parameter"}), 400
         return jsonify({"error": "Missing x-user-id header"}), 400
 
     try:
         res = supabase.table("users").select("id, username, is_admin").eq("id", user_id).execute()
-        safe_print("🟢 [DEBUG] Supabase raw data:", res.data)
         users = res.data or []
-    except Exception as e:
-        safe_print("🔴 [DEBUG] Supabase error:", e)
+    except Exception:
         return jsonify({"error": "Database error"}), 500
 
     if len(users) == 0:
-        safe_print("🟡 [DEBUG] User not found for id", user_id)
         return jsonify({"error": "User not found"}), 404
 
     user = users[0]
     val = user.get("is_admin")
     is_admin = (val is True) or (str(val).lower() in ("true", "t", "1", "yes"))
-    safe_print(f"🧩 [DEBUG] Checking user {user.get('username')} ({user_id}) → is_admin raw={user.get('is_admin')} | coerced={is_admin}")
 
     if not is_admin:
         return jsonify({"error": "Forbidden"}), 403
@@ -66,7 +65,7 @@ def admin_env_check():
         return {
             "name": name,
             "present": bool(os.getenv(name)),
-            "preview": ("set" if os.getenv(name) else "unset")
+            "preview": "set" if os.getenv(name) else "unset"
         }
 
     env_summary = [
@@ -82,6 +81,7 @@ def admin_env_check():
         "ok": True,
         "env": env_summary
     }), 200
+
 
 
 def redact(s: str) -> str:
