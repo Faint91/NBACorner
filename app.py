@@ -45,6 +45,42 @@ SENSITIVE_TOKENS = [t for t in [
 # -------------------- Admin endpoints  ------------------
 # --------------------------------------------------------
 
+def generate_token(user_id, username, is_admin=False):
+    payload = {
+        "user_id": user_id,
+        "username": username,
+        "is_admin": is_admin,
+        "exp": datetime.utcnow() + timedelta(days=7)
+    }
+    token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+    return token
+
+
+def decode_token(token):
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        return payload
+    except jwt.ExpiredSignatureError:
+        return None
+    except jwt.InvalidTokenError:
+        return None
+
+
+def require_auth(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        auth_header = request.headers.get("Authorization")
+        if not auth_header or not auth_header.startswith("Bearer "):
+            return jsonify({"error": "Missing or invalid Authorization header"}), 401
+
+        token = auth_header.split(" ")[1]
+        payload = decode_token(token)
+        if not payload:
+            return jsonify({"error": "Invalid or expired token"}), 401
+
+        request.user = payload
+        return f(*args, **kwargs)
+    return wrapper
 
 @app.route("/admin/env-check", methods=["GET"])
 @require_auth
@@ -182,44 +218,6 @@ def health():
     resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
     resp.headers["Pragma"] = "no-cache"
     return resp
-    
-    
-def generate_token(user_id, username, is_admin=False):
-    payload = {
-        "user_id": user_id,
-        "username": username,
-        "is_admin": is_admin,
-        "exp": datetime.utcnow() + timedelta(days=7)
-    }
-    token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
-    return token
-
-
-def decode_token(token):
-    try:
-        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-        return payload
-    except jwt.ExpiredSignatureError:
-        return None
-    except jwt.InvalidTokenError:
-        return None
-
-
-def require_auth(f):
-    @wraps(f)
-    def wrapper(*args, **kwargs):
-        auth_header = request.headers.get("Authorization")
-        if not auth_header or not auth_header.startswith("Bearer "):
-            return jsonify({"error": "Missing or invalid Authorization header"}), 401
-
-        token = auth_header.split(" ")[1]
-        payload = decode_token(token)
-        if not payload:
-            return jsonify({"error": "Invalid or expired token"}), 401
-
-        request.user = payload
-        return f(*args, **kwargs)
-    return wrapper
     
     
 # --------------------------------------------------------
