@@ -1,0 +1,1 @@
+We use bcrypt with BCRYPT_ROUNDS (default: 12). Increase as hardware improves.

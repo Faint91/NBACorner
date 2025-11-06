@@ -5,6 +5,9 @@ from flask import Flask, request, jsonify, make_response
 from flask_cors import CORS
 from supabase import create_client
 from dotenv import load_dotenv
+from collections import defaultdict
+import time
+import threading
 import secrets, requests
 import jwt
 import re
@@ -25,6 +28,13 @@ SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 JWT_SECRET = os.getenv("JWT_SECRET", "dev_secret")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 
+DISABLE_RATE_LIMITS = os.getenv("DISABLE_RATE_LIMITS", "0") == "1"
+
+# ✅ Bcrypt work factor (cost). 12 is a good starting point.
+BCRYPT_ROUNDS = int(os.getenv("BCRYPT_ROUNDS", "12"))
+
+# ✅ Password policy
+PASSWORD_MIN_LENGTH = 10
 if not SUPABASE_URL or not SUPABASE_KEY:
     raise RuntimeError("SUPABASE_URL and SUPABASE_KEY must be set in .env")
 
@@ -40,6 +50,108 @@ SENSITIVE_TOKENS = [t for t in [
     os.getenv("SUPABASE_ANON_KEY"),
     os.getenv("BREVO_API_KEY"),
 ] if t]
+
+# Optional: enable noisy debug logging only in dev
+ENABLE_DEBUG_LOGS = os.getenv("ENABLE_DEBUG_LOGS", "0") == "1"
+
+# --------------------------------------------------------
+# ---------------- In-memory rate limiting  --------------
+# --------------------------------------------------------
+
+RATE_LIMITS = {
+    # bucket_name: (max_attempts, window_seconds)
+    "login_ip": (10, 60),              # 10 login attempts per IP per 60s
+    "login_identifier": (5, 60),       # 5 login attempts per email/username per 60s
+
+    "forgot_ip": (5, 300),             # 5 forgot-password requests per IP per 5min
+    "forgot_identifier": (3, 300),     # 3 forgot-password per email/username per 5min
+
+    "register_ip": (3, 3600),          # 3 registrations per IP per hour (example)
+}
+
+_rate_events = defaultdict(list)
+_rate_lock = threading.Lock()
+
+
+def get_client_ip():
+    """
+    Try to get the real client IP, honoring X-Forwarded-For when behind a proxy.
+    """
+    xfwd = request.headers.get("X-Forwarded-For", "")
+    if xfwd:
+        # X-Forwarded-For: client, proxy1, proxy2, ...
+        return xfwd.split(",")[0].strip()
+    return request.remote_addr or "unknown"
+
+
+def is_rate_limited(bucket: str, key: str) -> bool:
+    """
+    Returns True if this (bucket, key) has exceeded its limit within the window.
+    Otherwise records the attempt and returns False.
+    """
+    # 🔧 Disable all rate limits when toggled (useful for dev/testing)
+    if DISABLE_RATE_LIMITS:
+        return False
+
+    try:
+        limit, window = RATE_LIMITS[bucket]
+    except KeyError:
+        # If we typo a bucket name, fail closed but log it
+        print(f"[RL] Unknown bucket: {bucket}")
+        return False
+
+    now = time.time()
+
+    with _rate_lock:
+        events = _rate_events[(bucket, key)]
+
+        # Keep only events within the time window
+        events = [t for t in events if now - t < window]
+        _rate_events[(bucket, key)] = events
+
+        print(f"[RL] bucket={bucket} key={key} count_before={len(events)} limit={limit}")
+
+        if len(events) >= limit:
+            print(f"[RL] 🚫 RATE LIMITED bucket={bucket} key={key}")
+            return True
+
+        # Record this attempt
+        events.append(now)
+        _rate_events[(bucket, key)] = events
+        print(f"[RL] ✅ recorded bucket={bucket} key={key} new_count={len(events)}")
+
+    return False
+
+
+
+def is_strong_password(pw):
+    """
+    Enforce a basic password policy:
+      - at least PASSWORD_MIN_LENGTH characters
+      - at least one lowercase
+      - at least one uppercase
+      - at least one digit
+      - at least one symbol
+    """
+    if not isinstance(pw, str):
+        return False, "Password is required."
+
+    if len(pw) < PASSWORD_MIN_LENGTH:
+        return False, f"Password must be at least {PASSWORD_MIN_LENGTH} characters long."
+
+    if not re.search(r"[a-z]", pw):
+        return False, "Password must include at least one lowercase letter."
+
+    if not re.search(r"[A-Z]", pw):
+        return False, "Password must include at least one uppercase letter."
+
+    if not re.search(r"\d", pw):
+        return False, "Password must include at least one number."
+
+    if not re.search(r"[^\w\s]", pw):  # any non-alphanumeric, non-whitespace
+        return False, "Password must include at least one symbol (e.g. !@#$%)."
+
+    return True, ""
 
 
 # --------------------------------------------------------
@@ -163,15 +275,15 @@ def safe_print(*args, **kwargs):
 # --- Safe error handler (add this) ---
 @app.errorhandler(500)
 def handle_500(e):
-    # Do not leak internals in responses
-    safe_print("🔴 500 error:", e)
+    # Avoid logging full exception message; just the class name
+    safe_print("🔴 500 error (class):", type(e).__name__)
     return jsonify({"error": "Internal server error"}), 500
 
 
-# Optional: cover all uncaught exceptions similarly
 @app.errorhandler(Exception)
 def handle_any(e):
-    safe_print("🔴 Unhandled exception:", e)
+    # Catch-all: again, do NOT log e itself to avoid leaking tokens or headers
+    safe_print("🔴 Unhandled exception (class):", type(e).__name__)
     return jsonify({"error": "Internal server error"}), 500
 
 
@@ -234,8 +346,8 @@ def health():
     resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
     resp.headers["Pragma"] = "no-cache"
     return resp
-    
-    
+
+
 # --------------------------------------------------------
 # --------------- Authentication endpoints  --------------
 # --------------------------------------------------------
@@ -243,13 +355,26 @@ def health():
 
 @app.route("/auth/register", methods=["POST"])
 def register():
-    data = request.get_json()
+    data = request.get_json() or {}
+
+    ip = get_client_ip()
+    if is_rate_limited("register_ip", ip):
+        return jsonify({
+            "error": "Too many sign-up attempts from this IP. Please try again later."
+        }), 429
+
     email = (data.get("email") or "").strip().lower()
     username = (data.get("username") or "").strip()
     password = data.get("password")
 
     if not email or not username or not password:
         return jsonify({"error": "Email, username, and password are required"}), 400
+
+    # ✅ Enforce password policy
+    ok, msg = is_strong_password(password)
+    if not ok:
+        return jsonify({"error": msg}), 400
+
 
     # Check if email or username already exists
     existing_user = (
@@ -262,7 +387,11 @@ def register():
     if existing_user:
         return jsonify({"error": "Email or username already in use"}), 400
 
-    hashed_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+    # ✅ Use explicit bcrypt cost
+    hashed_password = bcrypt.hashpw(
+        password.encode("utf-8"),
+        bcrypt.gensalt(rounds=BCRYPT_ROUNDS),
+    ).decode("utf-8")
 
     try:
         user = (
@@ -289,12 +418,27 @@ def register():
 
 @app.route("/auth/login", methods=["POST"])
 def login():
-    data = request.get_json()
+    data = request.get_json() or {}
+
+    # 1) Per-IP rate limit
+    ip = get_client_ip()
+    if is_rate_limited("login_ip", ip):
+        return jsonify({
+            "error": "Too many login attempts. Please wait a bit and try again."
+        }), 429
+
+    # 2) Normalize identifier (email or username)
     identifier = (data.get("email") or data.get("username") or "").strip().lower()
-    password = data.get("password")
+    password = (data.get("password") or "").strip()
 
     if not identifier or not password:
-        return jsonify({"error": "Username or email and password are required"}), 400
+        return jsonify({"error": "Invalid credentials"}), 400
+
+    # 3) Per-identifier rate limit (email/username)
+    if is_rate_limited("login_identifier", identifier):
+        return jsonify({
+            "error": "Too many login attempts. Please wait a bit and try again."
+        }), 429
 
     user_res = (
         supabase.table("users")
@@ -330,6 +474,16 @@ def login():
 @app.route("/auth/forgot-password", methods=["POST"])
 def forgot_password():
     data = request.get_json() or {}
+
+    # 1) Per-IP limit for forgot-password
+    ip = get_client_ip()
+    if is_rate_limited("forgot_ip", ip):
+        # Same generic response to avoid info leaks
+        return jsonify({
+            "message": "If a username or email exists, a reset password email will be sent."
+        }), 200
+
+    # 2) Normalize identifier
     identifier = (data.get("email") or data.get("username") or "").strip().lower()
 
     # Validate identifier and decide path
@@ -342,6 +496,12 @@ def forgot_password():
         lookup_field = "username"
     else:
         return jsonify({"error": "Invalid email or username format"}), 400
+
+    # 3) Per-identifier forgot-password limit
+    if is_rate_limited("forgot_identifier", identifier):
+        return jsonify({
+            "message": "If a username or email exists, a reset password email will be sent."
+        }), 200
 
     # Perform a single, parameterized lookup (no string building / .or_)
     try:
@@ -374,7 +534,8 @@ def forgot_password():
             "expires_at": expires_at
         }).execute()
     except Exception as e:
-        safe_print("🔴 Error inserting reset token:", e)
+        # Do NOT log token or full exception text (it might include the payload)
+        safe_print("🔴 Error inserting reset token (class):", type(e).__name__)
         return jsonify({"error": "Failed to save reset token"}), 500
 
     # Send reset email via Brevo
@@ -417,6 +578,11 @@ def reset_password():
     if not token or not new_password:
         return jsonify({"error": "Token and new password are required"}), 400
 
+    # ✅ Enforce password policy on reset as well
+    ok, msg = is_strong_password(new_password)
+    if not ok:
+        return jsonify({"error": msg}), 400
+
     # Lookup token
     token_res = (
         supabase.table("password_resets")
@@ -437,7 +603,11 @@ def reset_password():
     if datetime.utcnow() > datetime.fromisoformat(reset["expires_at"]):
         return jsonify({"error": "Token expired"}), 400
 
-    hashed_password = bcrypt.hashpw(new_password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+    # ✅ Use explicit bcrypt cost
+    hashed_password = bcrypt.hashpw(
+        new_password.encode("utf-8"),
+        bcrypt.gensalt(rounds=BCRYPT_ROUNDS),
+    ).decode("utf-8")
 
     # Update user password
     supabase.table("users").update({"password": hashed_password}).eq("id", reset["user_id"]).execute()
@@ -471,8 +641,8 @@ def test_email():
         return jsonify({"message": f"Test email sent to {recipient}"}), 200
     else:
         return jsonify({"error": "Failed to send email"}), 500
-    
-    
+
+
 def send_email_via_brevo(to_email, subject, body):
     """Send an email using Brevo's transactional email API."""
     url = "https://api.brevo.com/v3/smtp/email"
@@ -493,10 +663,12 @@ def send_email_via_brevo(to_email, subject, body):
 
     try:
         response = requests.post(url, json=data, headers=headers, timeout=20)
+        # Status code alone is safe
         safe_print(f"📬 Brevo response: {response.status_code}")
         return response.status_code in (200, 201)
     except Exception as e:
-        safe_print(f"🚨 Error sending email via Brevo: {e}")
+        # Do NOT log full exception; it may include request body with reset links
+        safe_print("🚨 Error sending email via Brevo (class):", type(e).__name__)
         return False
 
 
@@ -1090,4 +1262,6 @@ def set_match_games(match_id):
 # --------------------------------------------------------
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    # Use FLASK_DEBUG=1 in your local env if you want debug mode
+    debug_mode = os.getenv("FLASK_DEBUG", "0") == "1"
+    app.run(debug=debug_mode)
