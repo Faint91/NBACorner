@@ -95,24 +95,29 @@ def admin_env_check():
     Admin-only: returns a sanitized snapshot indicating which critical env vars exist.
     Does NOT return actual secret values.
     """
-    user_id = request.user.get("user_id")
-    if not user.get("is_admin"):
+    user_info = request.user or {}
+    user_id = user_info.get("user_id")
+    is_admin_token = user_info.get("is_admin", False)
+
+    # First line of defense: token says not admin
+    if not is_admin_token:
         return jsonify({"error": "Forbidden"}), 403
 
+    # Optionally verify admin in DB too (defense-in-depth)
     try:
         res = supabase.table("users").select("id, username, is_admin").eq("id", user_id).execute()
         users = res.data or []
-    except Exception:
+    except Exception as e:
+        safe_print("🔴 DB error in /admin/env-check:", e)
         return jsonify({"error": "Database error"}), 500
 
     if len(users) == 0:
         return jsonify({"error": "User not found"}), 404
 
     user = users[0]
-    val = user.get("is_admin")
-    is_admin = (val is True) or (str(val).lower() in ("true", "t", "1", "yes"))
+    is_admin_db = str(user.get("is_admin")).lower() in ("true", "t", "1", "yes")
 
-    if not is_admin:
+    if not is_admin_db:
         return jsonify({"error": "Forbidden"}), 403
 
     def mask_present(name):
@@ -135,6 +140,7 @@ def admin_env_check():
         "ok": True,
         "env": env_summary
     }), 200
+
 
 
 def redact(s: str) -> str:
