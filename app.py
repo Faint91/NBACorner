@@ -142,7 +142,6 @@ def admin_env_check():
     }), 200
 
 
-
 def redact(s: str) -> str:
     if not isinstance(s, str):
         return s
@@ -182,8 +181,12 @@ def admin_insert_test_teams():
     Admin helper to re-insert the 10 test teams for both conferences.
     (This is idempotent: uses upsert behavior.)
     """
-    user = request.user
-    if not user.get("is_admin"):
+    user_info = request.user or {}
+    user_id = user_info.get("user_id")
+    is_admin_token = user_info.get("is_admin", False)
+
+    # First line of defense: token says not admin
+    if not is_admin_token:
         return jsonify({"error": "Forbidden"}), 403
 
     # these match the SQL test teams inserted earlier; safe to re-run
