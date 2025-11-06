@@ -50,7 +50,7 @@ def generate_token(user_id, username, is_admin=False):
         "user_id": user_id,
         "username": username,
         "is_admin": is_admin,
-        "exp": datetime.utcnow() + timedelta(seconds=5)
+        "exp": datetime.utcnow() + timedelta(days=7)
     }
     token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
     return token
