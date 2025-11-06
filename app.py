@@ -7,6 +7,7 @@ from supabase import create_client
 from dotenv import load_dotenv
 import secrets, requests
 import jwt
+import re
 import os
 import bcrypt
 import uuid
@@ -335,7 +336,8 @@ def forgot_password():
         return jsonify({"error": "Email or username required"}), 400
 
     # Decide if it's an email or username
-    is_email = "@" in identifier and "." in identifier
+    EMAIL_REGEX = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
+    is_email = re.match(EMAIL_REGEX, identifier) is not None
 
     try:
         if is_email:
@@ -347,7 +349,6 @@ def forgot_password():
                 .data
             )
         else:
-            # Optional sanity check: restrict usernames to alphanumeric + underscores
             if not re.match(r"^[a-zA-Z0-9_]+$", identifier):
                 return jsonify({"error": "Invalid username format"}), 400
 
@@ -360,7 +361,7 @@ def forgot_password():
             )
     except Exception as e:
         safe_print("🔴 DB lookup failed:", e)
-        return jsonify({"error": "Database error"}), 500
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
 
     if not user_res:
         # Always send same response (avoid info leaks)
