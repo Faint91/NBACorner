@@ -328,81 +328,77 @@ def login():
 
 @app.route("/auth/forgot-password", methods=["POST"])
 def forgot_password():
-    safe_print("🟢 [DEBUG] /auth/forgot-password called")
-
     data = request.get_json()
-    safe_print(f"🟢 [DEBUG] Received data: {data}")
-
     identifier = (data.get("email") or data.get("username") or "").strip().lower()
+
     if not identifier:
-        safe_print("🔴 [DEBUG] Missing identifier")
         return jsonify({"error": "Email or username required"}), 400
 
-    # Find user by email OR username
+    # Decide if it's an email or username
+    is_email = "@" in identifier and "." in identifier
+
     try:
-        user_res = (
-            supabase.table("users")
-            .select("id, email, username")
-            .or_(f"email.eq.{identifier},username.eq.{identifier}")
-            .execute()
-            .data
-        )
-        safe_print(f"🟢 [DEBUG] User lookup result: {user_res}")
+        if is_email:
+            user_res = (
+                supabase.table("users")
+                .select("id, email, username")
+                .eq("email", identifier)
+                .execute()
+                .data
+            )
+        else:
+            # Optional sanity check: restrict usernames to alphanumeric + underscores
+            if not re.match(r"^[a-zA-Z0-9_]+$", identifier):
+                return jsonify({"error": "Invalid username format"}), 400
+
+            user_res = (
+                supabase.table("users")
+                .select("id, email, username")
+                .eq("username", identifier)
+                .execute()
+                .data
+            )
     except Exception as e:
-        safe_print(f"🔴 [DEBUG] Error querying Supabase: {e}")
+        safe_print("🔴 DB lookup failed:", e)
         return jsonify({"error": "Database error"}), 500
 
-    if user_res:
-        user = user_res[0]
-        safe_print(f"🟢 [DEBUG] Found user: {user}")
-        token = secrets.token_urlsafe(32)
-        expires_at = (datetime.utcnow() + timedelta(hours=24)).isoformat()
-        safe_print(f"🟢 [DEBUG] Generated token: {token[:8]}...")
+    if not user_res:
+        # Always send same response (avoid info leaks)
+        return jsonify({
+            "message": "If a username or email exists, a reset password email will be sent."
+        }), 200
 
-        try:
-            supabase.table("password_resets").insert({
-                "user_id": user["id"],
-                "token": token,
-                "expires_at": expires_at
-            }).execute()
-            safe_print("🟢 [DEBUG] Token inserted successfully")
-        except Exception as e:
-            safe_print(f"🔴 [DEBUG] Error inserting token: {e}")
-            return jsonify({"error": "Failed to save reset token"}), 500
+    user = user_res[0]
+    token = secrets.token_urlsafe(32)
+    expires_at = (datetime.utcnow() + timedelta(hours=24)).isoformat()
 
-        reset_link = f"https://nbacorner.onrender.com/reset-password?token={token}"
-        subject = "NBA Corner Password Reset"
-        body = f"""
-        <html>
-          <body style="font-family: Arial, sans-serif; line-height: 1.6;">
-            <p>Hello <strong>{user['username']}</strong>,</p>
-            <p>A reset password has been requested. Please click the button below to set a new password:</p>
-            <p>
-              <a href="{reset_link}"
-                 style="display:inline-block; background-color:#007bff; color:#ffffff; text-decoration:none;
-                        padding:10px 20px; border-radius:5px; font-weight:bold;"
-                 target="_blank">
-                 Reset Password
-              </a>
-            </p>
-            <p>If the button doesn't work, you can also copy and paste this link into your browser:</p>
-            <p><a href="{reset_link}" target="_blank">{reset_link}</a></p>
-            <p>This link will stay active for 24 hours or until the password has been successfully reset.</p>
-            <p>Thanks,<br>NBA Corner Team</p>
-          </body>
-        </html>
-        """
+    try:
+        supabase.table("password_resets").insert({
+            "user_id": user["id"],
+            "token": token,
+            "expires_at": expires_at
+        }).execute()
+    except Exception as e:
+        safe_print("🔴 Error inserting reset token:", e)
+        return jsonify({"error": "Failed to save reset token"}), 500
 
-        safe_print("🟢 [DEBUG] Sending Brevo email...")
-        success = send_email_via_brevo(user["email"], subject, body)
-        safe_print(f"🟢 [DEBUG] Email sent: {success}")
-    else:
-        safe_print("🟡 [DEBUG] No user found for identifier")
+    # Send reset email via Brevo
+    reset_link = f"https://nbacorner.onrender.com/reset-password?token={token}"
+    subject = "NBACorner Password Reset"
+    body = f"""
+        <p>Hello {user['username']},</p>
+        <p>A reset password has been requested. Please click below to set a new password:</p>
+        <p><a href="{reset_link}" style="background:#007bff;color:white;padding:10px 15px;text-decoration:none;border-radius:6px;">Reset Password</a></p>
+        <p>This link will stay active for 24 hours or until the password has been successfully reset.</p>
+        <p>Thanks,<br/>NBA Corner</p>
+    """
 
-    safe_print("✅ [DEBUG] Returning success message")
+    send_email_via_brevo(user["email"], subject, body)
+
     return jsonify({
         "message": "If a username or email exists, a reset password email will be sent."
     }), 200
+
 
 
 @app.route("/auth/reset-password", methods=["POST"])
