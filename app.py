@@ -329,42 +329,35 @@ def login():
 
 @app.route("/auth/forgot-password", methods=["POST"])
 def forgot_password():
-    data = request.get_json()
+    data = request.get_json() or {}
     identifier = (data.get("email") or data.get("username") or "").strip().lower()
 
-    if not identifier:
-        return jsonify({"error": "Email or username required"}), 400
-
-    # Decide if it's an email or username
+    # Validate identifier and decide path
     EMAIL_REGEX = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
-    is_email = re.match(EMAIL_REGEX, identifier) is not None
+    USERNAME_REGEX = r"^[a-zA-Z0-9_]{3,30}$"
 
+    if re.match(EMAIL_REGEX, identifier):
+        lookup_field = "email"
+    elif re.match(USERNAME_REGEX, identifier):
+        lookup_field = "username"
+    else:
+        return jsonify({"error": "Invalid email or username format"}), 400
+
+    # Perform a single, parameterized lookup (no string building / .or_)
     try:
-        if is_email:
-            user_res = (
-                supabase.table("users")
-                .select("id, email, username")
-                .eq("email", identifier)
-                .execute()
-                .data
-            )
-        else:
-            if not re.match(r"^[a-zA-Z0-9_]+$", identifier):
-                return jsonify({"error": "Invalid username format"}), 400
-
-            user_res = (
-                supabase.table("users")
-                .select("id, email, username")
-                .eq("username", identifier)
-                .execute()
-                .data
-            )
+        user_res = (
+            supabase.table("users")
+            .select("id, email, username")
+            .eq(lookup_field, identifier)
+            .execute()
+            .data
+        )
     except Exception as e:
         safe_print("🔴 DB lookup failed:", e)
-        return jsonify({"error": f"Database error: {str(e)}"}), 500
+        return jsonify({"error": "Database error"}), 500
 
+    # Always return neutral response if not found (no user enumeration)
     if not user_res:
-        # Always send same response (avoid info leaks)
         return jsonify({
             "message": "If a username or email exists, a reset password email will be sent."
         }), 200
@@ -373,6 +366,7 @@ def forgot_password():
     token = secrets.token_urlsafe(32)
     expires_at = (datetime.utcnow() + timedelta(hours=24)).isoformat()
 
+    # Store reset token
     try:
         supabase.table("password_resets").insert({
             "user_id": user["id"],
@@ -387,11 +381,24 @@ def forgot_password():
     reset_link = f"https://nbacorner.onrender.com/reset-password?token={token}"
     subject = "NBACorner Password Reset"
     body = f"""
-        <p>Hello {user['username']},</p>
-        <p>A reset password has been requested. Please click below to set a new password:</p>
-        <p><a href="{reset_link}" style="background:#007bff;color:white;padding:10px 15px;text-decoration:none;border-radius:6px;">Reset Password</a></p>
-        <p>This link will stay active for 24 hours or until the password has been successfully reset.</p>
-        <p>Thanks,<br/>NBA Corner</p>
+        <html>
+          <body style="font-family: Arial, sans-serif; line-height: 1.6;">
+            <p>Hello <strong>{user['username']}</strong>,</p>
+            <p>A reset password has been requested. Please click the button below to set a new password:</p>
+            <p>
+              <a href="{reset_link}"
+                 style="display:inline-block; background-color:#007bff; color:#ffffff; text-decoration:none;
+                        padding:10px 20px; border-radius:5px; font-weight:bold;"
+                 target="_blank">
+                 Reset Password
+              </a>
+            </p>
+            <p>If the button doesn't work, you can also copy and paste this link into your browser:</p>
+            <p><a href="{reset_link}" target="_blank">{reset_link}</a></p>
+            <p>This link will stay active for 24 hours or until the password has been successfully reset.</p>
+            <p>Thanks,<br>NBA Corner</p>
+          </body>
+        </html>
     """
 
     send_email_via_brevo(user["email"], subject, body)
@@ -399,7 +406,6 @@ def forgot_password():
     return jsonify({
         "message": "If a username or email exists, a reset password email will be sent."
     }), 200
-
 
 
 @app.route("/auth/reset-password", methods=["POST"])
