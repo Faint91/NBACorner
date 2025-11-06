@@ -50,7 +50,7 @@ def generate_token(user_id, username, is_admin=False):
         "user_id": user_id,
         "username": username,
         "is_admin": is_admin,
-        "exp": datetime.utcnow() + timedelta(days=7)
+        "exp": datetime.utcnow() + timedelta(seconds=5)
     }
     token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
     return token
@@ -81,6 +81,12 @@ def require_auth(f):
         request.user = payload
         return f(*args, **kwargs)
     return wrapper
+
+@app.route("/auth/test-me", methods=["GET"])
+@require_auth
+def test_me():
+    return jsonify({"user": request.user}), 200
+
 
 @app.route("/admin/env-check", methods=["GET"])
 @require_auth
