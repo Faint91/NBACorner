@@ -95,7 +95,7 @@ def admin_env_check():
     Admin-only: returns a sanitized snapshot indicating which critical env vars exist.
     Does NOT return actual secret values.
     """
-    user = request.user
+    user_id = request.user.get("user_id")
     if not user.get("is_admin"):
         return jsonify({"error": "Forbidden"}), 403
 
