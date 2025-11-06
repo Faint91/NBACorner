@@ -1,19 +1,28 @@
 # app.py
+from functools import wraps
 from datetime import datetime, timedelta
 from flask import Flask, request, jsonify, make_response
 from flask_cors import CORS
 from supabase import create_client
 from dotenv import load_dotenv
 import secrets, requests
+import jwt
 import os
 import bcrypt
 import uuid
+
+# --------------------------------------------------------
+# ----------------- Environment variable  ----------------
+# --------------------------------------------------------
+
 
 # load .env
 load_dotenv()
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+JWT_SECRET = os.getenv("JWT_SECRET", "dev_secret")
+JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 
 if not SUPABASE_URL or not SUPABASE_KEY:
     raise RuntimeError("SUPABASE_URL and SUPABASE_KEY must be set in .env")
@@ -32,18 +41,21 @@ SENSITIVE_TOKENS = [t for t in [
 ] if t]
 
 
+# --------------------------------------------------------
+# -------------------- Admin endpoints  ------------------
+# --------------------------------------------------------
+
+
 @app.route("/admin/env-check", methods=["GET"])
+@require_auth
 def admin_env_check():
     """
     Admin-only: returns a sanitized snapshot indicating which critical env vars exist.
     Does NOT return actual secret values.
     """
-    user_id = request.headers.get("x-user-id")
-    if not user_id:
-        # explicitly block query parameter misuse
-        if request.args.get("x-user-id"):
-            return jsonify({"error": "x-user-id must be sent as a header, not a query parameter"}), 400
-        return jsonify({"error": "Missing x-user-id header"}), 400
+    user = request.user
+    if not user.get("is_admin"):
+        return jsonify({"error": "Forbidden"}), 403
 
     try:
         res = supabase.table("users").select("id, username, is_admin").eq("id", user_id).execute()
@@ -83,7 +95,6 @@ def admin_env_check():
     }), 200
 
 
-
 def redact(s: str) -> str:
     if not isinstance(s, str):
         return s
@@ -93,11 +104,13 @@ def redact(s: str) -> str:
             redacted = redacted.replace(token, "[REDACTED]")
     return redacted
 
+
 def safe_print(*args, **kwargs):
     parts = []
     for a in args:
         parts.append(redact(str(a)))
     print(*parts, **kwargs)
+
 
 # --- Safe error handler (add this) ---
 @app.errorhandler(500)
@@ -106,11 +119,112 @@ def handle_500(e):
     safe_print("🔴 500 error:", e)
     return jsonify({"error": "Internal server error"}), 500
 
+
 # Optional: cover all uncaught exceptions similarly
 @app.errorhandler(Exception)
 def handle_any(e):
     safe_print("🔴 Unhandled exception:", e)
     return jsonify({"error": "Internal server error"}), 500
+
+
+@app.route("/admin/insert_test_teams", methods=["POST"])
+@require_auth
+def admin_insert_test_teams():
+    """
+    Admin helper to re-insert the 10 test teams for both conferences.
+    (This is idempotent: uses upsert behavior.)
+    """
+    user = request.user
+    if not user.get("is_admin"):
+        return jsonify({"error": "Forbidden"}), 403
+
+    # these match the SQL test teams inserted earlier; safe to re-run
+    east = [
+        {"id":"T1E","name":"TestEast1","conference":"east"},
+        {"id":"T2E","name":"TestEast2","conference":"east"},
+        {"id":"T3E","name":"TestEast3","conference":"east"},
+        {"id":"T4E","name":"TestEast4","conference":"east"},
+        {"id":"T5E","name":"TestEast5","conference":"east"},
+        {"id":"T6E","name":"TestEast6","conference":"east"},
+        {"id":"T7E","name":"TestEast7","conference":"east"},
+        {"id":"T8E","name":"TestEast8","conference":"east"},
+        {"id":"T9E","name":"TestEast9","conference":"east"},
+        {"id":"T10E","name":"TestEast10","conference":"east"}
+    ]
+    west = [
+        {"id":"T1W","name":"TestWest1","conference":"west"},
+        {"id":"T2W","name":"TestWest2","conference":"west"},
+        {"id":"T3W","name":"TestWest3","conference":"west"},
+        {"id":"T4W","name":"TestWest4","conference":"west"},
+        {"id":"T5W","name":"TestWest5","conference":"west"},
+        {"id":"T6W","name":"TestWest6","conference":"west"},
+        {"id":"T7W","name":"TestWest7","conference":"west"},
+        {"id":"T8W","name":"TestWest8","conference":"west"},
+        {"id":"T9W","name":"TestWest9","conference":"west"},
+        {"id":"T10W","name":"TestWest10","conference":"west"}
+    ]
+    # Upsert: supabase-py doesn't have upsert convenience; we'll try insert and ignore conflicts
+    for t in east + west:
+        supabase.table("teams").upsert(t).execute()
+
+    return jsonify({"message":"test teams inserted/updated"}), 200
+
+
+# small health endpoint
+@app.route("/", methods=["GET"])
+def home():
+    return jsonify({"message":"NBACorner backend running"}), 200
+
+
+@app.route("/health", methods=["GET", "HEAD"])
+def health():
+    resp = make_response("OK", 200)
+    resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
+    resp.headers["Pragma"] = "no-cache"
+    return resp
+    
+    
+def generate_token(user_id, username, is_admin=False):
+    payload = {
+        "user_id": user_id,
+        "username": username,
+        "is_admin": is_admin,
+        "exp": datetime.utcnow() + timedelta(days=7)
+    }
+    token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+    return token
+
+
+def decode_token(token):
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        return payload
+    except jwt.ExpiredSignatureError:
+        return None
+    except jwt.InvalidTokenError:
+        return None
+
+
+def require_auth(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        auth_header = request.headers.get("Authorization")
+        if not auth_header or not auth_header.startswith("Bearer "):
+            return jsonify({"error": "Missing or invalid Authorization header"}), 401
+
+        token = auth_header.split(" ")[1]
+        payload = decode_token(token)
+        if not payload:
+            return jsonify({"error": "Invalid or expired token"}), 401
+
+        request.user = payload
+        return f(*args, **kwargs)
+    return wrapper
+    
+    
+# --------------------------------------------------------
+# --------------- Authentication endpoints  --------------
+# --------------------------------------------------------
 
 
 @app.route("/auth/register", methods=["POST"])
@@ -158,6 +272,7 @@ def register():
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
+
 @app.route("/auth/login", methods=["POST"])
 def login():
     data = request.get_json()
@@ -174,7 +289,6 @@ def login():
         .execute()
         .data
     )
-
     if not user_res:
         return jsonify({"error": "Invalid username/email or password"}), 401
 
@@ -184,14 +298,20 @@ def login():
     if not bcrypt.checkpw(password.encode("utf-8"), stored_password.encode("utf-8")):
         return jsonify({"error": "Invalid username/email or password"}), 401
 
+    # ✅ Generate JWT
+    token = generate_token(user["id"], user["username"], user.get("is_admin", False))
+
     return jsonify({
         "message": "Login successful",
+        "token": token,
         "user": {
             "id": user["id"],
             "email": user["email"],
-            "username": user["username"]
+            "username": user["username"],
+            "is_admin": user.get("is_admin", False)
         }
     }), 200
+
 
 @app.route("/auth/forgot-password", methods=["POST"])
 def forgot_password():
@@ -272,7 +392,6 @@ def forgot_password():
     }), 200
 
 
-
 @app.route("/auth/reset-password", methods=["POST"])
 def reset_password():
     data = request.get_json()
@@ -311,6 +430,7 @@ def reset_password():
     supabase.table("password_resets").update({"used": True}).eq("id", reset["id"]).execute()
 
     return jsonify({"message": "Password reset successfully"}), 200
+
 
 @app.route("/test-email", methods=["POST"])
 def test_email():
@@ -363,13 +483,7 @@ def send_email_via_brevo(to_email, subject, body):
         safe_print(f"🚨 Error sending email via Brevo: {e}")
         return False
 
-# ------------------------------------------------------------------
-# ----------------- End registration/login unchanged ----------------
-# ------------------------------------------------------------------
 
-# -----------------------
-# Helpers for auth (dev)
-# -----------------------
 def get_current_user_id():
     """
     Development helper: read X-User-Id header to identify the user.
@@ -384,55 +498,15 @@ def get_current_user_id():
             uid = auth.split()[1]
     return uid
 
-# -----------------------
-# Bracket endpoints
-# -----------------------
 
-@app.route("/admin/insert_test_teams", methods=["POST"])
-def admin_insert_test_teams():
-    """
-    Admin helper to re-insert the 10 test teams for both conferences.
-    (This is idempotent: uses upsert behavior.)
-    """
-    # these match the SQL test teams inserted earlier; safe to re-run
-    east = [
-        {"id":"T1E","name":"TestEast1","conference":"east"},
-        {"id":"T2E","name":"TestEast2","conference":"east"},
-        {"id":"T3E","name":"TestEast3","conference":"east"},
-        {"id":"T4E","name":"TestEast4","conference":"east"},
-        {"id":"T5E","name":"TestEast5","conference":"east"},
-        {"id":"T6E","name":"TestEast6","conference":"east"},
-        {"id":"T7E","name":"TestEast7","conference":"east"},
-        {"id":"T8E","name":"TestEast8","conference":"east"},
-        {"id":"T9E","name":"TestEast9","conference":"east"},
-        {"id":"T10E","name":"TestEast10","conference":"east"}
-    ]
-    west = [
-        {"id":"T1W","name":"TestWest1","conference":"west"},
-        {"id":"T2W","name":"TestWest2","conference":"west"},
-        {"id":"T3W","name":"TestWest3","conference":"west"},
-        {"id":"T4W","name":"TestWest4","conference":"west"},
-        {"id":"T5W","name":"TestWest5","conference":"west"},
-        {"id":"T6W","name":"TestWest6","conference":"west"},
-        {"id":"T7W","name":"TestWest7","conference":"west"},
-        {"id":"T8W","name":"TestWest8","conference":"west"},
-        {"id":"T9W","name":"TestWest9","conference":"west"},
-        {"id":"T10W","name":"TestWest10","conference":"west"}
-    ]
-    # Upsert: supabase-py doesn't have upsert convenience; we'll try insert and ignore conflicts
-    for t in east + west:
-        supabase.table("teams").upsert(t).execute()
-
-    return jsonify({"message":"test teams inserted/updated"}), 200
-
-
-# ---------------- BRACKET CREATION ----------------
+# --------------------------------------------------------
+# ------------------ Bracket endpoints  ------------------
+# --------------------------------------------------------
 
 @app.route("/bracket/create", methods=["POST"])
+@require_auth
 def create_bracket_for_user():
-    user_id = request.headers.get("x-user-id")
-    if not user_id:
-        return jsonify({"error": "Missing x-user-id header"}), 400
+    user_id = request.user["user_id"]
 
     # ✅ Check if the user already has a bracket before inserting
     existing = supabase.table("brackets").select("id").eq("user_id", user_id).execute().data
@@ -555,10 +629,9 @@ def create_bracket_for_user():
 
 
 @app.route("/bracket/<bracket_id>/save", methods=["PATCH"])
+@require_auth
 def save_bracket(bracket_id):
-    user_id = request.headers.get("x-user-id")
-    if not user_id:
-        return jsonify({"error": "Missing x-user-id header"}), 400
+    user_id = request.user["user_id"]
 
     # ✅ Fetch the requesting user's admin status
     user_res = supabase.table("users").select("id, is_admin").eq("id", user_id).execute().data
@@ -595,6 +668,7 @@ def save_bracket(bracket_id):
 
 
 @app.route("/bracket/<bracket_id>", methods=["GET"])
+@require_auth
 def get_bracket_by_id(bracket_id):
     """
     Allows any user to view a specific bracket by ID (read-only).
@@ -602,7 +676,7 @@ def get_bracket_by_id(bracket_id):
       - Owner and admins can view their bracket even if it's not finished.
       - Other users can only view if is_done = True.
     """
-    viewer_id = request.headers.get("x-user-id")
+    user_id = request.user["user_id"]
 
     # ✅ Fetch viewer info (to check admin rights)
     viewer_data = (
@@ -679,7 +753,6 @@ def get_bracket_by_id(bracket_id):
     })
 
 
-
 @app.route("/brackets", methods=["GET"])
 def list_all_brackets():
     """
@@ -734,13 +807,10 @@ def list_all_brackets():
         return jsonify({"error": str(e)}), 500
 
 
-# ---------------- DELETE BRACKET ----------------
-
 @app.route("/bracket/<bracket_id>", methods=["DELETE"])
+@require_auth
 def delete_bracket(bracket_id):
-    user_id = request.headers.get("x-user-id")
-    if not user_id:
-        return jsonify({"error": "Missing x-user-id header"}), 400
+    user_id = request.user["user_id"]
 
     # ✅ Fetch user and admin status
     user_res = supabase.table("users").select("id, is_admin").eq("id", user_id).execute().data
@@ -764,13 +834,10 @@ def delete_bracket(bracket_id):
     return jsonify({"message": "Bracket deleted successfully"})
 
 
-# ---------------- UPDATE PREDICTION ----------------
-
 @app.route("/bracket/<bracket_id>/match/<match_id>", methods=["PATCH"])
+@require_auth
 def update_match(bracket_id, match_id):
-    user_id = request.headers.get("x-user-id")
-    if not user_id:
-        return jsonify({"error": "Missing x-user-id header"}), 400
+    user_id = request.user["user_id"]
 
     data = request.get_json() or {}
     action = data.get("action")
@@ -975,11 +1042,13 @@ def update_match(bracket_id, match_id):
         return jsonify({"error": "Invalid or unsupported action"}), 400
 
 
-
 # Lightweight endpoint: set only predicted_winner_games for a match (already covered by set_games above)
 # but keep for convenience
 @app.route("/bracket/match/<match_id>/games", methods=["PATCH"])
+@require_auth
 def set_match_games(match_id):
+    user_id = request.user["user_id"]
+
     body = request.get_json() or {}
     games = body.get("games")
     if games is None:
@@ -1000,19 +1069,9 @@ def set_match_games(match_id):
     return jsonify({"ok": True}), 200
 
 
-# small health endpoint
-@app.route("/", methods=["GET"])
-def home():
-    return jsonify({"message":"NBACorner backend running"}), 200
-
-
-@app.route("/health", methods=["GET", "HEAD"])
-def health():
-    resp = make_response("OK", 200)
-    resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
-    resp.headers["Pragma"] = "no-cache"
-    return resp
-
+# --------------------------------------------------------
+# --------------------- M  A  I  N  ----------------------
+# --------------------------------------------------------
 
 if __name__ == "__main__":
     app.run(debug=True)
