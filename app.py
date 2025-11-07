@@ -19,6 +19,11 @@ import uuid
 # ----------------- Environment variables  ---------------
 # --------------------------------------------------------
 
+class APIError(Exception):
+    def __init__(self, message: str, status_code: int = 400):
+        super().__init__(message)
+        self.message = message
+        self.status_code = status_code
 
 # load .env
 load_dotenv()
@@ -324,6 +329,13 @@ def handle_any(e):
     safe_print("🔴 Unhandled exception (class):", type(e).__name__)
     return jsonify({"error": "Internal server error"}), 500
 
+
+@app.errorhandler(APIError)
+def handle_api_error(err: APIError):
+    # This still avoids leaking stack traces / secrets,
+    # but it gives you a meaningful error message + status code.
+    safe_print(f"APIError: {err.message}")
+    return jsonify({"error": err.message}), err.status_code
 
 @app.route("/admin/insert_test_teams", methods=["POST"])
 @require_auth
