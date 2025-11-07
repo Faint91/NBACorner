@@ -16,7 +16,7 @@ import bcrypt
 import uuid
 
 # --------------------------------------------------------
-# ----------------- Environment variable  ----------------
+# ----------------- Environment variables  ---------------
 # --------------------------------------------------------
 
 
@@ -30,18 +30,45 @@ JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 
 DISABLE_RATE_LIMITS = os.getenv("DISABLE_RATE_LIMITS", "0") == "1"
 
+# ✅ Healthcheck secret (optional; if set, /health requires it)
+HEALTHCHECK_TOKEN = os.getenv("HEALTHCHECK_TOKEN")
+
 # ✅ Bcrypt work factor (cost). 12 is a good starting point.
 BCRYPT_ROUNDS = int(os.getenv("BCRYPT_ROUNDS", "12"))
 
 # ✅ Password policy
 PASSWORD_MIN_LENGTH = 10
+
+# ✅ Shared identifier validation regexes
+EMAIL_REGEX = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
+USERNAME_REGEX = r"^[a-zA-Z0-9_]{3,30}$"
+
 if not SUPABASE_URL or not SUPABASE_KEY:
     raise RuntimeError("SUPABASE_URL and SUPABASE_KEY must be set in .env")
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 app = Flask(__name__)
-CORS(app)
+
+# CORS configuration
+# -------------------
+# In production: only allow your real frontend origin
+# In development: allow localhost (or everything, if you prefer)
+FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN")  # e.g. "https://nbacorner.com"
+FLASK_ENV = os.getenv("FLASK_ENV", "development")
+
+if FLASK_ENV == "production":
+    if not FRONTEND_ORIGIN:
+        # Fail fast so you don't accidentally run prod with wide-open CORS
+        raise RuntimeError("FRONTEND_ORIGIN must be set in production")
+    CORS(app, origins=[FRONTEND_ORIGIN])
+else:
+    # Dev: allow localhost (tweak port as needed)
+    CORS(app, origins=[
+        "http://localhost:3000",
+        "http://localhost:5173",
+    ])
+
 BREVO_API_KEY = os.getenv("BREVO_API_KEY")
 
 SENSITIVE_TOKENS = [t for t in [
@@ -96,8 +123,9 @@ def is_rate_limited(bucket: str, key: str) -> bool:
     try:
         limit, window = RATE_LIMITS[bucket]
     except KeyError:
-        # If we typo a bucket name, fail closed but log it
-        print(f"[RL] Unknown bucket: {bucket}")
+        # If we typo a bucket name, log minimally (no key) and fail open
+        if ENABLE_DEBUG_LOGS:
+            safe_print(f"[RL] Unknown bucket: {bucket}")
         return False
 
     now = time.time()
@@ -109,19 +137,23 @@ def is_rate_limited(bucket: str, key: str) -> bool:
         events = [t for t in events if now - t < window]
         _rate_events[(bucket, key)] = events
 
-        print(f"[RL] bucket={bucket} key={key} count_before={len(events)} limit={limit}")
+        if ENABLE_DEBUG_LOGS:
+            # Do NOT log the key (could be email/username/IP)
+            safe_print(f"[RL] bucket={bucket} count_before={len(events)} limit={limit}")
 
         if len(events) >= limit:
-            print(f"[RL] 🚫 RATE LIMITED bucket={bucket} key={key}")
+            if ENABLE_DEBUG_LOGS:
+                safe_print(f"[RL] 🚫 RATE LIMITED bucket={bucket}")
             return True
 
         # Record this attempt
         events.append(now)
         _rate_events[(bucket, key)] = events
-        print(f"[RL] ✅ recorded bucket={bucket} key={key} new_count={len(events)}")
+
+        if ENABLE_DEBUG_LOGS:
+            safe_print(f"[RL] ✅ recorded bucket={bucket} new_count={len(events)}")
 
     return False
-
 
 
 def is_strong_password(pw):
@@ -154,6 +186,14 @@ def is_strong_password(pw):
     return True, ""
 
 
+def is_uuid(value) -> bool:
+    try:
+        uuid.UUID(str(value))
+        return True
+    except (ValueError, TypeError):
+        return False
+        
+        
 # --------------------------------------------------------
 # -------------------- Admin endpoints  ------------------
 # --------------------------------------------------------
@@ -221,7 +261,7 @@ def admin_env_check():
         res = supabase.table("users").select("id, username, is_admin").eq("id", user_id).execute()
         users = res.data or []
     except Exception as e:
-        safe_print("🔴 DB error in /admin/env-check:", e)
+        safe_print("🔴 DB error in /admin/env-check (class):", type(e).__name__)
         return jsonify({"error": "Database error"}), 500
 
     if len(users) == 0:
@@ -342,16 +382,58 @@ def home():
 
 @app.route("/health", methods=["GET", "HEAD"])
 def health():
+    # ✅ First: if a healthcheck token is configured, see if caller has it
+    supplied = None
+    if HEALTHCHECK_TOKEN:
+        supplied = (
+            request.headers.get("X-Health-Token")
+            or request.args.get("token")
+        )
+
+        if supplied == HEALTHCHECK_TOKEN:
+            # ✅ Blessed caller (e.g. UptimeRobot) → NO rate limit, always 200
+            resp = make_response("OK", 200)
+            resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
+            resp.headers["Pragma"] = "no-cache"
+            return resp
+
+        # Token is set in env but missing/wrong → treat as suspicious
+        # (we'll still rate-limit these to avoid abuse; see below)
+
+    # ✅ Everyone else (no token configured, or bad/missing token) → apply rate limit
+    ip = get_client_ip()
+    if is_rate_limited("health_ip", ip):
+        resp = make_response("Too Many Requests", 429)
+        resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
+        resp.headers["Pragma"] = "no-cache"
+        return resp
+
+    # If HEALTHCHECK_TOKEN is set but caller didn't provide correct one → hide endpoint
+    if HEALTHCHECK_TOKEN and supplied != HEALTHCHECK_TOKEN:
+        resp = make_response("Not Found", 404)
+        resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
+        resp.headers["Pragma"] = "no-cache"
+        return resp
+
+    # Public OK (no token configured)
     resp = make_response("OK", 200)
     resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
     resp.headers["Pragma"] = "no-cache"
     return resp
 
 
+
 # --------------------------------------------------------
 # --------------- Authentication endpoints  --------------
 # --------------------------------------------------------
-
+# NOTE ON CSRF:
+# --------------
+# We authenticate using JWTs sent in the Authorization: Bearer header.
+# Browsers don't attach this header automatically on cross-site requests,
+# so classic cookie-based CSRF does not apply here.
+#
+# If we ever switch to cookie-based auth (HttpOnly session cookies, etc.),
+# we MUST add CSRF protection (e.g. SameSite cookies + CSRF token header).
 
 @app.route("/auth/register", methods=["POST"])
 def register():
@@ -370,21 +452,37 @@ def register():
     if not email or not username or not password:
         return jsonify({"error": "Email, username, and password are required"}), 400
 
+    # 🔐 Validate email/username format
+    if not re.match(EMAIL_REGEX, email):
+        return jsonify({"error": "Invalid email format"}), 400
+
+    if not re.match(USERNAME_REGEX, username):
+        return jsonify({"error": "Invalid username format"}), 400
+
     # ✅ Enforce password policy
     ok, msg = is_strong_password(password)
     if not ok:
         return jsonify({"error": msg}), 400
 
-
-    # Check if email or username already exists
-    existing_user = (
+    # ✅ Check if email or username already exists (no .or_ with raw input)
+    existing_email = (
         supabase.table("users")
         .select("id")
-        .or_(f"email.eq.{email},username.eq.{username}")
+        .eq("email", email)
         .execute()
         .data
     )
-    if existing_user:
+    if existing_email:
+        return jsonify({"error": "Email or username already in use"}), 400
+
+    existing_username = (
+        supabase.table("users")
+        .select("id")
+        .eq("username", username)
+        .execute()
+        .data
+    )
+    if existing_username:
         return jsonify({"error": "Email or username already in use"}), 400
 
     # ✅ Use explicit bcrypt cost
@@ -413,7 +511,9 @@ def register():
             }
         }), 201
     except Exception as e:
-        return jsonify({"error": str(e)}), 400
+        if ENABLE_DEBUG_LOGS:
+            safe_print("🔴 Error in /auth/register (class):", type(e).__name__)
+        return jsonify({"error": "Unexpected error"}), 500
 
 
 @app.route("/auth/login", methods=["POST"])
@@ -440,10 +540,19 @@ def login():
             "error": "Too many login attempts. Please wait a bit and try again."
         }), 429
 
+    # 4) Decide whether this is an email or username; validate format
+    if re.match(EMAIL_REGEX, identifier):
+        lookup_field = "email"
+    elif re.match(USERNAME_REGEX, identifier):
+        lookup_field = "username"
+    else:
+        # Invalid format → treat as bad credentials (no extra info)
+        return jsonify({"error": "Invalid username/email or password"}), 401
+
     user_res = (
         supabase.table("users")
         .select("*")
-        .or_(f"email.eq.{identifier},username.eq.{identifier}")
+        .eq(lookup_field, identifier)
         .execute()
         .data
     )
@@ -486,16 +595,12 @@ def forgot_password():
     # 2) Normalize identifier
     identifier = (data.get("email") or data.get("username") or "").strip().lower()
 
-    # Validate identifier and decide path
-    EMAIL_REGEX = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
-    USERNAME_REGEX = r"^[a-zA-Z0-9_]{3,30}$"
-
     if re.match(EMAIL_REGEX, identifier):
         lookup_field = "email"
     elif re.match(USERNAME_REGEX, identifier):
         lookup_field = "username"
     else:
-        return jsonify({"error": "Invalid email or username format"}), 400
+        return jsonify({"message": "If a username or email exists, a reset password email will be sent."}), 200
 
     # 3) Per-identifier forgot-password limit
     if is_rate_limited("forgot_identifier", identifier):
@@ -513,7 +618,7 @@ def forgot_password():
             .data
         )
     except Exception as e:
-        safe_print("🔴 DB lookup failed:", e)
+        safe_print("🔴 DB lookup failed (class):", type(e).__name__)
         return jsonify({"error": "Database error"}), 500
 
     # Always return neutral response if not found (no user enumeration)
@@ -619,8 +724,40 @@ def reset_password():
 
 
 @app.route("/test-email", methods=["POST"])
+@require_auth
 def test_email():
-    """Test email sending via Brevo API."""
+    """Test email sending via Brevo API (admin-only)."""
+    # ✅ Admin check from JWT
+    user_info = request.user or {}
+    user_id = user_info.get("user_id")
+    is_admin_token = user_info.get("is_admin", False)
+
+    if not is_admin_token:
+        return jsonify({"error": "Forbidden"}), 403
+
+    # Optional: defense-in-depth – verify admin in DB too
+    try:
+        user_res = (
+            supabase.table("users")
+            .select("id, is_admin")
+            .eq("id", user_id)
+            .execute()
+            .data
+        )
+    except Exception as e:
+        safe_print("🔴 DB error in /test-email (class):", type(e).__name__)
+        return jsonify({"error": "Database error"}), 500
+
+    if not user_res or not user_res[0].get("is_admin", False):
+        return jsonify({"error": "Forbidden"}), 403
+
+    # ✅ Per-IP rate limit for this endpoint
+    ip = get_client_ip()
+    if is_rate_limited("test_email_ip", ip):
+        return jsonify({
+            "error": "Too many test email attempts from this IP. Please try again later."
+        }), 429
+
     data = request.get_json() or {}
     recipient = data.get("to")
 
@@ -663,12 +800,15 @@ def send_email_via_brevo(to_email, subject, body):
 
     try:
         response = requests.post(url, json=data, headers=headers, timeout=20)
+        if ENABLE_DEBUG_LOGS:
+            safe_print(f"📬 Brevo response: {response.status_code}")
         # Status code alone is safe
         safe_print(f"📬 Brevo response: {response.status_code}")
         return response.status_code in (200, 201)
     except Exception as e:
         # Do NOT log full exception; it may include request body with reset links
-        safe_print("🚨 Error sending email via Brevo (class):", type(e).__name__)
+        if ENABLE_DEBUG_LOGS:
+            safe_print("🚨 Error sending email via Brevo (class):", type(e).__name__)
         return False
 
 
@@ -697,7 +837,14 @@ def create_bracket_for_user():
     user_id = request.user["user_id"]
 
     # ✅ Check if the user already has a bracket before inserting
-    existing = supabase.table("brackets").select("id").eq("user_id", user_id).execute().data
+    existing = (
+        supabase.table("brackets")
+        .select("id")
+        .eq("user_id", user_id)
+        .is_("deleted_at", None)
+        .execute()
+        .data
+    )
     if existing:
         return jsonify({"error": "User already has a bracket"}), 400
 
@@ -819,6 +966,8 @@ def create_bracket_for_user():
 @app.route("/bracket/<bracket_id>/save", methods=["PATCH"])
 @require_auth
 def save_bracket(bracket_id):
+    if not is_uuid(bracket_id):
+        return jsonify({"error": "Invalid bracket id"}), 400
     user_id = request.user["user_id"]
 
     # ✅ Fetch the requesting user's admin status
@@ -828,7 +977,14 @@ def save_bracket(bracket_id):
     is_admin = user_res[0].get("is_admin", False)
 
     # ✅ Retrieve target bracket by ID
-    bracket_data = supabase.table("brackets").select("id, user_id, is_done").eq("id", bracket_id).execute().data
+    bracket_data = (
+        supabase.table("brackets")
+        .select("id, user_id, is_done, deleted_at")
+        .eq("id", bracket_id)
+        .is_("deleted_at", None)
+        .execute()
+        .data
+    )
     if not bracket_data:
         return jsonify({"error": "Bracket not found"}), 404
     bracket = bracket_data[0]
@@ -864,6 +1020,8 @@ def get_bracket_by_id(bracket_id):
       - Owner and admins can view their bracket even if it's not finished.
       - Other users can only view if is_done = True.
     """
+    if not is_uuid(bracket_id):
+        return jsonify({"error": "Invalid bracket id"}), 400
     user_id = request.user["user_id"]
 
     # ✅ Fetch viewer info (to check admin rights)
@@ -879,8 +1037,9 @@ def get_bracket_by_id(bracket_id):
     # ✅ Fetch the bracket (no is_done filter yet)
     bracket_data = (
         supabase.table("brackets")
-        .select("*")
+        .select("id, user_id, is_done, deleted_at")
         .eq("id", bracket_id)
+        .is_("deleted_at", None)
         .execute()
         .data
     )
@@ -952,8 +1111,9 @@ def list_all_brackets():
         # ✅ Fetch only saved brackets (is_done = True)
         brackets_res = (
             supabase.table("brackets")
-            .select("id, user_id, saved_at, created_at")
+            .select("id, user_id, saved_at, created_at, deleted_at")
             .eq("is_done", True)
+            .is_("deleted_at", None)
             .order("saved_at", desc=True)
             .execute()
         )
@@ -992,12 +1152,16 @@ def list_all_brackets():
         return jsonify(output), 200
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        if ENABLE_DEBUG_LOGS:
+            safe_print("🔴 Error in /auth/register (class):", type(e).__name__)
+        return jsonify({"error": "Unexpected error"}), 500
 
 
 @app.route("/bracket/<bracket_id>", methods=["DELETE"])
 @require_auth
 def delete_bracket(bracket_id):
+    if not is_uuid(bracket_id):
+        return jsonify({"error": "Invalid bracket id"}), 400
     user_id = request.user["user_id"]
 
     # ✅ Fetch user and admin status
@@ -1006,25 +1170,43 @@ def delete_bracket(bracket_id):
         return jsonify({"error": "User not found"}), 404
     is_admin = user_res[0].get("is_admin", False)
 
-    # ✅ Fetch target bracket
-    bracket_res = supabase.table("brackets").select("id, user_id").eq("id", bracket_id).execute().data
+    # ✅ Fetch target bracket (only non-deleted)
+    bracket_res = (
+        supabase.table("brackets")
+        .select("id, user_id, deleted_at")
+        .eq("id", bracket_id)
+        .is_("deleted_at", None)
+        .execute()
+        .data
+    )
     if not bracket_res:
+        # Either never existed, or already soft-deleted
         return jsonify({"error": "Bracket not found"}), 404
+
     bracket = bracket_res[0]
 
     # ✅ Check permissions
     if bracket["user_id"] != user_id and not is_admin:
         return jsonify({"error": "Unauthorized: Only the owner or an admin can delete this bracket"}), 403
 
-    # ✅ Perform deletion (cascade deletes matches)
-    supabase.table("brackets").delete().eq("id", bracket_id).execute()
+    # ✅ Soft delete: mark deleted_at + who deleted
+    supabase.table("brackets").update({
+        "deleted_at": datetime.utcnow().isoformat(),
+        "deleted_by_user_id": user_id,
+        # optional: also mark as not done
+        "is_done": False,
+        "saved_at": None,
+    }).eq("id", bracket_id).execute()
 
     return jsonify({"message": "Bracket deleted successfully"})
+
 
 
 @app.route("/bracket/<bracket_id>/match/<match_id>", methods=["PATCH"])
 @require_auth
 def update_match(bracket_id, match_id):
+    if not is_uuid(bracket_id) or not is_uuid(match_id):
+        return jsonify({"error": "Invalid id"}), 400
     user_id = request.user["user_id"]
 
     data = request.get_json() or {}
@@ -1049,7 +1231,15 @@ def update_match(bracket_id, match_id):
         return jsonify({"error": "User not found"}), 404
     is_admin = user_res[0].get("is_admin", False)
 
-    bracket_check = supabase.table("brackets").select("user_id").eq("id", bracket_id).execute().data
+    bracket_check = (
+        supabase.table("brackets")
+        .select("user_id")
+        .eq("id", bracket_id)
+        .is_("deleted_at", None)
+        .execute()
+        .data
+    )
+    
     if not bracket_check:
         return jsonify({"error": "Bracket not found"}), 404
     bracket_owner_id = bracket_check[0]["user_id"]
@@ -1235,6 +1425,8 @@ def update_match(bracket_id, match_id):
 @app.route("/bracket/match/<match_id>/games", methods=["PATCH"])
 @require_auth
 def set_match_games(match_id):
+    if not is_uuid(match_id):
+        return jsonify({"error": "Invalid match id"}), 400
     user_id = request.user["user_id"]
 
     body = request.get_json() or {}
@@ -1249,7 +1441,14 @@ def set_match_games(match_id):
     if not m_resp.data:
         return jsonify({"error":"match not found"}), 404
     match = m_resp.data[0]
-    br = supabase.table("brackets").select("*").eq("id", match["bracket_id"]).execute().data
+    br = (
+        supabase.table("brackets")
+        .select("*")
+        .eq("id", match["bracket_id"])
+        .is_("deleted_at", None)
+        .execute()
+        .data
+    )
     if not br or br[0]["user_id"] != user_id:
         return jsonify({"error":"forbidden"}), 403
 
