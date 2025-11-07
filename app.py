@@ -337,6 +337,7 @@ def handle_api_error(err: APIError):
     safe_print(f"APIError: {err.message}")
     return jsonify({"error": err.message}), err.status_code
 
+
 @app.route("/admin/insert_test_teams", methods=["POST"])
 @require_auth
 def admin_insert_test_teams():
