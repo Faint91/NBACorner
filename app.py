@@ -325,9 +325,19 @@ def handle_500(e):
 
 @app.errorhandler(Exception)
 def handle_any(e):
-    # Catch-all: again, do NOT log e itself to avoid leaking tokens or headers
+    # If this is our custom APIError (even if coming from another module),
+    # use its message and status_code instead of hiding it.
+    if e.__class__.__name__ == "APIError":
+        message = getattr(e, "message", str(e))
+        status_code = getattr(e, "status_code", 400)
+
+        safe_print(f"APIError (handled in generic handler): {message}")
+        return jsonify({"error": message}), status_code
+
+    # Fallback for all other unexpected exceptions
     safe_print("🔴 Unhandled exception (class):", type(e).__name__)
     return jsonify({"error": "Internal server error"}), 500
+
 
 
 @app.errorhandler(APIError)
