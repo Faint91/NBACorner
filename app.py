@@ -57,13 +57,11 @@ app = Flask(__name__)
 FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN")  # e.g. "https://nbacorner.com"
 FLASK_ENV = os.getenv("FLASK_ENV", "development")
 
-if FLASK_ENV == "production":
-    if not FRONTEND_ORIGIN:
-        # Fail fast so you don't accidentally run prod with wide-open CORS
-        raise RuntimeError("FRONTEND_ORIGIN must be set in production")
+if FLASK_ENV == "production" and FRONTEND_ORIGIN:
+    # Strict prod: only your real frontend
     CORS(app, origins=[FRONTEND_ORIGIN])
 else:
-    # Dev: allow localhost (tweak port as needed)
+    # Dev / fallback: allow localhost dev frontends
     CORS(app, origins=[
         "http://localhost:3000",
         "http://localhost:5173",
