@@ -6,7 +6,6 @@ from flask_cors import CORS
 from supabase import create_client
 from dotenv import load_dotenv
 from collections import defaultdict
-from .auth import require_auth
 import time
 import threading
 import secrets, requests
