@@ -6,6 +6,7 @@ from flask_cors import CORS
 from supabase import create_client
 from dotenv import load_dotenv
 from collections import defaultdict
+from .auth import require_auth
 import time
 import threading
 import secrets, requests
@@ -1124,6 +1125,7 @@ def get_bracket_by_id(bracket_id):
 
 
 @app.route("/brackets", methods=["GET"])
+@require_auth
 def list_all_brackets():
     """
     Returns a list of all brackets that are marked as is_done = True,
@@ -1131,16 +1133,41 @@ def list_all_brackets():
     Only basic info: bracket_id, saved_at, and user info.
     """
     try:
-        # ✅ Fetch only saved brackets (is_done = True)
-        brackets_res = (
+        viewer_id = request.user["user_id"]
+
+        # ✅ 1) Fetch *viewer’s* bracket (if any), regardless of is_done
+        my_brackets_res = (
             supabase.table("brackets")
             .select("id, user_id, saved_at, created_at, deleted_at")
+            .eq("user_id", viewer_id)
+            .is_("deleted_at", None)
+            .order("created_at", desc=True)
+            .limit(1)
+            .execute()
+        )
+        my_brackets = my_brackets_res.data or []
+
+        # ✅ 2) Fetch *other users’* brackets, only those that are saved (is_done = True)
+        other_brackets_res = (
+            supabase.table("brackets")
+            .select("id, user_id, saved_at, created_at, deleted_at")
+            .neq("user_id", viewer_id)
             .eq("is_done", True)
             .is_("deleted_at", None)
             .order("saved_at", desc=True)
             .execute()
         )
-        brackets = brackets_res.data
+        other_brackets = other_brackets_res.data or []
+
+        # Merge, avoiding duplicates just in case
+        brackets = []
+        seen_ids = set()
+        for b in my_brackets + other_brackets:
+            bid = b["id"]
+            if bid in seen_ids:
+                continue
+            seen_ids.add(bid)
+            brackets.append(b)
 
         if not brackets:
             return jsonify([]), 200

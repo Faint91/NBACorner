@@ -159,14 +159,42 @@ def set_winner_for_match(token: str, bracket_id: str, match: Dict[str, Any]) -> 
 def fill_entire_bracket(token: str, bracket_id: str) -> None:
     """
     Repeatedly:
-      - Fetch the bracket
-      - Find all matches where team_a and team_b are set, but predicted_winner is null
-      - For each such match, set team_a as the winner
-
-    Stop when there are no more such matches.
+      - First, resolve all play-in (round 0) matches with both teams set.
+      - Then, resolve all other rounds (round >= 1) with both teams set.
     """
     print(f"[STEP] Filling entire bracket {bracket_id}")
-    # To avoid infinite loops if something goes wrong, we cap iterations
+
+    # ---------- Phase 1: Play-in (round 0) only ----------
+    playin_iter = 0
+    while True:
+        playin_iter += 1
+
+        bracket_view = get_bracket(token, bracket_id)
+        matches_grouped = bracket_view["matches"]
+        flat = flatten_matches(matches_grouped)
+
+        # Only round 0 (play-in) matches with both teams and no winner
+        pending_playin = [
+            m for m in flat
+            if m.get("round") == 0
+            and m.get("team_a") is not None
+            and m.get("team_b") is not None
+            and m.get("predicted_winner") is None
+        ]
+
+        if not pending_playin:
+            if playin_iter == 1:
+                print("[INFO] No play-in matches to decide")
+            else:
+                print(f"[OK] Play-in rounds complete after {playin_iter - 1} iteration(s)")
+            break
+
+        print(f"[INFO] Play-in iteration {playin_iter}: deciding {len(pending_playin)} matches")
+
+        for match in pending_playin:
+            set_winner_for_match(token, bracket_id, match)
+
+    # ---------- Phase 2: All other rounds (round >= 1) ----------
     max_iterations = 50
     iterations = 0
 
@@ -178,21 +206,21 @@ def fill_entire_bracket(token: str, bracket_id: str) -> None:
         matches_grouped = bracket_view["matches"]
         flat = flatten_matches(matches_grouped)
 
-        # Matches ready to be decided: both teams present, but no predicted_winner yet
+        # Matches ready to be decided: non-play-in, both teams present, no winner yet
         pending = [
             m for m in flat
-            if m.get("team_a") is not None
+            if m.get("round", 0) >= 1
+            and m.get("team_a") is not None
             and m.get("team_b") is not None
             and m.get("predicted_winner") is None
         ]
 
         if not pending:
-            # No more matches can be filled -> bracket is fully decided
             print(f"[OK] No more pending matches; bracket {bracket_id} fully decided")
             break
+
         print(f"[INFO] Iteration {iterations}: deciding {len(pending)} matches")
 
-        # Fill all currently decidable matches in this iteration
         for match in pending:
             set_winner_for_match(token, bracket_id, match)
 
