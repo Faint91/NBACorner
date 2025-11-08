@@ -1123,7 +1123,6 @@ def get_bracket_by_id(bracket_id):
     })
 
 
-
 @app.route("/brackets", methods=["GET"])
 def list_all_brackets():
     """
@@ -1186,10 +1185,17 @@ def list_all_brackets():
 def delete_bracket(bracket_id):
     if not is_uuid(bracket_id):
         return jsonify({"error": "Invalid bracket id"}), 400
+
     user_id = request.user["user_id"]
 
     # ✅ Fetch user and admin status
-    user_res = supabase.table("users").select("id, is_admin").eq("id", user_id).execute().data
+    user_res = (
+        supabase.table("users")
+        .select("id, is_admin")
+        .eq("id", user_id)
+        .execute()
+        .data
+    )
     if not user_res:
         return jsonify({"error": "User not found"}), 404
     is_admin = user_res[0].get("is_admin", False)
@@ -1209,18 +1215,19 @@ def delete_bracket(bracket_id):
 
     bracket = bracket_res[0]
 
-    # ✅ Check permissions
+    # ✅ Check permissions (owner or admin)
     if bracket["user_id"] != user_id and not is_admin:
         return jsonify({"error": "Unauthorized: Only the owner or an admin can delete this bracket"}), 403
 
     # ✅ Soft delete: mark deleted_at + who deleted
-    supabase.table("brackets").update({
+    update_fields = {
         "deleted_at": datetime.utcnow().isoformat(),
         "deleted_by_user_id": user_id,
-        # optional: also mark as not done
-        "is_done": False,
-        "saved_at": None,
-    }).eq("id", bracket_id).execute()
+        # optional: decide if you want to flip this:
+        # "is_done": False,
+    }
+
+    supabase.table("brackets").update(update_fields).eq("id", bracket_id).execute()
 
     return jsonify({"message": "Bracket deleted successfully"})
 

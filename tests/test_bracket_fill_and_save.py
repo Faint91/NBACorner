@@ -21,6 +21,11 @@ def _patch(path: str, json: Dict[str, Any], headers: Dict[str, str] = None) -> r
     return requests.patch(url, json=json, headers=headers or {}, timeout=15)
 
 
+def _delete(path: str, headers: Dict[str, str] = None) -> requests.Response:
+    url = f"{BASE_URL}{path}"
+    return requests.delete(url, headers=headers or {}, timeout=15)
+
+
 def register_and_login() -> Dict[str, Any]:
     """
     Registers a fresh test user, then logs in and returns { token, user }.
@@ -28,6 +33,8 @@ def register_and_login() -> Dict[str, Any]:
     email = f"test_{uuid.uuid4().hex[:8]}@example.com"
     username = f"testuser_{uuid.uuid4().hex[:8]}"
     password = "Password001!!"
+    
+    print(f"[STEP] Registering user {email} / {username}")
 
     # 1) Register
     reg_resp = _post(
@@ -38,6 +45,8 @@ def register_and_login() -> Dict[str, Any]:
     reg_data = reg_resp.json()
     assert reg_data["user"]["email"] == email
     assert reg_data["user"]["username"] == username
+    
+    print(f"[OK] User registered: {reg_data['user']['id']}")
 
     # 2) Login (using email)
     login_resp = _post(
@@ -49,6 +58,8 @@ def register_and_login() -> Dict[str, Any]:
     login_data = login_resp.json()
     token = login_data["token"]
     user = login_data["user"]
+    
+    print(f"[OK] User logged in, token issued")
 
     return {"token": token, "user": user}
 
@@ -58,11 +69,24 @@ def create_bracket(token: str) -> str:
     Creates a new bracket for the logged-in user and returns bracket_id.
     """
     headers = {"Authorization": f"Bearer {token}"}
+    print("[STEP] Creating bracket")
     resp = _post("/bracket/create", json={}, headers=headers)
     assert resp.status_code in (200, 201), f"Create bracket failed: {resp.status_code} {resp.text}"
     data = resp.json()
     bracket_id = data["bracket"]["id"]
+    print(f"[OK] Bracket created: {bracket_id}")
     return bracket_id
+    
+
+def delete_bracket(token: str, bracket_id: str) -> None:
+    """
+    Calls DELETE /bracket/<bracket_id>.
+    """
+    headers = {"Authorization": f"Bearer {token}"}
+    print(f"[STEP] Deleting bracket {bracket_id}")
+    resp = _delete(f"/bracket/{bracket_id}", headers=headers)
+    assert resp.status_code in (200, 204), f"Delete bracket failed: {resp.status_code} {resp.text}"
+    print(f"[OK] Bracket {bracket_id} deleted")
 
 
 def get_bracket(token: str, bracket_id: str) -> Dict[str, Any]:
@@ -73,6 +97,17 @@ def get_bracket(token: str, bracket_id: str) -> Dict[str, Any]:
     resp = _get(f"/bracket/{bracket_id}", headers=headers)
     assert resp.status_code == 200, f"Get bracket failed: {resp.status_code} {resp.text}"
     return resp.json()
+
+
+def list_brackets() -> List[Dict[str, Any]]:
+    """
+    Calls GET /brackets and returns the list of saved brackets.
+    """
+    resp = _get("/brackets")
+    assert resp.status_code == 200, f"List brackets failed: {resp.status_code} {resp.text}"
+    data = resp.json()
+    assert isinstance(data, list), f"/brackets did not return a list: {data}"
+    return data
 
 
 def flatten_matches(matches_grouped: Dict[str, Dict[str, List[Dict[str, Any]]]]) -> List[Dict[str, Any]]:
@@ -130,6 +165,7 @@ def fill_entire_bracket(token: str, bracket_id: str) -> None:
 
     Stop when there are no more such matches.
     """
+    print(f"[STEP] Filling entire bracket {bracket_id}")
     # To avoid infinite loops if something goes wrong, we cap iterations
     max_iterations = 50
     iterations = 0
@@ -152,7 +188,9 @@ def fill_entire_bracket(token: str, bracket_id: str) -> None:
 
         if not pending:
             # No more matches can be filled -> bracket is fully decided
+            print(f"[OK] No more pending matches; bracket {bracket_id} fully decided")
             break
+        print(f"[INFO] Iteration {iterations}: deciding {len(pending)} matches")
 
         # Fill all currently decidable matches in this iteration
         for match in pending:
@@ -164,11 +202,13 @@ def save_bracket(token: str, bracket_id: str) -> Dict[str, Any]:
     Calls PATCH /bracket/<bracket_id>/save and returns its JSON.
     """
     headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+    print(f"[STEP] Saving bracket {bracket_id}")
     resp = _patch(f"/bracket/{bracket_id}/save", json={}, headers=headers)
     assert resp.status_code in (200, 201), f"Save bracket failed: {resp.status_code} {resp.text}"
     data = resp.json()
     assert data.get("bracket_id") == bracket_id
     assert data.get("saved_at") is not None
+    print(f"[OK] Bracket {bracket_id} saved at {data['saved_at']}")
     return data
 
 
@@ -218,6 +258,29 @@ def test_fill_and_save_full_bracket_flow():
         m for m in flat_matches
         if m.get("conference") == "nba" and m.get("round") == 4
     ]
+    
     # Depending on structure you expect 1 finals match
     assert len(finals) == 1, f"Expected 1 NBA finals match, got {len(finals)}"
     assert finals[0].get("predicted_winner") is not None, "NBA finals match does not have a predicted winner"
+    
+    # 6) Confirm the saved bracket appears in the global /brackets list
+    all_brackets = list_brackets()
+    matching = [b for b in all_brackets if b.get("bracket_id") == bracket_id]
+    assert matching, f"Saved bracket {bracket_id} not found in /brackets list"
+
+    # 7) Delete the bracket
+    delete_bracket(token, bracket_id)
+
+    # 8) After delete, GET /bracket/<id> should return 404
+    headers = {"Authorization": f"Bearer {token}"}
+    resp_after_delete = _get(f"/bracket/{bracket_id}", headers=headers)
+    assert resp_after_delete.status_code == 404, (
+        f"Expected 404 when getting deleted bracket, got "
+        f"{resp_after_delete.status_code} {resp_after_delete.text}"
+    )
+
+    # 9) And the bracket should no longer be in /brackets list
+    all_brackets_after = list_brackets()
+    matching_after = [b for b in all_brackets_after if b.get("bracket_id") == bracket_id]
+    assert not matching_after, f"Deleted bracket {bracket_id} still present in /brackets list"
+
