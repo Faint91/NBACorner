@@ -1043,7 +1043,9 @@ def get_bracket_by_id(bracket_id):
     """
     if not is_uuid(bracket_id):
         return jsonify({"error": "Invalid bracket id"}), 400
-    user_id = request.user["user_id"]
+
+    # viewer_id is the authenticated user's id from the JWT
+    viewer_id = request.user["user_id"]
 
     # ✅ Fetch viewer info (to check admin rights)
     viewer_data = (
@@ -1119,6 +1121,7 @@ def get_bracket_by_id(bracket_id):
         },
         "matches": grouped
     })
+
 
 
 @app.route("/brackets", methods=["GET"])
