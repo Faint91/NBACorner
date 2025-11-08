@@ -1124,49 +1124,22 @@ def get_bracket_by_id(bracket_id):
 
 
 @app.route("/brackets", methods=["GET"])
-@require_auth
 def list_all_brackets():
     """
-    Returns a list of all brackets that are marked as is_done = True,
+    Returns a list of all non-deleted brackets,
     along with the user who created each one.
-    Only basic info: bracket_id, saved_at, and user info.
+    Only basic info: bracket_id, saved_at, created_at, is_done, and user info.
     """
     try:
-        viewer_id = request.user["user_id"]
-
-        # ✅ 1) Fetch *viewer’s* bracket (if any), regardless of is_done
-        my_brackets_res = (
+        # ✅ Fetch all non-deleted brackets (saved or not)
+        brackets_res = (
             supabase.table("brackets")
-            .select("id, user_id, saved_at, created_at, deleted_at")
-            .eq("user_id", viewer_id)
-            .is_("deleted_at", None)
-            .order("created_at", desc=True)
-            .limit(1)
-            .execute()
-        )
-        my_brackets = my_brackets_res.data or []
-
-        # ✅ 2) Fetch *other users’* brackets, only those that are saved (is_done = True)
-        other_brackets_res = (
-            supabase.table("brackets")
-            .select("id, user_id, saved_at, created_at, deleted_at")
-            .neq("user_id", viewer_id)
-            .eq("is_done", True)
+            .select("id, user_id, saved_at, created_at, deleted_at, is_done")
             .is_("deleted_at", None)
             .order("saved_at", desc=True)
             .execute()
         )
-        other_brackets = other_brackets_res.data or []
-
-        # Merge, avoiding duplicates just in case
-        brackets = []
-        seen_ids = set()
-        for b in my_brackets + other_brackets:
-            bid = b["id"]
-            if bid in seen_ids:
-                continue
-            seen_ids.add(bid)
-            brackets.append(b)
+        brackets = brackets_res.data
 
         if not brackets:
             return jsonify([]), 200
@@ -1191,6 +1164,7 @@ def list_all_brackets():
                 "bracket_id": b["id"],
                 "saved_at": b.get("saved_at"),
                 "created_at": b.get("created_at"),
+                "is_done": b.get("is_done", False),
                 "user": {
                     "id": b["user_id"],
                     "username": user_info.get("username"),
@@ -1204,6 +1178,7 @@ def list_all_brackets():
         if ENABLE_DEBUG_LOGS:
             safe_print("🔴 Error in /auth/register (class):", type(e).__name__)
         return jsonify({"error": "Unexpected error"}), 500
+
 
 
 @app.route("/bracket/<bracket_id>", methods=["DELETE"])
