@@ -197,6 +197,21 @@ def is_uuid(value) -> bool:
         return False
         
         
+def get_current_user_id():
+    """
+    Development helper: read X-User-Id header to identify the user.
+    When testing with Postman: after /login grab the returned user.id
+    and set header X-User-Id: <user-id> in subsequent calls.
+    """
+    uid = request.headers.get("X-User-Id")
+    if not uid:
+        # also support Authorization: Bearer <user-id> for convenience
+        auth = request.headers.get("Authorization")
+        if auth and auth.lower().startswith("bearer "):
+            uid = auth.split()[1]
+    return uid
+
+
 # --------------------------------------------------------
 # -------------------- Admin endpoints  ------------------
 # --------------------------------------------------------
@@ -833,21 +848,6 @@ def send_email_via_brevo(to_email, subject, body):
         return False
 
 
-def get_current_user_id():
-    """
-    Development helper: read X-User-Id header to identify the user.
-    When testing with Postman: after /login grab the returned user.id
-    and set header X-User-Id: <user-id> in subsequent calls.
-    """
-    uid = request.headers.get("X-User-Id")
-    if not uid:
-        # also support Authorization: Bearer <user-id> for convenience
-        auth = request.headers.get("Authorization")
-        if auth and auth.lower().startswith("bearer "):
-            uid = auth.split()[1]
-    return uid
-
-
 # --------------------------------------------------------
 # ------------------ Bracket endpoints  ------------------
 # --------------------------------------------------------
@@ -1060,7 +1060,7 @@ def get_bracket_by_id(bracket_id):
     # ✅ Fetch the bracket (no is_done filter yet)
     bracket_data = (
         supabase.table("brackets")
-        .select("id, user_id, is_done, deleted_at")
+        .select("id, user_id, is_done, deleted_at, saved_at")
         .eq("id", bracket_id)
         .is_("deleted_at", None)
         .execute()
