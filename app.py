@@ -1078,6 +1078,67 @@ def save_bracket(bracket_id):
         return jsonify({"error": "Unexpected error"}), 500
 
 
+@app.route("/brackets/me", methods=["GET"])
+@require_auth
+def get_my_bracket():
+    """
+    Return the current user's active bracket (even if not saved),
+    as long as it is not soft-deleted (deleted_at IS NULL).
+    """
+    user_id = request.user["user_id"]
+
+    try:
+        # Find most recent non-deleted bracket for this user
+        res = (
+            supabase.table("brackets")
+            .select("id, user_id, name, is_done, created_at, saved_at, deleted_at")
+            .eq("user_id", user_id)
+            .is_("deleted_at", None)          # only active brackets
+            .order("created_at", desc=True)
+            .limit(1)
+            .execute()
+        )
+        rows = res.data or []
+
+        # No active bracket for this user
+        if not rows:
+            # Explicit JSON null so frontend can safely do `if (myBracket)`
+            return jsonify(None), 200
+
+        b = rows[0]
+
+        # Fetch user info for display (no email)
+        user_res = (
+            supabase.table("users")
+            .select("id, username")
+            .eq("id", user_id)
+            .limit(1)
+            .execute()
+        )
+        u_rows = user_res.data or []
+        u = u_rows[0] if u_rows else {}
+
+        return jsonify(
+            {
+                "bracket_id": b["id"],
+                "name": b.get("name"),
+                "created_at": b.get("created_at"),
+                "saved_at": b.get("saved_at"),
+                "is_done": b.get("is_done"),
+                "user": {
+                    "id": b["user_id"],
+                    "username": u.get("username"),
+                },
+            }
+        ), 200
+
+    except Exception as e:
+        if ENABLE_DEBUG_LOGS:
+            safe_print("🔴 Error in /brackets/me (class):", type(e).__name__)
+        return jsonify({"error": "Unexpected error"}), 500
+
+
+
 @app.route("/bracket/<bracket_id>", methods=["GET"])
 @require_auth
 def get_bracket_by_id(bracket_id):
