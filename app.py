@@ -987,88 +987,95 @@ def create_bracket_for_user():
 @app.route("/bracket/<bracket_id>/save", methods=["PATCH"])
 @require_auth
 def save_bracket(bracket_id):
-    if not is_uuid(bracket_id):
-        return jsonify({"error": "Invalid bracket id"}), 400
+    try:
+        if not is_uuid(bracket_id):
+            return jsonify({"error": "Invalid bracket id"}), 400
 
-    user_id = request.user["user_id"]
-    data = request.get_json() or {}
-    raw_name = data.get("name", "")
-    name = raw_name.strip()
+        user_id = request.user["user_id"]
 
-    if not name:
-        return jsonify({"error": "Bracket name is required"}), 400
+        # Safely parse JSON
+        data = request.get_json(silent=True) or {}
+        raw_name = data.get("name", "")
+        name = (raw_name or "").strip()
 
-    # 1) Fetch bracket (must exist and not be deleted)
-    bracket_res = (
-        supabase.table("brackets")
-        .select("id, user_id, is_done, deleted_at")
-        .eq("id", bracket_id)
-        .is_("deleted_at", None)
-        .execute()
-        .data
-    )
-    if not bracket_res:
-        return jsonify({"error": "Bracket not found"}), 404
+        # 1) Require non-empty name
+        if not name:
+            return jsonify({"error": "Bracket name is required"}), 400
 
-    bracket = bracket_res[0]
+        # 2) Fetch bracket (must exist and not be deleted)
+        bracket_res = (
+            supabase.table("brackets")
+            .select("id, user_id, deleted_at")
+            .eq("id", bracket_id)
+            .execute()
+            .data
+        )
+        if not bracket_res or bracket_res[0].get("deleted_at") is not None:
+            return jsonify({"error": "Bracket not found"}), 404
 
-    # 2) Check if caller is owner or admin
-    user_res = (
-        supabase.table("users")
-        .select("id, is_admin")
-        .eq("id", user_id)
-        .execute()
-        .data
-    )
-    if not user_res:
-        return jsonify({"error": "User not found"}), 404
+        bracket = bracket_res[0]
 
-    is_admin = user_res[0].get("is_admin", False)
+        # 3) Check caller is owner or admin
+        user_res = (
+            supabase.table("users")
+            .select("id, is_admin")
+            .eq("id", user_id)
+            .execute()
+            .data
+        )
+        if not user_res:
+            return jsonify({"error": "User not found"}), 404
 
-    if bracket["user_id"] != user_id and not is_admin:
-        return jsonify({"error": "Unauthorized"}), 403
+        is_admin = user_res[0].get("is_admin", False)
+        if bracket["user_id"] != user_id and not is_admin:
+            return jsonify({"error": "Unauthorized"}), 403
 
-    # 3) Validate that bracket is fully predicted
-    matches = (
-        supabase.table("matches")
-        .select("id, round, team_a, team_b, predicted_winner, predicted_winner_games")
-        .eq("bracket_id", bracket_id)
-        .execute()
-        .data
-    )
+        # 4) Validate that the bracket is fully predicted
+        matches = (
+            supabase.table("matches")
+            .select("id, round, team_a, team_b, predicted_winner, predicted_winner_games")
+            .eq("bracket_id", bracket_id)
+            .execute()
+            .data
+        )
 
-    for m in matches:
-        # ignore future rounds that don't have both teams yet
-        if not m.get("team_a") or not m.get("team_b"):
-            continue
+        for m in matches:
+            # Ignore future matches that don't have both teams yet
+            if not m.get("team_a") or not m.get("team_b"):
+                continue
 
-        # need a winner
-        if not m.get("predicted_winner"):
-            return jsonify({"error": "Bracket is not fully predicted"}), 400
-
-        # for non-play-in rounds, need games
-        if m["round"] > 0:
-            if m.get("predicted_winner_games") is None:
+            # Must have a winner
+            if not m.get("predicted_winner"):
                 return jsonify({"error": "Bracket is not fully predicted"}), 400
 
-    # 4) Mark as done, set the name and saved_at
-    now = datetime.utcnow().isoformat()
+            # For non–play-in rounds, must also have games
+            if m["round"] > 0 and m.get("predicted_winner_games") is None:
+                return jsonify({"error": "Bracket is not fully predicted"}), 400
 
-    supabase.table("brackets").update(
-        {
-            "name": name,
-            "is_done": True,
-            "saved_at": now,
-        }
-    ).eq("id", bracket_id).execute()
+        # 5) Mark bracket as done, set name and saved_at
+        now = datetime.utcnow().isoformat()
 
-    return jsonify(
-        {
-            "message": "Bracket saved",
-            "saved_at": now,
-            "name": name,
-        }
-    ), 200
+        supabase.table("brackets").update(
+            {
+                "name": name,
+                "is_done": True,
+                "saved_at": now,
+            }
+        ).eq("id", bracket_id).execute()
+
+        return jsonify(
+            {
+                "message": "Bracket saved",
+                "saved_at": now,
+                "name": name,
+            }
+        ), 200
+
+    except Exception as e:
+        # Fallback safety – should not be hit for the 2 error cases we're testing
+        if ENABLE_DEBUG_LOGS:
+            safe_print("🔴 Error in /bracket/save (class):", type(e).__name__)
+        return jsonify({"error": "Unexpected error"}), 500
 
 
 @app.route("/bracket/<bracket_id>", methods=["GET"])
@@ -1221,7 +1228,6 @@ def list_all_brackets():
         return jsonify({"error": "Unexpected error"}), 500
 
 
-
 @app.route("/bracket/<bracket_id>", methods=["DELETE"])
 @require_auth
 def delete_bracket(bracket_id):
@@ -1272,7 +1278,6 @@ def delete_bracket(bracket_id):
     supabase.table("brackets").update(update_fields).eq("id", bracket_id).execute()
 
     return jsonify({"message": "Bracket deleted successfully"})
-
 
 
 @app.route("/bracket/<bracket_id>/match/<match_id>", methods=["PATCH"])

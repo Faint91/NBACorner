@@ -225,17 +225,22 @@ def fill_entire_bracket(token: str, bracket_id: str) -> None:
             set_winner_for_match(token, bracket_id, match)
 
 
-def save_bracket(token: str, bracket_id: str) -> Dict[str, Any]:
+def save_bracket(token: str, bracket_id: str, bracket_name: str) -> Dict[str, Any]:
     """
-    Calls PATCH /bracket/<bracket_id>/save and returns its JSON.
+    Calls PATCH /bracket/<bracket_id>/save with a name and returns its JSON.
     """
     headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
     print(f"[STEP] Saving bracket {bracket_id}")
-    resp = _patch(f"/bracket/{bracket_id}/save", json={}, headers=headers)
+    resp = _patch(
+        f"/bracket/{bracket_id}/save",
+        json={"name": bracket_name},
+        headers=headers,
+    )
     assert resp.status_code in (200, 201), f"Save bracket failed: {resp.status_code} {resp.text}"
     data = resp.json()
-    assert data.get("bracket_id") == bracket_id
-    assert data.get("saved_at") is not None
+    # New save response: { message, saved_at, name }
+    assert data.get("saved_at") is not None, f"Save response missing saved_at: {data}"
+    assert data.get("name") == bracket_name, f"Save response name mismatch: expected {bracket_name}, got {data.get('name')}"
     print(f"[OK] Bracket {bracket_id} saved at {data['saved_at']}")
     return data
 
@@ -262,8 +267,9 @@ def test_fill_and_save_full_bracket_flow():
     # 3) Fill entire bracket by repeatedly setting winners where possible
     fill_entire_bracket(token, bracket_id)
 
-    # 4) Save the bracket
-    save_info = save_bracket(token, bracket_id)
+    # 4) Save the bracket (with a deterministic but unique-ish name)
+    bracket_name = f"Auto test bracket {bracket_id[:8]}"
+    save_info = save_bracket(token, bracket_id, bracket_name)
     print("Bracket saved at:", save_info["saved_at"])
 
     # 5) Re-fetch and validate
@@ -272,9 +278,10 @@ def test_fill_and_save_full_bracket_flow():
     matches_grouped = final_view["matches"]
     flat_matches = flatten_matches(matches_grouped)
 
-    # Bracket should be marked as done and have a saved_at timestamp
+    # Bracket should be marked as done and have a saved_at timestamp and correct name
     assert bracket.get("is_done") is True
     assert bracket.get("saved_at") is not None
+    assert bracket.get("name") == bracket_name, f"Bracket name mismatch: expected {bracket_name}, got {bracket.get('name')}"
 
     # Every match that has both teams should have a predicted winner
     for m in flat_matches:
@@ -311,4 +318,3 @@ def test_fill_and_save_full_bracket_flow():
     all_brackets_after = list_brackets()
     matching_after = [b for b in all_brackets_after if b.get("bracket_id") == bracket_id]
     assert not matching_after, f"Deleted bracket {bracket_id} still present in /brackets list"
-
