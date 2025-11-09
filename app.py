@@ -860,9 +860,9 @@ def create_bracket_for_user():
     # ✅ Check if the user already has a bracket before inserting
     existing = (
         supabase.table("brackets")
-        .select("id")
+        .select("id, deleted_at")
         .eq("user_id", user_id)
-        .is_("deleted_at", None)
+        .is_("deleted_at", None)  # 👈 important: only active brackets
         .execute()
         .data
     )
