@@ -1,7 +1,7 @@
 # app.py
 from functools import wraps
 from datetime import datetime, timedelta
-from flask import Flask, request, jsonify, make_response
+from flask import Flask, request, jsonify, make_response, send_from_directory
 from flask_cors import CORS
 from supabase import create_client
 from dotenv import load_dotenv
@@ -83,6 +83,22 @@ SENSITIVE_TOKENS = [t for t in [
 
 # Optional: enable noisy debug logging only in dev
 ENABLE_DEBUG_LOGS = os.getenv("ENABLE_DEBUG_LOGS", "0") == "1"
+
+
+# --------------------------------------------------------
+# ------------------ Static logos route  -----------------
+# --------------------------------------------------------
+
+LOGOS_FOLDER = os.path.join(app.root_path, "logos")
+
+@app.route("/logos/<path:filename>", methods=["GET"])
+def serve_logo(filename):
+    """
+    Serve team logo images from the /logos folder.
+    Example: /logos/LAL.png
+    """
+    return send_from_directory(LOGOS_FOLDER, filename)
+
 
 # --------------------------------------------------------
 # ---------------- In-memory rate limiting  --------------
@@ -1194,16 +1210,63 @@ def get_bracket_by_id(bracket_id):
         .data
     )
 
-    # ✅ Group matches by conference + round
+    # ✅ Collect all team IDs used in these matches
+    team_ids = set()
+    for m in matches:
+        ta = m.get("team_a")
+        tb = m.get("team_b")
+        if ta:
+            team_ids.add(ta)
+        if tb:
+            team_ids.add(tb)
+
+    # ✅ Fetch team metadata (names, codes, logo URLs, colors)
+    teams_by_id = {}
+    if team_ids:
+        teams_res = (
+            supabase.table("teams")
+            .select("id, name, code, logo_url, primary_color, secondary_color")
+            .in_("id", list(team_ids))
+            .execute()
+            .data
+        )
+        teams_by_id = {t["id"]: t for t in teams_res}
+
+    # ✅ Group matches by conference + round, and enrich with team info
     grouped = {}
     for match in matches:
         conf = match["conference"].lower() if match["conference"] else "unknown"
         rnd = match["round"]
+
         if conf not in grouped:
             grouped[conf] = {}
         if rnd not in grouped[conf]:
             grouped[conf][rnd] = []
-        grouped[conf][rnd].append(match)
+
+        # shallow copy so we don't mutate the original dict
+        enriched = dict(match)
+
+        ta_id = match.get("team_a")
+        tb_id = match.get("team_b")
+
+        ta = teams_by_id.get(ta_id)
+        tb = teams_by_id.get(tb_id)
+
+        if ta:
+            enriched["team_a_name"] = ta.get("name")
+            enriched["team_a_code"] = ta.get("code")
+            enriched["team_a_logo_url"] = ta.get("logo_url")
+            enriched["team_a_primary_color"] = ta.get("primary_color")
+            enriched["team_a_secondary_color"] = ta.get("secondary_color")
+
+        if tb:
+            enriched["team_b_name"] = tb.get("name")
+            enriched["team_b_code"] = tb.get("code")
+            enriched["team_b_logo_url"] = tb.get("logo_url")
+            enriched["team_b_primary_color"] = tb.get("primary_color")
+            enriched["team_b_secondary_color"] = tb.get("secondary_color")
+
+        grouped[conf][rnd].append(enriched)
 
     # ✅ Fetch bracket owner info
     owner_data = (
