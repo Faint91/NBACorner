@@ -952,18 +952,18 @@ def create_bracket_for_user():
     # ---- Round 1 → Semifinals ----
     link("east", 4, 9, "a")
     link("east", 7, 9, "b")
-    link("east", 5, 8, "a")
-    link("east", 6, 8, "b")
+    link("east", 5, 8, "b")
+    link("east", 6, 8, "a")
     link("west", 4, 9, "a")
     link("west", 7, 9, "b")
-    link("west", 5, 8, "a")
-    link("west", 6, 8, "b")
+    link("west", 5, 8, "b")
+    link("west", 6, 8, "a")
 
     # ---- Semifinals → Conference Finals ----
-    link("east", 8, 10, "a")
-    link("east", 9, 10, "b")
-    link("west", 8, 10, "a")
-    link("west", 9, 10, "b")
+    link("east", 8, 10, "b")
+    link("east", 9, 10, "a")
+    link("west", 8, 10, "b")
+    link("west", 9, 10, "a")
 
     # ----- Conference Finals → NBA Finals -----
     nba_final = next((m for m in inserted if m["conference"] == "nba" and m["slot"] == 11), None)
@@ -1136,7 +1136,6 @@ def get_my_bracket():
         if ENABLE_DEBUG_LOGS:
             safe_print("🔴 Error in /brackets/me (class):", type(e).__name__)
         return jsonify({"error": "Unexpected error"}), 500
-
 
 
 @app.route("/bracket/<bracket_id>", methods=["GET"])
