@@ -408,7 +408,7 @@ def admin_insert_test_teams():
         {"id":"T10E","name":"TestEast10","conference":"east"}
     ]
     west = [
-        {"id":"T1W","name":"TestWest1","conference":"west"},
+        {"id":"LAL","name":"Los Angeles Lakers","conference":"west"},
         {"id":"T2W","name":"TestWest2","conference":"west"},
         {"id":"T3W","name":"TestWest3","conference":"west"},
         {"id":"T4W","name":"TestWest4","conference":"west"},
