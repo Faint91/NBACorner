@@ -988,13 +988,18 @@ def _compute_score_for_bracket(master_matches_by_key: dict, master_bracket_id: s
     """
     Compare one user bracket against the master bracket and upsert into bracket_scores.
 
-    Scoring rules per matchup:
+    Scoring rules per matchup (non–play-in rounds):
       - 3 points: user predicted
           * both teams in the matchup (same two teams as master, any order), AND
           * the correct winner, AND
           * the correct series length (predicted_winner_games).
       - 1 point: user predicted the correct winner (even if teams/length wrong).
       - 0 points: anything else, or no pick.
+
+    Special case for play-in (round == 0):
+      - 1 point: user predicted both teams correctly (same two teams as master, any order)
+        AND the correct winner.
+      - 0 points: otherwise (no partials for play-in).
 
     Only matchups where the master has BOTH predicted_winner AND predicted_winner_games
     are scored; others are considered 'pending'.
@@ -1064,6 +1069,7 @@ def _compute_score_for_bracket(master_matches_by_key: dict, master_bracket_id: s
             }
             continue
 
+        # Basic correctness flags
         winner_correct = user_winner == actual_winner
         series_len_correct = user_games == actual_games
 
@@ -1082,18 +1088,38 @@ def _compute_score_for_bracket(master_matches_by_key: dict, master_bracket_id: s
             and master_teams == user_teams
         )
 
-        if winner_correct and series_len_correct and participants_correct:
-            pts = 3
-            status = "full"
-            full_hits += 1
-        elif winner_correct:
-            pts = 1
-            status = "partial"
-            partial_hits += 1
+        # Special scoring rule for play-in (round 0)
+        is_play_in = int(rnd) == 0 if rnd is not None else False
+
+        if is_play_in:
+            # PLAY-IN:
+            #  - 1 point only if winner + both teams correct
+            #  - otherwise 0, no partial hits
+            if winner_correct and participants_correct:
+                pts = 1
+                status = "full"
+                full_hits += 1
+            else:
+                pts = 0
+                status = "miss"
+                misses += 1
         else:
-            pts = 0
-            status = "miss"
-            misses += 1
+            # NORMAL SERIES:
+            #  - 3 points: winner + length + both teams correct
+            #  - 1 point: winner correct (but teams and/or length not fully correct)
+            #  - 0 points: wrong winner
+            if winner_correct and series_len_correct and participants_correct:
+                pts = 3
+                status = "full"
+                full_hits += 1
+            elif winner_correct:
+                pts = 1
+                status = "partial"
+                partial_hits += 1
+            else:
+                pts = 0
+                status = "miss"
+                misses += 1
 
         total_points += pts
         round_key = str(rnd)
@@ -1127,6 +1153,7 @@ def _compute_score_for_bracket(master_matches_by_key: dict, master_bracket_id: s
     # Upsert into bracket_scores (PK is bracket_id)
     supabase.table("bracket_scores").upsert(record).execute()
     return record
+
 
 
 @app.route("/bracket/create", methods=["POST"])
