@@ -1,6 +1,6 @@
 # app.py
 from functools import wraps
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from flask import Flask, request, jsonify, make_response, send_from_directory
 from flask_cors import CORS
 from supabase import create_client
@@ -32,6 +32,7 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 JWT_SECRET = os.getenv("JWT_SECRET", "dev_secret")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
+PLAYOFFS_START_UTC = os.getenv("PLAYOFFS_START_UTC", "2026-04-12T18:59:50+00:00")
 
 DISABLE_RATE_LIMITS = os.getenv("DISABLE_RATE_LIMITS", "0") == "1"
 
@@ -226,6 +227,10 @@ def get_current_user_id():
         if auth and auth.lower().startswith("bearer "):
             uid = auth.split()[1]
     return uid
+
+
+def playoffs_locked() -> bool:
+    return datetime.now(timezone.utc) >= PLAYOFFS_START_UTC
 
 
 # --------------------------------------------------------
@@ -871,6 +876,9 @@ def send_email_via_brevo(to_email, subject, body):
 @app.route("/bracket/create", methods=["POST"])
 @require_auth
 def create_bracket_for_user():
+    if playoffs_locked():
+        return jsonify({"error": "Bracket creation is closed once the playoffs start."}), 403
+    
     user_id = request.user["user_id"]
 
     # ✅ Check if the user already has a bracket before inserting
@@ -1100,6 +1108,9 @@ def get_my_bracket():
     """
     Return the current user's active bracket (even if not saved),
     as long as it is not soft-deleted (deleted_at IS NULL).
+
+    Now also returns a playoffs_locked flag so the frontend can
+    disable bracket creation once playoffs have started.
     """
     user_id = request.user["user_id"]
 
@@ -1118,8 +1129,12 @@ def get_my_bracket():
 
         # No active bracket for this user
         if not rows:
-            # Explicit JSON null so frontend can safely do `if (myBracket)`
-            return jsonify(None), 200
+            return jsonify(
+                {
+                    "bracket": None,
+                    "playoffs_locked": playoffs_locked(),
+                }
+            ), 200
 
         b = rows[0]
 
@@ -1136,15 +1151,18 @@ def get_my_bracket():
 
         return jsonify(
             {
-                "bracket_id": b["id"],
-                "name": b.get("name"),
-                "created_at": b.get("created_at"),
-                "saved_at": b.get("saved_at"),
-                "is_done": b.get("is_done"),
-                "user": {
-                    "id": b["user_id"],
-                    "username": u.get("username"),
+                "bracket": {
+                    "bracket_id": b["id"],
+                    "name": b.get("name"),
+                    "created_at": b.get("created_at"),
+                    "saved_at": b.get("saved_at"),
+                    "is_done": b.get("is_done"),
+                    "user": {
+                        "id": b["user_id"],
+                        "username": u.get("username"),
+                    },
                 },
+                "playoffs_locked": playoffs_locked(),
             }
         ), 200
 
@@ -1328,6 +1346,7 @@ def list_all_brackets():
 
         # Merge user info into output
         output = []
+        locked = playoffs_locked()
         for b in brackets:
             user_info = users.get(b["user_id"], {})
             output.append({
@@ -1340,7 +1359,9 @@ def list_all_brackets():
                     "id": b["user_id"],
                     "username": user_info.get("username"),
                     "email": user_info.get("email")
-                }
+                },
+                # Global state copied onto each item for convenience
+                "playoffs_locked": locked,
             })
 
         return jsonify(output), 200
