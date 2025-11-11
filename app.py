@@ -494,6 +494,75 @@ def health():
     return resp
 
 
+@app.route("/admin/score/master/<master_bracket_id>/recompute", methods=["POST"])
+@require_auth
+def recompute_scores(master_bracket_id):
+    """
+    Admin-only: recompute bracket_scores for ALL saved brackets
+    against the given master_bracket_id.
+
+    Usage:
+      POST /admin/score/master/<master_bracket_id>/recompute
+      (must be called with an admin JWT)
+
+    This reads all matches from the master bracket, then for every
+    bracket with is_done = true (and not deleted), it computes
+    scores and upserts into bracket_scores.
+    """
+    # --- Admin check (JWT flag) ---
+    user_info = request.user or {}
+    user_id = user_info.get("user_id")
+    is_admin_token = user_info.get("is_admin", False)
+
+    if not is_admin_token:
+        return jsonify({"error": "Forbidden"}), 403
+
+    if not is_uuid(master_bracket_id):
+        return jsonify({"error": "Invalid master bracket id"}), 400
+
+    # Ensure the master bracket exists and is not deleted
+    br_res = (
+        supabase.table("brackets")
+        .select("id, deleted_at")
+        .eq("id", master_bracket_id)
+        .execute()
+        .data
+    )
+    if not br_res or br_res[0].get("deleted_at") is not None:
+        return jsonify({"error": "Master bracket not found"}), 404
+
+    # Load master matches once
+    master_matches = _fetch_matches_for_bracket(master_bracket_id)
+    if not master_matches:
+        return jsonify({"error": "Master bracket has no matches"}), 400
+
+    # Get all saved brackets
+    brackets_res = (
+        supabase.table("brackets")
+        .select("id, is_done, deleted_at")
+        .is_("deleted_at", None)
+        .eq("is_done", True)
+        .execute()
+        .data
+    )
+
+    updated_count = 0
+    for b in brackets_res:
+        bid = b["id"]
+        # If you prefer to skip scoring the master against itself, uncomment:
+        # if str(bid) == str(master_bracket_id):
+        #     continue
+
+        rec = _compute_score_for_bracket(master_matches, master_bracket_id, bid)
+        if rec:
+            updated_count += 1
+
+    return jsonify({
+        "message": "Scores recomputed",
+        "master_bracket_id": master_bracket_id,
+        "updated_brackets": updated_count,
+    }), 200
+
 
 # --------------------------------------------------------
 # --------------- Authentication endpoints  --------------
@@ -887,6 +956,178 @@ def send_email_via_brevo(to_email, subject, body):
 # --------------------------------------------------------
 # ------------------ Bracket endpoints  ------------------
 # --------------------------------------------------------
+
+def _fetch_matches_for_bracket(bracket_id: str):
+    """
+    Load all matches for a bracket and key them by (conference-round-slot).
+    Key format example: 'east-1-4'
+    """
+    rows = (
+        supabase.table("matches")
+        .select(
+            "id, conference, round, slot, "
+            "team_a, team_b, "
+            "predicted_winner, predicted_winner_games"
+        )
+        .eq("bracket_id", bracket_id)
+        .execute()
+        .data
+    )
+
+    by_key = {}
+    for m in rows:
+        conf = (m.get("conference") or "").lower()
+        rnd = m.get("round")
+        slot = m.get("slot")
+        key = f"{conf}-{rnd}-{slot}"
+        by_key[key] = m
+    return by_key
+
+
+def _compute_score_for_bracket(master_matches_by_key: dict, master_bracket_id: str, bracket_id: str):
+    """
+    Compare one user bracket against the master bracket and upsert into bracket_scores.
+
+    Scoring rules per matchup:
+      - 3 points: user predicted
+          * both teams in the matchup (same two teams as master, any order), AND
+          * the correct winner, AND
+          * the correct series length (predicted_winner_games).
+      - 1 point: user predicted the correct winner (even if teams/length wrong).
+      - 0 points: anything else, or no pick.
+
+    Only matchups where the master has BOTH predicted_winner AND predicted_winner_games
+    are scored; others are considered 'pending'.
+    """
+    user_matches = _fetch_matches_for_bracket(bracket_id)
+    if not user_matches:
+        return None
+
+    total_points = 0
+    full_hits = 0
+    partial_hits = 0
+    misses = 0
+
+    # bonuses (for later; leave as 0 for now)
+    bonus_finalists = 0
+    bonus_champion = 0
+
+    points_by_round = {}   # e.g. { "0": 5, "1": 12, ... }
+    points_by_match = {}   # e.g. { "east-1-4": { ... }, ... }
+
+    for key, m_master in master_matches_by_key.items():
+        m_user = user_matches.get(key)
+
+        conf = (m_master.get("conference") or "").lower()
+        rnd = m_master.get("round")
+        slot = m_master.get("slot")
+        match_key = f"{conf}-{rnd}-{slot}"
+
+        actual_winner = m_master.get("predicted_winner")
+        actual_games = m_master.get("predicted_winner_games")
+
+        # If the master bracket doesn't have a final result yet, mark as pending
+        if not actual_winner or actual_games is None:
+            points_by_match[match_key] = {
+                "points": 0,
+                "status": "pending",
+                "conference": conf,
+                "round": rnd,
+                "slot": slot,
+            }
+            continue
+
+        # If the user bracket somehow doesn't have a match here, treat as miss
+        if not m_user:
+            misses += 1
+            points_by_match[match_key] = {
+                "points": 0,
+                "status": "no_match",
+                "conference": conf,
+                "round": rnd,
+                "slot": slot,
+            }
+            continue
+
+        user_winner = m_user.get("predicted_winner")
+        user_games = m_user.get("predicted_winner_games")
+
+        # No pick at all
+        if not user_winner:
+            misses += 1
+            points_by_match[match_key] = {
+                "points": 0,
+                "status": "no_pick",
+                "conference": conf,
+                "round": rnd,
+                "slot": slot,
+            }
+            continue
+
+        winner_correct = user_winner == actual_winner
+        series_len_correct = user_games == actual_games
+
+        master_teams = {
+            m_master.get("team_a"),
+            m_master.get("team_b"),
+        }
+        user_teams = {
+            m_user.get("team_a"),
+            m_user.get("team_b"),
+        }
+        # require both sides fully set and exactly the same two teams
+        participants_correct = (
+            None not in master_teams
+            and None not in user_teams
+            and master_teams == user_teams
+        )
+
+        if winner_correct and series_len_correct and participants_correct:
+            pts = 3
+            status = "full"
+            full_hits += 1
+        elif winner_correct:
+            pts = 1
+            status = "partial"
+            partial_hits += 1
+        else:
+            pts = 0
+            status = "miss"
+            misses += 1
+
+        total_points += pts
+        round_key = str(rnd)
+        points_by_round[round_key] = points_by_round.get(round_key, 0) + pts
+
+        points_by_match[match_key] = {
+            "points": pts,
+            "status": status,
+            "conference": conf,
+            "round": rnd,
+            "slot": slot,
+            "winner_correct": winner_correct,
+            "series_len_correct": series_len_correct,
+            "participants_correct": participants_correct,
+        }
+
+    record = {
+        "bracket_id": bracket_id,
+        "master_bracket_id": master_bracket_id,
+        "total_points": total_points + bonus_finalists + bonus_champion,
+        "full_hits": full_hits,
+        "partial_hits": partial_hits,
+        "misses": misses,
+        "bonus_finalists": bonus_finalists,
+        "bonus_champion": bonus_champion,
+        "points_by_round": points_by_round,
+        "points_by_match": points_by_match,
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+    # Upsert into bracket_scores (PK is bracket_id)
+    supabase.table("bracket_scores").upsert(record).execute()
+    return record
+
 
 @app.route("/bracket/create", methods=["POST"])
 @require_auth
@@ -1691,6 +1932,343 @@ def set_match_games(match_id):
 
     supabase.table("matches").update({"predicted_winner_games": games, "updated_at": "now()"}).eq("id", match_id).execute()
     return jsonify({"ok": True}), 200
+
+
+@app.route("/leaderboard", methods=["GET"])
+def get_leaderboard():
+    """
+    Build a leaderboard for a given master bracket.
+
+    Query params:
+      - master_id: UUID of the master bracket (required)
+
+    Response shape (simplified):
+
+    {
+      "master_bracket": {...},
+      "matchups": [
+        {
+          "match_key": "east-1-4",
+          "conference": "east",
+          "round": 1,
+          "slot": 4,
+          "team_a_id": "...",
+          "team_a_name": "...",
+          "team_a_code": "...",
+          "team_b_id": "...",
+          "team_b_name": "...",
+          "team_b_code": "...",
+          "actual_winner_id": "...",
+          "actual_winner_name": "...",
+          "actual_winner_code": "...",
+          "actual_winner_games": 6,
+          "total_points_awarded": 23,
+          "full_hits": 4,
+          "partial_hits": 7,
+          "misses": 5
+        },
+        ...
+      ],
+      "brackets": [
+        {
+          "bracket_id": "...",
+          "name": "...",
+          "user": { "id": "...", "username": "..." },
+          "total_points": 23,
+          "full_hits": 7,
+          "partial_hits": 4,
+          "misses": 5,
+          "bonus_finalists": 0,
+          "bonus_champion": 0,
+          "points_by_round": { "0": 3, "1": 10, ... },
+          "points_by_match": {
+            "east-1-4": {
+              "points": 3,
+              "status": "full",
+              "conference": "east",
+              "round": 1,
+              "slot": 4,
+              ...
+            },
+            ...
+          }
+        },
+        ...
+      ]
+    }
+    """
+    try:
+        master_id = request.args.get("master_id")
+        if not master_id or not is_uuid(master_id):
+            return jsonify({"error": "master_id query parameter (UUID) is required"}), 400
+
+        # 1) Ensure master bracket exists and is not deleted
+        master_res = (
+            supabase.table("brackets")
+            .select("id, name, user_id, is_done, saved_at, created_at, deleted_at")
+            .eq("id", master_id)
+            .execute()
+            .data
+        )
+        if not master_res or master_res[0].get("deleted_at") is not None:
+            return jsonify({"error": "Master bracket not found"}), 404
+
+        master_bracket = master_res[0]
+
+        # 2) Load master matches (with enrichment: team names/codes)
+        matches_res = (
+            supabase.table("matches")
+            .select("*")
+            .eq("bracket_id", master_id)
+            .execute()
+            .data
+        )
+
+        if not matches_res:
+            return jsonify({"error": "Master bracket has no matches"}), 400
+
+        # Collect team IDs
+        team_ids = set()
+        for m in matches_res:
+            ta = m.get("team_a")
+            tb = m.get("team_b")
+            if ta:
+                team_ids.add(ta)
+            if tb:
+                team_ids.add(tb)
+
+        teams_by_id = {}
+        if team_ids:
+            teams_res = (
+                supabase.table("teams")
+                .select("id, name, code")
+                .in_("id", list(team_ids))
+                .execute()
+                .data
+            )
+            teams_by_id = {t["id"]: t for t in teams_res}
+
+        # Build a consistent list of master matchups
+        # Key format: "conference-round-slot"
+        master_matchups = []
+        master_matches_by_key = {}
+
+        for m in matches_res:
+            conf = (m.get("conference") or "").lower()
+            rnd = m.get("round")
+            slot = m.get("slot")
+            key = f"{conf}-{rnd}-{slot}"
+
+            team_a_id = m.get("team_a")
+            team_b_id = m.get("team_b")
+            ta = teams_by_id.get(team_a_id) if team_a_id else None
+            tb = teams_by_id.get(team_b_id) if team_b_id else None
+
+            actual_winner_id = m.get("predicted_winner")
+            winner_team = teams_by_id.get(actual_winner_id) if actual_winner_id else None
+
+            match_info = {
+                "match_key": key,
+                "conference": conf,
+                "round": rnd,
+                "slot": slot,
+                "team_a_id": team_a_id,
+                "team_a_name": ta.get("name") if ta else None,
+                "team_a_code": ta.get("code") if ta else None,
+                "team_b_id": team_b_id,
+                "team_b_name": tb.get("name") if tb else None,
+                "team_b_code": tb.get("code") if tb else None,
+                "actual_winner_id": actual_winner_id,
+                "actual_winner_name": winner_team.get("name") if winner_team else None,
+                "actual_winner_code": winner_team.get("code") if winner_team else None,
+                "actual_winner_games": m.get("predicted_winner_games"),
+            }
+
+            master_matches_by_key[key] = match_info
+
+        # Sort matchups in a stable, logical order:
+        # by round ascending, then conference name, then slot
+        def sort_key(m):
+            return (m["round"], m["conference"], m["slot"])
+
+        master_matchups = sorted(master_matches_by_key.values(), key=sort_key)
+
+        # 3) Load all bracket_scores for this master
+        scores_res = (
+            supabase.table("bracket_scores")
+            .select("*")
+            .eq("master_bracket_id", master_id)
+            .execute()
+            .data
+        )
+
+        if not scores_res:
+            # No scores yet -> still return master info + matchups, empty brackets
+            return jsonify({
+                "master_bracket": {
+                    "id": master_bracket["id"],
+                    "name": master_bracket.get("name"),
+                    "is_done": master_bracket.get("is_done"),
+                    "saved_at": master_bracket.get("saved_at"),
+                    "created_at": master_bracket.get("created_at"),
+                },
+                "matchups": [
+                    {
+                        **m,
+                        "total_points_awarded": 0,
+                        "full_hits": 0,
+                        "partial_hits": 0,
+                        "misses": 0,
+                    }
+                    for m in master_matchups
+                ],
+                "brackets": [],
+            }), 200
+
+        # 4) Load bracket + user info for all these brackets
+        bracket_ids = [s["bracket_id"] for s in scores_res]
+        br_res = (
+            supabase.table("brackets")
+            .select("id, user_id, name, is_done, saved_at, created_at, deleted_at")
+            .in_("id", bracket_ids)
+            .is_("deleted_at", None)
+            .execute()
+            .data
+        )
+        brackets_by_id = {b["id"]: b for b in br_res}
+
+        user_ids = list({b["user_id"] for b in br_res if b.get("user_id")})
+        users_by_id = {}
+        if user_ids:
+            u_res = (
+                supabase.table("users")
+                .select("id, username")
+                .in_("id", user_ids)
+                .execute()
+                .data
+            )
+            users_by_id = {u["id"]: u for u in u_res}
+
+        # 5) Aggregate total points per matchup (for "column totals" row)
+        aggregated = {
+            m["match_key"]: {
+                "total_points": 0,
+                "full_hits": 0,
+                "partial_hits": 0,
+                "misses": 0,
+            }
+            for m in master_matchups
+        }
+
+        bracket_rows = []
+
+        for s in scores_res:
+            bid = s["bracket_id"]
+            b = brackets_by_id.get(bid)
+            if not b:
+                # Bracket was deleted or not found – skip
+                continue
+
+            u = users_by_id.get(b["user_id"], {})
+            points_by_match = s.get("points_by_match") or {}
+            points_by_round = s.get("points_by_round") or {}
+
+            # Update aggregated stats
+            for mk, per_match in points_by_match.items():
+                if mk not in aggregated:
+                    continue
+                pts = per_match.get("points", 0) or 0
+                status = per_match.get("status")
+                agg = aggregated[mk]
+                agg["total_points"] += pts
+                if status == "full":
+                    agg["full_hits"] += 1
+                elif status == "partial":
+                    agg["partial_hits"] += 1
+                elif status in ("miss", "no_pick", "no_match"):
+                    agg["misses"] += 1
+
+            # Build per-bracket output row
+            bracket_rows.append({
+                "bracket_id": bid,
+                "name": b.get("name"),
+                "total_points": s.get("total_points", 0),
+                "full_hits": s.get("full_hits", 0),
+                "partial_hits": s.get("partial_hits", 0),
+                "misses": s.get("misses", 0),
+                "bonus_finalists": s.get("bonus_finalists", 0),
+                "bonus_champion": s.get("bonus_champion", 0),
+                "points_by_round": points_by_round,
+                "points_by_match": points_by_match,
+                "user": {
+                    "id": b["user_id"],
+                    "username": users_by_id.get(b["user_id"], {}).get("username"),
+                },
+            })
+
+        # Sort brackets by total_points desc, then name
+        bracket_rows.sort(
+            key=lambda r: (-int(r.get("total_points", 0)), (r.get("name") or "")),
+        )
+
+        # 6) Merge aggregated stats into matchups for the summary row(s)
+        enriched_matchups = []
+        for m in master_matchups:
+            mk = m["match_key"]
+            agg = aggregated.get(mk, {
+                "total_points": 0,
+                "full_hits": 0,
+                "partial_hits": 0,
+                "misses": 0,
+            })
+            enriched_matchups.append({
+                **m,
+                "total_points_awarded": agg["total_points"],
+                "full_hits": agg["full_hits"],
+                "partial_hits": agg["partial_hits"],
+                "misses": agg["misses"],
+            })
+
+        # 7) Attach owner info for master bracket
+        owner_info = {}
+        owner_id = master_bracket.get("user_id")
+        if owner_id:
+            owner_user = users_by_id.get(owner_id)
+            if not owner_user:
+                # May not be in the earlier batch; fetch directly
+                u_res = (
+                    supabase.table("users")
+                    .select("id, username")
+                    .eq("id", owner_id)
+                    .limit(1)
+                    .execute()
+                    .data
+                )
+                if u_res:
+                    owner_user = u_res[0]
+            if owner_user:
+                owner_info = {
+                    "id": owner_user["id"],
+                    "username": owner_user.get("username"),
+                }
+
+        return jsonify({
+            "master_bracket": {
+                "id": master_bracket["id"],
+                "name": master_bracket.get("name"),
+                "is_done": master_bracket.get("is_done"),
+                "saved_at": master_bracket.get("saved_at"),
+                "created_at": master_bracket.get("created_at"),
+                "owner": owner_info,
+            },
+            "matchups": enriched_matchups,
+            "brackets": bracket_rows,
+        }), 200
+
+    except Exception as e:
+        if ENABLE_DEBUG_LOGS:
+            safe_print("🔴 Error in /leaderboard (class):", type(e).__name__)
+        return jsonify({"error": "Unexpected error"}), 500
 
 
 # --------------------------------------------------------
