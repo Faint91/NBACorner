@@ -32,7 +32,22 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 JWT_SECRET = os.getenv("JWT_SECRET", "dev_secret")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
-PLAYOFFS_START_UTC = os.getenv("PLAYOFFS_START_UTC", "2026-04-12T18:59:50+00:00")
+PLAYOFFS_START_UTC_ENV = os.getenv("PLAYOFFS_START_UTC")
+
+if PLAYOFFS_START_UTC_ENV:
+    try:
+        dt = datetime.fromisoformat(PLAYOFFS_START_UTC_ENV)
+        # If no timezone in the string, treat it as UTC
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        PLAYOFFS_START_UTC = dt
+    except ValueError:
+        # Fallback: very far in the future so we never accidentally lock brackets
+        safe_print("⚠️ Invalid PLAYOFFS_START_UTC env; defaulting to 2099-01-01 UTC")
+        PLAYOFFS_START_UTC = datetime(2099, 1, 1, tzinfo=timezone.utc)
+else:
+    # No env set → default far in the future
+    PLAYOFFS_START_UTC = datetime(2099, 1, 1, tzinfo=timezone.utc)
 
 DISABLE_RATE_LIMITS = os.getenv("DISABLE_RATE_LIMITS", "0") == "1"
 
