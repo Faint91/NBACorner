@@ -1155,14 +1155,16 @@ def _compute_score_for_bracket(master_matches_by_key: dict, master_bracket_id: s
     return record
 
 
-
 @app.route("/bracket/create", methods=["POST"])
 @require_auth
 def create_bracket_for_user():
-    if playoffs_locked():
-        return jsonify({"error": "Bracket creation is closed once the playoffs start."}), 403
+    user_info = request.user or {}
+    user_id = user_info["user_id"]
+    is_admin = user_info.get("is_admin", False)
     
-    user_id = request.user["user_id"]
+    # 🔒 After playoffs start, normal users cannot create brackets
+    if playoffs_locked() and not is_admin:
+        return jsonify({"error": "Bracket creation is closed once the playoffs start."}), 403
 
     # ✅ Check if the user already has a bracket before inserting
     existing = (
