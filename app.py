@@ -1984,91 +1984,88 @@ def set_match_games(match_id):
 
 
 @app.route("/leaderboard", methods=["GET"])
-@require_auth
 def leaderboard():
     """
-    Return the current leaderboard from bracket_scores.
-
-    We assume an admin has already called
-    POST /admin/score/master/<master_bracket_id>/recompute
-    at least once, so bracket_scores is populated.
-
-    Response: a list of rows like
-    [
-      {
-        "bracket_id": "...",
-        "bracket_name": "...",
-        "user_id": "...",
-        "username": "...",
-        "total_points": 0,
-        "full_hits": 0,
-        "partial_hits": 0,
-        "misses": 0,
-        "bonus_finalists": 0,
-        "bonus_champion": 0,
-        "updated_at": "...",
-        "master_bracket_id": "..."
-      },
-      ...
-    ]
+    Returns leaderboard rows from bracket_scores plus the master bracket's
+    matchup metadata so the frontend can name columns like "LAL vs DEN".
     """
     try:
-        # 1) Get all score rows
+        # 1) Load all scores
         scores_res = (
             supabase.table("bracket_scores")
             .select(
                 "bracket_id, master_bracket_id, total_points, full_hits, "
-                "partial_hits, misses, bonus_finalists, bonus_champion, updated_at"
+                "partial_hits, misses, bonus_finalists, bonus_champion, "
+                "points_by_match, updated_at"
             )
             .execute()
         )
         scores = scores_res.data or []
 
         if not scores:
-            return jsonify([]), 200
+            # No scores yet → return empty structure
+            return jsonify({
+                "rows": [],
+                "master_bracket_id": None,
+                "master_updated_at": None,
+                "master_matchups": {},
+            }), 200
 
-        # 2) Fetch bracket metadata
+        # 2) Determine master_bracket_id (all rows should share the same one)
+        master_bracket_id = None
+        for s in scores:
+            mid = s.get("master_bracket_id")
+            if mid:
+                master_bracket_id = mid
+                break
+
+        # 3) Load bracket & owner info for all scored brackets
         bracket_ids = list({s["bracket_id"] for s in scores if s.get("bracket_id")})
         if not bracket_ids:
-            return jsonify([]), 200
+            return jsonify({
+                "rows": [],
+                "master_bracket_id": master_bracket_id,
+                "master_updated_at": None,
+                "master_matchups": {},
+            }), 200
 
         br_res = (
             supabase.table("brackets")
-            .select("id, name, user_id, deleted_at")
+            .select("id, user_id, name, deleted_at")
             .in_("id", bracket_ids)
             .is_("deleted_at", None)
             .execute()
         )
-        br_rows = br_res.data or []
-        brackets_by_id = {b["id"]: b for b in br_rows}
+        brackets = br_res.data or []
+        br_by_id = {b["id"]: b for b in brackets}
 
-        # 3) Fetch user metadata
-        user_ids = list({b["user_id"] for b in br_rows if b.get("user_id")})
-        users_by_id = {}
-        if user_ids:
-            u_res = (
-                supabase.table("users")
-                .select("id, username")
-                .in_("id", user_ids)
-                .execute()
-            )
-            u_rows = u_res.data or []
-            users_by_id = {u["id"]: u for u in u_rows}
+        user_ids = list({b["user_id"] for b in brackets if b.get("user_id")})
+        users_res = (
+            supabase.table("users")
+            .select("id, username")
+            .in_("id", user_ids)
+            .execute()
+        )
+        users = users_res.data or []
+        users_by_id = {u["id"]: u for u in users}
 
-        # 4) Build output rows, skip scores whose bracket was deleted/missing
-        output = []
+        # 4) Build output rows
+        rows_out = []
         for s in scores:
             bid = s.get("bracket_id")
-            b = brackets_by_id.get(bid)
-            if not b:
+            if not bid:
                 continue
-            u = users_by_id.get(b["user_id"], {})
+            b = br_by_id.get(bid)
+            if not b:
+                # bracket may be soft-deleted or missing
+                continue
 
-            output.append({
+            user_row = users_by_id.get(b["user_id"], {})
+            row = {
                 "bracket_id": bid,
                 "bracket_name": b.get("name"),
-                "user_id": b.get("user_id"),
-                "username": u.get("username", "Unknown"),
+                "user_id": b["user_id"],
+                "username": user_row.get("username", "unknown"),
                 "total_points": s.get("total_points", 0),
                 "full_hits": s.get("full_hits", 0),
                 "partial_hits": s.get("partial_hits", 0),
@@ -2076,25 +2073,87 @@ def leaderboard():
                 "bonus_finalists": s.get("bonus_finalists", 0),
                 "bonus_champion": s.get("bonus_champion", 0),
                 "updated_at": s.get("updated_at"),
-                "master_bracket_id": s.get("master_bracket_id"),
-            })
+                "points_by_match": s.get("points_by_match") or {},
+            }
+            rows_out.append(row)
 
-        # 5) Sort by total_points desc, then username, then bracket name
-        output.sort(
-            key=lambda r: (
-                -r["total_points"],
-                (r["username"] or "").lower(),
-                (r["bracket_name"] or "").lower(),
+        # 5) Build master_matchups from the master bracket (team codes for headers)
+        master_matchups = {}
+        master_updated_at = None
+
+        if master_bracket_id:
+            # 5a) Load all matches from the master bracket
+            matches_res = (
+                supabase.table("matches")
+                .select("conference, round, slot, team_a, team_b")
+                .eq("bracket_id", master_bracket_id)
+                .execute()
             )
-        )
+            matches = matches_res.data or []
 
-        return jsonify(output), 200
+            # Collect unique team IDs from those matches
+            team_ids = set()
+            for m in matches:
+                ta = m.get("team_a")
+                tb = m.get("team_b")
+                if ta:
+                    team_ids.add(ta)
+                if tb:
+                    team_ids.add(tb)
+
+            teams_by_id = {}
+            if team_ids:
+                teams_res = (
+                    supabase.table("teams")
+                    .select("id, code")
+                    .in_("id", list(team_ids))
+                    .execute()
+                )
+                teams = teams_res.data or []
+                teams_by_id = {t["id"]: t for t in teams}
+
+            # 5b) Build master_matchups keyed by "conf-round-slot"
+            for m in matches:
+                conf = (m.get("conference") or "").lower()
+                rnd = m.get("round")
+                slot = m.get("slot")
+                key = f"{conf}-{rnd}-{slot}"
+
+                ta_id = m.get("team_a")
+                tb_id = m.get("team_b")
+                ta = teams_by_id.get(ta_id)
+                tb = teams_by_id.get(tb_id)
+
+                master_matchups[key] = {
+                    "conference": conf,
+                    "round": rnd,
+                    "slot": slot,
+                    "team_a_code": ta.get("code") if ta else None,
+                    "team_b_code": tb.get("code") if tb else None,
+                }
+
+            # 5c) Compute a "last updated" for this master scoring batch
+            master_updates = [
+                s.get("updated_at")
+                for s in scores
+                if s.get("master_bracket_id") == master_bracket_id
+                and s.get("updated_at")
+            ]
+            if master_updates:
+                # ISO timestamps compare correctly as strings
+                master_updated_at = max(master_updates)
+
+        return jsonify({
+            "rows": rows_out,
+            "master_bracket_id": master_bracket_id,
+            "master_updated_at": master_updated_at,
+            "master_matchups": master_matchups,
+        }), 200
 
     except Exception as e:
         if ENABLE_DEBUG_LOGS:
             safe_print("🔴 Error in /leaderboard (class):", type(e).__name__)
         return jsonify({"error": "Unexpected error"}), 500
-
 
 
 # --------------------------------------------------------
