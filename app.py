@@ -580,6 +580,21 @@ def with_current_season(q, col_name: str = "season_id"):
         return q.eq(col_name, CURRENT_SEASON_ID)
 
 
+def ensure_season_globals():
+    """
+    Resolve season globals at request time if they weren't set at import time
+    (e.g., Supabase not ready during boot).
+    """
+    global CURRENT_SEASON_ID
+    if CURRENT_SEASON_ID is None:
+        _resolve_season_globals()
+
+
+@app.before_request
+def _season_bootstrap():
+    ensure_season_globals()
+    
+    
 # --------------------------------------------------------
 # -------------------- Admin endpoints  ------------------
 # --------------------------------------------------------
@@ -620,6 +635,7 @@ def require_auth(f):
         request.user = payload
         return f(*args, **kwargs)
     return wrapper
+
 
 @app.route("/auth/test-me", methods=["GET"])
 @require_auth
@@ -2202,14 +2218,7 @@ def set_match_games(match_id):
     return jsonify({"ok": True}), 200
 
 
-def ensure_season_globals():
-    """
-    Resolve season globals at request time if they weren't set at import time
-    (e.g., Supabase not ready during boot).
-    """
-    global CURRENT_SEASON_ID
-    if CURRENT_SEASON_ID is None:
-        _resolve_season_globals()
+
 
 
 @app.route("/leaderboard", methods=["GET"])
