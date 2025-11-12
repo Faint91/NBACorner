@@ -1616,6 +1616,7 @@ def list_all_brackets():
             supabase.table("brackets")
             .select("id, user_id, name, saved_at, created_at, deleted_at, is_done")
             .eq("is_done", True)
+            .eq("is_master", False)
             .is_("deleted_at", None)
             .order("saved_at", desc=True)
             .execute()
