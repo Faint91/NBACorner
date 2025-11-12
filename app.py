@@ -56,11 +56,6 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # --- Season + gate globals (resolved from DB, with env fallback) ---
 
-# Accept either CURRENT_SEASON or CURRENT_SEASON_CODE
-CURRENT_SEASON_CODE = os.getenv("CURRENT_SEASON") or os.getenv("CURRENT_SEASON_CODE")
-if not CURRENT_SEASON_CODE:
-    raise RuntimeError("Set CURRENT_SEASON (or CURRENT_SEASON_CODE) in the environment, e.g. '2025-26'.")
-
 # Resolved globals
 CURRENT_SEASON_ID = None
 REGULAR_SEASON_END_UTC = None
@@ -145,6 +140,11 @@ def _resolve_season_globals():
     if PLAYOFFS_START_UTC is None:
         from datetime import datetime, timezone
         PLAYOFFS_START_UTC = datetime(2099, 1, 1, tzinfo=timezone.utc)
+
+
+CURRENT_SEASON_CODE = os.getenv("CURRENT_SEASON_CODE")
+if not CURRENT_SEASON_CODE:
+    raise RuntimeError("CURRENT_SEASON (or CURRENT_SEASON_CODE) must be set")
 
 # Call once at startup (after supabase is created)
 _resolve_season_globals()
@@ -567,6 +567,17 @@ def _compute_score_for_bracket(master_matches_by_key: dict, master_bracket_id: s
     # Upsert into bracket_scores (PK is bracket_id)
     supabase.table("bracket_scores").upsert(record).execute()
     return record
+
+
+def with_current_season(q, col_name: str = "season_id"):
+    """
+    Apply current-season filter to a Supabase query builder.
+    If CURRENT_SEASON_ID is None (legacy data), we filter for NULL season_id.
+    """
+    if CURRENT_SEASON_ID is None:
+        return q.is_(col_name, None)
+    else:
+        return q.eq(col_name, CURRENT_SEASON_ID)
 
 
 # --------------------------------------------------------
@@ -1637,11 +1648,12 @@ def get_my_bracket():
 
     try:
         res = (
-            supabase.table("brackets")
-            .select("id, user_id, name, is_done, created_at, saved_at, deleted_at, season_id")
-            .eq("user_id", user_id)
-            .eq("season_id", CURRENT_SEASON_ID)
-            .is_("deleted_at", None)
+            with_current_season(
+                supabase.table("brackets")
+                .select("id, user_id, name, is_done, created_at, saved_at, deleted_at")
+                .eq("user_id", user_id)
+                .is_("deleted_at", None)
+            )
             .order("created_at", desc=True)
             .limit(1)
             .execute()
@@ -1816,12 +1828,13 @@ def list_all_brackets():
     """
     try:
         brackets_res = (
-            supabase.table("brackets")
-            .select("id, user_id, name, saved_at, created_at, deleted_at, is_done, is_master, season_id")
-            .eq("is_done", True)
-            .eq("is_master", False)
-            .eq("season_id", CURRENT_SEASON_ID)
-            .is_("deleted_at", None)
+            with_current_season(
+                supabase.table("brackets")
+                .select("id, user_id, name, saved_at, created_at, deleted_at, is_done, is_master, season_id")
+                .eq("is_done", True)
+                .eq("is_master", False)
+                .is_("deleted_at", None)
+            )
             .order("saved_at", desc=True)
             .execute()
         )
