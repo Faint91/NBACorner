@@ -33,6 +33,7 @@ SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 JWT_SECRET = os.getenv("JWT_SECRET", "dev_secret")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 PLAYOFFS_START_UTC_ENV = os.getenv("PLAYOFFS_START_UTC")
+REGULAR_SEASON_END_UTC = os.getenv("REGULAR_SEASON_END_UTC")
 
 if PLAYOFFS_START_UTC_ENV:
     try:
@@ -245,7 +246,54 @@ def get_current_user_id():
 
 
 def playoffs_locked() -> bool:
-    return datetime.now(timezone.utc) >= PLAYOFFS_START_UTC
+    return bool(PLAYOFFS_START_UTC and now_utc() >= PLAYOFFS_START_UTC)
+
+
+def bracket_creation_open() -> bool:
+    """
+    Creation is allowed only after regular season has ended AND before playoffs start.
+    Admins bypass this in the endpoint.
+    - If either timestamp is missing, we fail open for that side.
+    """
+    # Too early?
+    if REGULAR_SEASON_END_UTC and now_utc() < REGULAR_SEASON_END_UTC:
+        return False
+    # Too late?
+    if PLAYOFFS_START_UTC and now_utc() >= PLAYOFFS_START_UTC:
+        return False
+    return True
+
+
+def parse_iso8601_utc(val: str | None):
+    """
+    Accepts ISO-8601 strings like:
+      - '2026-04-12T18:59:50Z'
+      - '2026-04-12T11:59:50-07:00'
+      - '2026-04-12T18:59:50+00:00'
+      - '2026-04-12T18:59:50' (assumed UTC)
+    Returns a timezone-aware UTC datetime, or None if not set/parsable.
+    """
+    if not val:
+        return None
+    s = val.strip()
+    if s.endswith("Z"):
+        s = s[:-1] + "+00:00"
+    try:
+        dt = datetime.fromisoformat(s)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt.astimezone(timezone.utc)
+    except Exception:
+        # keep quiet but safe-print if debug is on
+        try:
+            safe_print(f"⚠️ Could not parse datetime env var: {val}")
+        except Exception:
+            pass
+        return None
+
+
+def now_utc():
+    return datetime.now(timezone.utc)
 
 
 # --------------------------------------------------------
@@ -1162,9 +1210,14 @@ def create_bracket_for_user():
     user_id = user_info["user_id"]
     is_admin = user_info.get("is_admin", False)
     
-    # 🔒 After playoffs start, normal users cannot create brackets
-    if playoffs_locked() and not is_admin:
-        return jsonify({"error": "Bracket creation is closed once the playoffs start."}), 403
+    # ⛔ Window check (admins bypass)
+    if not is_admin:
+        # Too early (regular season not finished)
+        if REGULAR_SEASON_END_UTC and now_utc() < REGULAR_SEASON_END_UTC:
+            return jsonify({"error": "Bracket creation opens after the regular season ends."}), 403
+        # Too late (playoffs started)
+        if playoffs_locked():
+            return jsonify({"error": "Bracket creation is closed once the playoffs start."}), 403
 
     # ✅ Check if the user already has a bracket before inserting
     existing = (
@@ -1398,8 +1451,7 @@ def get_my_bracket():
     Return the current user's active bracket (even if not saved),
     as long as it is not soft-deleted (deleted_at IS NULL).
 
-    Now also returns a playoffs_locked flag so the frontend can
-    disable bracket creation once playoffs have started.
+    Also returns global flags so the frontend can control creation UI.
     """
     user_id = request.user["user_id"]
 
@@ -1416,12 +1468,17 @@ def get_my_bracket():
         )
         rows = res.data or []
 
+        # 🔒 Global flags
+        locked = playoffs_locked()
+        creation_open = bracket_creation_open()
+
         # No active bracket for this user
         if not rows:
             return jsonify(
                 {
                     "bracket": None,
-                    "playoffs_locked": playoffs_locked(),
+                    "playoffs_locked": locked,
+                    "bracket_creation_open": creation_open,
                 }
             ), 200
 
@@ -1451,7 +1508,8 @@ def get_my_bracket():
                         "username": u.get("username"),
                     },
                 },
-                "playoffs_locked": playoffs_locked(),
+                "playoffs_locked": locked,
+                "bracket_creation_open": creation_open,
             }
         ), 200
 
@@ -1621,7 +1679,6 @@ def get_bracket_by_id(bracket_id):
     ), 200
 
 
-
 @app.route("/brackets", methods=["GET"])
 def list_all_brackets():
     """
@@ -1630,7 +1687,7 @@ def list_all_brackets():
     Only basic info: bracket_id, name, created_at, and user info.
     """
     try:
-        # ✅ Fetch only saved brackets (is_done = True)
+        # ✅ Fetch only saved brackets, exclude master
         brackets_res = (
             supabase.table("brackets")
             .select("id, user_id, name, saved_at, created_at, deleted_at, is_done")
@@ -1657,9 +1714,12 @@ def list_all_brackets():
         )
         users = {u["id"]: u for u in users_res.data}
 
+        # 🔒 Global flags (compute once)
+        locked = playoffs_locked()
+        creation_open = bracket_creation_open()
+
         # Merge user info into output
         output = []
-        locked = playoffs_locked()
         for b in brackets:
             user_info = users.get(b["user_id"], {})
             output.append({
@@ -1675,6 +1735,7 @@ def list_all_brackets():
                 },
                 # Global state copied onto each item for convenience
                 "playoffs_locked": locked,
+                "bracket_creation_open": creation_open,
             })
 
         return jsonify(output), 200
@@ -1745,7 +1806,6 @@ def delete_bracket(bracket_id):
             safe_print("🔴 Error cleaning bracket_scores on delete (class):", type(e).__name__)
 
     return jsonify({"message": "Bracket deleted successfully"})
-
 
 
 @app.route("/bracket/<bracket_id>/match/<match_id>", methods=["PATCH"])
