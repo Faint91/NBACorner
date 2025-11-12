@@ -66,6 +66,38 @@ CURRENT_SEASON_ID = None
 REGULAR_SEASON_END_UTC = None
 PLAYOFFS_START_UTC = None
 
+def parse_iso8601_utc(val):
+    """
+    Accepts:
+      - ISO-8601 strings ('2026-04-12T18:59:50Z', '2026-04-12T11:59:50-07:00', '2026-04-12T18:59:50')
+      - datetime (naive or tz-aware)
+      - None / empty
+    Returns a timezone-aware UTC datetime, or None if not set/parsable.
+    """
+    if not val:
+        return None
+
+    try:
+        # Already a datetime?
+        if isinstance(val, datetime):
+            dt = val
+        else:
+            s = str(val).strip()
+            if s.endswith("Z"):
+                s = s[:-1] + "+00:00"
+            dt = datetime.fromisoformat(s)
+
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt.astimezone(timezone.utc)
+    except Exception:
+        try:
+            safe_print(f"⚠️ Could not parse datetime value: {val}")
+        except Exception:
+            pass
+        return None
+
+
 def _resolve_season_globals():
     """
     Resolve CURRENT_SEASON_ID and the gate datetimes from DB (seasons table),
@@ -317,38 +349,6 @@ def bracket_creation_open() -> bool:
         return False
 
     return True
-
-
-def parse_iso8601_utc(val):
-    """
-    Accepts:
-      - ISO-8601 strings ('2026-04-12T18:59:50Z', '2026-04-12T11:59:50-07:00', '2026-04-12T18:59:50')
-      - datetime (naive or tz-aware)
-      - None / empty
-    Returns a timezone-aware UTC datetime, or None if not set/parsable.
-    """
-    if not val:
-        return None
-
-    try:
-        # Already a datetime?
-        if isinstance(val, datetime):
-            dt = val
-        else:
-            s = str(val).strip()
-            if s.endswith("Z"):
-                s = s[:-1] + "+00:00"
-            dt = datetime.fromisoformat(s)
-
-        if dt.tzinfo is None:
-            dt = dt.replace(tzinfo=timezone.utc)
-        return dt.astimezone(timezone.utc)
-    except Exception:
-        try:
-            safe_print(f"⚠️ Could not parse datetime value: {val}")
-        except Exception:
-            pass
-        return None
 
 
 def now_utc():
