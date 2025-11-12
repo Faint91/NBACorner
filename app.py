@@ -1466,62 +1466,78 @@ def get_my_bracket():
 def get_bracket_by_id(bracket_id):
     """
     Allows any user to view a specific bracket by ID (read-only).
+
     Rules:
       - Owner and admins can view their bracket even if it's not finished.
       - Other users can only view if is_done = True.
+      - Soft-deleted brackets (deleted_at IS NOT NULL) are not visible.
+    Response shape matches the existing frontend expectations:
+      {
+        "bracket": { ... , "owner": {...}, "is_owner": true/false },
+        "matches": {
+          "<conference>": {
+            <round>: [ enriched match dicts ... ]
+          },
+          ...
+        }
+      }
     """
+    # Basic sanity check
     if not is_uuid(bracket_id):
         return jsonify({"error": "Invalid bracket id"}), 400
 
-    # viewer_id is the authenticated user's id from the JWT
-    viewer_id = request.user["user_id"]
+    # Authenticated viewer
+    viewer = getattr(request, "user", None) or {}
+    viewer_id = viewer.get("user_id")
 
-    # ✅ Fetch viewer info (to check admin rights)
-    viewer_data = (
+    # Fetch viewer info (for admin rights)
+    viewer_res = (
         supabase.table("users")
         .select("id, is_admin")
         .eq("id", viewer_id)
+        .limit(1)
         .execute()
-        .data
     )
-    is_admin = viewer_data[0]["is_admin"] if viewer_data else False
+    viewer_rows = viewer_res.data or []
+    is_admin = bool(
+        viewer_rows
+        and str(viewer_rows[0].get("is_admin")).lower() in ("true", "t", "1", "yes")
+    )
 
-    # ✅ Fetch the bracket (no is_done filter yet)
-    bracket_data = (
+    # Fetch the bracket (must not be soft-deleted)
+    br_res = (
         supabase.table("brackets")
-        .select("id, user_id, is_done, is_master, deleted_at, name, created_at, saved_at")
+        .select("id, user_id, is_done, deleted_at, name, created_at, saved_at")
         .eq("id", bracket_id)
         .is_("deleted_at", None)
+        .limit(1)
         .execute()
-        .data
     )
-    if not bracket_data:
+    br_rows = br_res.data or []
+    if not br_rows:
         return jsonify({"error": "Bracket not found"}), 404
 
-    bracket = bracket_data[0]
+    bracket = br_rows[0]
+    owner_id = bracket.get("user_id")
+    is_owner = str(viewer_id) == str(owner_id)
 
-    # ✅ Access control:
-    #   - If this is the master bracket → allow everyone to read it
-    #   - Otherwise:
-    #       * Owner or admin → allowed even if not done
-    #       * Other users → only if is_done = True
-    is_owner = str(viewer_id) == str(bracket["user_id"])
+    # Access control:
+    #   - Owner or admin → allowed even if not done
+    #   - Others        → only if is_done = True
+    if not (is_owner or is_admin) and not bracket.get("is_done", False):
+        return jsonify({"error": "Bracket not yet saved or not accessible"}), 403
 
-    if not is_master:
-        if not is_owner and not is_admin and not bracket.get("is_done", False):
-            return jsonify({"error": "Bracket not yet saved or not accessible"}), 403
-
-    # ✅ Retrieve matches
-    matches = (
+    # Fetch all matches for this bracket
+    matches_res = (
         supabase.table("matches")
         .select("*")
         .eq("bracket_id", bracket["id"])
         .order("round", desc=False)
         .execute()
-        .data
     )
+    matches = matches_res.data or []
 
-    # ✅ Collect all team IDs used in these matches
+    # Collect team IDs used in these matches
     team_ids = set()
     for m in matches:
         ta = m.get("team_a")
@@ -1531,7 +1547,7 @@ def get_bracket_by_id(bracket_id):
         if tb:
             team_ids.add(tb)
 
-    # ✅ Fetch team metadata (names, codes, logo URLs, colors)
+    # Fetch team metadata (names, codes, logo URLs, colors)
     teams_by_id = {}
     if team_ids:
         teams_res = (
@@ -1539,22 +1555,21 @@ def get_bracket_by_id(bracket_id):
             .select("id, name, code, logo_url, primary_color, secondary_color")
             .in_("id", list(team_ids))
             .execute()
-            .data
         )
-        teams_by_id = {t["id"]: t for t in teams_res}
+        team_rows = teams_res.data or []
+        teams_by_id = {t["id"]: t for t in team_rows}
 
-    # ✅ Group matches by conference + round, and enrich with team info
-    grouped = {}
+    # Group matches by conference + round, and enrich with team info
+    grouped: dict[str, dict[int, list[dict]]] = {}
     for match in matches:
-        conf = match["conference"].lower() if match["conference"] else "unknown"
-        rnd = match["round"]
+        conf = (match.get("conference") or "unknown").lower()
+        rnd = match.get("round")
 
         if conf not in grouped:
             grouped[conf] = {}
         if rnd not in grouped[conf]:
             grouped[conf][rnd] = []
 
-        # shallow copy so we don't mutate the original dict
         enriched = dict(match)
 
         ta_id = match.get("team_a")
@@ -1579,28 +1594,32 @@ def get_bracket_by_id(bracket_id):
 
         grouped[conf][rnd].append(enriched)
 
-    # ✅ Fetch bracket owner info
-    owner_data = (
+    # Fetch bracket owner info
+    owner_res = (
         supabase.table("users")
         .select("id, username, email")
-        .eq("id", bracket["user_id"])
+        .eq("id", owner_id)
+        .limit(1)
         .execute()
-        .data
     )
-    owner = owner_data[0] if owner_data else {}
+    owner_rows = owner_res.data or []
+    owner = owner_rows[0] if owner_rows else {}
 
-    return jsonify({
-        "bracket": {
-            **bracket,
-            "owner": {
-                "id": owner.get("id"),
-                "username": owner.get("username"),
-                "email": owner.get("email")
+    return jsonify(
+        {
+            "bracket": {
+                **bracket,
+                "owner": {
+                    "id": owner.get("id"),
+                    "username": owner.get("username"),
+                    "email": owner.get("email"),
+                },
+                "is_owner": is_owner,
             },
-            "is_owner": is_owner
-        },
-        "matches": grouped
-    })
+            "matches": grouped,
+        }
+    ), 200
+
 
 
 @app.route("/brackets", methods=["GET"])
