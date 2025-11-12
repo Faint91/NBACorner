@@ -47,10 +47,11 @@ if PLAYOFFS_START_UTC_ENV:
         safe_print("⚠️ Invalid PLAYOFFS_START_UTC env; defaulting to 2099-01-01 UTC")
         PLAYOFFS_START_UTC = datetime(2099, 1, 1, tzinfo=timezone.utc)
 else:
-    # No env set → default far in the future
-    PLAYOFFS_START_UTC = datetime(2099, 1, 1, tzinfo=timezone.utc)
+     # No env set → default far in the future
+     PLAYOFFS_START_UTC = datetime(2099, 1, 1, tzinfo=timezone.utc)
 
 DISABLE_RATE_LIMITS = os.getenv("DISABLE_RATE_LIMITS", "0") == "1"
+PLAYOFFS_DEADLINE_UTC = PLAYOFFS_START_UTC.isoformat() if PLAYOFFS_START_UTC else None
 
 # ✅ Healthcheck secret (optional; if set, /health requires it)
 HEALTHCHECK_TOKEN = os.getenv("HEALTHCHECK_TOKEN")
@@ -255,12 +256,15 @@ def bracket_creation_open() -> bool:
     Admins bypass this in the endpoint.
     - If either timestamp is missing, we fail open for that side.
     """
-    # Too early?
-    if REGULAR_SEASON_END_UTC and now_utc() < REGULAR_SEASON_END_UTC:
+    # Too early? REGULAR_SEASON_END_UTC is an env string → parse it to UTC datetime
+    rs_end = parse_iso8601_utc(REGULAR_SEASON_END_UTC)
+    if rs_end and now_utc() < rs_end:
         return False
+
     # Too late?
     if PLAYOFFS_START_UTC and now_utc() >= PLAYOFFS_START_UTC:
         return False
+
     return True
 
 
