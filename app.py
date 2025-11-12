@@ -1338,6 +1338,10 @@ def save_bracket(bracket_id):
         is_admin = user_res[0].get("is_admin", False)
         if bracket["user_id"] != user_id and not is_admin:
             return jsonify({"error": "Unauthorized"}), 403
+            
+        # 3.5) Once playoffs are locked, only admins can save brackets
+        if playoffs_locked() and not is_admin:
+            return jsonify({"error": "Bracket saving is closed once the playoffs start."}), 403
 
         # 4) Validate that the bracket is fully predicted
         matches = (
