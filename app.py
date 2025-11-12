@@ -1710,7 +1710,18 @@ def delete_bracket(bracket_id):
 
     supabase.table("brackets").update(update_fields).eq("id", bracket_id).execute()
 
+    # 🔁 NEW: clean up bracket_scores that reference this bracket
+    # - as a scored bracket (bracket_id)
+    # - or as the master bracket (master_bracket_id)
+    try:
+        supabase.table("bracket_scores").delete().eq("bracket_id", bracket_id).execute()
+        supabase.table("bracket_scores").delete().eq("master_bracket_id", bracket_id).execute()
+    except Exception as e:
+        if ENABLE_DEBUG_LOGS:
+            safe_print("🔴 Error cleaning bracket_scores on delete (class):", type(e).__name__)
+
     return jsonify({"message": "Bracket deleted successfully"})
+
 
 
 @app.route("/bracket/<bracket_id>/match/<match_id>", methods=["PATCH"])
