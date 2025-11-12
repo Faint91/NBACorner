@@ -34,9 +34,7 @@ JWT_SECRET = os.getenv("JWT_SECRET", "dev_secret")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 PLAYOFFS_START_UTC_ENV = os.getenv("PLAYOFFS_START_UTC")
 REGULAR_SEASON_END_UTC = os.getenv("REGULAR_SEASON_END_UTC")
-
 DISABLE_RATE_LIMITS = os.getenv("DISABLE_RATE_LIMITS", "0") == "1"
-PLAYOFFS_DEADLINE_UTC = PLAYOFFS_START_UTC.isoformat() if PLAYOFFS_START_UTC else None
 
 # ✅ Healthcheck secret (optional; if set, /health requires it)
 HEALTHCHECK_TOKEN = os.getenv("HEALTHCHECK_TOKEN")
@@ -119,6 +117,7 @@ def _resolve_season_globals():
 # Call once at startup (after supabase is created)
 _resolve_season_globals()
 
+PLAYOFFS_DEADLINE_UTC = PLAYOFFS_START_UTC.isoformat() if PLAYOFFS_START_UTC else None
 
 app = Flask(__name__)
 
