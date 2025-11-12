@@ -296,6 +296,204 @@ def now_utc():
     return datetime.now(timezone.utc)
 
 
+def _fetch_matches_for_bracket(bracket_id: str):
+    """
+    Load all matches for a bracket and key them by (conference-round-slot).
+    Key format example: 'east-1-4'
+    """
+    rows = (
+        supabase.table("matches")
+        .select(
+            "id, conference, round, slot, "
+            "team_a, team_b, "
+            "predicted_winner, predicted_winner_games"
+        )
+        .eq("bracket_id", bracket_id)
+        .execute()
+        .data
+    )
+
+    by_key = {}
+    for m in rows:
+        conf = (m.get("conference") or "").lower()
+        rnd = m.get("round")
+        slot = m.get("slot")
+        key = f"{conf}-{rnd}-{slot}"
+        by_key[key] = m
+    return by_key
+
+
+def _compute_score_for_bracket(master_matches_by_key: dict, master_bracket_id: str, bracket_id: str):
+    """
+    Compare one user bracket against the master bracket and upsert into bracket_scores.
+
+    Scoring rules per matchup (non–play-in rounds):
+      - 3 points: user predicted
+          * both teams in the matchup (same two teams as master, any order), AND
+          * the correct winner, AND
+          * the correct series length (predicted_winner_games).
+      - 1 point: user predicted the correct winner (even if teams/length wrong).
+      - 0 points: anything else, or no pick.
+
+    Special case for play-in (round == 0):
+      - 1 point: user predicted both teams correctly (same two teams as master, any order)
+        AND the correct winner.
+      - 0 points: otherwise (no partials for play-in).
+
+    Only matchups where the master has BOTH predicted_winner AND predicted_winner_games
+    are scored; others are considered 'pending'.
+    """
+    user_matches = _fetch_matches_for_bracket(bracket_id)
+    if not user_matches:
+        return None
+
+    total_points = 0
+    full_hits = 0
+    partial_hits = 0
+    misses = 0
+
+    # bonuses (for later; leave as 0 for now)
+    bonus_finalists = 0
+    bonus_champion = 0
+
+    points_by_round = {}   # e.g. { "0": 5, "1": 12, ... }
+    points_by_match = {}   # e.g. { "east-1-4": { ... }, ... }
+
+    for key, m_master in master_matches_by_key.items():
+        m_user = user_matches.get(key)
+
+        conf = (m_master.get("conference") or "").lower()
+        rnd = m_master.get("round")
+        slot = m_master.get("slot")
+        match_key = f"{conf}-{rnd}-{slot}"
+
+        actual_winner = m_master.get("predicted_winner")
+        actual_games = m_master.get("predicted_winner_games")
+
+        # If the master bracket doesn't have a final result yet, mark as pending
+        if not actual_winner or actual_games is None:
+            points_by_match[match_key] = {
+                "points": 0,
+                "status": "pending",
+                "conference": conf,
+                "round": rnd,
+                "slot": slot,
+            }
+            continue
+
+        # If the user bracket somehow doesn't have a match here, treat as miss
+        if not m_user:
+            misses += 1
+            points_by_match[match_key] = {
+                "points": 0,
+                "status": "no_match",
+                "conference": conf,
+                "round": rnd,
+                "slot": slot,
+            }
+            continue
+
+        user_winner = m_user.get("predicted_winner")
+        user_games = m_user.get("predicted_winner_games")
+
+        # No pick at all
+        if not user_winner:
+            misses += 1
+            points_by_match[match_key] = {
+                "points": 0,
+                "status": "no_pick",
+                "conference": conf,
+                "round": rnd,
+                "slot": slot,
+            }
+            continue
+
+        # Basic correctness flags
+        winner_correct = user_winner == actual_winner
+        series_len_correct = user_games == actual_games
+
+        master_teams = {
+            m_master.get("team_a"),
+            m_master.get("team_b"),
+        }
+        user_teams = {
+            m_user.get("team_a"),
+            m_user.get("team_b"),
+        }
+        # require both sides fully set and exactly the same two teams
+        participants_correct = (
+            None not in master_teams
+            and None not in user_teams
+            and master_teams == user_teams
+        )
+
+        # Special scoring rule for play-in (round 0)
+        is_play_in = int(rnd) == 0 if rnd is not None else False
+
+        if is_play_in:
+            # PLAY-IN:
+            #  - 1 point only if winner + both teams correct
+            #  - otherwise 0, no partial hits
+            if winner_correct and participants_correct:
+                pts = 1
+                status = "full"
+                full_hits += 1
+            else:
+                pts = 0
+                status = "miss"
+                misses += 1
+        else:
+            # NORMAL SERIES:
+            #  - 3 points: winner + length + both teams correct
+            #  - 1 point: winner correct (but teams and/or length not fully correct)
+            #  - 0 points: wrong winner
+            if winner_correct and series_len_correct and participants_correct:
+                pts = 3
+                status = "full"
+                full_hits += 1
+            elif winner_correct:
+                pts = 1
+                status = "partial"
+                partial_hits += 1
+            else:
+                pts = 0
+                status = "miss"
+                misses += 1
+
+        total_points += pts
+        round_key = str(rnd)
+        points_by_round[round_key] = points_by_round.get(round_key, 0) + pts
+
+        points_by_match[match_key] = {
+            "points": pts,
+            "status": status,
+            "conference": conf,
+            "round": rnd,
+            "slot": slot,
+            "winner_correct": winner_correct,
+            "series_len_correct": series_len_correct,
+            "participants_correct": participants_correct,
+        }
+
+    record = {
+        "bracket_id": bracket_id,
+        "master_bracket_id": master_bracket_id,
+        "total_points": total_points + bonus_finalists + bonus_champion,
+        "full_hits": full_hits,
+        "partial_hits": partial_hits,
+        "misses": misses,
+        "bonus_finalists": bonus_finalists,
+        "bonus_champion": bonus_champion,
+        "points_by_round": points_by_round,
+        "points_by_match": points_by_match,
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+    # Upsert into bracket_scores (PK is bracket_id)
+    supabase.table("bracket_scores").upsert(record).execute()
+    return record
+
+
 # --------------------------------------------------------
 # -------------------- Admin endpoints  ------------------
 # --------------------------------------------------------
@@ -1005,203 +1203,6 @@ def send_email_via_brevo(to_email, subject, body):
 # ------------------ Bracket endpoints  ------------------
 # --------------------------------------------------------
 
-def _fetch_matches_for_bracket(bracket_id: str):
-    """
-    Load all matches for a bracket and key them by (conference-round-slot).
-    Key format example: 'east-1-4'
-    """
-    rows = (
-        supabase.table("matches")
-        .select(
-            "id, conference, round, slot, "
-            "team_a, team_b, "
-            "predicted_winner, predicted_winner_games"
-        )
-        .eq("bracket_id", bracket_id)
-        .execute()
-        .data
-    )
-
-    by_key = {}
-    for m in rows:
-        conf = (m.get("conference") or "").lower()
-        rnd = m.get("round")
-        slot = m.get("slot")
-        key = f"{conf}-{rnd}-{slot}"
-        by_key[key] = m
-    return by_key
-
-
-def _compute_score_for_bracket(master_matches_by_key: dict, master_bracket_id: str, bracket_id: str):
-    """
-    Compare one user bracket against the master bracket and upsert into bracket_scores.
-
-    Scoring rules per matchup (non–play-in rounds):
-      - 3 points: user predicted
-          * both teams in the matchup (same two teams as master, any order), AND
-          * the correct winner, AND
-          * the correct series length (predicted_winner_games).
-      - 1 point: user predicted the correct winner (even if teams/length wrong).
-      - 0 points: anything else, or no pick.
-
-    Special case for play-in (round == 0):
-      - 1 point: user predicted both teams correctly (same two teams as master, any order)
-        AND the correct winner.
-      - 0 points: otherwise (no partials for play-in).
-
-    Only matchups where the master has BOTH predicted_winner AND predicted_winner_games
-    are scored; others are considered 'pending'.
-    """
-    user_matches = _fetch_matches_for_bracket(bracket_id)
-    if not user_matches:
-        return None
-
-    total_points = 0
-    full_hits = 0
-    partial_hits = 0
-    misses = 0
-
-    # bonuses (for later; leave as 0 for now)
-    bonus_finalists = 0
-    bonus_champion = 0
-
-    points_by_round = {}   # e.g. { "0": 5, "1": 12, ... }
-    points_by_match = {}   # e.g. { "east-1-4": { ... }, ... }
-
-    for key, m_master in master_matches_by_key.items():
-        m_user = user_matches.get(key)
-
-        conf = (m_master.get("conference") or "").lower()
-        rnd = m_master.get("round")
-        slot = m_master.get("slot")
-        match_key = f"{conf}-{rnd}-{slot}"
-
-        actual_winner = m_master.get("predicted_winner")
-        actual_games = m_master.get("predicted_winner_games")
-
-        # If the master bracket doesn't have a final result yet, mark as pending
-        if not actual_winner or actual_games is None:
-            points_by_match[match_key] = {
-                "points": 0,
-                "status": "pending",
-                "conference": conf,
-                "round": rnd,
-                "slot": slot,
-            }
-            continue
-
-        # If the user bracket somehow doesn't have a match here, treat as miss
-        if not m_user:
-            misses += 1
-            points_by_match[match_key] = {
-                "points": 0,
-                "status": "no_match",
-                "conference": conf,
-                "round": rnd,
-                "slot": slot,
-            }
-            continue
-
-        user_winner = m_user.get("predicted_winner")
-        user_games = m_user.get("predicted_winner_games")
-
-        # No pick at all
-        if not user_winner:
-            misses += 1
-            points_by_match[match_key] = {
-                "points": 0,
-                "status": "no_pick",
-                "conference": conf,
-                "round": rnd,
-                "slot": slot,
-            }
-            continue
-
-        # Basic correctness flags
-        winner_correct = user_winner == actual_winner
-        series_len_correct = user_games == actual_games
-
-        master_teams = {
-            m_master.get("team_a"),
-            m_master.get("team_b"),
-        }
-        user_teams = {
-            m_user.get("team_a"),
-            m_user.get("team_b"),
-        }
-        # require both sides fully set and exactly the same two teams
-        participants_correct = (
-            None not in master_teams
-            and None not in user_teams
-            and master_teams == user_teams
-        )
-
-        # Special scoring rule for play-in (round 0)
-        is_play_in = int(rnd) == 0 if rnd is not None else False
-
-        if is_play_in:
-            # PLAY-IN:
-            #  - 1 point only if winner + both teams correct
-            #  - otherwise 0, no partial hits
-            if winner_correct and participants_correct:
-                pts = 1
-                status = "full"
-                full_hits += 1
-            else:
-                pts = 0
-                status = "miss"
-                misses += 1
-        else:
-            # NORMAL SERIES:
-            #  - 3 points: winner + length + both teams correct
-            #  - 1 point: winner correct (but teams and/or length not fully correct)
-            #  - 0 points: wrong winner
-            if winner_correct and series_len_correct and participants_correct:
-                pts = 3
-                status = "full"
-                full_hits += 1
-            elif winner_correct:
-                pts = 1
-                status = "partial"
-                partial_hits += 1
-            else:
-                pts = 0
-                status = "miss"
-                misses += 1
-
-        total_points += pts
-        round_key = str(rnd)
-        points_by_round[round_key] = points_by_round.get(round_key, 0) + pts
-
-        points_by_match[match_key] = {
-            "points": pts,
-            "status": status,
-            "conference": conf,
-            "round": rnd,
-            "slot": slot,
-            "winner_correct": winner_correct,
-            "series_len_correct": series_len_correct,
-            "participants_correct": participants_correct,
-        }
-
-    record = {
-        "bracket_id": bracket_id,
-        "master_bracket_id": master_bracket_id,
-        "total_points": total_points + bonus_finalists + bonus_champion,
-        "full_hits": full_hits,
-        "partial_hits": partial_hits,
-        "misses": misses,
-        "bonus_finalists": bonus_finalists,
-        "bonus_champion": bonus_champion,
-        "points_by_round": points_by_round,
-        "points_by_match": points_by_match,
-        "updated_at": datetime.now(timezone.utc).isoformat(),
-    }
-
-    # Upsert into bracket_scores (PK is bracket_id)
-    supabase.table("bracket_scores").upsert(record).execute()
-    return record
-
 
 @app.route("/bracket/create", methods=["POST"])
 @require_auth
@@ -1510,6 +1511,8 @@ def get_my_bracket():
                 },
                 "playoffs_locked": locked,
                 "bracket_creation_open": creation_open,
+                "regular_season_end_utc": REGULAR_SEASON_END_UTC,
+                "playoffs_deadline_utc": PLAYOFFS_DEADLINE_UTC,
             }
         ), 200
 
@@ -1736,6 +1739,8 @@ def list_all_brackets():
                 # Global state copied onto each item for convenience
                 "playoffs_locked": locked,
                 "bracket_creation_open": creation_open,
+                "regular_season_end_utc": REGULAR_SEASON_END_UTC,
+                "playoffs_deadline_utc": PLAYOFFS_DEADLINE_UTC,
             })
 
         return jsonify(output), 200
