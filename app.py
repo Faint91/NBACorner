@@ -2218,9 +2218,6 @@ def set_match_games(match_id):
     return jsonify({"ok": True}), 200
 
 
-
-
-
 @app.route("/leaderboard", methods=["GET"])
 def leaderboard():
     """
