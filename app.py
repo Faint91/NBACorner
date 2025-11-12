@@ -1489,7 +1489,7 @@ def get_bracket_by_id(bracket_id):
     # ✅ Fetch the bracket (no is_done filter yet)
     bracket_data = (
         supabase.table("brackets")
-        .select("id, user_id, is_done, deleted_at, name, created_at, saved_at")
+        .select("id, user_id, is_done, is_master, deleted_at, name, created_at, saved_at")
         .eq("id", bracket_id)
         .is_("deleted_at", None)
         .execute()
@@ -1501,11 +1501,15 @@ def get_bracket_by_id(bracket_id):
     bracket = bracket_data[0]
 
     # ✅ Access control:
-    #   - Owner or admin → allowed even if not done
-    #   - Other users → allowed only if is_done = True
+    #   - If this is the master bracket → allow everyone to read it
+    #   - Otherwise:
+    #       * Owner or admin → allowed even if not done
+    #       * Other users → only if is_done = True
     is_owner = str(viewer_id) == str(bracket["user_id"])
-    if not is_owner and not is_admin and not bracket.get("is_done", False):
-        return jsonify({"error": "Bracket not yet saved or not accessible"}), 403
+
+    if not is_master:
+        if not is_owner and not is_admin and not bracket.get("is_done", False):
+            return jsonify({"error": "Bracket not yet saved or not accessible"}), 403
 
     # ✅ Retrieve matches
     matches = (
