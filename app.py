@@ -2438,29 +2438,62 @@ def debug_master_status():
         .single()
         .execute()
     )
-    b = b_res.data
+    b = getattr(b_res, "data", None) or {}
     if not b:
         return jsonify({"error": "bracket not found"}), 404
 
-    s_res = (
-        supabase.table("seasons")
-        .select("id, code, master_bracket_id")
-        .eq("id", b["season_id"])
-        .single()
-        .execute()
-    )
-    s = s_res.data
-    if not s:
-        return jsonify({"error": "season not found"}), 404
+    sid = b.get("season_id")
+    if not sid:
+        return jsonify({"error": "bracket has no season_id"}), 400
 
-    return jsonify({
-        "bracket_id": b["id"],
-        "season_id": b["season_id"],
-        "season_code": s.get("code"),
-        "season.master_bracket_id": s.get("master_bracket_id"),
-        "bracket_deleted": bool(b.get("deleted_at")),
-        "is_master_computed": s.get("master_bracket_id") == b["id"],
-    })
+    # Try select with master_bracket_id; if the column doesn't exist, return a helpful message.
+    try:
+        s_res = (
+            supabase.table("seasons")
+            .select("id, code, master_bracket_id")
+            .eq("id", sid)
+            .single()
+            .execute()
+        )
+        s_err = getattr(s_res, "error", None)
+        if s_err and "master_bracket_id" in str(s_err):
+            return jsonify({
+                "error": "seasons.master_bracket_id is missing",
+                "fix_sql": [
+                    "ALTER TABLE public.seasons ADD COLUMN IF NOT EXISTS master_bracket_id uuid;",
+                    "ALTER TABLE public.seasons ADD CONSTRAINT seasons_master_bracket_fk "
+                    "FOREIGN KEY (master_bracket_id) REFERENCES public.brackets(id) ON DELETE SET NULL;",
+                    "CREATE INDEX IF NOT EXISTS idx_seasons_master_bracket_id ON public.seasons(master_bracket_id);"
+                ]
+            }), 500
+
+        s = getattr(s_res, "data", None) or {}
+        mid = s.get("master_bracket_id")
+        return jsonify({
+            "bracket_id": b["id"],
+            "season_id": sid,
+            "season_code": s.get("code"),
+            "season.master_bracket_id": mid,
+            "bracket_deleted": bool(b.get("deleted_at")),
+            "is_master_computed": (mid == b["id"]),
+        }), 200
+
+    except Exception as e:
+        # If the supabase client throws instead of returning an error field.
+        msg = str(e)
+        if "master_bracket_id" in msg:
+            return jsonify({
+                "error": "seasons.master_bracket_id is missing",
+                "exception": msg,
+                "fix_sql": [
+                    "ALTER TABLE public.seasons ADD COLUMN IF NOT EXISTS master_bracket_id uuid;",
+                    "ALTER TABLE public.seasons ADD CONSTRAINT seasons_master_bracket_fk "
+                    "FOREIGN KEY (master_bracket_id) REFERENCES public.brackets(id) ON DELETE SET NULL;",
+                    "CREATE INDEX IF NOT EXISTS idx_seasons_master_bracket_id ON public.seasons(master_bracket_id);"
+                ]
+            }), 500
+        return jsonify({"error": "unexpected", "exception": msg}), 500
+
 
 
 # --------------------------------------------------------
