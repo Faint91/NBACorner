@@ -1739,29 +1739,23 @@ def get_bracket_by_id(bracket_id):
     if bracket.get("season_id") != CURRENT_SEASON_ID:
         return jsonify({"error": "Bracket is not in the current season"}), 404
 
-    # --- Canonical master: season.master_bracket_id === bracket.id ---
-    # Compute 'is_master' from the season row and expose both snake/camel for the FE.
-    is_master_canonical = False
-    try:
-        season_id_for_br = bracket.get("season_id")
-        if season_id_for_br:
-            s_res = (
-                supabase.table("seasons")
-                .select("id, master_bracket_id")
-                .eq("id", season_id_for_br)
-                .single()
-                .execute()
-            )
-            season_row = getattr(s_res, "data", None) or {}
-            mid = season_row.get("master_bracket_id")
-            is_master_canonical = bool(mid and str(mid) == str(bracket["id"]))
-    except Exception:
-        # Fail-closed (treat as not master) if anything goes wrong reaching the season row.
-        is_master_canonical = False
+    # 🔎 Derive true master flag from season.master_bracket_id OR brackets.is_master
+    season_row = None
+    if bracket.get("season_id"):
+        season_res = (
+            supabase.table("seasons")
+            .select("id, master_bracket_id")
+            .eq("id", bracket["season_id"])
+            .limit(1)
+            .execute()
+        )
+        srows = season_res.data or []
+        season_row = srows[0] if srows else None
 
-    # Override / ensure consistent master flags in the payload returned to the client
-    bracket["is_master"] = is_master_canonical
-    bracket["isMaster"] = is_master_canonical
+    derived_is_master = bool(bracket.get("is_master")) or (
+        season_row is not None
+        and str(season_row.get("master_bracket_id")) == str(bracket["id"])
+    )
 
     owner_id = bracket.get("user_id")
     is_owner = str(viewer_id) == str(owner_id)
@@ -1831,11 +1825,14 @@ def get_bracket_by_id(bracket_id):
     owner_rows = owner_res.data or []
     owner = owner_rows[0] if owner_rows else {}
 
+    # 👇 Inject both snake_case and camelCase for the frontend
     return jsonify({
         "bracket": {
             **bracket,
             "owner": {"id": owner.get("id"), "username": owner.get("username"), "email": owner.get("email")},
             "is_owner": is_owner,
+            "is_master": bool(derived_is_master),
+            "isMaster": bool(derived_is_master),
         },
         "matches": grouped,
     }), 200
