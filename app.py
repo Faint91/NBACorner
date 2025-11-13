@@ -32,8 +32,6 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 JWT_SECRET = os.getenv("JWT_SECRET", "dev_secret")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
-PLAYOFFS_START_UTC_ENV = os.getenv("PLAYOFFS_START_UTC")
-REGULAR_SEASON_END_UTC = os.getenv("REGULAR_SEASON_END_UTC")
 DISABLE_RATE_LIMITS = os.getenv("DISABLE_RATE_LIMITS", "0") == "1"
 
 # ✅ Healthcheck secret (optional; if set, /health requires it)
@@ -149,8 +147,6 @@ if not CURRENT_SEASON_CODE:
 # Call once at startup (after supabase is created)
 _resolve_season_globals()
 
-PLAYOFFS_DEADLINE_UTC = PLAYOFFS_START_UTC.isoformat() if PLAYOFFS_START_UTC else None
-
 app = Flask(__name__)
 
 # CORS configuration
@@ -211,6 +207,9 @@ RATE_LIMITS = {
     "forgot_identifier": (3, 300),     # 3 forgot-password per email/username per 5min
 
     "register_ip": (3, 3600),          # 3 registrations per IP per hour (example)
+
+    # ✅ Added: rate limit bucket for /health when token missing/wrong
+    "health_ip": (30, 60),             # 30 checks per IP per minute
 }
 
 _rate_events = defaultdict(list)
@@ -309,21 +308,6 @@ def is_uuid(value) -> bool:
         return True
     except (ValueError, TypeError):
         return False
-
-  
-def get_current_user_id():
-    """
-    Development helper: read X-User-Id header to identify the user.
-    When testing with Postman: after /login grab the returned user.id
-    and set header X-User-Id: <user-id> in subsequent calls.
-    """
-    uid = request.headers.get("X-User-Id")
-    if not uid:
-        # also support Authorization: Bearer <user-id> for convenience
-        auth = request.headers.get("Authorization")
-        if auth and auth.lower().startswith("bearer "):
-            uid = auth.split()[1]
-    return uid
 
 
 def playoffs_locked() -> bool:
@@ -593,24 +577,7 @@ def ensure_season_globals():
 @app.before_request
 def _season_bootstrap():
     ensure_season_globals()
-    
 
-def _resolve_is_master_for_bracket(bracket_row: dict) -> bool:
-    """Authoritative: season.master_bracket_id == bracket.id"""
-    sid = bracket_row.get("season_id")
-    bid = bracket_row.get("id")
-    if not sid or not bid:
-        return False
-    s_res = (
-        supabase.table("seasons")
-        .select("master_bracket_id")
-        .eq("id", sid)
-        .single()
-        .execute()
-    )
-    s = s_res.data or {}
-    return s.get("master_bracket_id") == bid
-    
 
 # --------------------------------------------------------
 # -------------------- Admin endpoints  ------------------
@@ -1438,11 +1405,9 @@ def send_email_via_brevo(to_email, subject, body):
         response = requests.post(url, json=data, headers=headers, timeout=20)
         if ENABLE_DEBUG_LOGS:
             safe_print(f"📬 Brevo response: {response.status_code}")
-        # Status code alone is safe
         safe_print(f"📬 Brevo response: {response.status_code}")
         return response.status_code in (200, 201)
     except Exception as e:
-        # Do NOT log full exception; it may include request body with reset links
         if ENABLE_DEBUG_LOGS:
             safe_print("🚨 Error sending email via Brevo (class):", type(e).__name__)
         return False
@@ -1999,7 +1964,7 @@ def update_match(bracket_id, match_id):
     bracket_check = (
         supabase.table("brackets")
         .select("user_id, season_id")
-        .eq("id", bracket_id)
+        .eq("id", match["bracket_id"])
         .is_("deleted_at", None)
         .limit(1)
         .execute()
@@ -2194,17 +2159,13 @@ def update_match(bracket_id, match_id):
 def set_match_games(match_id):
     if not is_uuid(match_id):
         return jsonify({"error": "Invalid match id"}), 400
-    user_id = request.user["user_id"]
 
     body = request.get_json() or {}
     games = body.get("games")
     if games is None:
         return jsonify({"error": "games required"}), 400
 
-    # (kept your existing X-User-Id header fallback — unchanged)
-    user_id = get_current_user_id()
-    if not user_id:
-        return jsonify({"error":"X-User-Id header required"}), 401
+    user_id = request.user["user_id"]
 
     m_resp = supabase.table("matches").select("*").eq("id", match_id).limit(1).execute()
     if not m_resp.data:
@@ -2229,7 +2190,7 @@ def set_match_games(match_id):
 
     supabase.table("matches").update({
         "predicted_winner_games": games,
-        "updated_at": "now()"
+        "updated_at": datetime.utcnow().isoformat()
     }).eq("id", match_id).execute()
     return jsonify({"ok": True}), 200
 
@@ -2389,7 +2350,7 @@ def leaderboard():
                 conf = (m.get("conference") or "").lower()
                 rnd = m.get("round")
                 slot = m.get("slot")
-                key = f"{conf}-{rnd}-{slot}"
+                key = f"{conf}-{rnd}-{slot}"`
                 if key in master_matchups:
                     master_matchups[key]["team_a_code"] = code_or_tbd(m.get("team_a"))
                     master_matchups[key]["team_b_code"] = code_or_tbd(m.get("team_b"))
