@@ -1724,10 +1724,10 @@ def get_bracket_by_id(bracket_id):
     br_res = (
         supabase.table("brackets")
         .select("id, user_id, is_done, deleted_at, name, created_at, saved_at, season_id, is_master")
-         .eq("id", bracket_id)
-         .is_("deleted_at", None)
-         .limit(1)
-         .execute()
+        .eq("id", bracket_id)
+        .is_("deleted_at", None)
+        .limit(1)
+        .execute()
     )
     br_rows = br_res.data or []
     if not br_rows:
@@ -1738,6 +1738,30 @@ def get_bracket_by_id(bracket_id):
     # Season consistency
     if bracket.get("season_id") != CURRENT_SEASON_ID:
         return jsonify({"error": "Bracket is not in the current season"}), 404
+
+    # --- Canonical master: season.master_bracket_id === bracket.id ---
+    # Compute 'is_master' from the season row and expose both snake/camel for the FE.
+    is_master_canonical = False
+    try:
+        season_id_for_br = bracket.get("season_id")
+        if season_id_for_br:
+            s_res = (
+                supabase.table("seasons")
+                .select("id, master_bracket_id")
+                .eq("id", season_id_for_br)
+                .single()
+                .execute()
+            )
+            season_row = getattr(s_res, "data", None) or {}
+            mid = season_row.get("master_bracket_id")
+            is_master_canonical = bool(mid and str(mid) == str(bracket["id"]))
+    except Exception:
+        # Fail-closed (treat as not master) if anything goes wrong reaching the season row.
+        is_master_canonical = False
+
+    # Override / ensure consistent master flags in the payload returned to the client
+    bracket["is_master"] = is_master_canonical
+    bracket["isMaster"] = is_master_canonical
 
     owner_id = bracket.get("user_id")
     is_owner = str(viewer_id) == str(owner_id)
@@ -2454,7 +2478,6 @@ def debug_master_status():
                 ]
             }), 500
         return jsonify({"error": "unexpected", "exception": msg}), 500
-
 
 
 # --------------------------------------------------------
