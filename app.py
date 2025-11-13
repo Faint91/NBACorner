@@ -2350,7 +2350,7 @@ def leaderboard():
                 conf = (m.get("conference") or "").lower()
                 rnd = m.get("round")
                 slot = m.get("slot")
-                key = f"{conf}-{rnd}-{slot}"`
+                key = f"{conf}-{rnd}-{slot}"
                 if key in master_matchups:
                     master_matchups[key]["team_a_code"] = code_or_tbd(m.get("team_a"))
                     master_matchups[key]["team_b_code"] = code_or_tbd(m.get("team_b"))
