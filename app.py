@@ -1742,11 +1742,11 @@ def get_bracket_by_id(bracket_id):
 
     br_res = (
         supabase.table("brackets")
-        .select("id, user_id, is_done, deleted_at, name, created_at, saved_at, season_id")
-        .eq("id", bracket_id)
-        .is_("deleted_at", None)
-        .limit(1)
-        .execute()
+        .select("id, user_id, is_done, deleted_at, name, created_at, saved_at, season_id, is_master")
+         .eq("id", bracket_id)
+         .is_("deleted_at", None)
+         .limit(1)
+         .execute()
     )
     br_rows = br_res.data or []
     if not br_rows:
