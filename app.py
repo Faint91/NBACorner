@@ -594,7 +594,24 @@ def ensure_season_globals():
 def _season_bootstrap():
     ensure_season_globals()
     
+
+def _resolve_is_master_for_bracket(bracket_row: dict) -> bool:
+    """Authoritative: season.master_bracket_id == bracket.id"""
+    sid = bracket_row.get("season_id")
+    bid = bracket_row.get("id")
+    if not sid or not bid:
+        return False
+    s_res = (
+        supabase.table("seasons")
+        .select("master_bracket_id")
+        .eq("id", sid)
+        .single()
+        .execute()
+    )
+    s = s_res.data or {}
+    return s.get("master_bracket_id") == bid
     
+
 # --------------------------------------------------------
 # -------------------- Admin endpoints  ------------------
 # --------------------------------------------------------
@@ -736,7 +753,6 @@ def handle_any(e):
     # Fallback for all other unexpected exceptions
     safe_print("🔴 Unhandled exception (class):", type(e).__name__)
     return jsonify({"error": "Internal server error"}), 500
-
 
 
 @app.errorhandler(APIError)
@@ -2407,6 +2423,44 @@ def leaderboard():
         if ENABLE_DEBUG_LOGS:
             safe_print("🔴 Error in /leaderboard (class):", type(e).__name__)
         return jsonify({"error": "Unexpected error"}), 500
+
+
+@app.get("/__debug/master-status")
+def debug_master_status():
+    bid = request.args.get("bracket_id")
+    if not bid:
+        return jsonify({"error": "missing bracket_id"}), 400
+
+    b_res = (
+        supabase.table("brackets")
+        .select("id, season_id, deleted_at")
+        .eq("id", bid)
+        .single()
+        .execute()
+    )
+    b = b_res.data
+    if not b:
+        return jsonify({"error": "bracket not found"}), 404
+
+    s_res = (
+        supabase.table("seasons")
+        .select("id, code, master_bracket_id")
+        .eq("id", b["season_id"])
+        .single()
+        .execute()
+    )
+    s = s_res.data
+    if not s:
+        return jsonify({"error": "season not found"}), 404
+
+    return jsonify({
+        "bracket_id": b["id"],
+        "season_id": b["season_id"],
+        "season_code": s.get("code"),
+        "season.master_bracket_id": s.get("master_bracket_id"),
+        "bracket_deleted": bool(b.get("deleted_at")),
+        "is_master_computed": s.get("master_bracket_id") == b["id"],
+    })
 
 
 # --------------------------------------------------------
