@@ -1460,6 +1460,34 @@ def create_bracket_for_user():
             return jsonify({"error": "User already has a bracket for this season"}), 400
         return jsonify({"error": "Unexpected error creating bracket", "details": str(e)}), 500
 
+    # 🔁 Auto-promote to MASTER for this season if an admin created it
+    #     - Demote any existing master for CURRENT_SEASON_ID
+    #     - Promote this new bracket (set is_master = true)
+    #     - Update seasons.master_bracket_id to point to this bracket
+    if is_admin and CURRENT_SEASON_ID:
+        try:
+            # Demote prior master for the season (if any)
+            supabase.table("brackets").update({"is_master": False}) \
+                .eq("season_id", CURRENT_SEASON_ID) \
+                .eq("is_master", True) \
+                .execute()
+
+            # Promote the new bracket as master
+            supabase.table("brackets").update({"is_master": True}) \
+                .eq("id", bracket["id"]) \
+                .execute()
+
+            # Update the season pointer
+            supabase.table("seasons").update({"master_bracket_id": bracket["id"]}) \
+                .eq("id", CURRENT_SEASON_ID) \
+                .execute()
+
+            # Reflect in response
+            bracket["is_master"] = True
+        except Exception as e:
+            app.logger.exception("Auto master promotion failed: %s", e)
+            # Non-fatal: we still proceed; UI can offer a manual "Make Master" if needed
+
     # Fetch teams (global table; season-agnostic)
     teams = supabase.table("teams").select("id, name, conference").execute().data
     east_teams = [t for t in teams if (t["conference"] or "").lower() == "east"]
