@@ -970,16 +970,29 @@ def fetch_and_sync_standings_from_nba():
         })
 
     if not rows_to_upsert:
-        raise APIError("Computed 0 standings rows; nothing to upsert", 500)
+        raise APIError("Computed 0 standings rows; nothing to insert", 500)
 
-    # 5) Upsert into standings (unique on season_id + code)
-    supabase.table("standings").upsert(
-        rows_to_upsert,
-        on_conflict=["season_id", "code"],
-    ).execute()
+    # 5) Replace existing standings for this season (simple delete + insert)
+    try:
+        # Delete old rows for this season
+        supabase.table("standings") \
+            .delete() \
+            .eq("season_id", CURRENT_SEASON_ID) \
+            .execute()
+
+        # Insert fresh snapshot
+        insert_res = (
+            supabase.table("standings")
+            .insert(rows_to_upsert)
+            .execute()
+        )
+        inserted_count = len(insert_res.data or [])
+    except Exception as e:
+        safe_print("🔴 Failed to replace standings rows:", type(e).__name__, repr(e))
+        raise APIError("Failed to write standings into database", status_code=500)
 
     return {
-        "updated": len(rows_to_upsert),
+        "updated": inserted_count,
         "season_year": season_year,
         "pages_fetched": pages_fetched,
     }
