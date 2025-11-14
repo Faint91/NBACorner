@@ -844,31 +844,30 @@ def fetch_and_sync_standings_from_nba():
     wins = defaultdict(int)
     losses = defaultdict(int)
 
-    page = 1
-    max_pages = 50          # safety limit
+    cursor = None
+    max_pages = 100          # safety limit
     pages_fetched = 0
 
     while True:
         params = {
             "seasons[]": season_year,  # e.g. 2024
             "per_page": 100,
-            "page": page,
         }
+        if cursor is not None:
+            params["cursor"] = cursor
 
         try:
             safe_print(f"🔵 Calling Balldontlie: {API_BASE}/games with params={params}")
             resp = _requests.get(
                 f"{API_BASE}/games",
                 params=params,
-                headers=headers,
+                headers=headers,   # <- keep this if you added Authorization earlier
                 timeout=10,
-            )           
+            )
         except Exception as e:
-            # This will be turned into JSON by your APIError handler
             raise APIError(f"balldontlie request failed (class: {type(e).__name__})", 502)
 
         if resp.status_code != 200:
-            # Surface upstream message in logs (truncated)
             raise APIError(
                 f"balldontlie returned {resp.status_code}: {resp.text[:200]}",
                 502,
@@ -881,6 +880,7 @@ def fetch_and_sync_standings_from_nba():
         if not games:
             break
 
+        # ---- Process this page of games ----
         for g in games:
             # Skip playoffs; we only want regular season
             if g.get("postseason"):
@@ -898,7 +898,7 @@ def fetch_and_sync_standings_from_nba():
             if home_score == 0 and away_score == 0:
                 continue
 
-            # If either team code is not in our DB, ignore that game
+            # Skip teams not in our DB
             if home_code not in team_meta_by_code or away_code not in team_meta_by_code:
                 continue
 
@@ -908,16 +908,15 @@ def fetch_and_sync_standings_from_nba():
             elif away_score > home_score:
                 wins[away_code] += 1
                 losses[home_code] += 1
-            # Ties should not exist in NBA; if equal we ignore
+            # ties ignored
 
         meta = payload.get("meta") or {}
-        next_page = meta.get("next_page")
+        cursor = meta.get("next_cursor")
         pages_fetched += 1
 
-        if not next_page or pages_fetched >= max_pages:
+        # Stop if no more pages or if safety cap reached
+        if not cursor or pages_fetched >= max_pages:
             break
-
-        page = next_page
 
     if not wins and not losses:
         raise APIError(
