@@ -33,6 +33,8 @@ SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 JWT_SECRET = os.getenv("JWT_SECRET", "dev_secret")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 DISABLE_RATE_LIMITS = os.getenv("DISABLE_RATE_LIMITS", "0") == "1"
+STANDINGS_CRON_TOKEN = os.getenv("STANDINGS_CRON_TOKEN")
+
 
 # ✅ Healthcheck secret (optional; if set, /health requires it)
 HEALTHCHECK_TOKEN = os.getenv("HEALTHCHECK_TOKEN")
@@ -46,6 +48,21 @@ PASSWORD_MIN_LENGTH = 10
 # ✅ Shared identifier validation regexes
 EMAIL_REGEX = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
 USERNAME_REGEX = r"^[a-zA-Z0-9_]{3,30}$"
+
+
+# --- NBA standings sync config ---
+
+# Unofficial NBA Stats endpoint used by many community tools and libraries
+# Example docs: leaguestandingsv3 on stats.nba.com :contentReference[oaicite:2]{index=2}
+NBA_STATS_STANDINGS_URL = "https://stats.nba.com/stats/leaguestandingsv3"
+
+# Usually "Regular Season"; you *could* override via env if needed
+NBA_STATS_SEASON_TYPE = os.getenv("NBA_STATS_SEASON_TYPE", "Regular Season")
+
+# Optional: shared secret so a cron job (Render or cron-job.org) can hit the refresh endpoint
+STANDINGS_CRON_TOKEN = os.getenv("STANDINGS_CRON_TOKEN")
+
+
 
 if not SUPABASE_URL or not SUPABASE_KEY:
     raise RuntimeError("SUPABASE_URL and SUPABASE_KEY must be set in .env")
@@ -148,6 +165,45 @@ if not CURRENT_SEASON_CODE:
 _resolve_season_globals()
 
 app = Flask(__name__)
+
+# --- NBA helpers: teamSlug -> team code mapping used for standings sync ---
+
+NBA_TEAM_SLUG_TO_CODE = {
+    # East
+    "hawks": "ATL",
+    "celtics": "BOS",
+    "nets": "BKN",
+    "hornets": "CHA",
+    "bulls": "CHI",
+    "cavaliers": "CLE",
+    "pistons": "DET",
+    "pacers": "IND",
+    "heat": "MIA",
+    "bucks": "MIL",
+    "knicks": "NYK",
+    "magic": "ORL",
+    "sixers": "PHI",   # Philadelphia 76ers
+    "raptors": "TOR",
+    "wizards": "WAS",
+
+    # West
+    "mavericks": "DAL",
+    "nuggets": "DEN",
+    "warriors": "GSW",
+    "rockets": "HOU",
+    "clippers": "LAC",
+    "lakers": "LAL",
+    "grizzlies": "MEM",
+    "timberwolves": "MIN",
+    "pelicans": "NOP",
+    "thunder": "OKC",
+    "suns": "PHX",
+    "blazers": "POR",  # Portland Trail Blazers
+    "kings": "SAC",
+    "spurs": "SAS",
+    "jazz": "UTA",
+}
+
 
 # CORS configuration
 # -------------------
@@ -728,6 +784,235 @@ def handle_api_error(err: APIError):
     # but it gives you a meaningful error message + status code.
     safe_print(f"APIError: {err.message}")
     return jsonify({"error": err.message}), err.status_code
+
+
+# --------------------------------------------------------
+# --------- Helper: fetch + sync NBA standings -----------
+# --------------------------------------------------------
+
+def fetch_and_sync_standings_from_nba():
+    """
+    Fetch current NBA standings from stats.nba.com and sync them into
+    the 'standings' table for CURRENT_SEASON_ID.
+
+    Strategy:
+      - Call LeagueStandingsV3 (unofficial NBA Stats endpoint). :contentReference[oaicite:8]{index=8}
+      - Map TeamSlug -> teams.code via NBA_TEAM_SLUG_TO_CODE.
+      - For each team that exists in 'teams', create a standings row.
+      - Delete existing standings for CURRENT_SEASON_ID, then insert fresh rows.
+    """
+    if not CURRENT_SEASON_ID:
+        raise APIError("CURRENT_SEASON not resolved on server", status_code=500)
+
+    # Load all known team codes from DB so we don't violate FK constraints
+    try:
+        team_rows = (
+            supabase.table("teams")
+            .select("code, name, conference")
+            .execute()
+        ).data or []
+    except Exception as e:
+        safe_print("🔴 Error fetching teams for standings sync (class):", type(e).__name__)
+        raise APIError("Failed to read teams from database", status_code=500)
+
+    valid_codes = {t["code"] for t in team_rows if t.get("code")}
+    if not valid_codes:
+        raise APIError("No team codes found in DB; cannot sync standings", status_code=500)
+
+    # Build request to NBA Stats
+    season_code = CURRENT_SEASON_CODE  # e.g. "2024-25"
+    if not season_code:
+        raise APIError("CURRENT_SEASON_CODE not set", status_code=500)
+
+    params = {
+        "LeagueID": "00",          # NBA
+        "Season": season_code,     # "2024-25" style
+        "SeasonType": NBA_STATS_SEASON_TYPE,  # Usually "Regular Season"
+    }
+
+    # Headers are important; stats.nba.com blocks generic clients without them. :contentReference[oaicite:9]{index=9}
+    headers = {
+        "Host": "stats.nba.com",
+        "Connection": "keep-alive",
+        "Accept": "application/json, text/plain, */*",
+        "x-nba-stats-token": "true",
+        "x-nba-stats-origin": "stats",
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/124.0.0.0 Safari/537.36"
+        ),
+        "Referer": "https://www.nba.com/",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Origin": "https://www.nba.com",
+    }
+
+    try:
+        resp = requests.get(
+            NBA_STATS_STANDINGS_URL,
+            params=params,
+            headers=headers,
+            timeout=20,
+        )
+        resp.raise_for_status()
+        payload = resp.json()
+    except Exception as e:
+        safe_print("🔴 Error calling NBA standings API (class):", type(e).__name__)
+        raise APIError("Failed to fetch standings from NBA API", status_code=502)
+
+    # Parse the resultSets -> "Standings" rows
+    result_sets = (
+        payload.get("resultSets")
+        or payload.get("ResultSets")
+        or []
+    )
+
+    if not result_sets:
+        raise APIError("NBA standings payload missing resultSets", status_code=502)
+
+    standings_set = None
+    for rs in result_sets:
+        if rs.get("name") == "Standings":
+            standings_set = rs
+            break
+    if standings_set is None:
+        # Fallback: first result set
+        standings_set = result_sets[0]
+
+    headers_list = standings_set.get("headers") or []
+    rows = standings_set.get("rowSet") or []
+
+    if not headers_list or not rows:
+        raise APIError("NBA standings payload missing headers/rows", status_code=502)
+
+    idx = {h: i for i, h in enumerate(headers_list)}
+
+    # Required columns (raise early if the API shape changes)
+    required_cols = ["TeamSlug", "TeamCity", "TeamName", "Conference", "PlayoffRank", "WINS", "LOSSES"]
+    missing = [c for c in required_cols if c not in idx]
+    if missing:
+        safe_print("🔴 NBA standings missing columns:", ",".join(missing))
+        raise APIError("Unexpected NBA standings payload structure", status_code=502)
+
+    standings_rows = []
+    skipped = []
+
+    for row in rows:
+        team_slug = str(row[idx["TeamSlug"]]).lower()
+        team_city = str(row[idx["TeamCity"]])
+        team_name = str(row[idx["TeamName"]])
+        full_name = f"{team_city} {team_name}".strip()
+
+        conf = str(row[idx["Conference"]] or "").lower()  # "east" / "west"
+        wins = int(row[idx["WINS"]] or 0)
+        losses = int(row[idx["LOSSES"]] or 0)
+        seed = int(row[idx["PlayoffRank"]] or 0)
+
+        code = NBA_TEAM_SLUG_TO_CODE.get(team_slug)
+
+        # Double-check that this code exists in the DB (FK on standings.code -> teams.code)
+        if not code or code not in valid_codes:
+            skipped.append({"slug": team_slug, "full_name": full_name})
+            continue
+
+        standings_rows.append({
+            "name": full_name,
+            "code": code,
+            "conference": conf,
+            "wins": wins,
+            "losses": losses,
+            "seed": seed if seed > 0 else None,
+            "season_id": CURRENT_SEASON_ID,
+            "updated_at": datetime.utcnow().isoformat(),
+        })
+
+    if not standings_rows:
+        # If everything got skipped, something is very off (codes mismatch).
+        safe_print("🔴 All standings rows were skipped; check NBA_TEAM_SLUG_TO_CODE mapping.")
+        raise APIError("No standings rows could be mapped to your teams table", status_code=500)
+
+    # Replace existing standings for this season with the fresh snapshot
+    try:
+        supabase.table("standings").delete().eq("season_id", CURRENT_SEASON_ID).execute()
+        supabase.table("standings").insert(standings_rows).execute()
+    except Exception as e:
+        safe_print("🔴 Error writing standings to DB (class):", type(e).__name__)
+        raise APIError("Failed to write standings to database", status_code=500)
+
+    # Log what we did for debugging
+    safe_print(
+        f"✅ Standings sync complete for season {season_code}: "
+        f"{len(standings_rows)} rows inserted, {len(skipped)} skipped"
+    )
+
+    return {
+        "inserted": len(standings_rows),
+        "skipped": skipped,
+        "season_code": season_code,
+        "season_id": str(CURRENT_SEASON_ID),
+    }
+
+
+@app.route("/admin/standings/refresh", methods=["POST"])
+@require_auth
+def admin_refresh_standings():
+    """
+    Admin-only: fetch real NBA standings from stats.nba.com and sync the
+    'standings' table for the CURRENT season.
+
+    Usage:
+      - Call manually from an admin UI / Postman with a valid admin JWT.
+      - Or let a scheduled job (see /internal/standings/refresh) call the same helper.
+    """
+    user_info = request.user or {}
+    user_id = user_info.get("user_id")
+    is_admin_token = user_info.get("is_admin", False)
+
+    if not is_admin_token:
+        return jsonify({"error": "Forbidden"}), 403
+
+    # Optional: defense-in-depth, re-check admin flag in DB
+    try:
+        users = (
+            supabase.table("users")
+            .select("id, is_admin")
+            .eq("id", user_id)
+            .limit(1)
+            .execute()
+        ).data or []
+        if not users or not bool(users[0].get("is_admin", False)):
+            return jsonify({"error": "Forbidden"}), 403
+    except Exception as e:
+        safe_print("🔴 DB error in /admin/standings/refresh (class):", type(e).__name__)
+        return jsonify({"error": "Database error"}), 500
+
+    result = fetch_and_sync_standings_from_nba()
+    return jsonify({"ok": True, **result}), 200
+
+
+@app.route("/internal/standings/refresh", methods=["POST"])
+def internal_cron_refresh_standings():
+    """
+    Internal-only endpoint intended for cron jobs.
+
+    Auth:
+      - Requires STANDINGS_CRON_TOKEN to be set in env.
+      - Caller must send it as either:
+          * Header: X-Cron-Token: <token>
+          * Or query param: ?token=<token>
+    """
+    token_supplied = (
+        request.headers.get("X-Cron-Token")
+        or request.args.get("token")
+    )
+
+    if not STANDINGS_CRON_TOKEN or token_supplied != STANDINGS_CRON_TOKEN:
+        # Do not leak whether the token is set; just say forbidden.
+        return jsonify({"error": "Forbidden"}), 403
+
+    result = fetch_and_sync_standings_from_nba()
+    return jsonify({"ok": True, **result}), 200
+
 
 
 @app.route("/admin/insert_test_teams", methods=["POST"])

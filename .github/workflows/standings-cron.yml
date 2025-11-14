@@ -1,0 +1,19 @@
+name: Daily NBA standings sync
+
+on:
+  schedule:
+    # Runs every day at 09:00 UTC
+    - cron: "0 11 * * *"
+  # Optional: allow manual runs from the Actions tab
+  workflow_dispatch: {}
+
+jobs:
+  sync-standings:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Call backend standings refresh endpoint
+        run: |
+          curl -X POST \
+            "${{ secrets.BACKEND_BASE_URL }}/internal/standings/refresh?token=${{ secrets.STANDINGS_CRON_TOKEN }}" \
+            -H "Accept: application/json"
