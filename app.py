@@ -34,6 +34,9 @@ JWT_SECRET = os.getenv("JWT_SECRET", "dev_secret")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 DISABLE_RATE_LIMITS = os.getenv("DISABLE_RATE_LIMITS", "0") == "1"
 STANDINGS_CRON_TOKEN = os.getenv("STANDINGS_CRON_TOKEN")
+BALLDONTLIE_API_KEY = os.getenv("BALLDONTLIE_API_KEY")
+BALDONTLIE_BASE_URL = "https://api.balldontlie.io/v1"
+
 
 
 # ✅ Healthcheck secret (optional; if set, /health requires it)
@@ -792,19 +795,34 @@ def handle_api_error(err: APIError):
 
 def fetch_and_sync_standings_from_nba():
     """
-    Fetch current NBA standings from stats.nba.com and sync them into
-    the 'standings' table for CURRENT_SEASON_ID.
+    Recompute standings for the current season using Balldontlie free /games endpoint.
 
-    Strategy:
-      - Call LeagueStandingsV3 (unofficial NBA Stats endpoint). :contentReference[oaicite:8]{index=8}
-      - Map TeamSlug -> teams.code via NBA_TEAM_SLUG_TO_CODE.
-      - For each team that exists in 'teams', create a standings row.
-      - Delete existing standings for CURRENT_SEASON_ID, then insert fresh rows.
+    Steps:
+      - Derive numeric season year from CURRENT_SEASON_CODE (e.g. "2025-26" -> 2025).
+      - Fetch *all* regular-season games for that season from Balldontlie.
+      - For each completed game:
+          * Decide winner/loser from home_team_score vs visitor_team_score.
+          * Increment wins/losses counters for each team.
+      - Use your teams table for names & conferences.
+      - Rank teams within each conference to assign seeds.
+      - Delete old standings rows for CURRENT_SEASON_ID and insert new ones.
     """
+    if not CURRENT_SEASON_CODE:
+        raise APIError("CURRENT_SEASON_CODE is not configured", status_code=500)
     if not CURRENT_SEASON_ID:
-        raise APIError("CURRENT_SEASON not resolved on server", status_code=500)
+        raise APIError("CURRENT_SEASON_ID is not resolved", status_code=500)
+    if not BALLDONTLIE_API_KEY:
+        raise APIError("BALLDONTLIE_API_KEY is not configured", status_code=500)
 
-    # Load all known team codes from DB so we don't violate FK constraints
+    # ---- Derive numeric season year for Balldontlie (e.g. "2025-26" -> 2025) ----
+    try:
+        season_year_str = str(CURRENT_SEASON_CODE).split("-")[0]
+        season_year = int(season_year_str)
+    except Exception:
+        # Fallback: current year if format is unexpected
+        season_year = datetime.utcnow().year
+
+    # ---- Load teams from your DB (for code/name/conference & FK safety) ----
     try:
         team_rows = (
             supabase.table("teams")
@@ -812,159 +830,202 @@ def fetch_and_sync_standings_from_nba():
             .execute()
         ).data or []
     except Exception as e:
-        safe_print("🔴 Error fetching teams for standings sync (class):", type(e).__name__)
-        raise APIError("Failed to read teams from database", status_code=500)
+        safe_print("🔴 Could not fetch teams for standings sync:", type(e).__name__, repr(e))
+        raise APIError("Failed to load teams while syncing standings", status_code=500)
 
-    valid_codes = {t["code"] for t in team_rows if t.get("code")}
-    if not valid_codes:
-        raise APIError("No team codes found in DB; cannot sync standings", status_code=500)
-
-    # Build request to NBA Stats
-    season_code = CURRENT_SEASON_CODE  # e.g. "2024-25"
-    if not season_code:
-        raise APIError("CURRENT_SEASON_CODE not set", status_code=500)
-
-    params = {
-        "LeagueID": "00",          # NBA
-        "Season": season_code,     # "2024-25" style
-        "SeasonType": NBA_STATS_SEASON_TYPE,  # Usually "Regular Season"
-    }
-
-    # Headers are important; stats.nba.com blocks generic clients without them. :contentReference[oaicite:9]{index=9}
-    headers = {
-        "Host": "stats.nba.com",
-        "Connection": "keep-alive",
-        "Accept": "application/json, text/plain, */*",
-        "x-nba-stats-token": "true",
-        "x-nba-stats-origin": "stats",
-        "User-Agent": (
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/124.0.0.0 Safari/537.36"
-        ),
-        "Referer": "https://www.nba.com/",
-        "Accept-Language": "en-US,en;q=0.9",
-        "Origin": "https://www.nba.com",
-    }
-
-    try:
-        resp = requests.get(
-            NBA_STATS_STANDINGS_URL,
-            params=params,
-            headers=headers,
-            timeout=20,
-        )
-        status = resp.status_code
-        safe_print(f"🔵 NBA standings HTTP status: {status}")
-        resp.raise_for_status()
-        payload = resp.json()
-    except requests.exceptions.Timeout as e:
-        safe_print("🔴 NBA standings request timed out:", repr(e))
-        raise APIError("NBA API timeout while fetching standings", status_code=502)
-    except requests.exceptions.HTTPError as e:
-        # Log status + first part of body for debugging
-        try:
-            status = resp.status_code
-            body_snippet = resp.text[:500]
-        except Exception:
-            status = "unknown"
-            body_snippet = "<no body>"
-        safe_print(f"🔴 NBA standings HTTP error {status}: {body_snippet}")
-        raise APIError(f"NBA API HTTP error {status} while fetching standings", status_code=502)
-    except Exception as e:
-        safe_print("🔴 Error calling NBA standings API (class):", type(e).__name__, repr(e))
-        raise APIError("Failed to fetch standings from NBA API", status_code=502)
-
-    # Parse the resultSets -> "Standings" rows
-    result_sets = (
-        payload.get("resultSets")
-        or payload.get("ResultSets")
-        or []
-    )
-
-    if not result_sets:
-        raise APIError("NBA standings payload missing resultSets", status_code=502)
-
-    standings_set = None
-    for rs in result_sets:
-        if rs.get("name") == "Standings":
-            standings_set = rs
-            break
-    if standings_set is None:
-        # Fallback: first result set
-        standings_set = result_sets[0]
-
-    headers_list = standings_set.get("headers") or []
-    rows = standings_set.get("rowSet") or []
-
-    if not headers_list or not rows:
-        raise APIError("NBA standings payload missing headers/rows", status_code=502)
-
-    idx = {h: i for i, h in enumerate(headers_list)}
-
-    # Required columns (raise early if the API shape changes)
-    required_cols = ["TeamSlug", "TeamCity", "TeamName", "Conference", "PlayoffRank", "WINS", "LOSSES"]
-    missing = [c for c in required_cols if c not in idx]
-    if missing:
-        safe_print("🔴 NBA standings missing columns:", ",".join(missing))
-        raise APIError("Unexpected NBA standings payload structure", status_code=502)
-
-    standings_rows = []
-    skipped = []
-
-    for row in rows:
-        team_slug = str(row[idx["TeamSlug"]]).lower()
-        team_city = str(row[idx["TeamCity"]])
-        team_name = str(row[idx["TeamName"]])
-        full_name = f"{team_city} {team_name}".strip()
-
-        conf = str(row[idx["Conference"]] or "").lower()  # "east" / "west"
-        wins = int(row[idx["WINS"]] or 0)
-        losses = int(row[idx["LOSSES"]] or 0)
-        seed = int(row[idx["PlayoffRank"]] or 0)
-
-        code = NBA_TEAM_SLUG_TO_CODE.get(team_slug)
-
-        # Double-check that this code exists in the DB (FK on standings.code -> teams.code)
-        if not code or code not in valid_codes:
-            skipped.append({"slug": team_slug, "full_name": full_name})
+    teams_by_code = {}
+    for t in team_rows:
+        code = (t.get("code") or "").upper()
+        if not code:
             continue
+        teams_by_code[code] = {
+            "name": t.get("name") or code,
+            "conference": (t.get("conference") or "").lower(),
+        }
 
-        standings_rows.append({
-            "name": full_name,
-            "code": code,
-            "conference": conf,
-            "wins": wins,
-            "losses": losses,
-            "seed": seed if seed > 0 else None,
-            "season_id": CURRENT_SEASON_ID,
-            "updated_at": datetime.utcnow().isoformat(),
-        })
+    valid_codes = set(teams_by_code.keys())
+    if not valid_codes:
+        raise APIError("No teams found in DB; cannot compute standings", status_code=500)
 
-    if not standings_rows:
-        # If everything got skipped, something is very off (codes mismatch).
-        safe_print("🔴 All standings rows were skipped; check NBA_TEAM_SLUG_TO_CODE mapping.")
-        raise APIError("No standings rows could be mapped to your teams table", status_code=500)
+    # ---- Fetch ALL regular-season games for this season from Balldontlie ----
+    headers = {"Authorization": BALLDONTLIE_API_KEY}
+    base_params = {
+        "seasons[]": season_year,  # per docs: ?seasons[]=2024
+        "postseason": "false",     # only regular season
+        "per_page": 100,           # max page size
+    }
 
-    # Replace existing standings for this season with the fresh snapshot
+    stats = {}  # code -> { name, conference, wins, losses }
+
+    cursor = None
+    page_count = 0
+    max_pages = 40  # safety guard; 1230 games / 100 per page ≈ 13 pages
+
+    while True:
+        params = dict(base_params)
+        if cursor is not None:
+            params["cursor"] = cursor
+
+        try:
+            resp = requests.get(
+                f"{BALDONTLIE_BASE_URL}/games",
+                headers=headers,
+                params=params,
+                timeout=30,
+            )
+            status = resp.status_code
+            safe_print(f"🔵 Balldontlie games HTTP status: {status}, cursor={cursor}")
+            resp.raise_for_status()
+        except requests.exceptions.Timeout as e:
+            safe_print("🔴 Balldontlie games request timed out:", repr(e))
+            raise APIError("Balldontlie API timeout while fetching games", status_code=502)
+        except requests.exceptions.HTTPError as e:
+            try:
+                body_snippet = resp.text[:500]
+            except Exception:
+                body_snippet = "<no body>"
+            safe_print(f"🔴 Balldontlie HTTP error {resp.status_code} while fetching games: {body_snippet}")
+            raise APIError(f"Balldontlie HTTP error {resp.status_code} while fetching games", status_code=502)
+        except Exception as e:
+            safe_print("🔴 Unexpected error calling Balldontlie games:", type(e).__name__, repr(e))
+            raise APIError("Failed to fetch games from Balldontlie", status_code=502)
+
+        payload = resp.json()
+        games = payload.get("data") or []
+        meta = payload.get("meta") or {}
+        cursor = meta.get("next_cursor")
+
+        # ---- Process this page of games ----
+        for g in games:
+            # Only finished regular-season games
+            status_str = str(g.get("status") or "").lower()
+            if status_str != "final":
+                continue
+            if bool(g.get("postseason")):
+                continue
+
+            home = g.get("home_team") or {}
+            visitor = g.get("visitor_team") or {}
+            home_code = (home.get("abbreviation") or "").upper()
+            visitor_code = (visitor.get("abbreviation") or "").upper()
+
+            # Only track teams we know in our DB (avoids FK violations)
+            if home_code not in valid_codes or visitor_code not in valid_codes:
+                continue
+
+            try:
+                home_score = int(g.get("home_team_score") or 0)
+                visitor_score = int(g.get("visitor_team_score") or 0)
+            except Exception:
+                # If scores are weird, skip this game
+                continue
+
+            # Initialize stats entries if needed
+            for code, team_obj in ((home_code, home), (visitor_code, visitor)):
+                if code not in stats:
+                    db_info = teams_by_code.get(code, {})
+                    stats[code] = {
+                        "name": db_info.get("name")
+                                or team_obj.get("full_name")
+                                or team_obj.get("name")
+                                or code,
+                        "conference": (db_info.get("conference")
+                                       or team_obj.get("conference")
+                                       or "").lower(),
+                        "wins": 0,
+                        "losses": 0,
+                    }
+
+            # Increment wins/losses
+            if home_score > visitor_score:
+                stats[home_code]["wins"] += 1
+                stats[visitor_code]["losses"] += 1
+            elif visitor_score > home_score:
+                stats[visitor_code]["wins"] += 1
+                stats[home_code]["losses"] += 1
+            # Ties shouldn't exist; if they do, ignore
+
+        page_count += 1
+        if not cursor or page_count >= max_pages:
+            break
+
+        # Free tier is 5 req/min => sleep to stay under that
+        time.sleep(15)
+
+    if not stats:
+        raise APIError("No games processed when computing standings", status_code=500)
+
+    # ---- Compute seeds within each conference ----
+    from collections import defaultdict
+
+    conf_buckets = defaultdict(list)  # conf -> list[(code, info)]
+    for code, info in stats.items():
+        conf = (info.get("conference") or "").lower()
+        conf_buckets[conf].append((code, info))
+
+    for conf, items in conf_buckets.items():
+        # Sort by: wins desc, losses asc, name asc
+        items_sorted = sorted(
+            items,
+            key=lambda item: (-item[1]["wins"], item[1]["losses"], item[1]["name"]),
+        )
+        for seed_idx, (code, _) in enumerate(items_sorted, start=1):
+            stats[code]["seed"] = seed_idx
+
+    # ---- Wipe old standings for this season and insert new snapshot ----
+    deleted_count = 0
     try:
-        supabase.table("standings").delete().eq("season_id", CURRENT_SEASON_ID).execute()
-        supabase.table("standings").insert(standings_rows).execute()
+        del_res = (
+            supabase.table("standings")
+            .delete()
+            .eq("season_id", CURRENT_SEASON_ID)
+            .execute()
+        )
+        deleted_count = len(del_res.data or [])
     except Exception as e:
-        safe_print("🔴 Error writing standings to DB (class):", type(e).__name__)
-        raise APIError("Failed to write standings to database", status_code=500)
+        safe_print("⚠️ Could not delete existing standings rows:", type(e).__name__, repr(e))
 
-    # Log what we did for debugging
+    rows_to_insert = []
+    now_utc = datetime.utcnow()  # TIMESTAMP WITHOUT TIME ZONE in your schema
+
+    for code, info in stats.items():
+        rows_to_insert.append(
+            {
+                "name": info["name"],
+                "code": code,
+                "wins": info["wins"],
+                "losses": info["losses"],
+                "conference": info.get("conference") or "",
+                "seed": info.get("seed"),
+                "season_id": CURRENT_SEASON_ID,
+                "updated_at": now_utc,
+            }
+        )
+
+    inserted_count = 0
+    if rows_to_insert:
+        try:
+            ins_res = (
+                supabase.table("standings")
+                .insert(rows_to_insert)
+                .execute()
+            )
+            inserted_count = len(ins_res.data or [])
+        except Exception as e:
+            safe_print("🔴 Failed to insert standings rows:", type(e).__name__, repr(e))
+            raise APIError("Failed to insert standings into database", status_code=500)
+
     safe_print(
-        f"✅ Standings sync complete for season {season_code}: "
-        f"{len(standings_rows)} rows inserted, {len(skipped)} skipped"
+        f"✅ Standings recomputed from games for season {season_year}: "
+        f"{inserted_count} rows inserted (deleted {deleted_count})"
     )
 
     return {
-        "inserted": len(standings_rows),
-        "skipped": skipped,
-        "season_code": season_code,
-        "season_id": str(CURRENT_SEASON_ID),
+        "provider": "balldontlie_games",
+        "season_code": CURRENT_SEASON_CODE,
+        "season_year": season_year,
+        "inserted": inserted_count,
+        "deleted_old": deleted_count,
     }
 
 
