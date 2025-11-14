@@ -854,10 +854,25 @@ def fetch_and_sync_standings_from_nba():
             headers=headers,
             timeout=20,
         )
+        status = resp.status_code
+        safe_print(f"🔵 NBA standings HTTP status: {status}")
         resp.raise_for_status()
         payload = resp.json()
+    except requests.exceptions.Timeout as e:
+        safe_print("🔴 NBA standings request timed out:", repr(e))
+        raise APIError("NBA API timeout while fetching standings", status_code=502)
+    except requests.exceptions.HTTPError as e:
+        # Log status + first part of body for debugging
+        try:
+            status = resp.status_code
+            body_snippet = resp.text[:500]
+        except Exception:
+            status = "unknown"
+            body_snippet = "<no body>"
+        safe_print(f"🔴 NBA standings HTTP error {status}: {body_snippet}")
+        raise APIError(f"NBA API HTTP error {status} while fetching standings", status_code=502)
     except Exception as e:
-        safe_print("🔴 Error calling NBA standings API (class):", type(e).__name__)
+        safe_print("🔴 Error calling NBA standings API (class):", type(e).__name__, repr(e))
         raise APIError("Failed to fetch standings from NBA API", status_code=502)
 
     # Parse the resultSets -> "Standings" rows
