@@ -801,6 +801,14 @@ def fetch_and_sync_standings_from_nba():
     into public.standings.
     """
     API_BASE = "https://api.balldontlie.io/v1"
+    
+    # Build headers for Balldontlie (requires API key)
+    if not BALLDONTLIE_API_KEY:
+        raise APIError("BALLDONTLIE_API_KEY is not configured", 500)
+
+    headers = {
+        "Authorization": BALLDONTLIE_API_KEY  # per Balldontlie docs: Authorization: YOUR_API_KEY
+    }
 
     # We'll infer the numeric season from CURRENT_SEASON_CODE, e.g. "2024-25" -> 2024
     global CURRENT_SEASON_CODE, CURRENT_SEASON_ID, supabase
@@ -849,7 +857,12 @@ def fetch_and_sync_standings_from_nba():
 
         try:
             safe_print(f"🔵 Calling Balldontlie: {API_BASE}/games with params={params}")
-            resp = _requests.get(f"{API_BASE}/games", params=params, timeout=10)           
+            resp = _requests.get(
+                f"{API_BASE}/games",
+                params=params,
+                headers=headers,
+                timeout=10,
+            )           
         except Exception as e:
             # This will be turned into JSON by your APIError handler
             raise APIError(f"balldontlie request failed (class: {type(e).__name__})", 502)
