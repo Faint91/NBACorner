@@ -34,9 +34,6 @@ JWT_SECRET = os.getenv("JWT_SECRET", "dev_secret")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 DISABLE_RATE_LIMITS = os.getenv("DISABLE_RATE_LIMITS", "0") == "1"
 STANDINGS_CRON_TOKEN = os.getenv("STANDINGS_CRON_TOKEN")
-BALLDONTLIE_API_KEY = os.getenv("BALLDONTLIE_API_KEY")
-BALDONTLIE_BASE_URL = "https://api.balldontlie.io/v1"
-
 
 
 # ✅ Healthcheck secret (optional; if set, /health requires it)
@@ -795,237 +792,178 @@ def handle_api_error(err: APIError):
 
 def fetch_and_sync_standings_from_nba():
     """
-    Recompute standings for the current season using Balldontlie free /games endpoint.
-
-    Steps:
-      - Derive numeric season year from CURRENT_SEASON_CODE (e.g. "2025-26" -> 2025).
-      - Fetch *all* regular-season games for that season from Balldontlie.
-      - For each completed game:
-          * Decide winner/loser from home_team_score vs visitor_team_score.
-          * Increment wins/losses counters for each team.
-      - Use your teams table for names & conferences.
-      - Rank teams within each conference to assign seeds.
-      - Delete old standings rows for CURRENT_SEASON_ID and insert new ones.
+    Fetch regular-season games from the free balldontlie API and recompute
+    standings (wins/losses + seeds) for the CURRENT_SEASON_ID, then upsert
+    into public.standings.
     """
-    if not CURRENT_SEASON_CODE:
-        raise APIError("CURRENT_SEASON_CODE is not configured", status_code=500)
-    if not CURRENT_SEASON_ID:
-        raise APIError("CURRENT_SEASON_ID is not resolved", status_code=500)
-    if not BALLDONTLIE_API_KEY:
-        raise APIError("BALLDONTLIE_API_KEY is not configured", status_code=500)
+    API_BASE = "https://www.balldontlie.io/api/v1"
 
-    # ---- Derive numeric season year for Balldontlie (e.g. "2025-26" -> 2025) ----
-    try:
-        season_year_str = str(CURRENT_SEASON_CODE).split("-")[0]
-        season_year = int(season_year_str)
-    except Exception:
-        # Fallback: current year if format is unexpected
+    # We'll infer the numeric season from CURRENT_SEASON_CODE, e.g. "2024-25" -> 2024
+    global CURRENT_SEASON_CODE, CURRENT_SEASON_ID, supabase
+    import re as _re
+    import requests as _requests
+
+    season_code = str(CURRENT_SEASON_CODE or "")
+    m = _re.search(r"(20\d{2})", season_code)
+    if m:
+        season_year = int(m.group(1))
+    else:
+        # Fallback: current calendar year
         season_year = datetime.utcnow().year
 
-    # ---- Load teams from your DB (for code/name/conference & FK safety) ----
-    try:
-        team_rows = (
-            supabase.table("teams")
-            .select("code, name, conference")
-            .execute()
-        ).data or []
-    except Exception as e:
-        safe_print("🔴 Could not fetch teams for standings sync:", type(e).__name__, repr(e))
-        raise APIError("Failed to load teams while syncing standings", status_code=500)
+    # 1) Load teams from DB so we know code + conference
+    teams_rows = (
+        supabase.table("teams")
+        .select("code, name, conference")
+        .execute()
+        .data
+    )
+    if not teams_rows:
+        raise APIError("No teams found in DB; cannot build standings", 500)
 
-    teams_by_code = {}
-    for t in team_rows:
-        code = (t.get("code") or "").upper()
-        if not code:
-            continue
-        teams_by_code[code] = {
-            "name": t.get("name") or code,
-            "conference": (t.get("conference") or "").lower(),
-        }
-
-    valid_codes = set(teams_by_code.keys())
-    if not valid_codes:
-        raise APIError("No teams found in DB; cannot compute standings", status_code=500)
-
-    # ---- Fetch ALL regular-season games for this season from Balldontlie ----
-    headers = {"Authorization": BALLDONTLIE_API_KEY}
-    base_params = {
-        "seasons[]": season_year,  # per docs: ?seasons[]=2024
-        "postseason": "false",     # only regular season
-        "per_page": 100,           # max page size
+    # Map team code -> metadata (we assume codes match balldontlie abbreviations)
+    team_meta_by_code = {
+        row["code"]: row
+        for row in teams_rows
+        if row.get("code")
     }
 
-    stats = {}  # code -> { name, conference, wins, losses }
+    # 2) Aggregate wins/losses from all regular-season games for that season
+    wins = defaultdict(int)
+    losses = defaultdict(int)
 
-    cursor = None
-    page_count = 0
-    max_pages = 40  # safety guard; 1230 games / 100 per page ≈ 13 pages
+    page = 1
+    max_pages = 50          # safety limit
+    pages_fetched = 0
 
     while True:
-        params = dict(base_params)
-        if cursor is not None:
-            params["cursor"] = cursor
+        params = {
+            "seasons[]": season_year,  # e.g. 2024
+            "per_page": 100,
+            "page": page,
+        }
 
         try:
-            resp = requests.get(
-                f"{BALDONTLIE_BASE_URL}/games",
-                headers=headers,
-                params=params,
-                timeout=30,
-            )
-            status = resp.status_code
-            safe_print(f"🔵 Balldontlie games HTTP status: {status}, cursor={cursor}")
-            resp.raise_for_status()
-        except requests.exceptions.Timeout as e:
-            safe_print("🔴 Balldontlie games request timed out:", repr(e))
-            raise APIError("Balldontlie API timeout while fetching games", status_code=502)
-        except requests.exceptions.HTTPError as e:
-            try:
-                body_snippet = resp.text[:500]
-            except Exception:
-                body_snippet = "<no body>"
-            safe_print(f"🔴 Balldontlie HTTP error {resp.status_code} while fetching games: {body_snippet}")
-            raise APIError(f"Balldontlie HTTP error {resp.status_code} while fetching games", status_code=502)
+            resp = _requests.get(f"{API_BASE}/games", params=params, timeout=10)
         except Exception as e:
-            safe_print("🔴 Unexpected error calling Balldontlie games:", type(e).__name__, repr(e))
-            raise APIError("Failed to fetch games from Balldontlie", status_code=502)
+            # This will be turned into JSON by your APIError handler
+            raise APIError(f"balldontlie request failed (class: {type(e).__name__})", 502)
+
+        if resp.status_code != 200:
+            # Surface upstream message in logs (truncated)
+            raise APIError(
+                f"balldontlie returned {resp.status_code}: {resp.text[:200]}",
+                502,
+            )
 
         payload = resp.json()
         games = payload.get("data") or []
-        meta = payload.get("meta") or {}
-        cursor = meta.get("next_cursor")
 
-        # ---- Process this page of games ----
+        # No more games → done
+        if not games:
+            break
+
         for g in games:
-            # Only finished regular-season games
-            status_str = str(g.get("status") or "").lower()
-            if status_str != "final":
-                continue
-            if bool(g.get("postseason")):
+            # Skip playoffs; we only want regular season
+            if g.get("postseason"):
                 continue
 
             home = g.get("home_team") or {}
-            visitor = g.get("visitor_team") or {}
-            home_code = (home.get("abbreviation") or "").upper()
-            visitor_code = (visitor.get("abbreviation") or "").upper()
+            away = g.get("visitor_team") or {}
+            home_code = home.get("abbreviation")
+            away_code = away.get("abbreviation")
 
-            # Only track teams we know in our DB (avoids FK violations)
-            if home_code not in valid_codes or visitor_code not in valid_codes:
+            home_score = g.get("home_team_score") or 0
+            away_score = g.get("visitor_team_score") or 0
+
+            # Skip games not yet played
+            if home_score == 0 and away_score == 0:
                 continue
 
-            try:
-                home_score = int(g.get("home_team_score") or 0)
-                visitor_score = int(g.get("visitor_team_score") or 0)
-            except Exception:
-                # If scores are weird, skip this game
+            # If either team code is not in our DB, ignore that game
+            if home_code not in team_meta_by_code or away_code not in team_meta_by_code:
                 continue
 
-            # Initialize stats entries if needed
-            for code, team_obj in ((home_code, home), (visitor_code, visitor)):
-                if code not in stats:
-                    db_info = teams_by_code.get(code, {})
-                    stats[code] = {
-                        "name": db_info.get("name")
-                                or team_obj.get("full_name")
-                                or team_obj.get("name")
-                                or code,
-                        "conference": (db_info.get("conference")
-                                       or team_obj.get("conference")
-                                       or "").lower(),
-                        "wins": 0,
-                        "losses": 0,
-                    }
+            if home_score > away_score:
+                wins[home_code] += 1
+                losses[away_code] += 1
+            elif away_score > home_score:
+                wins[away_code] += 1
+                losses[home_code] += 1
+            # Ties should not exist in NBA; if equal we ignore
 
-            # Increment wins/losses
-            if home_score > visitor_score:
-                stats[home_code]["wins"] += 1
-                stats[visitor_code]["losses"] += 1
-            elif visitor_score > home_score:
-                stats[visitor_code]["wins"] += 1
-                stats[home_code]["losses"] += 1
-            # Ties shouldn't exist; if they do, ignore
+        meta = payload.get("meta") or {}
+        next_page = meta.get("next_page")
+        pages_fetched += 1
 
-        page_count += 1
-        if not cursor or page_count >= max_pages:
+        if not next_page or pages_fetched >= max_pages:
             break
 
-        # Free tier is 5 req/min => sleep to stay under that
-        time.sleep(15)
+        page = next_page
 
-    if not stats:
-        raise APIError("No games processed when computing standings", status_code=500)
-
-    # ---- Compute seeds within each conference ----
-    from collections import defaultdict
-
-    conf_buckets = defaultdict(list)  # conf -> list[(code, info)]
-    for code, info in stats.items():
-        conf = (info.get("conference") or "").lower()
-        conf_buckets[conf].append((code, info))
-
-    for conf, items in conf_buckets.items():
-        # Sort by: wins desc, losses asc, name asc
-        items_sorted = sorted(
-            items,
-            key=lambda item: (-item[1]["wins"], item[1]["losses"], item[1]["name"]),
-        )
-        for seed_idx, (code, _) in enumerate(items_sorted, start=1):
-            stats[code]["seed"] = seed_idx
-
-    # ---- Wipe old standings for this season and insert new snapshot ----
-    deleted_count = 0
-    try:
-        del_res = (
-            supabase.table("standings")
-            .delete()
-            .eq("season_id", CURRENT_SEASON_ID)
-            .execute()
-        )
-        deleted_count = len(del_res.data or [])
-    except Exception as e:
-        safe_print("⚠️ Could not delete existing standings rows:", type(e).__name__, repr(e))
-
-    rows_to_insert = []
-    now_utc = datetime.utcnow()  # TIMESTAMP WITHOUT TIME ZONE in your schema
-
-    for code, info in stats.items():
-        rows_to_insert.append(
-            {
-                "name": info["name"],
-                "code": code,
-                "wins": info["wins"],
-                "losses": info["losses"],
-                "conference": info.get("conference") or "",
-                "seed": info.get("seed"),
-                "season_id": CURRENT_SEASON_ID,
-                "updated_at": now_utc,
-            }
+    if not wins and not losses:
+        raise APIError(
+            "No completed regular-season games found; standings not updated",
+            500,
         )
 
-    inserted_count = 0
-    if rows_to_insert:
-        try:
-            ins_res = (
-                supabase.table("standings")
-                .insert(rows_to_insert)
-                .execute()
-            )
-            inserted_count = len(ins_res.data or [])
-        except Exception as e:
-            safe_print("🔴 Failed to insert standings rows:", type(e).__name__, repr(e))
-            raise APIError("Failed to insert standings into database", status_code=500)
+    # 3) Build base rows with wins/losses per team, grouped by conference
+    base_rows = []
+    for code, meta in team_meta_by_code.items():
+        conf = (meta.get("conference") or "").lower()
+        if conf not in ("east", "west"):
+            continue
 
-    safe_print(
-        f"✅ Standings recomputed from games for season {season_year}: "
-        f"{inserted_count} rows inserted (deleted {deleted_count})"
+        base_rows.append({
+            "code": code,
+            "name": meta.get("name"),
+            "conference": conf,
+            "wins": wins.get(code, 0),
+            "losses": losses.get(code, 0),
+        })
+
+    # 4) Sort within each conference and assign seeds
+    east_sorted = sorted(
+        [r for r in base_rows if r["conference"] == "east"],
+        key=lambda r: (-r["wins"], r["losses"], r["code"]),
+    )
+    west_sorted = sorted(
+        [r for r in base_rows if r["conference"] == "west"],
+        key=lambda r: (-r["wins"], r["losses"], r["code"]),
     )
 
+    # Use your existing helper so timestamps are UTC-aware
+    now_ts = now_utc().replace(microsecond=0).isoformat()
+
+    rows_to_upsert = []
+    for i, row in enumerate(east_sorted, start=1):
+        rows_to_upsert.append({
+            **row,
+            "season_id": CURRENT_SEASON_ID,
+            "seed": i,
+            "updated_at": now_ts,
+        })
+    for i, row in enumerate(west_sorted, start=1):
+        rows_to_upsert.append({
+            **row,
+            "season_id": CURRENT_SEASON_ID,
+            "seed": i,
+            "updated_at": now_ts,
+        })
+
+    if not rows_to_upsert:
+        raise APIError("Computed 0 standings rows; nothing to upsert", 500)
+
+    # 5) Upsert into standings (unique on season_id + code)
+    supabase.table("standings").upsert(
+        rows_to_upsert,
+        on_conflict=["season_id", "code"],
+    ).execute()
+
     return {
-        "provider": "balldontlie_games",
-        "season_code": CURRENT_SEASON_CODE,
+        "updated": len(rows_to_upsert),
         "season_year": season_year,
-        "inserted": inserted_count,
-        "deleted_old": deleted_count,
+        "pages_fetched": pages_fetched,
     }
 
 
