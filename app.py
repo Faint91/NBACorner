@@ -34,7 +34,11 @@ JWT_SECRET = os.getenv("JWT_SECRET", "dev_secret")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 DISABLE_RATE_LIMITS = os.getenv("DISABLE_RATE_LIMITS", "0") == "1"
 STANDINGS_CRON_TOKEN = os.getenv("STANDINGS_CRON_TOKEN")
+BALLDONTLIE_API_KEY = os.getenv("BALLDONTLIE_API_KEY")
 
+HEADERS = {}
+if BALLDONTLIE_API_KEY:
+    HEADERS["Authorization"] = BALLDONTLIE_API_KEY
 
 # ✅ Healthcheck secret (optional; if set, /health requires it)
 HEALTHCHECK_TOKEN = os.getenv("HEALTHCHECK_TOKEN")
@@ -796,7 +800,7 @@ def fetch_and_sync_standings_from_nba():
     standings (wins/losses + seeds) for the CURRENT_SEASON_ID, then upsert
     into public.standings.
     """
-    API_BASE = "https://www.balldontlie.io/api/v1"
+    API_BASE = "https://api.balldontlie.io/v1"
 
     # We'll infer the numeric season from CURRENT_SEASON_CODE, e.g. "2024-25" -> 2024
     global CURRENT_SEASON_CODE, CURRENT_SEASON_ID, supabase
@@ -844,7 +848,8 @@ def fetch_and_sync_standings_from_nba():
         }
 
         try:
-            resp = _requests.get(f"{API_BASE}/games", params=params, timeout=10)
+            safe_print(f"🔵 Calling Balldontlie: {API_BASE}/games with params={params}")
+            resp = _requests.get(f"{API_BASE}/games", params=params, timeout=10)           
         except Exception as e:
             # This will be turned into JSON by your APIError handler
             raise APIError(f"balldontlie request failed (class: {type(e).__name__})", 502)
