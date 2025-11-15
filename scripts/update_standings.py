@@ -163,6 +163,9 @@ def build_standings_rows(teams_meta, wins, losses):
         seeded_rows.append({**r, "seed": i})
 
     print(f"Built {len(seeded_rows)} seeded rows (East+West).")
+    print("All team codes in aggregated stats:", sorted(stats.keys()))
+    print("Row for WAS:", next((r for r in rows if r.get("code") == "WAS"), None))
+
     return seeded_rows
 
 
