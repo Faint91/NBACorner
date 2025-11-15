@@ -3,8 +3,8 @@ name: Daily NBA standings sync
 on:
   schedule:
     # Runs every day at 09:00 UTC
-    - cron: "0 11 * * *"
-  # Optional: allow manual runs from the Actions tab
+    - cron: "0 9 * * *"
+  # Allow manual runs
   workflow_dispatch: {}
 
 jobs:
@@ -12,8 +12,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Call backend standings refresh endpoint
-        run: |
-          curl -X POST \
-            "${{ secrets.BACKEND_BASE_URL }}/internal/standings/refresh?token=${{ secrets.STANDINGS_CRON_TOKEN }}" \
-            -H "Accept: application/json"
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run standings sync script
+        env:
+          BALLDONTLIE_API_KEY: ${{ secrets.BALLDONTLIE_API_KEY }}
+          BACKEND_BASE_URL: ${{ secrets.BACKEND_BASE_URL }}
+          STANDINGS_CRON_TOKEN: ${{ secrets.STANDINGS_CRON_TOKEN }}
+          NBA_SEASON_YEAR: "2025"  # adjust if needed
+        run: python scripts/sync_standings.py

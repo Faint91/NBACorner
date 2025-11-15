@@ -1058,6 +1058,76 @@ def internal_cron_refresh_standings():
     return jsonify({"ok": True, **result}), 200
 
 
+@app.route("/internal/standings/overwrite", methods=["POST"])
+def internal_overwrite_standings():
+    """
+    Internal endpoint: overwrite standings for CURRENT_SEASON_ID.
+
+    Expects JSON body: { "rows": [ {code, name, conference, wins, losses, seed}, ... ] }
+
+    Protected by STANDINGS_CRON_TOKEN (same as your current cron secret).
+    """
+    token_supplied = (
+        request.headers.get("X-Cron-Token")
+        or request.args.get("token")
+    )
+
+    if not STANDINGS_CRON_TOKEN or token_supplied != STANDINGS_CRON_TOKEN:
+        return jsonify({"error": "Forbidden"}), 403
+
+    if not CURRENT_SEASON_ID:
+        return jsonify({"error": "CURRENT_SEASON_ID not configured"}), 500
+
+    body = request.get_json(silent=True) or {}
+    rows = body.get("rows")
+
+    if not isinstance(rows, list):
+        return jsonify({"error": "rows must be a list"}), 400
+    if not rows:
+        return jsonify({"error": "rows is empty"}), 400
+
+    now_naive = datetime.utcnow()  # standings.updated_at is TIMESTAMP WITHOUT TIME ZONE
+    db_rows = []
+
+    for r in rows:
+        code = r.get("code")
+        name = r.get("name") or code
+        conf = (r.get("conference") or "").lower()
+        wins = int(r.get("wins") or 0)
+        losses = int(r.get("losses") or 0)
+        seed = r.get("seed")
+
+        if not code:
+            continue
+
+        db_rows.append(
+            {
+                "code": code,
+                "name": name,
+                "conference": conf,
+                "wins": wins,
+                "losses": losses,
+                "seed": seed,
+                "season_id": CURRENT_SEASON_ID,
+                "updated_at": now_naive,
+            }
+        )
+
+    if not db_rows:
+        return jsonify({"error": "No valid rows to insert"}), 400
+
+    try:
+        # Delete existing standings for this season
+        supabase.table("standings").delete().eq("season_id", CURRENT_SEASON_ID).execute()
+        # Insert fresh snapshot
+        insert_res = supabase.table("standings").insert(db_rows).execute()
+        inserted = len(insert_res.data or [])
+    except Exception as e:
+        app.logger.exception("Failed to overwrite standings: %s", e)
+        return jsonify({"error": "Failed to write standings"}), 500
+
+    return jsonify({"ok": True, "inserted": inserted})
+
 
 @app.route("/admin/insert_test_teams", methods=["POST"])
 @require_auth
