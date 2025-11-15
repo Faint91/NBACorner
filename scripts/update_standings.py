@@ -129,8 +129,12 @@ def build_standings_rows(teams_meta, wins, losses):
     """Build standings rows with seeds per conference."""
     rows = []
     for code, meta in teams_meta.items():
-        conf = (meta.get("conference") or "").lower()
+        conf_raw = meta.get("conference") or ""
+        conf = conf_raw.strip().lower()  # 👈 normalize, handles "East ", " WEST ", etc.
+
         if conf not in ("east", "west"):
+            # Debug: see if any team is being dropped because of a weird conference value
+            print(f"Skipping team {code} with unexpected conference value: {repr(conf_raw)}")
             continue
 
         rows.append(
@@ -162,11 +166,14 @@ def build_standings_rows(teams_meta, wins, losses):
     for i, r in enumerate(west_sorted, start=1):
         seeded_rows.append({**r, "seed": i})
 
+    # Debug helpers
     print(f"Built {len(seeded_rows)} seeded rows (East+West).")
-    print("All team codes in aggregated stats:", sorted(stats.keys()))
+    print("All team codes in aggregated wins dict:", sorted(wins.keys()))
+    print("All team codes in teams_meta:", sorted(teams_meta.keys()))
     print("Row for WAS:", next((r for r in rows if r.get("code") == "WAS"), None))
 
     return seeded_rows
+
 
 
 def send_rows_to_backend(rows, pages_fetched, season_year):
