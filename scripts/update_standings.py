@@ -168,12 +168,14 @@ def build_standings_rows(teams_meta, wins, losses):
 
 def send_rows_to_backend(rows, pages_fetched, season_year):
     """POST the rows to your backend /internal/standings/overwrite endpoint."""
-    url = f"{BACKEND_BASE_URL}/internal/standings/overwrite"
+    url = f"{BACKEND_BASE_URL.rstrip('/')}/internal/standings/overwrite"
     headers = {
         "Content-Type": "application/json",
         "X-Cron-Token": STANDINGS_CRON_TOKEN,
     }
-    payload = {"rows": rows}
+
+    # IMPORTANT: backend expects a raw JSON array, not {"rows": [...]}
+    payload = rows
 
     print(f"Sending {len(rows)} rows to backend at {url}")
     resp = requests.post(url, headers=headers, json=payload, timeout=30)
