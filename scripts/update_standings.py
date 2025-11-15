@@ -128,13 +128,14 @@ def fetch_season_games_and_compute_records(season_year, teams_meta):
 def build_standings_rows(teams_meta, wins, losses):
     """Build standings rows with seeds per conference."""
     rows = []
-    for code, meta in teams_meta.items():
-        conf_raw = meta.get("conference") or ""
-        conf = conf_raw.strip().lower()  # 👈 normalize, handles "East ", " WEST ", etc.
 
+    for raw_code, meta in teams_meta.items():
+        # Normalize team code
+        code = (raw_code or "").upper()
+        conf = (meta.get("conference") or "").lower()
+
+        # Only real NBA conferences
         if conf not in ("east", "west"):
-            # Debug: see if any team is being dropped because of a weird conference value
-            print(f"Skipping team {code} with unexpected conference value: {repr(conf_raw)}")
             continue
 
         rows.append(
@@ -166,14 +167,27 @@ def build_standings_rows(teams_meta, wins, losses):
     for i, r in enumerate(west_sorted, start=1):
         seeded_rows.append({**r, "seed": i})
 
-    # Debug helpers
+    # Debug info to track missing teams like WAS
     print(f"Built {len(seeded_rows)} seeded rows (East+West).")
-    print("All team codes in aggregated wins dict:", sorted(wins.keys()))
-    print("All team codes in teams_meta:", sorted(teams_meta.keys()))
-    print("Row for WAS:", next((r for r in rows if r.get("code") == "WAS"), None))
+
+    # All codes coming from teams_meta
+    all_team_codes = sorted((raw_code or "").upper() for raw_code in teams_meta.keys())
+    print("All team codes in teams_meta:", all_team_codes)
+
+    # All codes we actually saw in wins/losses aggregation
+    agg_codes = sorted(set(k.upper() for k in wins.keys()) | set(k.upper() for k in losses.keys()))
+    print("All team codes in aggregated wins/losses:", agg_codes)
+
+    # Specific Wizards debugging
+    print("WAS in teams_meta:", "WAS" in all_team_codes)
+    print("WAS in aggregated wins:", "WAS" in [k.upper() for k in wins.keys()])
+    print("WAS in aggregated losses:", "WAS" in [k.upper() for k in losses.keys()])
+    print(
+        "Row for WAS in rows:",
+        next((r for r in rows if r.get("code") == "WAS"), None),
+    )
 
     return seeded_rows
-
 
 
 def send_rows_to_backend(rows, pages_fetched, season_year):
