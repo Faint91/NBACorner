@@ -29,4 +29,4 @@ jobs:
           BACKEND_BASE_URL: ${{ secrets.BACKEND_BASE_URL }}
           STANDINGS_CRON_TOKEN: ${{ secrets.STANDINGS_CRON_TOKEN }}
           NBA_SEASON_YEAR: "2025"  # adjust if needed
-        run: python scripts/sync_standings.py
+        run: python scripts/update_standings.py
