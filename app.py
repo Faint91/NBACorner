@@ -1061,72 +1061,142 @@ def internal_cron_refresh_standings():
 @app.route("/internal/standings/overwrite", methods=["POST"])
 def internal_overwrite_standings():
     """
-    Internal endpoint: overwrite standings for CURRENT_SEASON_ID.
+    Internal endpoint: overwrite the standings table for the CURRENT_SEASON_ID.
 
-    Expects JSON body: { "rows": [ {code, name, conference, wins, losses, seed}, ... ] }
+    Expected JSON body: a list of rows with at least:
+      - code       (team abbreviation, e.g. "LAL")
+      - name       (team name, "Los Angeles Lakers")
+      - conference ("east" / "west")
+      - wins       (int)
+      - losses     (int)
+      - seed       (int, optional)
 
-    Protected by STANDINGS_CRON_TOKEN (same as your current cron secret).
+    The script calling this endpoint does NOT need to send season_id or updated_at;
+    those are filled in here using CURRENT_SEASON_ID and now_utc().
     """
+
+    # --- Auth with the same secret token you already use for cron ---
     token_supplied = (
         request.headers.get("X-Cron-Token")
         or request.args.get("token")
     )
-
     if not STANDINGS_CRON_TOKEN or token_supplied != STANDINGS_CRON_TOKEN:
         return jsonify({"error": "Forbidden"}), 403
 
+    # --- Parse body ---
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, list):
+        return jsonify({"error": "Expected a JSON array of rows"}), 400
+
     if not CURRENT_SEASON_ID:
-        return jsonify({"error": "CURRENT_SEASON_ID not configured"}), 500
+        return jsonify({"error": "CURRENT_SEASON_ID is not configured"}), 500
 
-    body = request.get_json(silent=True) or {}
-    rows = body.get("rows")
+    # --- Load valid team codes from DB to satisfy FK: standings.code -> teams.code ---
+    try:
+        team_rows = (
+            supabase.table("teams")
+            .select("code, name, conference")
+            .execute()
+        ).data or []
+    except Exception as e:
+        safe_print("🔴 Error fetching teams in /internal/standings/overwrite:", type(e).__name__, repr(e))
+        return jsonify({"error": "Failed to load teams"}), 500
 
-    if not isinstance(rows, list):
-        return jsonify({"error": "rows must be a list"}), 400
-    if not rows:
-        return jsonify({"error": "rows is empty"}), 400
+    valid_codes = {
+        (t.get("code") or "").upper()
+        for t in team_rows
+        if t.get("code")
+    }
 
-    now_naive = datetime.utcnow()  # standings.updated_at is TIMESTAMP WITHOUT TIME ZONE
-    db_rows = []
+    now_ts = now_utc().replace(microsecond=0).isoformat()
 
-    for r in rows:
-        code = r.get("code")
-        name = r.get("name") or code
-        conf = (r.get("conference") or "").lower()
-        wins = int(r.get("wins") or 0)
-        losses = int(r.get("losses") or 0)
-        seed = r.get("seed")
+    # --- Build rows to insert, skipping anything with unknown team code ---
+    rows_to_insert = []
+    skipped = []
 
-        if not code:
+    for row in payload:
+        if not isinstance(row, dict):
             continue
 
-        db_rows.append(
+        raw_code = row.get("code") or row.get("team_code")
+        code = (raw_code or "").upper()
+        if not code or code not in valid_codes:
+            skipped.append({"code": raw_code})
+            continue
+
+        name = row.get("name") or code
+        conf = (row.get("conference") or "").lower()
+
+        try:
+            wins = int(row.get("wins") or 0)
+        except Exception:
+            wins = 0
+
+        try:
+            losses = int(row.get("losses") or 0)
+        except Exception:
+            losses = 0
+
+        seed_val = row.get("seed")
+        try:
+            seed = int(seed_val) if seed_val is not None else None
+        except Exception:
+            seed = None
+
+        rows_to_insert.append(
             {
-                "code": code,
                 "name": name,
+                "code": code,
                 "conference": conf,
                 "wins": wins,
                 "losses": losses,
                 "seed": seed,
                 "season_id": CURRENT_SEASON_ID,
-                "updated_at": now_naive,
+                "updated_at": now_ts,
             }
         )
 
-    if not db_rows:
-        return jsonify({"error": "No valid rows to insert"}), 400
+    if not rows_to_insert:
+        safe_print("⚠️ No valid standings rows to insert (all skipped). Skipped:", skipped)
+        return jsonify({"error": "No valid standings rows to insert"}), 400
 
+    # --- Replace standings for this season ---
+    inserted_count = 0
     try:
-        # Delete existing standings for this season
-        supabase.table("standings").delete().eq("season_id", CURRENT_SEASON_ID).execute()
-        # Insert fresh snapshot
-        insert_res = supabase.table("standings").insert(db_rows).execute()
-        inserted = len(insert_res.data or [])
+        # Delete old rows for this season
+        supabase.table("standings") \
+            .delete() \
+            .eq("season_id", CURRENT_SEASON_ID) \
+            .execute()
+
+        # Insert new snapshot
+        ins_res = (
+            supabase.table("standings")
+            .insert(rows_to_insert)
+            .execute()
+        )
+        inserted_count = len(ins_res.data or [])
     except Exception as e:
-        app.logger.exception("Failed to overwrite standings: %s", e)
+        safe_print(
+            "🔴 Failed to write standings rows:",
+            type(e).__name__,
+            repr(e)
+        )
+        # IMPORTANT: make this message more informative while debugging
         return jsonify({"error": "Failed to write standings"}), 500
 
-    return jsonify({"ok": True, "inserted": inserted})
+    safe_print(
+        f"✅ Overwrote standings for season {CURRENT_SEASON_CODE} "
+        f"({CURRENT_SEASON_ID}). Inserted: {inserted_count}, skipped: {len(skipped)}"
+    )
+
+    return jsonify(
+        {
+            "ok": True,
+            "inserted": inserted_count,
+            "skipped": skipped,
+        }
+    ), 200
 
 
 @app.route("/admin/insert_test_teams", methods=["POST"])
