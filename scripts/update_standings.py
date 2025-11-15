@@ -131,8 +131,15 @@ def build_standings_rows(teams_meta, wins, losses):
 
     for raw_code, meta in teams_meta.items():
         # Normalize team code
-        code = (raw_code or "").upper()
-        conf = (meta.get("conference") or "").lower()
+        code = (raw_code or "").strip().upper()
+
+        # Normalize conference
+        conf_raw = meta.get("conference") or ""
+        conf = conf_raw.strip().lower()
+
+        # 🔧 Safety: if Wizards have a weird conference string, force them to East
+        if code == "WAS" and conf not in ("east", "west"):
+            conf = "east"
 
         # Only real NBA conferences
         if conf not in ("east", "west"):
@@ -170,24 +177,25 @@ def build_standings_rows(teams_meta, wins, losses):
     # Debug info to track missing teams like WAS
     print(f"Built {len(seeded_rows)} seeded rows (East+West).")
 
-    # All codes coming from teams_meta
-    all_team_codes = sorted((raw_code or "").upper() for raw_code in teams_meta.keys())
+    all_team_codes = sorted((raw_code or "").strip().upper() for raw_code in teams_meta.keys())
     print("All team codes in teams_meta:", all_team_codes)
 
-    # All codes we actually saw in wins/losses aggregation
-    agg_codes = sorted(set(k.upper() for k in wins.keys()) | set(k.upper() for k in losses.keys()))
+    agg_codes = sorted(
+        set(k.strip().upper() for k in wins.keys())
+        | set(k.strip().upper() for k in losses.keys())
+    )
     print("All team codes in aggregated wins/losses:", agg_codes)
 
-    # Specific Wizards debugging
     print("WAS in teams_meta:", "WAS" in all_team_codes)
-    print("WAS in aggregated wins:", "WAS" in [k.upper() for k in wins.keys()])
-    print("WAS in aggregated losses:", "WAS" in [k.upper() for k in losses.keys()])
+    print("WAS in aggregated wins:", "WAS" in [k.strip().upper() for k in wins.keys()])
+    print("WAS in aggregated losses:", "WAS" in [k.strip().upper() for k in losses.keys()])
     print(
         "Row for WAS in rows:",
         next((r for r in rows if r.get("code") == "WAS"), None),
     )
 
     return seeded_rows
+
 
 
 def send_rows_to_backend(rows, pages_fetched, season_year):
