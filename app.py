@@ -790,6 +790,61 @@ def handle_api_error(err: APIError):
     return jsonify({"error": err.message}), err.status_code
 
 
+@app.route("/admin/leaderboard/snapshot", methods=["POST"])
+@require_auth
+def admin_snapshot_leaderboard():
+    """
+    Admin-only: snapshot the CURRENT season leaderboard into leaderboard_history.
+
+    - Fails if:
+      * user is not admin
+      * CURRENT_SEASON_ID is missing
+      * snapshot already exists for this season
+      * there are no leaderboard rows to snapshot
+    """
+    user_info = request.user or {}
+    user_id = user_info.get("user_id")
+    is_admin_token = user_info.get("is_admin", False)
+
+    # First gate: token must say admin
+    if not is_admin_token:
+        return jsonify({"error": "Forbidden"}), 403
+
+    # Optional: defense-in-depth admin check in DB
+    try:
+        user_row = (
+            supabase.table("users")
+            .select("id, is_admin")
+            .eq("id", user_id)
+            .limit(1)
+            .execute()
+            .data
+        )
+        if not user_row or not user_row[0].get("is_admin", False):
+            return jsonify({"error": "Forbidden"}), 403
+    except Exception as e:
+        safe_print("🔴 DB error verifying admin in /admin/leaderboard/snapshot (class):", type(e).__name__)
+        return jsonify({"error": "Unexpected error"}), 500
+
+    # Run the snapshot helper
+    try:
+        result = _snapshot_leaderboard_for_current_season()
+        if not result.get("ok"):
+            # Bubble up helper error & status
+            return jsonify({"error": result.get("error", "Snapshot failed")}), result.get("status", 400)
+
+        return jsonify({
+            "ok": True,
+            "season_id": result["season_id"],
+            "season_code": result["season_code"],
+            "rows_snapshot": result["rows_snapshot"],
+        }), 200
+
+    except Exception as e:
+        safe_print("🔴 Error in /admin/leaderboard/snapshot (class):", type(e).__name__)
+        return jsonify({"error": "Unexpected error"}), 500
+
+
 # --------------------------------------------------------
 # --------- Helper: fetch + sync NBA standings -----------
 # --------------------------------------------------------
@@ -1493,6 +1548,188 @@ def recompute_scores(master_bracket_id):
         "season_id": CURRENT_SEASON_ID,
         "updated_brackets": updated_count,
     }), 200
+
+
+def _build_leaderboard_rows_for_current_season():
+    """
+    Build leaderboard-style rows for the CURRENT season, similar to /leaderboard
+    but without master_matchups or master bracket info.
+
+    Returns a list of dicts with:
+      - bracket_id
+      - bracket_name
+      - user_id
+      - username
+      - total_points, full_hits, partial_hits, misses
+      - bonus_finalists, bonus_champion
+      - points_by_match
+    """
+    # 1) Scores for current season
+    scores_res = (
+        with_current_season(
+            supabase.table("bracket_scores").select(
+                "season_id, bracket_id, total_points, full_hits, "
+                "partial_hits, misses, bonus_finalists, bonus_champion, "
+                "points_by_match, updated_at"
+            )
+        )
+        .execute()
+    )
+
+    scores = scores_res.data or []
+    if not scores:
+        return []
+
+    # 2) Brackets (non-deleted) for those scores
+    bracket_ids = list({
+        s.get("bracket_id")
+        for s in scores
+        if s.get("bracket_id")
+    })
+
+    if not bracket_ids:
+        return []
+
+    br_res = (
+        with_current_season(
+            supabase.table("brackets")
+            .select("id, user_id, name, deleted_at, season_id")
+            .in_("id", bracket_ids)
+            .is_("deleted_at", None)
+        )
+        .execute()
+    )
+    br_rows = br_res.data or []
+    br_by_id = {b["id"]: b for b in br_rows}
+
+    # 3) Users for those brackets
+    user_ids = list({
+        b.get("user_id")
+        for b in br_rows
+        if b.get("user_id")
+    })
+
+    users_by_id = {}
+    if user_ids:
+        users_res = (
+            supabase.table("users")
+            .select("id, username")
+            .in_("id", user_ids)
+            .execute()
+        )
+        users = users_res.data or []
+        users_by_id = {u["id"]: u for u in users}
+
+    # 4) Build rows in the same shape as /leaderboard
+    rows_out = []
+    for s in scores:
+        bid = s.get("bracket_id")
+        b = br_by_id.get(bid)
+        if not bid or not b:
+            continue
+
+        u = users_by_id.get(b["user_id"], {})
+        rows_out.append({
+            "bracket_id": bid,
+            "bracket_name": b.get("name") or "Unnamed bracket",
+            "user_id": b.get("user_id"),
+            "username": u.get("username") or "unknown",
+            "total_points": int(s.get("total_points") or 0),
+            "full_hits": int(s.get("full_hits") or 0),
+            "partial_hits": int(s.get("partial_hits") or 0),
+            "misses": int(s.get("misses") or 0),
+            "bonus_finalists": int(s.get("bonus_finalists") or 0),
+            "bonus_champion": int(s.get("bonus_champion") or 0),
+            "points_by_match": s.get("points_by_match") or {},
+        })
+
+    return rows_out
+
+
+def _snapshot_leaderboard_for_current_season():
+    """
+    Creates a snapshot of the CURRENT season leaderboard into leaderboard_history.
+
+    Returns either:
+      { "ok": True, "season_id": ..., "season_code": ..., "rows_snapshot": n }
+    or:
+      { "error": "...", "status": 400/404/etc }
+    """
+    # Safety: make sure season globals are resolved
+    ensure_season_globals()
+
+    if CURRENT_SEASON_ID is None:
+        return {
+            "error": "CURRENT_SEASON_ID is not set; cannot snapshot leaderboard.",
+            "status": 400,
+        }
+
+    # 1) Check if a snapshot already exists for this season
+    existing = (
+        supabase.table("leaderboard_history")
+        .select("id")
+        .eq("season_id", CURRENT_SEASON_ID)
+        .limit(1)
+        .execute()
+        .data
+    )
+
+    if existing:
+        return {
+            "error": "Snapshot already exists for this season.",
+            "status": 400,
+        }
+
+    # 2) Build current leaderboard rows
+    rows = _build_leaderboard_rows_for_current_season()
+    if not rows:
+        return {
+            "error": "No leaderboard rows found for the current season.",
+            "status": 400,
+        }
+
+    # 3) Sort + assign rank (this defines the historic ranking)
+    rows_sorted = sorted(
+        rows,
+        key=lambda r: (
+            -r["total_points"],
+            -r["full_hits"],
+            (r.get("username") or "").lower(),
+        ),
+    )
+
+    snapshot_time = datetime.now(timezone.utc).isoformat()
+
+    records = []
+    for idx, r in enumerate(rows_sorted, start=1):
+        records.append({
+            "season_id": CURRENT_SEASON_ID,
+            "season_code": CURRENT_SEASON_CODE,
+            "snapshot_at": snapshot_time,
+            "rank": idx,
+            "bracket_name": r["bracket_name"],
+            "username": r["username"],
+            "total_points": r["total_points"],
+            "full_hits": r["full_hits"],
+            "partial_hits": r["partial_hits"],
+            "misses": r["misses"],
+            "bonus_finalists": r["bonus_finalists"],
+            "bonus_champion": r["bonus_champion"],
+            "points_by_match": r["points_by_match"],
+            # Optional internal references (not exposed in public history API)
+            "bracket_id": r.get("bracket_id"),
+            "user_id": r.get("user_id"),
+        })
+
+    # 4) Bulk insert into leaderboard_history
+    supabase.table("leaderboard_history").insert(records).execute()
+
+    return {
+        "ok": True,
+        "season_id": str(CURRENT_SEASON_ID),
+        "season_code": CURRENT_SEASON_CODE,
+        "rows_snapshot": len(records),
+    }
 
 
 # --------------------------------------------------------
