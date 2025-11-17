@@ -3141,6 +3141,140 @@ def leaderboard():
         return jsonify({"error": "Unexpected error"}), 500
 
 
+@app.route("/leaderboard/history", methods=["GET"])
+@require_auth
+def get_leaderboard_history_index():
+    """
+    Authenticated: list seasons that have a leaderboard snapshot.
+
+    Response:
+    {
+      "seasons": [
+        {
+          "season_id": "uuid",
+          "season_code": "2024-25",
+          "snapshot_at": "2025-06-20T21:37:00Z"
+        },
+        ...
+      ]
+    }
+    """
+    try:
+        res = (
+            supabase.table("leaderboard_history")
+            .select("season_id, season_code, snapshot_at")
+            .order("snapshot_at", desc=True)
+            .execute()
+        )
+        rows = res.data or []
+
+        seasons_by_id = {}
+        for r in rows:
+            sid = r.get("season_id")
+            if not sid:
+                continue
+
+            if sid in seasons_by_id:
+                continue
+
+            seasons_by_id[sid] = {
+                "season_id": sid,
+                "season_code": r.get("season_code"),
+                "snapshot_at": r.get("snapshot_at"),
+            }
+
+        seasons = list(seasons_by_id.values())
+
+        return jsonify({"seasons": seasons}), 200
+
+    except Exception as e:
+        safe_print("🔴 Error in GET /leaderboard/history (index):", type(e).__name__)
+        return jsonify({"error": "Unexpected error"}), 500
+
+
+@app.route("/leaderboard/history/<season_code>", methods=["GET"])
+@require_auth
+def get_leaderboard_history_for_season(season_code):
+    """
+    Authenticated: get the frozen leaderboard for a given season_code, e.g. "2024-25".
+
+    Response:
+    {
+      "season_id": "uuid",
+      "season_code": "2024-25",
+      "snapshot_at": "2025-06-20T21:37:00Z",
+      "rows": [
+        {
+          "rank": 1,
+          "bracket_name": "Pol's Bracket",
+          "username": "Pol",
+          "total_points": 243,
+          "full_hits": 12,
+          "partial_hits": 5,
+          "misses": 3,
+          "bonus_finalists": 2,
+          "bonus_champion": 1,
+          "points_by_match": {...}
+        },
+        ...
+      ]
+    }
+    """
+    user_info = getattr(request, "user", None) or {}
+    if not user_info.get("user_id"):
+        return jsonify({"error": "Unauthorized"}), 401
+
+    try:
+        res = (
+            supabase.table("leaderboard_history")
+            .select(
+                "season_id, season_code, snapshot_at, "
+                "rank, bracket_name, username, "
+                "total_points, full_hits, partial_hits, misses, "
+                "bonus_finalists, bonus_champion, "
+                "points_by_match"
+            )
+            .eq("season_code", season_code)
+            .order("rank", asc=True)
+            .execute()
+        )
+
+        rows = res.data or []
+        if not rows:
+            return jsonify({"error": "No snapshot found for this season."}), 404
+
+        first = rows[0]
+
+        rows_public = [
+            {
+                "rank": r["rank"],
+                "bracket_name": r["bracket_name"],
+                "username": r["username"],
+                "total_points": r["total_points"],
+                "full_hits": r["full_hits"],
+                "partial_hits": r["partial_hits"],
+                "misses": r["misses"],
+                "bonus_finalists": r["bonus_finalists"],
+                "bonus_champion": r["bonus_champion"],
+                "points_by_match": r.get("points_by_match") or {},
+            }
+            for r in rows
+        ]
+
+        payload = {
+            "season_id": first.get("season_id"),
+            "season_code": first.get("season_code"),
+            "snapshot_at": first.get("snapshot_at"),
+            "rows": rows_public,
+        }
+
+        return jsonify(payload), 200
+
+    except Exception as e:
+        safe_print("🔴 Error in GET /leaderboard/history/<season_code>:", type(e).__name__)
+        return jsonify({"error": "Unexpected error"}), 500
+
+
 @app.get("/__debug/master-status")
 def debug_master_status():
     bid = request.args.get("bracket_id")
