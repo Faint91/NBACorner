@@ -3195,31 +3195,6 @@ def get_leaderboard_history_index():
 @app.route("/leaderboard/history/<season_code>", methods=["GET"])
 @require_auth
 def get_leaderboard_history_for_season(season_code):
-    """
-    Authenticated: get the frozen leaderboard for a given season_code, e.g. "2024-25".
-
-    Response:
-    {
-      "season_id": "uuid",
-      "season_code": "2024-25",
-      "snapshot_at": "2025-06-20T21:37:00Z",
-      "rows": [
-        {
-          "rank": 1,
-          "bracket_name": "Pol's Bracket",
-          "username": "Pol",
-          "total_points": 243,
-          "full_hits": 12,
-          "partial_hits": 5,
-          "misses": 3,
-          "bonus_finalists": 2,
-          "bonus_champion": 1,
-          "points_by_match": {...}
-        },
-        ...
-      ]
-    }
-    """
     user_info = getattr(request, "user", None) or {}
     if not user_info.get("user_id"):
         return jsonify({"error": "Unauthorized"}), 401
@@ -3235,7 +3210,7 @@ def get_leaderboard_history_for_season(season_code):
                 "points_by_match"
             )
             .eq("season_code", season_code)
-            .order("rank", asc=True)
+            .order("rank")  # 👈 default ascending, no asc=True
             .execute()
         )
 
@@ -3271,7 +3246,7 @@ def get_leaderboard_history_for_season(season_code):
         return jsonify(payload), 200
 
     except Exception as e:
-        safe_print("🔴 Error in GET /leaderboard/history/<season_code>:", type(e).__name__)
+        safe_print("🔴 Error in GET /leaderboard/history/<season_code>:", type(e).__name__, str(e))
         return jsonify({"error": "Unexpected error"}), 500
 
 
