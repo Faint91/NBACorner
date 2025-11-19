@@ -3143,110 +3143,92 @@ def leaderboard():
 
 @app.route("/leaderboard/history", methods=["GET"])
 @require_auth
-def get_leaderboard_history_index():
+def leaderboard_history_index():
     """
-    Authenticated: list seasons that have a leaderboard snapshot.
-
-    Response:
-    {
-      "seasons": [
-        {
-          "season_id": "uuid",
-          "season_code": "2024-25",
-          "snapshot_at": "2025-06-20T21:37:00Z"
-        },
-        ...
-      ]
-    }
+    Returns one entry per season that has a history snapshot.
+    Used by the Past Seasons page to populate the season selector.
     """
     try:
         res = (
-            supabase.table("leaderboard_history")
-            .select("season_id, season_code, snapshot_at")
+            supabase.table("leaderboard_history_snapshots")
+            .select("id, season_id, season_code, snapshot_at")
             .order("snapshot_at", desc=True)
             .execute()
         )
-        rows = res.data or []
+        snaps = getattr(res, "data", None) or []
 
-        seasons_by_id = {}
-        for r in rows:
-            sid = r.get("season_id")
-            if not sid:
+        # Keep only the latest snapshot per season_code
+        by_code = {}
+        for s in snaps:
+            code = (s.get("season_code") or "").strip()
+            if not code:
                 continue
+            prev = by_code.get(code)
+            if not prev or (prev.get("snapshot_at") or "") < (s.get("snapshot_at") or ""):
+                by_code[code] = {
+                    "season_id": s.get("season_id"),
+                    "season_code": code,
+                    "snapshot_at": s.get("snapshot_at"),
+                }
 
-            if sid in seasons_by_id:
-                continue
-
-            seasons_by_id[sid] = {
-                "season_id": sid,
-                "season_code": r.get("season_code"),
-                "snapshot_at": r.get("snapshot_at"),
-            }
-
-        seasons = list(seasons_by_id.values())
-
+        seasons = list(by_code.values())
         return jsonify({"seasons": seasons}), 200
 
     except Exception as e:
-        safe_print("🔴 Error in GET /leaderboard/history (index):", type(e).__name__)
+        safe_print("🔴 Error in GET /leaderboard/history:", type(e).__name__)
         return jsonify({"error": "Unexpected error"}), 500
 
 
 @app.route("/leaderboard/history/<season_code>", methods=["GET"])
 @require_auth
-def get_leaderboard_history_for_season(season_code):
-    user_info = getattr(request, "user", None) or {}
-    if not user_info.get("user_id"):
-        return jsonify({"error": "Unauthorized"}), 401
-
+def leaderboard_history_season(season_code):
+    """
+    Returns the frozen leaderboard for a given season_code,
+    including dynamic column definitions and all rows with per_match_points.
+    """
     try:
-        res = (
-            supabase.table("leaderboard_history")
-            .select(
-                "season_id, season_code, snapshot_at, "
-                "rank, bracket_name, username, "
-                "total_points, full_hits, partial_hits, misses, "
-                "bonus_finalists, bonus_champion, "
-                "points_by_match"
-            )
-            .eq("season_code", season_code)
-            .order("rank")  # 👈 default ascending, no asc=True
+        code = (season_code or "").strip()
+        if not code:
+            return jsonify({"error": "Missing season_code"}), 400
+
+        snap_res = (
+            supabase.table("leaderboard_history_snapshots")
+            .select("id, season_code, snapshot_at, columns")
+            .eq("season_code", code)
+            .order("snapshot_at", desc=True)
+            .limit(1)
             .execute()
         )
 
-        rows = res.data or []
-        if not rows:
-            return jsonify({"error": "No snapshot found for this season."}), 404
+        snaps = getattr(snap_res, "data", None) or []
+        if not snaps:
+            return jsonify({"error": "No history snapshot for this season"}), 404
 
-        first = rows[0]
+        snap = snaps[0]
+        snapshot_id = snap["id"]
 
-        rows_public = [
-            {
-                "rank": r["rank"],
-                "bracket_name": r["bracket_name"],
-                "username": r["username"],
-                "total_points": r["total_points"],
-                "full_hits": r["full_hits"],
-                "partial_hits": r["partial_hits"],
-                "misses": r["misses"],
-                "bonus_finalists": r["bonus_finalists"],
-                "bonus_champion": r["bonus_champion"],
-                "points_by_match": r.get("points_by_match") or {},
-            }
-            for r in rows
-        ]
+        rows_res = (
+            supabase.table("leaderboard_history_rows")
+            .select(
+                "id, rank, display_name, total_points, bonus_finalists, "
+                "bonus_champion, full_hits, partial_hits, misses, per_match_points"
+            )
+            .eq("snapshot_id", snapshot_id)
+            .order("total_points", desc=True)
+            .order("full_hits", desc=True)
+            .execute()
+        )
+        rows = getattr(rows_res, "data", None) or []
 
-        payload = {
-            "season_id": first.get("season_id"),
-            "season_code": first.get("season_code"),
-            "snapshot_at": first.get("snapshot_at"),
-            "rows": rows_public,
-        }
-
-        return jsonify(payload), 200
+        return jsonify({
+            "season_code": snap.get("season_code"),
+            "snapshot_at": snap.get("snapshot_at"),
+            "columns": snap.get("columns") or [],
+            "rows": rows,
+        }), 200
 
     except Exception as e:
-        safe_print("🔴 Error in GET /leaderboard/history/<season_code>:", type(e).__name__, str(e))
+        safe_print("🔴 Error in GET /leaderboard/history/<season_code>:", type(e).__name__)
         return jsonify({"error": "Unexpected error"}), 500
 
 
