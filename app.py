@@ -845,6 +845,96 @@ def admin_snapshot_leaderboard():
         return jsonify({"error": "Unexpected error"}), 500
 
 
+@app.route("/admin/season/rollover", methods=["POST"])
+@require_auth
+def admin_season_rollover():
+    """
+    Admin-only: close the CURRENT season and create the next season row.
+
+    Expected JSON body:
+      {
+        "new_season_code": "2025-26",
+        "regular_season_end_utc": "2026-04-15T07:00:00Z",   // optional
+        "playoffs_start_utc": "2026-04-18T07:00:00Z"        // optional
+      }
+
+    This endpoint does NOT change env vars. After it succeeds you must update
+    CURRENT_SEASON_CODE / REGULAR_SEASON_END_UTC / PLAYOFFS_START_UTC in your
+    deployment config and redeploy the backend.
+    """
+    user_info = request.user or {}
+    user_id = user_info.get("user_id")
+    is_admin_token = user_info.get("is_admin", False)
+
+    # First gate: token must say admin
+    if not is_admin_token:
+        return jsonify({"error": "Forbidden"}), 403
+
+    # Second gate: DB check on users.is_admin
+    try:
+        rows = (
+            supabase.table("users")
+            .select("id, is_admin")
+            .eq("id", user_id)
+            .limit(1)
+            .execute()
+        ).data or []
+        if not rows or not bool(rows[0].get("is_admin", False)):
+            return jsonify({"error": "Forbidden"}), 403
+    except Exception as e:
+        safe_print("🔴 DB error verifying admin in /admin/season/rollover:", type(e).__name__)
+        return jsonify({"error": "Unexpected error"}), 500
+
+    data = request.get_json(silent=True) or {}
+    new_code_raw = data.get("new_season_code")
+    regular_end_raw = data.get("regular_season_end_utc")
+    playoffs_start_raw = data.get("playoffs_start_utc")
+
+    new_code = (new_code_raw or "").strip()
+    if not new_code:
+        return jsonify({"error": "new_season_code is required"}), 400
+
+    # Parse optional gate datetimes
+    reg_dt = None
+    if regular_end_raw:
+        reg_dt = parse_iso8601_utc(regular_end_raw)
+        if reg_dt is None:
+            return jsonify(
+                {
+                    "error": "Invalid regular_season_end_utc. "
+                    "Use ISO-8601 in UTC (e.g. '2026-04-15T07:00:00Z') or omit."
+                }
+            ), 400
+
+    pl_dt = None
+    if playoffs_start_raw:
+        pl_dt = parse_iso8601_utc(playoffs_start_raw)
+        if pl_dt is None:
+            return jsonify(
+                {
+                    "error": "Invalid playoffs_start_utc. "
+                    "Use ISO-8601 in UTC (e.g. '2026-04-18T07:00:00Z') or omit."
+                }
+            ), 400
+
+    try:
+        result = _rollover_current_season(
+            new_season_code=new_code,
+            regular_season_end_utc=reg_dt,
+            playoffs_start_utc=pl_dt,
+            created_by_user_id=user_id,
+        )
+    except Exception as e:
+        safe_print("🔴 Unexpected error in /admin/season/rollover:", type(e).__name__, repr(e))
+        return jsonify({"error": "Unexpected error"}), 500
+
+    status = result.get("status", 200)
+    if not result.get("ok"):
+        return jsonify(result), status
+
+    return jsonify(result), status
+
+
 # --------------------------------------------------------
 # --------- Helper: fetch + sync NBA standings -----------
 # --------------------------------------------------------
@@ -1011,14 +1101,12 @@ def fetch_and_sync_standings_from_nba():
     for i, row in enumerate(east_sorted, start=1):
         rows_to_upsert.append({
             **row,
-            "season_id": CURRENT_SEASON_ID,
             "seed": i,
             "updated_at": now_ts,
         })
     for i, row in enumerate(west_sorted, start=1):
         rows_to_upsert.append({
             **row,
-            "season_id": CURRENT_SEASON_ID,
             "seed": i,
             "updated_at": now_ts,
         })
@@ -1031,7 +1119,6 @@ def fetch_and_sync_standings_from_nba():
         # Delete old rows for this season
         supabase.table("standings") \
             .delete() \
-            .eq("season_id", CURRENT_SEASON_ID) \
             .execute()
 
         # Insert fresh snapshot
@@ -1648,14 +1735,29 @@ def _build_leaderboard_rows_for_current_season():
 
 def _snapshot_leaderboard_for_current_season():
     """
-    Creates a snapshot of the CURRENT season leaderboard into leaderboard_history.
+    Creates a snapshot of the CURRENT season leaderboard.
+
+    This does two things:
+
+      1) Inserts a flat snapshot into `leaderboard_history` (legacy table),
+         one row per bracket with rank and per-match points.
+      2) Creates a structured snapshot for the Past Seasons UI in:
+           - leaderboard_history_snapshots (one row per season snapshot)
+           - leaderboard_history_rows      (one row per bracket within that snapshot)
 
     Returns either:
-      { "ok": True, "season_id": ..., "season_code": ..., "rows_snapshot": n }
+      {
+        "ok": True,
+        "season_id": ...,
+        "season_code": ...,
+        "rows_snapshot": n,
+        "history_snapshot_id": "...",
+        "history_rows_count": m
+      }
     or:
       { "error": "...", "status": 400/404/etc }
     """
-    # Safety: make sure season globals are resolved
+    # Make sure season globals are resolved
     ensure_season_globals()
 
     if CURRENT_SEASON_ID is None:
@@ -1664,15 +1766,14 @@ def _snapshot_leaderboard_for_current_season():
             "status": 400,
         }
 
-    # 1) Check if a snapshot already exists for this season
+    # 1) Check if a snapshot already exists for this season in the legacy table
     existing = (
         supabase.table("leaderboard_history")
         .select("id")
         .eq("season_id", CURRENT_SEASON_ID)
         .limit(1)
         .execute()
-        .data
-    )
+    ).data
 
     if existing:
         return {
@@ -1700,35 +1801,510 @@ def _snapshot_leaderboard_for_current_season():
 
     snapshot_time = datetime.now(timezone.utc).isoformat()
 
+    # 4) Bulk insert into legacy leaderboard_history (existing behavior)
     records = []
     for idx, r in enumerate(rows_sorted, start=1):
-        records.append({
+        records.append(
+            {
+                "season_id": CURRENT_SEASON_ID,
+                "season_code": CURRENT_SEASON_CODE,
+                "snapshot_at": snapshot_time,
+                "rank": idx,
+                "bracket_name": r["bracket_name"],
+                "username": r["username"],
+                "total_points": r["total_points"],
+                "full_hits": r["full_hits"],
+                "partial_hits": r["partial_hits"],
+                "misses": r["misses"],
+                "bonus_finalists": r["bonus_finalists"],
+                "bonus_champion": r["bonus_champion"],
+                "points_by_match": r["points_by_match"],
+                # Optional internal references (not exposed in public history API)
+                "bracket_id": r.get("bracket_id"),
+                "user_id": r.get("user_id"),
+            }
+        )
+
+    supabase.table("leaderboard_history").insert(records).execute()
+
+    # 5) Also create a structured snapshot for the Past Seasons UI
+    history_snapshot_id: Optional[str] = None
+    history_rows_count = 0
+
+    try:
+        # 5a) Determine all matchup keys present in points_by_match
+        match_keys_set = set()
+        for r in rows_sorted:
+            pm = r.get("points_by_match") or {}
+            if isinstance(pm, dict):
+                for k in pm.keys():
+                    if k:
+                        match_keys_set.add(str(k))
+
+        def _match_key_sort_tuple(k: str):
+            """
+            Sort matchup keys by (round, conference, slot, key).
+
+            Expected format: "<conference>-<round>-<slot>", e.g. "east-1-4".
+            """
+            try:
+                conf, r_str, slot_str = k.split("-")
+                r = int(r_str)
+                slot = int(slot_str)
+                conf_order = {"east": 0, "west": 1, "nba": 2}.get(conf.lower(), 99)
+                return (r, conf_order, slot, k)
+            except Exception:
+                return (99, 99, 99, k)
+
+        ordered_match_keys = sorted(match_keys_set, key=_match_key_sort_tuple)
+
+        # 5b) Build HistoryColumn definitions for matchup columns
+        match_columns = []
+        for mk in ordered_match_keys:
+            try:
+                conf, r_str, slot_str = mk.split("-")
+                r = int(r_str)
+                slot = int(slot_str)
+            except Exception:
+                conf = "nba"
+                r = 0
+                slot = 0
+
+            conf_lower = conf.lower()
+            if conf_lower == "east":
+                conf_label = "E"
+            elif conf_lower == "west":
+                conf_label = "W"
+            else:
+                conf_label = "NBA"
+
+            if conf_lower == "nba" and r == 4:
+                label = "NBA Finals"
+            else:
+                if r == 0:
+                    label = f"{conf_label} PI-{slot}"
+                elif r == 1:
+                    label = f"{conf_label} R1-{slot}"
+                elif r == 2:
+                    label = f"{conf_label} R2-{slot}"
+                elif r == 3:
+                    label = f"{conf_label} CF-{slot}"
+                else:
+                    label = f"{conf_label} R{r}-{slot}"
+
+            match_columns.append(
+                {
+                    "key": mk,
+                    "label": label,
+                    "type": "matchup",
+                    "round": r,
+                }
+            )
+
+        # 5c) Summary + bonus columns (order matches /leaderboard)
+        summary_and_bonus_columns = [
+            {"key": "bonus_finalists", "label": "Bonus finalist", "type": "bonus"},
+            {"key": "bonus_champion", "label": "Bonus champion", "type": "bonus"},
+            {"key": "full_hits", "label": "Full hits", "type": "summary"},
+            {"key": "partial_hits", "label": "Partial hits", "type": "summary"},
+            {"key": "misses", "label": "Misses", "type": "summary"},
+        ]
+
+        columns_json = match_columns + summary_and_bonus_columns
+
+        # 5d) Try to capture who triggered the snapshot (if called from an authed request)
+        created_by_user_id = None
+        try:
+            user_info = getattr(request, "user", None) or {}
+            if isinstance(user_info, dict):
+                created_by_user_id = user_info.get("user_id")
+        except Exception:
+            created_by_user_id = None
+
+        snapshot_payload: Dict[str, Any] = {
             "season_id": CURRENT_SEASON_ID,
             "season_code": CURRENT_SEASON_CODE,
             "snapshot_at": snapshot_time,
-            "rank": idx,
-            "bracket_name": r["bracket_name"],
-            "username": r["username"],
-            "total_points": r["total_points"],
-            "full_hits": r["full_hits"],
-            "partial_hits": r["partial_hits"],
-            "misses": r["misses"],
-            "bonus_finalists": r["bonus_finalists"],
-            "bonus_champion": r["bonus_champion"],
-            "points_by_match": r["points_by_match"],
-            # Optional internal references (not exposed in public history API)
-            "bracket_id": r.get("bracket_id"),
-            "user_id": r.get("user_id"),
-        })
+            "columns": columns_json,
+        }
+        if created_by_user_id:
+            snapshot_payload["created_by"] = created_by_user_id
 
-    # 4) Bulk insert into leaderboard_history
-    supabase.table("leaderboard_history").insert(records).execute()
+        snap_res = (
+            supabase.table("leaderboard_history_snapshots")
+            .insert(snapshot_payload)
+            .execute()
+        )
+        snap_rows = getattr(snap_res, "data", None) or []
+        snapshot_row = snap_rows[0] if snap_rows else None
+        if snapshot_row:
+            history_snapshot_id = snapshot_row.get("id")
+        else:
+            safe_print(
+                "⚠️ Snapshot insert returned no row for leaderboard_history_snapshots"
+            )
+
+        # 5e) Insert per-bracket rows into leaderboard_history_rows
+        if history_snapshot_id:
+            history_rows = []
+            for idx, r in enumerate(rows_sorted, start=1):
+                raw_pm = r.get("points_by_match") or {}
+                pm_clean: Dict[str, int] = {}
+
+                if isinstance(raw_pm, dict):
+                    for mk, cell in raw_pm.items():
+                        if isinstance(cell, dict):
+                            pts = cell.get("points")
+                        else:
+                            pts = cell
+                        try:
+                            pm_clean[str(mk)] = int(pts) if pts is not None else 0
+                        except Exception:
+                            pm_clean[str(mk)] = 0
+
+                history_rows.append(
+                    {
+                        "snapshot_id": history_snapshot_id,
+                        "rank": idx,
+                        "display_name": f"{r['bracket_name']} ({r['username']})",
+                        "total_points": int(r.get("total_points") or 0),
+                        "bonus_finalists": int(r.get("bonus_finalists") or 0),
+                        "bonus_champion": int(r.get("bonus_champion") or 0),
+                        "full_hits": int(r.get("full_hits") or 0),
+                        "partial_hits": int(r.get("partial_hits") or 0),
+                        "misses": int(r.get("misses") or 0),
+                        "per_match_points": pm_clean,
+                    }
+                )
+
+            if history_rows:
+                rows_res = (
+                    supabase.table("leaderboard_history_rows")
+                    .insert(history_rows)
+                    .execute()
+                )
+                history_rows_count = len(getattr(rows_res, "data", None) or history_rows)
+
+    except Exception as e:
+        # Don't fail the whole snapshot if the Past Seasons insert fails.
+        # We still return ok=True so the legacy leaderboard_history snapshot is preserved.
+        safe_print(
+            "⚠️ Failed to create Past Seasons snapshot in "
+            "_snapshot_leaderboard_for_current_season:",
+            type(e).__name__,
+            repr(e),
+        )
 
     return {
         "ok": True,
         "season_id": str(CURRENT_SEASON_ID),
         "season_code": CURRENT_SEASON_CODE,
         "rows_snapshot": len(records),
+        "history_snapshot_id": history_snapshot_id,
+        "history_rows_count": history_rows_count,
+    }
+
+
+def _rollover_current_season(
+    new_season_code,
+    regular_season_end_utc=None,
+    playoffs_start_utc=None,
+    created_by_user_id=None,
+):
+    """
+    Close the CURRENT season and create a new season row.
+
+    Steps (in order):
+      1) Snapshot the current season leaderboard (or reuse existing snapshot).
+      2) Delete bracket_scores rows for the current season.
+      3) Delete matches rows for the current season.
+      4) Soft-delete all brackets for the current season.
+      5) Insert the new season row in seasons.
+
+    This does NOT change any env vars (CURRENT_SEASON_CODE, REGULAR_SEASON_END_UTC,
+    PLAYOFFS_START_UTC). You must update those in your Render/.env config after
+    this completes successfully.
+
+    Returns a dict with:
+      - ok: bool
+      - status: HTTP-style status code
+      - steps: list of step results (each with step, ok, message, optional details)
+      - current_season: {id, code}
+      - new_season: {id, code, regular_season_end_utc, playoffs_start_utc} on success
+      - env_next_actions: suggested env values to set for the new season
+    """
+    # Make sure CURRENT_SEASON_ID / gates are resolved
+    ensure_season_globals()
+
+    steps = []
+
+    if not CURRENT_SEASON_CODE:
+        return {
+            "ok": False,
+            "status": 400,
+            "error": "CURRENT_SEASON_CODE is not set; cannot run season rollover.",
+            "steps": steps,
+        }
+
+    if CURRENT_SEASON_ID is None:
+        return {
+            "ok": False,
+            "status": 400,
+            "error": "CURRENT_SEASON_ID is not set; cannot run season rollover.",
+            "steps": steps,
+        }
+
+    new_code = (new_season_code or "").strip()
+    if not new_code:
+        return {
+            "ok": False,
+            "status": 400,
+            "error": "new_season_code is required.",
+            "steps": steps,
+        }
+
+    if new_code == CURRENT_SEASON_CODE:
+        return {
+            "ok": False,
+            "status": 400,
+            "error": "new_season_code must be different from CURRENT_SEASON_CODE.",
+            "steps": steps,
+        }
+
+    # Step 0 – Check that the new season code does not already exist
+    try:
+        existing = (
+            supabase.table("seasons")
+            .select("id")
+            .eq("code", new_code)
+            .limit(1)
+            .execute()
+        ).data or []
+    except Exception as e:
+        safe_print("🔴 Error checking seasons for rollover:", type(e).__name__, repr(e))
+        return {
+            "ok": False,
+            "status": 500,
+            "error": "Failed to check for existing season with the new code.",
+            "steps": steps,
+        }
+
+    if existing:
+        return {
+            "ok": False,
+            "status": 400,
+            "error": "A season with this code already exists. Choose a different new_season_code.",
+            "steps": steps,
+        }
+
+    # Step 1 – Snapshot current season leaderboard
+    snapshot_result = _snapshot_leaderboard_for_current_season()
+    snapshot_error = snapshot_result.get("error")
+    snapshot_ok = bool(snapshot_result.get("ok"))
+
+    # Special case: allow "Snapshot already exists for this season." as success
+    if snapshot_error == "Snapshot already exists for this season.":
+        steps.append(
+            {
+                "step": "snapshot",
+                "ok": True,
+                "message": f"Snapshot already existed for season {CURRENT_SEASON_CODE}; reusing existing snapshot.",
+                "details": snapshot_result,
+            }
+        )
+    elif snapshot_ok:
+        rows_snapshot = snapshot_result.get("rows_snapshot", 0)
+        steps.append(
+            {
+                "step": "snapshot",
+                "ok": True,
+                "message": f"Snapshot created for season {CURRENT_SEASON_CODE} with {rows_snapshot} rows.",
+                "details": snapshot_result,
+            }
+        )
+    else:
+        steps.append(
+            {
+                "step": "snapshot",
+                "ok": False,
+                "message": snapshot_error or "Snapshot failed.",
+                "details": snapshot_result,
+            }
+        )
+        status = snapshot_result.get("status", 400)
+        return {
+            "ok": False,
+            "status": status,
+            "error": "Snapshot step failed; season rollover aborted.",
+            "steps": steps,
+        }
+
+    # Step 2 – Delete bracket_scores for the current season
+    try:
+        bs_res = (
+            supabase.table("bracket_scores")
+            .delete()
+            .eq("season_id", CURRENT_SEASON_ID)
+            .execute()
+        )
+        deleted_scores = len(getattr(bs_res, "data", None) or [])
+    except Exception as e:
+        safe_print("🔴 Error deleting bracket_scores in rollover:", type(e).__name__, repr(e))
+        steps.append(
+            {
+                "step": "delete_bracket_scores",
+                "ok": False,
+                "message": "Failed to delete bracket_scores for current season.",
+            }
+        )
+        return {
+            "ok": False,
+            "status": 500,
+            "error": "Failed to delete bracket_scores; season rollover aborted after snapshot.",
+            "steps": steps,
+        }
+
+    steps.append(
+        {
+            "step": "delete_bracket_scores",
+            "ok": True,
+            "message": f"Deleted {deleted_scores} bracket_scores rows for season {CURRENT_SEASON_CODE}.",
+        }
+    )
+
+    # Step 3 – Delete matches for the current season
+    try:
+        m_res = (
+            supabase.table("matches")
+            .delete()
+            .eq("season_id", CURRENT_SEASON_ID)
+            .execute()
+        )
+        deleted_matches = len(getattr(m_res, "data", None) or [])
+    except Exception as e:
+        safe_print("🔴 Error deleting matches in rollover:", type(e).__name__, repr(e))
+        steps.append(
+            {
+                "step": "delete_matches",
+                "ok": False,
+                "message": "Failed to delete matches for current season.",
+            }
+        )
+        return {
+            "ok": False,
+            "status": 500,
+            "error": "Failed to delete matches; season rollover aborted after snapshot and bracket_scores cleanup.",
+            "steps": steps,
+        }
+
+    steps.append(
+        {
+            "step": "delete_matches",
+            "ok": True,
+            "message": f"Deleted {deleted_matches} matches rows for season {CURRENT_SEASON_CODE}.",
+        }
+    )
+
+    # Step 4 – Soft delete brackets for the current season
+    try:
+        update_payload = {"deleted_at": now_utc().isoformat()}
+        if created_by_user_id:
+            update_payload["deleted_by_user_id"] = created_by_user_id
+
+        br_res = (
+            supabase.table("brackets")
+            .update(update_payload)
+            .eq("season_id", CURRENT_SEASON_ID)
+            .is_("deleted_at", None)
+            .execute()
+        )
+        soft_deleted = len(getattr(br_res, "data", None) or [])
+    except Exception as e:
+        safe_print("🔴 Error soft-deleting brackets in rollover:", type(e).__name__, repr(e))
+        steps.append(
+            {
+                "step": "soft_delete_brackets",
+                "ok": False,
+                "message": "Failed to soft-delete brackets for current season.",
+            }
+        )
+        return {
+            "ok": False,
+            "status": 500,
+            "error": "Failed to soft-delete brackets; season rollover aborted after data cleanup.",
+            "steps": steps,
+        }
+
+    steps.append(
+        {
+            "step": "soft_delete_brackets",
+            "ok": True,
+            "message": f"Soft-deleted {soft_deleted} brackets for season {CURRENT_SEASON_CODE}.",
+        }
+    )
+
+    # Step 5 – Insert the new season row
+    payload = {"code": new_code}
+    if regular_season_end_utc is not None:
+        payload["regular_season_end_utc"] = regular_season_end_utc.isoformat()
+    if playoffs_start_utc is not None:
+        payload["playoffs_start_utc"] = playoffs_start_utc.isoformat()
+
+    try:
+        insert_res = supabase.table("seasons").insert(payload).execute()
+        new_rows = getattr(insert_res, "data", None) or []
+        new_season = new_rows[0] if new_rows else None
+    except Exception as e:
+        safe_print("🔴 Error inserting new season in rollover:", type(e).__name__, repr(e))
+        return {
+            "ok": False,
+            "status": 500,
+            "error": "Failed to insert new season row; previous steps already applied.",
+            "steps": steps,
+        }
+
+    if not new_season:
+        return {
+            "ok": False,
+            "status": 500,
+            "error": "Insert for new season returned no row; previous steps already applied.",
+            "steps": steps,
+        }
+
+    steps.append(
+        {
+            "step": "insert_new_season",
+            "ok": True,
+            "message": f"Inserted new season '{new_season.get('code')}' with id {new_season.get('id')}.",
+            "new_season": {
+                "id": new_season.get("id"),
+                "code": new_season.get("code"),
+                "regular_season_end_utc": new_season.get("regular_season_end_utc"),
+                "playoffs_start_utc": new_season.get("playoffs_start_utc"),
+            },
+        }
+    )
+
+    return {
+        "ok": True,
+        "status": 200,
+        "current_season": {
+            "id": str(CURRENT_SEASON_ID),
+            "code": CURRENT_SEASON_CODE,
+        },
+        "new_season": {
+            "id": new_season.get("id"),
+            "code": new_season.get("code"),
+            "regular_season_end_utc": new_season.get("regular_season_end_utc"),
+            "playoffs_start_utc": new_season.get("playoffs_start_utc"),
+        },
+        "steps": steps,
+        "env_next_actions": {
+            "message": "Update these env vars in your Render/.env config before starting the new season.",
+            "CURRENT_SEASON_CODE": new_code,
+            "REGULAR_SEASON_END_UTC": regular_season_end_utc.isoformat() if regular_season_end_utc else None,
+            "PLAYOFFS_START_UTC": playoffs_start_utc.isoformat() if playoffs_start_utc else None,
+        },
     }
 
 
@@ -2167,9 +2743,6 @@ def create_bracket_for_user():
         return jsonify({"error": "Unexpected error creating bracket", "details": str(e)}), 500
 
     # 🔁 Auto-promote to MASTER for this season if an admin created it
-    #     - Demote any existing master for CURRENT_SEASON_ID
-    #     - Promote this new bracket (set is_master = true)
-    #     - Update seasons.master_bracket_id to point to this bracket
     if is_admin and CURRENT_SEASON_ID:
         try:
             # Demote prior master for the season (if any)
@@ -2188,34 +2761,151 @@ def create_bracket_for_user():
                 .eq("id", CURRENT_SEASON_ID) \
                 .execute()
 
-            # Reflect in response
             bracket["is_master"] = True
         except Exception as e:
             app.logger.exception("Auto master promotion failed: %s", e)
-            # Non-fatal: we still proceed; UI can offer a manual "Make Master" if needed
+            # Non-fatal
 
-    # Fetch teams (global table; season-agnostic)
-    teams = supabase.table("teams").select("id, name, conference").execute().data
-    east_teams = [t for t in teams if (t["conference"] or "").lower() == "east"]
-    west_teams = [t for t in teams if (t["conference"] or "").lower() == "west"]
+    # ------------------------------------------------------------------
+    # 🔢 Fetch teams (canonical conference) + standings (no season filter)
+    # ------------------------------------------------------------------
+    try:
+        teams = (
+            supabase.table("teams")
+            .select("id, name, conference, code")
+            .execute()
+            .data
+        )
+    except Exception as e:
+        app.logger.exception("Failed to fetch teams for bracket creation: %s", e)
+        return jsonify({"error": "Failed to fetch teams"}), 500
+
+    team_by_code = {}
+    for t in teams:
+        code = (t.get("code") or "").strip().upper()
+        if code:
+            team_by_code[code] = t
+
+    try:
+        # standings is always "current season", no season_id column anymore
+        standings_rows = (
+            supabase.table("standings")
+            .select("code, seed")
+            .execute()
+            .data
+        )
+    except Exception as e:
+        app.logger.exception("Failed to fetch standings for bracket creation: %s", e)
+        return jsonify({"error": "Failed to fetch standings"}), 500
+
+    if not standings_rows:
+        return jsonify({
+            "error": "Standings table is empty. Make sure the standings script has been run."
+        }), 400
+
+    # ------------------------------------------------------------------
+    # 🧮 Build seeded lists per conference using the seed column
+    # ------------------------------------------------------------------
+    east_seed_pairs = []  # list of (seed, team_dict)
+    west_seed_pairs = []
+
+    for row in standings_rows:
+        seed = row.get("seed")
+        if seed is None:
+            continue
+
+        code = (row.get("code") or "").strip().upper()
+        if not code:
+            continue
+
+        team = team_by_code.get(code)
+        if not team:
+            app.logger.error(
+                "Standings row has code %s but no matching team in teams table",
+                code,
+            )
+            continue
+
+        conf = (team.get("conference") or "").strip().lower()
+        if conf == "east":
+            east_seed_pairs.append((seed, team))
+        elif conf == "west":
+            west_seed_pairs.append((seed, team))
+        else:
+            app.logger.warning(
+                "Team %s (code %s) has unexpected conference %r",
+                team.get("name"),
+                code,
+                team.get("conference"),
+            )
+
+    # Sort by seed and pick first 10
+    east_seed_pairs.sort(key=lambda p: p[0])
+    west_seed_pairs.sort(key=lambda p: p[0])
+
+    east_teams = [team for (seed, team) in east_seed_pairs[:10]]
+    west_teams = [team for (seed, team) in west_seed_pairs[:10]]
 
     if len(east_teams) < 10 or len(west_teams) < 10:
-        return jsonify({"error": "Not enough teams in database"}), 400
+        app.logger.error(
+            "Not enough seeded teams: EAST=%d, WEST=%d (need at least 10 each)",
+            len(east_teams),
+            len(west_teams),
+        )
+        if len(east_teams) < 10:
+            return jsonify({
+                "error": f"Not enough seeded teams (need 10) for conference EAST, found {len(east_teams)}. "
+                         "Check that the standings script has set seeds 1–10 for EAST."
+            }), 400
+        else:
+            return jsonify({
+                "error": f"Not enough seeded teams (need 10) for conference WEST, found {len(west_teams)}. "
+                         "Check that the standings script has set seeds 1–10 for WEST."
+            }), 400
+
+    # 🧱 From here on, east_teams[0..9] and west_teams[0..9] are seeds 1..10
 
     def create_conference_matches(conference, teams_):
         matches = []
         # ---- PLAY-IN ROUND ----
-        m1 = {"round": 0, "slot": 1, "conference": conference, "team_a": teams_[8]["id"], "team_b": teams_[9]["id"]}
-        m2 = {"round": 0, "slot": 2, "conference": conference, "team_a": teams_[6]["id"], "team_b": teams_[7]["id"]}
+        # seeds 9 vs 10
+        m1 = {
+            "round": 0,
+            "slot": 1,
+            "conference": conference,
+            "team_a": teams_[8]["id"],
+            "team_b": teams_[9]["id"],
+        }
+        # seeds 7 vs 8
+        m2 = {
+            "round": 0,
+            "slot": 2,
+            "conference": conference,
+            "team_a": teams_[6]["id"],
+            "team_b": teams_[7]["id"],
+        }
         m3 = {"round": 0, "slot": 3, "conference": conference}
         matches.extend([m1, m2, m3])
 
         # ---- ROUND 1 ----
+        # 1 vs play-in winner, 2 vs play-in winner, 3 vs 6, 4 vs 5
         r1 = [
-            {"round": 1, "slot": 4, "conference": conference, "team_a": teams_[0]["id"]},
-            {"round": 1, "slot": 5, "conference": conference, "team_a": teams_[1]["id"]},
-            {"round": 1, "slot": 6, "conference": conference, "team_a": teams_[2]["id"], "team_b": teams_[5]["id"]},
-            {"round": 1, "slot": 7, "conference": conference, "team_a": teams_[3]["id"], "team_b": teams_[4]["id"]},
+            {"round": 1, "slot": 4, "conference": conference, "team_a": teams_[0]["id"]},  # 1 seed
+            {"round": 1, "slot": 5, "conference": conference, "team_a": teams_[1]["id"]},  # 2 seed
+            {
+                "round": 1,
+                "slot": 6,
+                "conference": conference,
+                "team_a": teams_[2]["id"],  # 3 seed
+                "team_b": teams_[5]["id"],  # 6 seed
+            },
+            {
+                "round": 1,
+                "slot": 7,
+                "conference": conference,
+                "team_a": teams_[3]["id"],  # 4 seed
+                "team_b": teams_[4]["id"],  # 5 seed
+            },
         ]
         matches.extend(r1)
 
@@ -2248,12 +2938,14 @@ def create_bracket_for_user():
         .data
     )
 
-    # 4️⃣ Link matches (unchanged)
+    # 4️⃣ Link matches
     def link(conference, from_slot, to_slot, next_slot):
         src = next((m for m in inserted if m["conference"] == conference and m["slot"] == from_slot), None)
         dest = next((m for m in inserted if m["conference"] == conference and m["slot"] == to_slot), None)
         if src and dest:
-            supabase.table("matches").update({"next_match_id": dest["id"], "next_slot": next_slot}).eq("id", src["id"]).execute()
+            supabase.table("matches").update(
+                {"next_match_id": dest["id"], "next_slot": next_slot}
+            ).eq("id", src["id"]).execute()
 
     # 🏀 PLAY-IN ROUND
     link("east", 1, 3, "a"); link("west", 1, 3, "a")
@@ -2277,9 +2969,13 @@ def create_bracket_for_user():
         east_final = next((m for m in inserted if m["conference"] == "east" and m["slot"] == 10), None)
         west_final = next((m for m in inserted if m["conference"] == "west" and m["slot"] == 10), None)
         if east_final:
-            supabase.table("matches").update({"next_match_id": nba_final["id"], "next_slot": "a"}).eq("id", east_final["id"]).execute()
+            supabase.table("matches").update(
+                {"next_match_id": nba_final["id"], "next_slot": "a"}
+            ).eq("id", east_final["id"]).execute()
         if west_final:
-            supabase.table("matches").update({"next_match_id": nba_final["id"], "next_slot": "b"}).eq("id", west_final["id"]).execute()
+            supabase.table("matches").update(
+                {"next_match_id": nba_final["id"], "next_slot": "b"}
+            ).eq("id", west_final["id"]).execute()
 
     return jsonify({"message": "Bracket created successfully", "bracket": bracket}), 200
 
@@ -2573,62 +3269,130 @@ def get_bracket_by_id(bracket_id):
 
 
 @app.route("/brackets", methods=["GET"])
+@require_auth
 def list_all_brackets():
     """
     Returns saved brackets (is_done = true) for the CURRENT season,
     excluding deleted and excluding master.
+
+    Optional query params:
+    - league_id: if provided, only return brackets whose owners are members
+      of that league (season is still always the current one).
+
+    NOTE: This endpoint now requires authentication.
     """
+    # Auth check (require_auth has already validated the token)
+    user_info = getattr(request, "user", None) or {}
+    user_id = user_info.get("user_id")
+    if not user_id:
+        return jsonify({"error": "Unauthorized"}), 401
+
     try:
-        brackets_res = (
-            with_current_season(
-                supabase.table("brackets")
-                .select("id, user_id, name, saved_at, created_at, deleted_at, is_done, is_master, season_id")
-                .eq("is_done", True)
-                .eq("is_master", False)
-                .is_("deleted_at", None)
+        # Optional league filter
+        league_id = request.args.get("league_id")
+        league_user_ids = None
+
+        if league_id:
+            # Basic UUID validation
+            if not is_uuid(league_id):
+                return jsonify({"error": "Invalid league id"}), 400
+
+            # 1) Check league exists
+            league_res = (
+                supabase.table("leagues")
+                .select("id, is_global")
+                .eq("id", league_id)
+                .limit(1)
+                .execute()
             )
-            .order("saved_at", desc=True)
-            .execute()
+            league_rows = league_res.data or []
+            if not league_rows:
+                return jsonify({"error": "League not found"}), 404
+
+            # 2) Get members of this league
+            mem_res = (
+                supabase.table("league_members")
+                .select("user_id")
+                .eq("league_id", league_id)
+                .execute()
+            )
+            mem_rows = mem_res.data or []
+            league_user_ids = {m["user_id"] for m in mem_rows if m.get("user_id")}
+
+            # If league has no members, we can early-return empty list
+            if not league_user_ids:
+                return jsonify([]), 200
+
+        # Time-gating info (same as before)
+        locked = playoffs_locked()
+        creation_open = bracket_creation_open()
+
+        # Base query: all non-master, done, non-deleted brackets for current season
+        query = with_current_season(
+            supabase.table("brackets")
+            .select(
+                "id, user_id, name, saved_at, created_at, "
+                "deleted_at, is_done, is_master, season_id"
+            )
+            .eq("is_done", True)
+            .eq("is_master", False)
+            .is_("deleted_at", None)
         )
-        brackets = brackets_res.data
+
+        # If league_id provided, restrict to owners who are members of that league
+        if league_user_ids is not None:
+            query = query.in_("user_id", list(league_user_ids))
+
+        brackets_res = query.order("saved_at", desc=True).execute()
+        brackets = brackets_res.data or []
 
         if not brackets:
             return jsonify([]), 200
 
+        # Fetch owner user info in bulk
         user_ids = list({b["user_id"] for b in brackets if b.get("user_id")})
-
-        users_res = (
-            supabase.table("users")
-            .select("id, username, email")
-            .in_("id", user_ids)
-            .execute()
-        )
-        users = {u["id"]: u for u in users_res.data}
-
-        locked = playoffs_locked()
-        creation_open = bracket_creation_open()
+        users = {}
+        if user_ids:
+            users_res = (
+                supabase.table("users")
+                .select("id, username, email")
+                .in_("id", user_ids)
+                .execute()
+            )
+            for u in users_res.data or []:
+                users[u["id"]] = u
 
         output = []
         for b in brackets:
             user_info = users.get(b["user_id"], {})
-            output.append({
-                "bracket_id": b["id"],
-                "name": b.get("name"),
-                "saved_at": b.get("saved_at"),
-                "created_at": b.get("created_at"),
-                "is_done": b.get("is_done", False),
-                "user": {"id": b["user_id"], "username": user_info.get("username"), "email": user_info.get("email")},
-                "playoffs_locked": locked,
-                "bracket_creation_open": creation_open,
-                "regular_season_end_utc": REGULAR_SEASON_END_UTC.isoformat() if REGULAR_SEASON_END_UTC else None,
-                "playoffs_deadline_utc": PLAYOFFS_START_UTC.isoformat() if PLAYOFFS_START_UTC else None,
-            })
+            output.append(
+                {
+                    "bracket_id": b["id"],
+                    "name": b.get("name"),
+                    "saved_at": b.get("saved_at"),
+                    "created_at": b.get("created_at"),
+                    "is_done": b.get("is_done", False),
+                    "user": {
+                        "id": b["user_id"],
+                        "username": user_info.get("username"),
+                        "email": user_info.get("email"),
+                    },
+                    "playoffs_locked": locked,
+                    "bracket_creation_open": creation_open,
+                    "regular_season_end_utc": REGULAR_SEASON_END_UTC.isoformat()
+                    if REGULAR_SEASON_END_UTC
+                    else None,
+                    "playoffs_deadline_utc": PLAYOFFS_START_UTC.isoformat()
+                    if PLAYOFFS_START_UTC
+                    else None,
+                }
+            )
 
         return jsonify(output), 200
 
     except Exception as e:
         if ENABLE_DEBUG_LOGS:
-            safe_print("🔴 Error in /brackets (class):", type(e).__name__)
+            safe_print("🔴 Error in /brackets:", type(e).__name__, str(e))
         return jsonify({"error": "Unexpected error"}), 500
 
 
@@ -3183,53 +3947,95 @@ def leaderboard_history_index():
 @require_auth
 def leaderboard_history_season(season_code):
     """
-    Returns the frozen leaderboard for a given season_code,
-    including dynamic column definitions and all rows with per_match_points.
+    Returns the frozen leaderboard snapshot for a given season code.
+
+    Response:
+      {
+        "season_code": "...",
+        "snapshot_at": "...",
+        "columns": [...],
+        "rows": [
+          {
+            "id": ...,
+            "rank": ...,
+            "display_name": "...",
+            "total_points": ...,
+            "bonus_finalists": ...,
+            "bonus_champion": ...,
+            "full_hits": ...,
+            "partial_hits": ...,
+            "misses": ...,
+            "per_match_points": { "<match-key>": <points>, ... }
+          },
+          ...
+        ]
+      }
     """
-    try:
-        code = (season_code or "").strip()
-        if not code:
-            return jsonify({"error": "Missing season_code"}), 400
+    code = (season_code or "").strip()
+    if not code:
+        return jsonify({"error": "season_code is required"}), 400
 
-        snap_res = (
-            supabase.table("leaderboard_history_snapshots")
-            .select("id, season_code, snapshot_at, columns")
-            .eq("season_code", code)
-            .order("snapshot_at", desc=True)
-            .limit(1)
-            .execute()
+    # Find the most recent snapshot for this season
+    snap_res = (
+        supabase.table("leaderboard_history_snapshots")
+        .select("id, season_code, snapshot_at, columns")
+        .eq("season_code", code)
+        .order("snapshot_at", desc=True)
+        .limit(1)
+        .execute()
+    )
+    snaps = getattr(snap_res, "data", None) or []
+    if not snaps:
+        return jsonify({"error": "No snapshot found for this season"}), 404
+
+    snap = snaps[0]
+    snapshot_id = snap.get("id")
+
+    # Load rows for this snapshot
+    rows_res = (
+        supabase.table("leaderboard_history_rows")
+        .select(
+            "id, rank, display_name, total_points, bonus_finalists, "
+            "bonus_champion, full_hits, partial_hits, misses, per_match_points"
         )
+        .eq("snapshot_id", snapshot_id)
+        .order("total_points", desc=True)
+        .order("full_hits", desc=True)
+        .execute()
+    )
+    rows = getattr(rows_res, "data", None) or []
 
-        snaps = getattr(snap_res, "data", None) or []
-        if not snaps:
-            return jsonify({"error": "No history snapshot for this season"}), 404
+    # 🔧 Sanitize per_match_points: always return numeric points
+    sanitized_rows = []
+    for row in rows:
+        pm_raw = row.get("per_match_points") or {}
+        pm_clean: Dict[str, int] = {}
 
-        snap = snaps[0]
-        snapshot_id = snap["id"]
+        if isinstance(pm_raw, dict):
+            for mk, cell in pm_raw.items():
+                if isinstance(cell, dict):
+                    pts = cell.get("points")
+                else:
+                    pts = cell
+                try:
+                    pm_clean[str(mk)] = int(pts) if pts is not None else 0
+                except Exception:
+                    pm_clean[str(mk)] = 0
 
-        rows_res = (
-            supabase.table("leaderboard_history_rows")
-            .select(
-                "id, rank, display_name, total_points, bonus_finalists, "
-                "bonus_champion, full_hits, partial_hits, misses, per_match_points"
-            )
-            .eq("snapshot_id", snapshot_id)
-            .order("total_points", desc=True)
-            .order("full_hits", desc=True)
-            .execute()
-        )
-        rows = getattr(rows_res, "data", None) or []
+        row["per_match_points"] = pm_clean
+        sanitized_rows.append(row)
 
-        return jsonify({
-            "season_code": snap.get("season_code"),
-            "snapshot_at": snap.get("snapshot_at"),
-            "columns": snap.get("columns") or [],
-            "rows": rows,
-        }), 200
-
-    except Exception as e:
-        safe_print("🔴 Error in GET /leaderboard/history/<season_code>:", type(e).__name__)
-        return jsonify({"error": "Unexpected error"}), 500
+    return (
+        jsonify(
+            {
+                "season_code": snap.get("season_code"),
+                "snapshot_at": snap.get("snapshot_at"),
+                "columns": snap.get("columns") or [],
+                "rows": sanitized_rows,
+            }
+        ),
+        200,
+    )
 
 
 @app.get("/__debug/master-status")
@@ -3300,6 +4106,722 @@ def debug_master_status():
                 ]
             }), 500
         return jsonify({"error": "unexpected", "exception": msg}), 500
+
+
+# --------------------------------------------------------
+# ----------------------  LEAGUES  -----------------------
+# --------------------------------------------------------
+
+@app.route("/leagues/me", methods=["GET"])
+@require_auth
+def get_my_leagues():
+    """
+    Return all *private* leagues the current user belongs to.
+
+    - Excludes the global league (is_global = true).
+    - This is season-agnostic; it just returns group memberships.
+    """
+    user_info = getattr(request, "user", None) or {}
+    user_id = user_info.get("user_id")
+
+    if not user_id:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    try:
+        # 1) Get membership rows for this user
+        mem_res = (
+            supabase.table("league_members")
+            .select("league_id, joined_at")
+            .eq("user_id", user_id)
+            .execute()
+        )
+        mem_rows = mem_res.data or []
+
+        if not mem_rows:
+            # No memberships yet → empty list is fine
+            return jsonify({"leagues": []}), 200
+
+        league_ids = list({m["league_id"] for m in mem_rows if m.get("league_id")})
+        if not league_ids:
+            return jsonify({"leagues": []}), 200
+
+        # 2) Fetch leagues for those IDs
+        leagues_res = (
+            supabase.table("leagues")
+            .select("id, name, owner_user_id, is_global, created_at, updated_at")
+            .in_("id", league_ids)
+            .execute()
+        )
+        league_rows = leagues_res.data or []
+        league_by_id = {l["id"]: l for l in league_rows}
+
+        # 3) Build response, skipping global league
+        leagues_out = []
+        for m in mem_rows:
+            lid = m.get("league_id")
+            league = league_by_id.get(lid)
+            if not league:
+                continue
+
+            # Skip global league (we don't want it in "My Leagues")
+            if league.get("is_global"):
+                continue
+
+            leagues_out.append(
+                {
+                    "id": league["id"],
+                    "name": league.get("name"),
+                    "owner_user_id": league.get("owner_user_id"),
+                    "is_global": league.get("is_global", False),
+                    "created_at": league.get("created_at"),
+                    "updated_at": league.get("updated_at"),
+                    "joined_at": m.get("joined_at"),
+                }
+            )
+
+        return jsonify({"leagues": leagues_out}), 200
+
+    except Exception as e:
+        if ENABLE_DEBUG_LOGS:
+            safe_print("🔴 Error in /leagues/me:", type(e).__name__, str(e))
+        return jsonify({"error": "Unexpected error"}), 500
+
+
+@app.route("/leagues", methods=["GET"])
+@require_auth
+def list_leagues():
+    """
+    List all *private* leagues (is_global = false).
+
+    - Requires authentication.
+    - Returns all leagues, plus a flag indicating whether the current user
+      is already a member of each league.
+    - Does NOT include the global league.
+    """
+    user_info = getattr(request, "user", None) or {}
+    user_id = user_info.get("user_id")
+
+    if not user_id:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    try:
+        # 1) Fetch all (non-global) leagues
+        leagues_res = (
+            supabase.table("leagues")
+            .select("id, name, owner_user_id, is_global, created_at, updated_at")
+            .eq("is_global", False)
+            .order("created_at", desc=True)
+            .execute()
+        )
+        league_rows = leagues_res.data or []
+
+        if not league_rows:
+            return jsonify({"leagues": []}), 200
+
+        league_ids = [l["id"] for l in league_rows if l.get("id")]
+
+        # 2) Fetch memberships for the current user so we can add "is_member"
+        mem_res = (
+            supabase.table("league_members")
+            .select("league_id")
+            .eq("user_id", user_id)
+            .in_("league_id", league_ids)
+            .execute()
+        )
+        mem_rows = mem_res.data or []
+        member_league_ids = {m["league_id"] for m in mem_rows if m.get("league_id")}
+        
+        # 2b) Fetch all memberships so we can compute member_count per league
+        all_mem_res = (
+            supabase.table("league_members")
+            .select("league_id")
+            .in_("league_id", league_ids)
+            .execute()
+        )
+        all_mem_rows = all_mem_res.data or []
+
+        member_counts = defaultdict(int)
+        for m in all_mem_rows:
+            lid2 = m.get("league_id")
+            if lid2:
+                member_counts[lid2] += 1
+
+        # 3) Build output, marking whether current user is a member
+        leagues_out = []
+        for league in league_rows:
+            lid = league.get("id")
+            if not lid:
+                continue
+
+            leagues_out.append(
+                {
+                    "id": lid,
+                    "name": league.get("name"),
+                    "owner_user_id": league.get("owner_user_id"),
+                    "is_global": league.get("is_global", False),
+                    "created_at": league.get("created_at"),
+                    "updated_at": league.get("updated_at"),
+                    "is_member": lid in member_league_ids,
+                    "member_count": member_counts.get(lid, 0),
+                }
+            )
+
+        return jsonify({"leagues": leagues_out}), 200
+
+    except Exception as e:
+        if ENABLE_DEBUG_LOGS:
+            safe_print("🔴 Error in GET /leagues:", type(e).__name__, str(e))
+        return jsonify({"error": "Unexpected error"}), 500
+
+
+@app.route("/leagues", methods=["POST"])
+@require_auth
+def create_league():
+    """
+    Create a new *private* league (non-global).
+
+    - Requires authentication.
+    - Allowed only until playoffs start (no creation after playoffs_locked()).
+    - The creator becomes the owner and is automatically added as a member.
+    """
+    user_info = getattr(request, "user", None) or {}
+    user_id = user_info.get("user_id")
+
+    if not user_id:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    # ⛔ Time gating: league creation only until playoffs start
+    if playoffs_locked():
+        return jsonify({"error": "League creation is closed once the playoffs start."}), 403
+
+    data = request.get_json() or {}
+
+    name = (data.get("name") or "").strip()
+    password = data.get("password") or ""
+
+    # Basic validation
+    if not name or not password:
+        return jsonify({"error": "Name and password are required"}), 400
+
+    if len(name) < 3 or len(name) > 80:
+        return jsonify({"error": "League name must be between 3 and 80 characters."}), 400
+
+    # Optional: keep league passwords simple (no strong policy for now)
+    if len(password) < 4:
+        return jsonify({"error": "League password must be at least 4 characters long."}), 400
+
+    # ✅ Enforce unique league name
+    existing = (
+        supabase.table("leagues")
+        .select("id")
+        .eq("name", name)
+        .execute()
+        .data
+    )
+    if existing:
+        return jsonify({"error": "League name is already in use"}), 400
+
+    # 🔐 Hash password with bcrypt (same rounds as user passwords)
+    password_hash = bcrypt.hashpw(
+        password.encode("utf-8"),
+        bcrypt.gensalt(rounds=BCRYPT_ROUNDS),
+    ).decode("utf-8")
+
+    # 1) Insert league
+    try:
+        league = (
+            supabase.table("leagues")
+            .insert(
+                {
+                    "name": name,
+                    "password_hash": password_hash,
+                    "owner_user_id": user_id,
+                    "is_global": False,
+                }
+            )
+            .execute()
+            .data[0]
+        )
+    except Exception as e:
+        # Fallback if unique constraint still hits (race condition)
+        if hasattr(e, "args") and e.args and "duplicate key value" in str(e.args[0]):
+            return jsonify({"error": "League name is already in use"}), 400
+
+        if ENABLE_DEBUG_LOGS:
+            safe_print("🔴 Error creating league:", type(e).__name__, str(e))
+        return jsonify({"error": "Unexpected error creating league"}), 500
+
+    # 2) Insert membership for the creator (owner is also a member)
+    membership = None
+    try:
+        membership = (
+            supabase.table("league_members")
+            .insert(
+                {
+                    "league_id": league["id"],
+                    "user_id": user_id,
+                }
+            )
+            .execute()
+            .data[0]
+        )
+    except Exception as e:
+        # This shouldn't normally fail; log and continue
+        if ENABLE_DEBUG_LOGS:
+            safe_print("⚠️ Error adding owner as league member:", type(e).__name__, str(e))
+
+    # Build response
+    resp = {
+        "id": league["id"],
+        "name": league.get("name"),
+        "owner_user_id": league.get("owner_user_id"),
+        "is_global": league.get("is_global", False),
+        "created_at": league.get("created_at"),
+        "updated_at": league.get("updated_at"),
+        "is_member": True,  # creator is always considered a member
+    }
+    if membership:
+        resp["joined_at"] = membership.get("joined_at")
+
+    return jsonify({"league": resp}), 201
+
+
+@app.route("/leagues/<league_id>/join", methods=["POST"])
+@require_auth
+def join_league(league_id):
+    """
+    Join an existing *private* league by password.
+
+    - Requires authentication.
+    - Allowed only until playoffs start (no joins after playoffs_locked()).
+    - Cannot be used to join the global league (is_global = true).
+    """
+    user_info = getattr(request, "user", None) or {}
+    user_id = user_info.get("user_id")
+
+    if not user_id:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    # Optional: basic UUID validation for league_id
+    if not is_uuid(league_id):
+        return jsonify({"error": "Invalid league id"}), 400
+
+    # ⛔ Time gating: can only join leagues until playoffs start
+    if playoffs_locked():
+        return jsonify({"error": "Joining leagues is closed once the playoffs start."}), 403
+
+    data = request.get_json() or {}
+    password = data.get("password") or ""
+
+    if not password:
+        return jsonify({"error": "Password is required"}), 400
+
+    try:
+        # 1) Load the league
+        league_res = (
+            supabase.table("leagues")
+            .select("id, name, owner_user_id, password_hash, is_global, created_at, updated_at")
+            .eq("id", league_id)
+            .limit(1)
+            .execute()
+        )
+        league_rows = league_res.data or []
+        if not league_rows:
+            return jsonify({"error": "League not found"}), 404
+
+        league = league_rows[0]
+
+        # Cannot join global league via this endpoint
+        if league.get("is_global"):
+            return jsonify({"error": "You cannot join the global league."}), 400
+
+        # 2) Check if already a member
+        membership_res = (
+            supabase.table("league_members")
+            .select("id, joined_at")
+            .eq("league_id", league["id"])
+            .eq("user_id", user_id)
+            .limit(1)
+            .execute()
+        )
+        membership_rows = membership_res.data or []
+        if membership_rows:
+            return jsonify({"error": "You are already a member of this league."}), 400
+
+        # 3) Verify password
+        stored_hash = league.get("password_hash") or ""
+        try:
+            valid_pw = bcrypt.checkpw(
+                password.encode("utf-8"),
+                stored_hash.encode("utf-8"),
+            )
+        except Exception:
+            valid_pw = False
+
+        if not valid_pw:
+            return jsonify({"error": "Invalid league password"}), 400
+
+        # 4) Insert membership
+        mem_insert_res = (
+            supabase.table("league_members")
+            .insert(
+                {
+                    "league_id": league["id"],
+                    "user_id": user_id,
+                }
+            )
+            .execute()
+        )
+        mem_rows = mem_insert_res.data or []
+        membership = mem_rows[0] if mem_rows else None
+
+        # 5) Build response
+        resp = {
+            "id": league["id"],
+            "name": league.get("name"),
+            "owner_user_id": league.get("owner_user_id"),
+            "is_global": league.get("is_global", False),
+            "created_at": league.get("created_at"),
+            "updated_at": league.get("updated_at"),
+            "is_member": True,
+        }
+        if membership:
+            resp["joined_at"] = membership.get("joined_at")
+
+        return jsonify({"league": resp}), 201
+
+    except Exception as e:
+        if ENABLE_DEBUG_LOGS:
+            safe_print("🔴 Error in POST /leagues/<id>/join:", type(e).__name__, str(e))
+        return jsonify({"error": "Unexpected error joining league"}), 500
+
+
+@app.route("/leagues/<league_id>/membership", methods=["DELETE"])
+@require_auth
+def leave_league(league_id):
+    """
+    Leave a private league.
+
+    Rules:
+    - Requires authentication.
+    - User can leave only private leagues where they are a member.
+    - User CANNOT leave:
+      - The global league (is_global = true).
+      - A league they own (owner must delete the league instead).
+    - Leaving is allowed at any time (no playoffs gating).
+    """
+    user_info = getattr(request, "user", None) or {}
+    user_id = user_info.get("user_id")
+
+    if not user_id:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    # Validate league_id format (UUID)
+    if not is_uuid(league_id):
+        return jsonify({"error": "Invalid league id"}), 400
+
+    try:
+        # 1) Load league
+        league_res = (
+            supabase.table("leagues")
+            .select("id, name, owner_user_id, is_global, created_at, updated_at")
+            .eq("id", league_id)
+            .limit(1)
+            .execute()
+        )
+        league_rows = league_res.data or []
+        if not league_rows:
+            return jsonify({"error": "League not found"}), 404
+
+        league = league_rows[0]
+
+        # Cannot leave the global league
+        if league.get("is_global"):
+            return jsonify({"error": "You cannot leave the global league."}), 400
+
+        # Owner cannot leave their own league
+        if league.get("owner_user_id") == user_id:
+            return jsonify(
+                {
+                    "error": "The owner cannot leave their own league. "
+                             "Delete the league instead."
+                }
+            ), 400
+
+        # 2) Check membership
+        mem_res = (
+            supabase.table("league_members")
+            .select("id, joined_at")
+            .eq("league_id", league["id"])
+            .eq("user_id", user_id)
+            .limit(1)
+            .execute()
+        )
+        mem_rows = mem_res.data or []
+        if not mem_rows:
+            return jsonify({"error": "You are not a member of this league."}), 400
+
+        membership = mem_rows[0]
+
+        # 3) Delete membership
+        supabase.table("league_members") \
+            .delete() \
+            .eq("league_id", league["id"]) \
+            .eq("user_id", user_id) \
+            .execute()
+
+        # 4) Build response (basic league info + membership info that was removed)
+        resp = {
+            "id": league["id"],
+            "name": league.get("name"),
+            "owner_user_id": league.get("owner_user_id"),
+            "is_global": league.get("is_global", False),
+            "created_at": league.get("created_at"),
+            "updated_at": league.get("updated_at"),
+            "was_member": True,
+            "left_at": now_utc().isoformat(),
+            "joined_at": membership.get("joined_at"),
+        }
+
+        return jsonify({"league": resp}), 200
+
+    except Exception as e:
+        if ENABLE_DEBUG_LOGS:
+            safe_print("🔴 Error in DELETE /leagues/<id>/membership:", type(e).__name__, str(e))
+        return jsonify({"error": "Unexpected error leaving league"}), 500
+
+
+@app.route("/leagues/<league_id>", methods=["DELETE"])
+@require_auth
+def delete_league(league_id):
+    """
+    Delete a private league.
+
+    Rules:
+    - Requires authentication.
+    - Only the league owner can delete the league.
+    - The global league (is_global = true) cannot be deleted.
+    - Deletion is allowed at any time (before/after playoffs).
+    - Deleting the league will also remove all its memberships via ON DELETE CASCADE.
+    """
+    user_info = getattr(request, "user", None) or {}
+    user_id = user_info.get("user_id")
+
+    if not user_id:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    # Validate league_id format
+    if not is_uuid(league_id):
+        return jsonify({"error": "Invalid league id"}), 400
+
+    try:
+        # 1) Load league
+        league_res = (
+            supabase.table("leagues")
+            .select("id, name, owner_user_id, is_global, created_at, updated_at")
+            .eq("id", league_id)
+            .limit(1)
+            .execute()
+        )
+        league_rows = league_res.data or []
+        if not league_rows:
+            return jsonify({"error": "League not found"}), 404
+
+        league = league_rows[0]
+
+        # Cannot delete global league
+        if league.get("is_global"):
+            return jsonify({"error": "You cannot delete the global league."}), 400
+
+        # Only owner can delete
+        if league.get("owner_user_id") != user_id:
+            return jsonify({"error": "Only the league owner can delete this league."}), 403
+
+        # 2) Delete league (memberships will be removed via ON DELETE CASCADE)
+        supabase.table("leagues").delete().eq("id", league["id"]).execute()
+
+        # 3) Build response with info about deleted league
+        resp = {
+            "id": league["id"],
+            "name": league.get("name"),
+            "owner_user_id": league.get("owner_user_id"),
+            "is_global": league.get("is_global", False),
+            "created_at": league.get("created_at"),
+            "updated_at": league.get("updated_at"),
+            "deleted": True,
+            "deleted_at": now_utc().isoformat(),
+        }
+
+        return jsonify({"league": resp}), 200
+
+    except Exception as e:
+        if ENABLE_DEBUG_LOGS:
+            safe_print("🔴 Error in DELETE /leagues/<id>:", type(e).__name__, str(e))
+        return jsonify({"error": "Unexpected error deleting league"}), 500
+
+
+@app.route("/leagues/<league_id>/members", methods=["GET"])
+@require_auth
+def get_league_members(league_id):
+    """
+    Get all members of a league, plus whether they have a bracket for
+    the current season.
+
+    Access:
+    - Auth required.
+    - Allowed if the current user:
+      - Is a member of the league, OR
+      - Is the league owner, OR
+      - Is an admin.
+
+    Response shape:
+    {
+      "league": { ... },
+      "members": [
+        {
+          "user_id": "...",
+          "username": "...",
+          "email": "...",
+          "joined_at": "...",
+          "is_owner": true/false,
+          "has_bracket": true/false,
+          "bracket_id": "..." | null
+        },
+        ...
+      ]
+    }
+    """
+    user_info = getattr(request, "user", None) or {}
+    user_id = user_info.get("user_id")
+    is_admin = bool(user_info.get("is_admin"))
+
+    if not user_id:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    if not is_uuid(league_id):
+        return jsonify({"error": "Invalid league id"}), 400
+
+    try:
+        # 1) Load league
+        league_res = (
+            supabase.table("leagues")
+            .select("id, name, owner_user_id, is_global, created_at, updated_at")
+            .eq("id", league_id)
+            .limit(1)
+            .execute()
+        )
+        league_rows = league_res.data or []
+        if not league_rows:
+            return jsonify({"error": "League not found"}), 404
+
+        league = league_rows[0]
+
+        # 2) Check membership of current user (for access control)
+        mem_res_for_user = (
+            supabase.table("league_members")
+            .select("id")
+            .eq("league_id", league["id"])
+            .eq("user_id", user_id)
+            .limit(1)
+            .execute()
+        )
+        is_member = bool(mem_res_for_user.data)
+
+        is_owner = league.get("owner_user_id") == user_id
+
+        if not (is_member or is_owner or is_admin):
+            return jsonify({"error": "You are not a member of this league."}), 403
+
+        # 3) Get all memberships for this league
+        mem_res = (
+            supabase.table("league_members")
+            .select("user_id, joined_at")
+            .eq("league_id", league["id"])
+            .execute()
+        )
+        mem_rows = mem_res.data or []
+
+        if not mem_rows:
+            return jsonify(
+                {
+                    "league": league,
+                    "members": [],
+                }
+            ), 200
+
+        user_ids = list({m["user_id"] for m in mem_rows if m.get("user_id")})
+
+        # 4) Load user details
+        users_by_id = {}
+        if user_ids:
+            users_res = (
+                supabase.table("users")
+                .select("id, username, email")
+                .in_("id", user_ids)
+                .execute()
+            )
+            for u in users_res.data or []:
+                users_by_id[u["id"]] = u
+
+        # 5) Load brackets for current season for these users
+        brackets_by_user = {}
+        if user_ids:
+            brackets_res = (
+                with_current_season(
+                    supabase.table("brackets")
+                    .select("id, user_id, is_done, deleted_at, season_id")
+                    .eq("is_done", True)
+                    .is_("deleted_at", None)
+                )
+                .in_("user_id", user_ids)
+                .execute()
+            )
+            for b in brackets_res.data or []:
+                uid = b.get("user_id")
+                if not uid:
+                    continue
+                # In case of multiple brackets in data (shouldn't happen), last one wins
+                brackets_by_user[uid] = b
+
+        # 6) Build members array
+        members_out = []
+        owner_id = league.get("owner_user_id")
+
+        joined_by_user = {m["user_id"]: m["joined_at"] for m in mem_rows if m.get("user_id")}
+
+        for uid in user_ids:
+            u = users_by_id.get(uid, {})
+            bracket = brackets_by_user.get(uid)
+            members_out.append(
+                {
+                    "user_id": uid,
+                    "username": u.get("username"),
+                    "email": u.get("email"),
+                    "joined_at": joined_by_user.get(uid),
+                    "is_owner": uid == owner_id,
+                    "has_bracket": bracket is not None,
+                    "bracket_id": bracket["id"] if bracket else None,
+                }
+            )
+
+        resp = {
+            "league": {
+                "id": league["id"],
+                "name": league.get("name"),
+                "owner_user_id": league.get("owner_user_id"),
+                "is_global": league.get("is_global", False),
+                "created_at": league.get("created_at"),
+                "updated_at": league.get("updated_at"),
+            },
+            "members": members_out,
+        }
+
+        return jsonify(resp), 200
+
+    except Exception as e:
+        if ENABLE_DEBUG_LOGS:
+            safe_print("🔴 Error in GET /leagues/<id>/members:", type(e).__name__, str(e))
+        return jsonify({"error": "Unexpected error"}), 500
 
 
 # --------------------------------------------------------
