@@ -2392,7 +2392,8 @@ def register():
             "user": {
                 "id": user["id"],
                 "email": user["email"],
-                "username": user["username"]
+                "username": user["username"],
+                "created_at": user.get("created_at")
             }
         }), 201
     except Exception as e:
@@ -2460,7 +2461,8 @@ def login():
             "id": user["id"],
             "email": user["email"],
             "username": user["username"],
-            "is_admin": user.get("is_admin", False)
+            "is_admin": user.get("is_admin", False),
+            "created_at": user.get("created_at")
         }
     }), 200
 
@@ -2676,7 +2678,7 @@ def send_email_via_brevo(to_email, subject, body):
     data = {
         "sender": {
             "name": "NBA Corner",
-            "email": os.getenv("BREVO_SENDER_EMAIL", "nbacorner91@gmail.com")
+            "email": os.getenv("BREVO_SENDER_EMAIL", "donotreply@nbacorner.com")
         },
         "to": [{"email": to_email}],
         "subject": subject,
@@ -3300,7 +3302,7 @@ def list_all_brackets():
             # 1) Check league exists
             league_res = (
                 supabase.table("leagues")
-                .select("id, is_global")
+                .select("id")
                 .eq("id", league_id)
                 .limit(1)
                 .execute()
@@ -3319,11 +3321,11 @@ def list_all_brackets():
             mem_rows = mem_res.data or []
             league_user_ids = {m["user_id"] for m in mem_rows if m.get("user_id")}
 
-            # If league has no members, we can early-return empty list
+            # If league has no members, return empty list
             if not league_user_ids:
                 return jsonify([]), 200
 
-        # Time-gating info (same as before)
+        # Time-gating info (same helpers you already use elsewhere)
         locked = playoffs_locked()
         creation_open = bracket_creation_open()
 
@@ -3351,7 +3353,7 @@ def list_all_brackets():
 
         # Fetch owner user info in bulk
         user_ids = list({b["user_id"] for b in brackets if b.get("user_id")})
-        users = {}
+        users_by_id = {}
         if user_ids:
             users_res = (
                 supabase.table("users")
@@ -3360,11 +3362,11 @@ def list_all_brackets():
                 .execute()
             )
             for u in users_res.data or []:
-                users[u["id"]] = u
+                users_by_id[u["id"]] = u
 
         output = []
         for b in brackets:
-            user_info = users.get(b["user_id"], {})
+            user_info = users_by_id.get(b["user_id"], {})
             output.append(
                 {
                     "bracket_id": b["id"],
@@ -3377,6 +3379,7 @@ def list_all_brackets():
                         "username": user_info.get("username"),
                         "email": user_info.get("email"),
                     },
+                    # convenience flags for the UI
                     "playoffs_locked": locked,
                     "bracket_creation_open": creation_open,
                     "regular_season_end_utc": REGULAR_SEASON_END_UTC.isoformat()
@@ -3463,6 +3466,7 @@ def update_match(bracket_id, match_id):
     data = request.get_json() or {}
     action = data.get("action")
 
+    # Fetch the match we are updating
     res = supabase.table("matches").select(
         "id, bracket_id, conference, round, slot, team_a, team_b, "
         "predicted_winner, predicted_winner_games, next_match_id, next_slot"
@@ -3475,7 +3479,14 @@ def update_match(bracket_id, match_id):
         return jsonify({"error": "Match does not belong to the specified bracket"}), 400
 
     # Ownership/admin and SEASON guard
-    user_res = supabase.table("users").select("id, is_admin").eq("id", user_id).limit(1).execute().data
+    user_res = (
+        supabase.table("users")
+        .select("id, is_admin")
+        .eq("id", user_id)
+        .limit(1)
+        .execute()
+        .data
+    )
     if not user_res:
         return jsonify({"error": "User not found"}), 404
     is_admin = user_res[0].get("is_admin", False)
@@ -3497,72 +3508,133 @@ def update_match(bracket_id, match_id):
 
     bracket_owner_id = bracket_check[0]["user_id"]
     if bracket_owner_id != user_id and not is_admin:
-        return jsonify({"error": "Unauthorized: You are not allowed to modify this bracket"}), 403
+        return jsonify(
+            {
+                "error": "Unauthorized: You are not allowed to modify this bracket"
+            }
+        ), 403
 
-    # --- helper functions (unchanged) ---
+    # ------------------------------------------------------------------
+    # Preload all matches for this bracket so we can do in-memory updates
+    # and batch-write only the matches that actually changed.
+    # ------------------------------------------------------------------
+    matches_resp = (
+        supabase.table("matches")
+        .select(
+            "id, bracket_id, conference, round, slot, "
+            "team_a, team_b, predicted_winner, predicted_winner_games, "
+            "next_match_id, next_slot"
+        )
+        .eq("bracket_id", match["bracket_id"])
+        .execute()
+    )
+    all_matches = matches_resp.data or []
+    matches_by_id = {m["id"]: m for m in all_matches}
+
+    # Make sure the current match is present in the cache
+    if match["id"] not in matches_by_id:
+        matches_by_id[match["id"]] = match
+
+    touched_match_ids = set()
+
+    def _mark_touched(m_row):
+        """Record that this match needs to be written back."""
+        if m_row and m_row.get("id"):
+            touched_match_ids.add(m_row["id"])
+
+    # --- helper functions: same logic, but now in-memory ----------------
     def clear_dest(dest_id):
-        if not dest_id: return
-        supabase.table("matches").update({
-            "predicted_winner": None,
-            "predicted_winner_games": None,
-            "updated_at": datetime.utcnow().isoformat()
-        }).eq("id", dest_id).execute()
+        if not dest_id:
+            return
+        dest = matches_by_id.get(dest_id)
+        if not dest:
+            return
+        dest["predicted_winner"] = None
+        dest["predicted_winner_games"] = None
+        _mark_touched(dest)
 
     def set_in_dest(dest_id, slot_letter, team_id):
-        if not dest_id or not slot_letter: return
-        supabase.table("matches").update({
-            f"team_{slot_letter}": team_id,
-            "predicted_winner": None,
-            "predicted_winner_games": None,
-            "updated_at": datetime.utcnow().isoformat()
-        }).eq("id", dest_id).execute()
+        if not dest_id or not slot_letter:
+            return
+        dest = matches_by_id.get(dest_id)
+        if not dest:
+            return
+        field = f"team_{slot_letter}"
+        dest[field] = team_id
+        dest["predicted_winner"] = None
+        dest["predicted_winner_games"] = None
+        _mark_touched(dest)
 
     def clear_in_dest_slot(dest_id, slot_letter, team_id=None):
-        if not dest_id or not slot_letter: return
-        dest = supabase.table("matches").select("id, team_a, team_b").eq("id", dest_id).execute().data
-        if not dest: return
-        dest = dest[0]
+        if not dest_id or not slot_letter:
+            return
+        dest = matches_by_id.get(dest_id)
+        if not dest:
+            return
         field = f"team_{slot_letter}"
         current_val = dest.get(field)
         if team_id is None or current_val == team_id:
-            supabase.table("matches").update({
-                field: None,
-                "predicted_winner": None,
-                "predicted_winner_games": None,
-                "updated_at": datetime.utcnow().isoformat()
-            }).eq("id", dest_id).execute()
+            dest[field] = None
+            dest["predicted_winner"] = None
+            dest["predicted_winner_games"] = None
+            _mark_touched(dest)
 
     def get_match(conference, round_num, slot_num):
-        rows = (supabase.table("matches")
-                .select("id, team_a, team_b, predicted_winner, predicted_winner_games")
-                .eq("bracket_id", match["bracket_id"])
-                .eq("conference", conference)
-                .eq("round", round_num)
-                .eq("slot", slot_num)
-                .execute().data)
-        return rows[0] if rows else None
+        for m in matches_by_id.values():
+            if (
+                m.get("conference") == conference
+                and m.get("round") == round_num
+                and m.get("slot") == slot_num
+            ):
+                return m
+        return None
 
     def cleanup_future_matches(losing_team_id):
-        if not match.get("next_match_id"): return
+        if not match.get("next_match_id"):
+            return
         to_check = [match["next_match_id"]]
         visited = set()
         while to_check:
             current_id = to_check.pop()
-            if current_id in visited: continue
+            if current_id in visited:
+                continue
             visited.add(current_id)
-            res = supabase.table("matches").select("id, team_a, team_b, next_match_id").eq("id", current_id).execute().data
-            if not res: continue
-            next_match = res[0]
-            updated_fields = {}
-            if next_match["team_a"] == losing_team_id: updated_fields["team_a"] = None
-            if next_match["team_b"] == losing_team_id: updated_fields["team_b"] = None
-            if updated_fields:
-                updated_fields["predicted_winner"] = None
-                updated_fields["predicted_winner_games"] = None
-                updated_fields["updated_at"] = datetime.utcnow().isoformat()
-                supabase.table("matches").update(updated_fields).eq("id", next_match["id"]).execute()
+            next_match = matches_by_id.get(current_id)
+            if not next_match:
+                continue
+            updated = False
+            if next_match.get("team_a") == losing_team_id:
+                next_match["team_a"] = None
+                updated = True
+            if next_match.get("team_b") == losing_team_id:
+                next_match["team_b"] = None
+                updated = True
+            if updated:
+                next_match["predicted_winner"] = None
+                next_match["predicted_winner_games"] = None
+                _mark_touched(next_match)
             if next_match.get("next_match_id"):
                 to_check.append(next_match["next_match_id"])
+
+    def flush_touched_matches():
+        """Write back all matches that were modified in-memory."""
+        if not touched_match_ids:
+            return
+        now_iso = datetime.utcnow().isoformat()
+        for mid in touched_match_ids:
+            m = matches_by_id.get(mid)
+            if not m:
+                continue
+            # We only update the fields your original helpers touched
+            supabase.table("matches").update(
+                {
+                    "team_a": m.get("team_a"),
+                    "team_b": m.get("team_b"),
+                    "predicted_winner": m.get("predicted_winner"),
+                    "predicted_winner_games": m.get("predicted_winner_games"),
+                    "updated_at": now_iso,
+                }
+            ).eq("id", mid).execute()
 
     # ------------------ ACTIONS ------------------
     if action == "set_winner":
@@ -3571,12 +3643,17 @@ def update_match(bracket_id, match_id):
         if not team:
             return jsonify({"error": "Missing team"}), 400
 
-        # ✅ NEW: force best-of-one for play-in round
+        # ✅ Force best-of-one for play-in round (unchanged)
         if match["round"] == 0:
             games = 1
 
         if team not in (match["team_a"], match["team_b"]):
-            return jsonify({"error": "Winner must be team_a or team_b for this match"}), 400
+            return (
+                jsonify(
+                    {"error": "Winner must be team_a or team_b for this match"}
+                ),
+                400,
+            )
 
         old_winner = match.get("predicted_winner")
         old_games = match.get("predicted_winner_games")
@@ -3584,41 +3661,52 @@ def update_match(bracket_id, match_id):
 
         if old_winner and old_winner != team:
             if match.get("next_match_id") and match.get("next_slot"):
-                clear_in_dest_slot(match["next_match_id"], match["next_slot"], old_winner)
+                clear_in_dest_slot(
+                    match["next_match_id"], match["next_slot"], old_winner
+                )
                 clear_dest(match["next_match_id"])
             cleanup_future_matches(old_winner)
             if match["round"] == 0 and match["slot"] == 2:
                 m3 = get_match(match["conference"], 0, 3)
                 if m3:
-                    supabase.table("matches").update({
-                        "team_b": None,
-                        "predicted_winner": None,
-                        "predicted_winner_games": None,
-                        "updated_at": datetime.utcnow().isoformat()
-                    }).eq("id", m3["id"]).execute()
+                    # Previously a direct DB update; now same fields updated in-memory
+                    m3["team_b"] = None
+                    m3["predicted_winner"] = None
+                    m3["predicted_winner_games"] = None
+                    _mark_touched(m3)
 
         if old_winner == team:
             if games != old_games:
-                supabase.table("matches").update({
-                    "predicted_winner_games": games,
-                    "updated_at": datetime.utcnow().isoformat()
-                }).eq("id", match_id).execute()
+                supabase.table("matches").update(
+                    {
+                        "predicted_winner_games": games,
+                        "updated_at": datetime.utcnow().isoformat(),
+                    }
+                ).eq("id", match_id).execute()
             if match["round"] == 0 and match["slot"] == 2:
                 m3 = get_match(match["conference"], 0, 3)
                 if m3 and m3.get("team_b") != loser:
                     set_in_dest(m3["id"], "b", loser)
             # ✅ Mark bracket as not saved
-            supabase.table("brackets").update({
-                "is_done": False,
-                "saved_at": None
-            }).eq("id", match["bracket_id"]).execute()
+            supabase.table("brackets").update(
+                {
+                    "is_done": False,
+                    "saved_at": None,
+                }
+            ).eq("id", match["bracket_id"]).execute()
+
+            # flush any propagated changes (e.g. play-in m3)
+            flush_touched_matches()
             return jsonify({"message": "Winner updated"}), 200
 
-        supabase.table("matches").update({
-            "predicted_winner": team,
-            "predicted_winner_games": games,
-            "updated_at": datetime.utcnow().isoformat()
-        }).eq("id", match_id).execute()
+        # New winner being set
+        supabase.table("matches").update(
+            {
+                "predicted_winner": team,
+                "predicted_winner_games": games,
+                "updated_at": datetime.utcnow().isoformat(),
+            }
+        ).eq("id", match_id).execute()
 
         if match.get("next_match_id") and match.get("next_slot"):
             set_in_dest(match["next_match_id"], match["next_slot"], team)
@@ -3629,42 +3717,51 @@ def update_match(bracket_id, match_id):
                 set_in_dest(m3["id"], "b", loser)
 
         # ✅ Mark bracket as not saved
-        supabase.table("brackets").update({
-            "is_done": False,
-            "saved_at": None
-        }).eq("id", match["bracket_id"]).execute()
+        supabase.table("brackets").update(
+            {
+                "is_done": False,
+                "saved_at": None,
+            }
+        ).eq("id", match["bracket_id"]).execute()
 
+        flush_touched_matches()
         return jsonify({"message": "Winner set"}), 200
 
     elif action == "undo":
         old_winner = match.get("predicted_winner")
-        supabase.table("matches").update({
-            "predicted_winner": None,
-            "predicted_winner_games": None,
-            "updated_at": datetime.utcnow().isoformat()
-        }).eq("id", match_id).execute()
+        supabase.table("matches").update(
+            {
+                "predicted_winner": None,
+                "predicted_winner_games": None,
+                "updated_at": datetime.utcnow().isoformat(),
+            }
+        ).eq("id", match_id).execute()
 
         if old_winner and match.get("next_match_id") and match.get("next_slot"):
-            clear_in_dest_slot(match["next_match_id"], match["next_slot"], old_winner)
+            clear_in_dest_slot(
+                match["next_match_id"], match["next_slot"], old_winner
+            )
             clear_dest(match["next_match_id"])
             cleanup_future_matches(old_winner)
 
         if match["round"] == 0 and match["slot"] == 2:
             m3 = get_match(match["conference"], 0, 3)
             if m3:
-                supabase.table("matches").update({
-                    "team_b": None,
-                    "predicted_winner": None,
-                    "predicted_winner_games": None,
-                    "updated_at": datetime.utcnow().isoformat()
-                }).eq("id", m3["id"]).execute()
+                # Same semantics as previous direct DB update
+                m3["team_b"] = None
+                m3["predicted_winner"] = None
+                m3["predicted_winner_games"] = None
+                _mark_touched(m3)
 
         # ✅ Mark bracket as not saved
-        supabase.table("brackets").update({
-            "is_done": False,
-            "saved_at": None
-        }).eq("id", match["bracket_id"]).execute()
+        supabase.table("brackets").update(
+            {
+                "is_done": False,
+                "saved_at": None,
+            }
+        ).eq("id", match["bracket_id"]).execute()
 
+        flush_touched_matches()
         return jsonify({"message": "Prediction undone"}), 200
 
     else:
@@ -3764,7 +3861,7 @@ def leaderboard():
 
         br_q = (
             supabase.table("brackets")
-            .select("id, user_id, name, deleted_at, season_id")
+            .select("id, user_id, name, deleted_at, season_id, saved_at")
             .in_("id", bracket_ids)
             .is_("deleted_at", None)
         )
@@ -3806,8 +3903,45 @@ def leaderboard():
                 "bonus_finalists": s.get("bonus_finalists", 0),
                 "bonus_champion": s.get("bonus_champion", 0),
                 "updated_at": s.get("updated_at"),
+                "saved_at": b.get("saved_at"),
                 "points_by_match": s.get("points_by_match") or {},
             })
+
+        def _parse_ts(val):
+            """
+            Parse saved_at into a numeric timestamp for safe comparisons.
+            Returns None if it can't be parsed.
+            """
+            if not val:
+                return None
+
+            if isinstance(val, datetime):
+                dt = val
+            elif isinstance(val, str):
+                try:
+                    # Handle "Z" UTC suffix if present
+                    v = val.replace("Z", "+00:00") if "Z" in val else val
+                    dt = datetime.fromisoformat(v)
+                except Exception:
+                    return None
+            else:
+                return None
+
+            try:
+                return dt.timestamp()
+            except Exception:
+                return None
+
+        def _sort_key(row):
+            pts = row.get("total_points") or 0
+            full = row.get("full_hits") or 0
+            ts = _parse_ts(row.get("saved_at"))
+            # Earlier saved_at should win. Unknown saved_at goes last.
+            if ts is None:
+                ts = float("inf")
+            return (-pts, -full, ts)
+
+        rows_out.sort(key=_sort_key)
 
         # -------- 5) Build a canonical master_matchups map --------
         master_matchups = {}
@@ -3901,7 +4035,379 @@ def leaderboard():
 
     except Exception as e:
         if ENABLE_DEBUG_LOGS:
-            safe_print("🔴 Error in /leaderboard (class):", type(e).__name__)
+            try:
+                safe_print(
+                    "🔴 Error in /leaderboard:",
+                    type(e).__name__,
+                    str(e),
+                )
+            except Exception:
+                pass
+
+        # Fail-open: same shape as the "no scores" path
+        return jsonify(
+            {
+                "rows": [],
+                "master_bracket_id": None,
+                "master_updated_at": None,
+                "master_matchups": {},
+            }
+        ), 200
+
+
+@app.route("/stats/champion-picks", methods=["GET"])
+@require_auth
+def champion_pick_stats():
+    """
+    Distribution of NBA champion picks (predicted winner of the NBA Finals)
+    for the current season.
+
+    Optional query params:
+      - league_id: if provided, restrict to brackets whose owners are
+        members of that league.
+
+    Access:
+    - Global (no league_id): any authenticated user.
+    - League scope: same rule as get_league_members:
+        - league member, OR
+        - league owner, OR
+        - admin.
+    """
+    # Auth context
+    user = getattr(request, "user", None) or {}
+    user_id = user.get("user_id")
+    is_admin = bool(user.get("is_admin"))
+
+    league_id = request.args.get("league_id") or None
+    scope = "global"
+    season_code = request.args.get("season_code") or None
+
+
+    try:
+        league_user_ids = None
+        league_row = None
+        least_matchup = None
+        most_matchup = None
+
+        # --- If league_id is provided, validate & enforce access ---
+        if league_id:
+            if not is_uuid(league_id):
+                return jsonify({"error": "Invalid league id"}), 400
+
+            scope = "league"
+
+            league_res = (
+                supabase.table("leagues")
+                .select("id, name, owner_user_id, created_at, updated_at")
+                .eq("id", league_id)
+                .limit(1)
+                .execute()
+            )
+            league_rows = league_res.data or []
+            if not league_rows:
+                return jsonify({"error": "League not found"}), 404
+
+            league_row = league_rows[0]
+
+            # Check if current user is a member/owner/admin
+            mem_res_for_user = (
+                supabase.table("league_members")
+                .select("id")
+                .eq("league_id", league_row["id"])
+                .eq("user_id", user_id)
+                .limit(1)
+                .execute()
+            )
+            is_member = bool(mem_res_for_user.data)
+            is_owner = user_id and user_id == league_row.get("owner_user_id")
+
+            if not (is_member or is_owner or is_admin):
+                return jsonify({"error": "You are not a member of this league."}), 403
+
+            # Load all members of the league
+            mem_res = (
+                supabase.table("league_members")
+                .select("user_id")
+                .eq("league_id", league_row["id"])
+                .execute()
+            )
+            mem_rows = mem_res.data or []
+            league_user_ids = {m["user_id"] for m in mem_rows if m.get("user_id")}
+
+            if not league_user_ids:
+                return jsonify(
+                    {
+                        "scope": scope,
+                        "league_id": league_id,
+                        "total_brackets": 0,
+                        "rows": [],
+                    }
+                ), 200
+        
+        target_season_id = None
+
+        if season_code:
+            season_res = (
+                supabase.table("seasons")
+                .select("id, code")
+                .eq("code", season_code)
+                .limit(1)
+                .execute()
+            )
+            season_rows = season_res.data or []
+            if not season_rows:
+                return jsonify({"error": "Season not found"}), 404
+            target_season_id = season_rows[0]["id"]
+        
+        # --- Load brackets for current season, done, not deleted ---
+        base_brackets = (
+            supabase.table("brackets")
+            .select("id, user_id, is_done, deleted_at, season_id")
+            .eq("is_done", True)
+            .is_("deleted_at", None)
+        )
+
+        if target_season_id:
+            # Explicit past season via season_code
+            brackets_q = base_brackets.eq("season_id", target_season_id)
+        else:
+            # Default: current season
+            brackets_q = with_current_season(base_brackets)
+
+        if league_user_ids is not None:
+            brackets_q = brackets_q.in_("user_id", list(league_user_ids))
+
+        br_res = brackets_q.execute()
+        br_rows = br_res.data or []
+
+        if not br_rows:
+            return jsonify(
+                {
+                    "scope": scope,
+                    "league_id": league_id,
+                    "total_brackets": 0,
+                    "rows": [],
+                }
+            ), 200
+
+        bracket_ids = [b["id"] for b in br_rows if b.get("id")]
+        if not bracket_ids:
+            return jsonify(
+                {
+                    "scope": scope,
+                    "league_id": league_id,
+                    "total_brackets": 0,
+                    "rows": [],
+                }
+            ), 200
+
+        # --- Aggregate per-match points across these brackets to find least/most predicted matchups ---
+        scores_res = (
+            supabase.table("bracket_scores")
+            .select("bracket_id, master_bracket_id, points_by_match")
+            .in_("bracket_id", bracket_ids)
+            .execute()
+        )
+        scores_rows = scores_res.data or []
+
+        totals_by_key = {}
+        master_freq = {}
+
+        for s in scores_rows:
+            mid = s.get("master_bracket_id")
+            if mid:
+                master_freq[mid] = master_freq.get(mid, 0) + 1
+
+            points_by_match = s.get("points_by_match") or {}
+            if not isinstance(points_by_match, dict):
+                continue
+
+            for key, info in points_by_match.items():
+                if not isinstance(info, dict):
+                    continue
+
+                status = info.get("status")
+                # Skip matchups that are still pending in the master bracket
+                if status == "pending":
+                    continue
+
+                pts = info.get("points") or 0
+                conf = (info.get("conference") or "").lower()
+                rnd = info.get("round")
+                slot = info.get("slot")
+
+                agg = totals_by_key.get(key)
+                if not agg:
+                    totals_by_key[key] = {
+                        "total_points": float(pts),
+                        "conference": conf,
+                        "round": rnd,
+                        "slot": slot,
+                    }
+                else:
+                    agg["total_points"] += float(pts)
+
+        if totals_by_key:
+            # Least and most points awarded overall
+            least_key, least_agg = min(
+                totals_by_key.items(),
+                key=lambda kv: (kv[1]["total_points"], kv[0]),
+            )
+            most_key, most_agg = max(
+                totals_by_key.items(),
+                key=lambda kv: (kv[1]["total_points"], kv[0]),
+            )
+
+            # Resolve team names / codes from the master bracket, if we can
+            master_bracket_id = None
+            if master_freq:
+                master_bracket_id = max(master_freq, key=master_freq.get)
+
+            match_map = {}
+            teams_by_id = {}
+            if master_bracket_id:
+                matches_res2 = (
+                    supabase.table("matches")
+                    .select("conference, round, slot, team_a, team_b")
+                    .eq("bracket_id", master_bracket_id)
+                    .execute()
+                )
+                matches_rows2 = matches_res2.data or []
+                team_ids = set()
+
+                for m in matches_rows2:
+                    conf = (m.get("conference") or "").lower()
+                    rnd = m.get("round")
+                    slot = m.get("slot")
+                    mk = f"{conf}-{rnd}-{slot}"
+                    match_map[mk] = m
+                    if m.get("team_a"):
+                        team_ids.add(m["team_a"])
+                    if m.get("team_b"):
+                        team_ids.add(m["team_b"])
+
+                if team_ids:
+                    teams_res2 = (
+                        supabase.table("teams")
+                        .select("id, code, name")
+                        .in_("id", list(team_ids))
+                        .execute()
+                    )
+                    for t in teams_res2.data or []:
+                        teams_by_id[t["id"]] = t
+
+            def build_match_dict(key, agg):
+                team_a_code = "TBD"
+                team_b_code = "TBD"
+                team_a_name = "TBD"
+                team_b_name = "TBD"
+
+                if match_map:
+                    mrow = match_map.get(key) or {}
+                    ta = mrow.get("team_a")
+                    tb = mrow.get("team_b")
+
+                    if ta and ta in teams_by_id:
+                        team_a_code = teams_by_id[ta].get("code") or "TBD"
+                        team_a_name = teams_by_id[ta].get("name") or team_a_code
+                    if tb and tb in teams_by_id:
+                        team_b_code = teams_by_id[tb].get("code") or "TBD"
+                        team_b_name = teams_by_id[tb].get("name") or team_b_code
+
+                return {
+                    "match_key": key,
+                    "conference": agg.get("conference"),
+                    "round": agg.get("round"),
+                    "slot": agg.get("slot"),
+                    "team_a_code": team_a_code,
+                    "team_b_code": team_b_code,
+                    "team_a_name": team_a_name,
+                    "team_b_name": team_b_name,
+                    "total_points": agg.get("total_points", 0.0),
+                }
+
+            least_matchup = build_match_dict(least_key, least_agg)
+            most_matchup = build_match_dict(most_key, most_agg)
+        
+        # --- Fetch NBA Finals champion picks for these brackets ---
+        matches_res = (
+            supabase.table("matches")
+            .select("bracket_id, conference, round, slot, predicted_winner")
+            .in_("bracket_id", bracket_ids)
+            .eq("conference", "nba")
+            .eq("round", 4)
+            .eq("slot", 11)
+            .execute()
+        )
+        matches_rows = matches_res.data or []
+
+        from collections import defaultdict
+        counts = defaultdict(int)
+        for row in matches_rows:
+            team_id = row.get("predicted_winner")
+            if team_id:
+                counts[team_id] += 1
+
+        total_picks = sum(counts.values())
+        if total_picks == 0:
+            # No champion picks yet for these brackets
+            return jsonify(
+                {
+                    "scope": scope,
+                    "league_id": league_id,
+                    "total_brackets": len(br_rows),
+                    "rows": [],
+                }
+            ), 200
+
+        team_ids = list(counts.keys())
+
+        # --- Load team metadata (id, code, name) ---
+        teams_by_id = {}
+        if team_ids:
+            teams_res = (
+                supabase.table("teams")
+                .select("id, code, name")
+                .in_("id", team_ids)
+                .execute()
+            )
+            for t in teams_res.data or []:
+                teams_by_id[t["id"]] = t
+
+        rows_out = []
+        for team_id, count in counts.items():
+            meta = teams_by_id.get(team_id) or {}
+            code = meta.get("code") or "UNK"
+            name = meta.get("name") or code
+            percent = (count * 100.0) / float(total_picks) if total_picks else 0.0
+
+            rows_out.append(
+                {
+                    "team_id": team_id,
+                    "team_code": code,
+                    "team_name": name,
+                    "brackets": count,
+                    "percent": percent,
+                }
+            )
+
+        # Sort: most-picked first, then by team name
+        rows_out.sort(key=lambda r: (-r["brackets"], r["team_name"] or ""))
+
+        return jsonify(
+            {
+                "scope": scope,
+                "league_id": league_id,
+                "total_brackets": total_picks,
+                "rows": rows_out,
+                "least_predicted_matchup": least_matchup,
+                "most_predicted_matchup": most_matchup,
+            }
+        ), 200
+
+    except Exception as e:
+        if ENABLE_DEBUG_LOGS:
+            safe_print("🔴 Error in /stats/champion-picks:", type(e).__name__, str(e))
         return jsonify({"error": "Unexpected error"}), 500
 
 
@@ -4148,7 +4654,7 @@ def get_my_leagues():
         # 2) Fetch leagues for those IDs
         leagues_res = (
             supabase.table("leagues")
-            .select("id, name, owner_user_id, is_global, created_at, updated_at")
+            .select("id, name, owner_user_id, is_global, password_hash, created_at, updated_at")
             .in_("id", league_ids)
             .execute()
         )
@@ -4176,6 +4682,7 @@ def get_my_leagues():
                     "created_at": league.get("created_at"),
                     "updated_at": league.get("updated_at"),
                     "joined_at": m.get("joined_at"),
+                    "requires_password": league.get("password_hash", True),
                 }
             )
 
@@ -4208,7 +4715,7 @@ def list_leagues():
         # 1) Fetch all (non-global) leagues
         leagues_res = (
             supabase.table("leagues")
-            .select("id, name, owner_user_id, is_global, created_at, updated_at")
+            .select("id, name, owner_user_id, password_hash, is_global, created_at, updated_at")
             .eq("is_global", False)
             .order("created_at", desc=True)
             .execute()
@@ -4263,6 +4770,7 @@ def list_leagues():
                     "updated_at": league.get("updated_at"),
                     "is_member": lid in member_league_ids,
                     "member_count": member_counts.get(lid, 0),
+                    "requires_password": bool(league.get("password_hash")),
                 }
             )
 
@@ -4297,18 +4805,22 @@ def create_league():
     data = request.get_json() or {}
 
     name = (data.get("name") or "").strip()
-    password = data.get("password") or ""
+    # Password is optional: empty / missing = public league
+    password = (data.get("password") or "").strip()
 
     # Basic validation
-    if not name or not password:
-        return jsonify({"error": "Name and password are required"}), 400
+    if not name:
+        return jsonify({"error": "Name is required"}), 400
 
     if len(name) < 3 or len(name) > 80:
         return jsonify({"error": "League name must be between 3 and 80 characters."}), 400
 
     # Optional: keep league passwords simple (no strong policy for now)
-    if len(password) < 4:
-        return jsonify({"error": "League password must be at least 4 characters long."}), 400
+    # Only enforce minimum length if a password was actually provided.
+    if password and len(password) < 4:
+        return jsonify(
+            {"error": "League password must be at least 4 characters long."}
+        ), 400
 
     # ✅ Enforce unique league name
     existing = (
@@ -4321,11 +4833,13 @@ def create_league():
     if existing:
         return jsonify({"error": "League name is already in use"}), 400
 
-    # 🔐 Hash password with bcrypt (same rounds as user passwords)
-    password_hash = bcrypt.hashpw(
-        password.encode("utf-8"),
-        bcrypt.gensalt(rounds=BCRYPT_ROUNDS),
-    ).decode("utf-8")
+    # 🔐 Only hash password if one was provided; otherwise this is a public league.
+    password_hash = None
+    if password:
+        password_hash = bcrypt.hashpw(
+            password.encode("utf-8"),
+            bcrypt.gensalt(rounds=BCRYPT_ROUNDS),
+        ).decode("utf-8")
 
     # 1) Insert league
     try:
@@ -4379,6 +4893,7 @@ def create_league():
         "created_at": league.get("created_at"),
         "updated_at": league.get("updated_at"),
         "is_member": True,  # creator is always considered a member
+        "requires_password": bool(league.get("password_hash")),
     }
     if membership:
         resp["joined_at"] = membership.get("joined_at")
@@ -4411,16 +4926,15 @@ def join_league(league_id):
         return jsonify({"error": "Joining leagues is closed once the playoffs start."}), 403
 
     data = request.get_json() or {}
-    password = data.get("password") or ""
-
-    if not password:
-        return jsonify({"error": "Password is required"}), 400
+    password = (data.get("password") or "").strip()
 
     try:
         # 1) Load the league
         league_res = (
             supabase.table("leagues")
-            .select("id, name, owner_user_id, password_hash, is_global, created_at, updated_at")
+            .select(
+                "id, name, owner_user_id, password_hash, is_global, created_at, updated_at"
+            )
             .eq("id", league_id)
             .limit(1)
             .execute()
@@ -4448,18 +4962,26 @@ def join_league(league_id):
         if membership_rows:
             return jsonify({"error": "You are already a member of this league."}), 400
 
-        # 3) Verify password
-        stored_hash = league.get("password_hash") or ""
-        try:
-            valid_pw = bcrypt.checkpw(
-                password.encode("utf-8"),
-                stored_hash.encode("utf-8"),
-            )
-        except Exception:
-            valid_pw = False
+        # 3) Verify password (only if the league actually has a password)
+        stored_hash = league.get("password_hash")
 
-        if not valid_pw:
-            return jsonify({"error": "Invalid league password"}), 400
+        if stored_hash:
+            # Private league: password is required
+            if not password:
+                return jsonify(
+                    {"error": "Password is required to join this league."}
+                ), 400
+
+            try:
+                valid_pw = bcrypt.checkpw(
+                    password.encode("utf-8"),
+                    stored_hash.encode("utf-8"),
+                )
+            except Exception:
+                valid_pw = False
+
+            if not valid_pw:
+                return jsonify({"error": "Invalid league password"}), 400
 
         # 4) Insert membership
         mem_insert_res = (
@@ -4484,6 +5006,7 @@ def join_league(league_id):
             "created_at": league.get("created_at"),
             "updated_at": league.get("updated_at"),
             "is_member": True,
+            "requires_password": bool(league.get("password_hash")),
         }
         if membership:
             resp["joined_at"] = membership.get("joined_at")
@@ -4587,8 +5110,30 @@ def leave_league(league_id):
 
     except Exception as e:
         if ENABLE_DEBUG_LOGS:
-            safe_print("🔴 Error in DELETE /leagues/<id>/membership:", type(e).__name__, str(e))
-        return jsonify({"error": "Unexpected error leaving league"}), 500
+            try:
+                safe_print(
+                    "🔴 Error in GET /leagues/<id>/members:",
+                    type(e).__name__,
+                    str(e),
+                )
+            except Exception:
+                pass
+
+        # Fail-open: empty members, minimal league info so the UI doesn't crash
+        return jsonify(
+            {
+                "league": {
+                    "id": league_id,
+                    "name": None,
+                    "owner_user_id": None,
+                    "is_global": False,
+                    "created_at": None,
+                    "updated_at": None,
+                },
+                "members": [],
+            }
+        ), 200
+
 
 
 @app.route("/leagues/<league_id>", methods=["DELETE"])
