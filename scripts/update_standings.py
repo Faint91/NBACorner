@@ -10,11 +10,23 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 NBA_STANDINGS_URL = "https://cdn.nba.com/static/json/staticData/leagueStandings.json"
 
+
+NBA_STANDINGS_HEADERS = {
+    # Pretend to be a normal Chrome browser visiting nba.com
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/120.0.0.0 Safari/537.36"
+    ),
+    "Accept": "application/json, text/plain, */*",
+    "Referer": "https://www.nba.com/standings",
+}
+
 def update_standings_from_json():
     print(f"[{datetime.now(timezone.utc)}] 🏀 Fetching latest NBA standings from official NBA JSON feed...")
 
     try:
-        response = requests.get(NBA_STANDINGS_URL, timeout=30)
+        response = requests.get(NBA_STANDINGS_URL, headers=NBA_STANDINGS_HEADERS, timeout=30, )
         response.raise_for_status()
         data = response.json()
 
