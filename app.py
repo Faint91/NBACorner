@@ -3467,16 +3467,25 @@ def update_match(bracket_id, match_id):
     action = data.get("action")
 
     # Fetch the match we are updating
-    res = supabase.table("matches").select(
-        "id, bracket_id, conference, round, slot, team_a, team_b, "
-        "predicted_winner, predicted_winner_games, next_match_id, next_slot"
-    ).eq("id", match_id).limit(1).execute().data
+    res = (
+        supabase.table("matches")
+        .select(
+            "id, bracket_id, conference, round, slot, team_a, team_b, "
+            "predicted_winner, predicted_winner_games, next_match_id, next_slot"
+        )
+        .eq("id", match_id)
+        .limit(1)
+        .execute()
+        .data
+    )
     if not res:
         return jsonify({"error": "Match not found"}), 404
     match = res[0]
 
     if str(match["bracket_id"]) != str(bracket_id):
-        return jsonify({"error": "Match does not belong to the specified bracket"}), 400
+        return jsonify(
+            {"error": "Match does not belong to the specified bracket"}
+        ), 400
 
     # Ownership/admin and SEASON guard
     user_res = (
@@ -3636,6 +3645,30 @@ def update_match(bracket_id, match_id):
                 }
             ).eq("id", mid).execute()
 
+    # NEW: compute the highest round that currently has any predicted winner
+    highest_round_with_prediction = None
+    for m in all_matches:
+        if m.get("predicted_winner") is not None:
+            r = m.get("round")
+            if r is not None and (
+                highest_round_with_prediction is None
+                or r > highest_round_with_prediction
+            ):
+                highest_round_with_prediction = r
+
+    def should_cleanup_future():
+        """
+        Only run the deep future-match cleanup if this match's round is
+        strictly lower than the highest round that already has a prediction
+        in this bracket. This skips useless work while the bracket is being
+        filled for the first time.
+        """
+        return (
+            highest_round_with_prediction is not None
+            and match.get("round") is not None
+            and match["round"] < highest_round_with_prediction
+        )
+
     # ------------------ ACTIONS ------------------
     if action == "set_winner":
         team = data.get("team")
@@ -3665,7 +3698,10 @@ def update_match(bracket_id, match_id):
                     match["next_match_id"], match["next_slot"], old_winner
                 )
                 clear_dest(match["next_match_id"])
-            cleanup_future_matches(old_winner)
+            # NEW: only clean *future* matches when current round < highest edited round
+            if should_cleanup_future():
+                cleanup_future_matches(old_winner)
+
             if match["round"] == 0 and match["slot"] == 2:
                 m3 = get_match(match["conference"], 0, 3)
                 if m3:
@@ -3742,7 +3778,10 @@ def update_match(bracket_id, match_id):
                 match["next_match_id"], match["next_slot"], old_winner
             )
             clear_dest(match["next_match_id"])
-            cleanup_future_matches(old_winner)
+            # NEW: same condition here – only deep-clean when there's actually
+            # a later round with predictions.
+            if should_cleanup_future():
+                cleanup_future_matches(old_winner)
 
         if match["round"] == 0 and match["slot"] == 2:
             m3 = get_match(match["conference"], 0, 3)
