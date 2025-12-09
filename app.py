@@ -3466,31 +3466,48 @@ def update_match(bracket_id, match_id):
     data = request.get_json() or {}
     action = data.get("action")
 
-    # Fetch the match we are updating
-    res = (
+    # Ownership/admin: use is_admin directly from the authenticated user payload
+    is_admin = bool(request.user.get("is_admin", False))
+
+    # ------------------------------------------------------------------
+    # Preload all matches for this bracket so we can:
+    #  - find the current match from this set, and
+    #  - do in-memory updates with a single scan.
+    # This removes the extra "single match by id" query in the normal path.
+    # ------------------------------------------------------------------
+    matches_resp = (
         supabase.table("matches")
         .select(
-            "id, bracket_id, conference, round, slot, team_a, team_b, "
-            "predicted_winner, predicted_winner_games, next_match_id, next_slot"
+            "id, bracket_id, conference, round, slot, "
+            "team_a, team_b, predicted_winner, predicted_winner_games, "
+            "next_match_id, next_slot"
         )
-        .eq("id", match_id)
-        .limit(1)
+        .eq("bracket_id", bracket_id)
         .execute()
-        .data
     )
-    if not res:
-        return jsonify({"error": "Match not found"}), 404
-    match = res[0]
+    all_matches = matches_resp.data or []
+    matches_by_id = {m["id"]: m for m in all_matches}
 
-    if str(match["bracket_id"]) != str(bracket_id):
+    # Find the match we are updating from the bracket's matches
+    match = matches_by_id.get(match_id)
+    if not match:
+        # Fallback: check if the match exists at all, to preserve
+        # previous error semantics between "not found" vs "wrong bracket".
+        res_any = (
+            supabase.table("matches")
+            .select("id, bracket_id")
+            .eq("id", match_id)
+            .limit(1)
+            .execute()
+            .data
+        )
+        if not res_any:
+            return jsonify({"error": "Match not found"}), 404
         return jsonify(
             {"error": "Match does not belong to the specified bracket"}
         ), 400
 
     # Ownership/admin and SEASON guard
-    # ✅ Use is_admin directly from the authenticated user payload
-    is_admin = bool(request.user.get("is_admin", False))
-
     bracket_check = (
         supabase.table("brackets")
         .select("user_id, season_id")
@@ -3514,24 +3531,7 @@ def update_match(bracket_id, match_id):
             }
         ), 403
 
-    # ------------------------------------------------------------------
-    # Preload all matches for this bracket so we can do in-memory updates
-    # and batch-write only the matches that actually changed.
-    # ------------------------------------------------------------------
-    matches_resp = (
-        supabase.table("matches")
-        .select(
-            "id, bracket_id, conference, round, slot, "
-            "team_a, team_b, predicted_winner, predicted_winner_games, "
-            "next_match_id, next_slot"
-        )
-        .eq("bracket_id", match["bracket_id"])
-        .execute()
-    )
-    all_matches = matches_resp.data or []
-    matches_by_id = {m["id"]: m for m in all_matches}
-
-    # Make sure the current match is present in the cache
+    # Make sure the current match is present in the cache (it already should be)
     if match["id"] not in matches_by_id:
         matches_by_id[match["id"]] = match
 
