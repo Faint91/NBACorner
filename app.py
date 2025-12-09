@@ -3540,11 +3540,10 @@ def update_match(bracket_id, match_id):
     all_matches = matches_resp.data or []
     matches_by_id = {m["id"]: m for m in all_matches}
 
-    # Make sure the current match is present in the cache
-    if match["id"] not in matches_by_id:
-        matches_by_id[match["id"]] = match
+    # Make sure the current match in the cache is the same object we mutate
+    matches_by_id[match["id"]] = match
 
-    touched_match_ids = set()
+    touched_match_ids: set = set()
 
     def _mark_touched(m_row):
         """Record that this match needs to be written back."""
@@ -3630,20 +3629,23 @@ def update_match(bracket_id, match_id):
         if not touched_match_ids:
             return
         now_iso = datetime.utcnow().isoformat()
+        payloads = []
         for mid in touched_match_ids:
             m = matches_by_id.get(mid)
             if not m:
                 continue
-            # We only update the fields your original helpers touched
-            supabase.table("matches").update(
+            payloads.append(
                 {
+                    "id": mid,
                     "team_a": m.get("team_a"),
                     "team_b": m.get("team_b"),
                     "predicted_winner": m.get("predicted_winner"),
                     "predicted_winner_games": m.get("predicted_winner_games"),
                     "updated_at": now_iso,
                 }
-            ).eq("id", mid).execute()
+            )
+        if payloads:
+            supabase.table("matches").upsert(payloads).execute()
 
     # NEW: compute the highest round that currently has any predicted winner
     highest_round_with_prediction = None
@@ -3698,7 +3700,7 @@ def update_match(bracket_id, match_id):
                     match["next_match_id"], match["next_slot"], old_winner
                 )
                 clear_dest(match["next_match_id"])
-            # NEW: only clean *future* matches when current round < highest edited round
+            # Only clean *future* matches when current round < highest edited round
             if should_cleanup_future():
                 cleanup_future_matches(old_winner)
 
@@ -3713,16 +3715,15 @@ def update_match(bracket_id, match_id):
 
         if old_winner == team:
             if games != old_games:
-                supabase.table("matches").update(
-                    {
-                        "predicted_winner_games": games,
-                        "updated_at": datetime.utcnow().isoformat(),
-                    }
-                ).eq("id", match_id).execute()
+                match["predicted_winner_games"] = games
+                match["updated_at"] = datetime.utcnow().isoformat()
+                _mark_touched(match)
+
             if match["round"] == 0 and match["slot"] == 2:
                 m3 = get_match(match["conference"], 0, 3)
                 if m3 and m3.get("team_b") != loser:
                     set_in_dest(m3["id"], "b", loser)
+
             # ✅ Mark bracket as not saved
             supabase.table("brackets").update(
                 {
@@ -3735,14 +3736,11 @@ def update_match(bracket_id, match_id):
             flush_touched_matches()
             return jsonify({"message": "Winner updated"}), 200
 
-        # New winner being set
-        supabase.table("matches").update(
-            {
-                "predicted_winner": team,
-                "predicted_winner_games": games,
-                "updated_at": datetime.utcnow().isoformat(),
-            }
-        ).eq("id", match_id).execute()
+        # New winner being set: update current match in-memory and mark touched
+        match["predicted_winner"] = team
+        match["predicted_winner_games"] = games
+        match["updated_at"] = datetime.utcnow().isoformat()
+        _mark_touched(match)
 
         if match.get("next_match_id") and match.get("next_slot"):
             set_in_dest(match["next_match_id"], match["next_slot"], team)
@@ -3765,21 +3763,19 @@ def update_match(bracket_id, match_id):
 
     elif action == "undo":
         old_winner = match.get("predicted_winner")
-        supabase.table("matches").update(
-            {
-                "predicted_winner": None,
-                "predicted_winner_games": None,
-                "updated_at": datetime.utcnow().isoformat(),
-            }
-        ).eq("id", match_id).execute()
+
+        # Clear current match prediction in-memory and mark touched
+        match["predicted_winner"] = None
+        match["predicted_winner_games"] = None
+        match["updated_at"] = datetime.utcnow().isoformat()
+        _mark_touched(match)
 
         if old_winner and match.get("next_match_id") and match.get("next_slot"):
             clear_in_dest_slot(
                 match["next_match_id"], match["next_slot"], old_winner
             )
             clear_dest(match["next_match_id"])
-            # NEW: same condition here – only deep-clean when there's actually
-            # a later round with predictions.
+            # Only deep-clean future matches when there's actually a later round with predictions
             if should_cleanup_future():
                 cleanup_future_matches(old_winner)
 
