@@ -3488,17 +3488,8 @@ def update_match(bracket_id, match_id):
         ), 400
 
     # Ownership/admin and SEASON guard
-    user_res = (
-        supabase.table("users")
-        .select("id, is_admin")
-        .eq("id", user_id)
-        .limit(1)
-        .execute()
-        .data
-    )
-    if not user_res:
-        return jsonify({"error": "User not found"}), 404
-    is_admin = user_res[0].get("is_admin", False)
+    # ✅ Use is_admin directly from the authenticated user payload
+    is_admin = bool(request.user.get("is_admin", False))
 
     bracket_check = (
         supabase.table("brackets")
@@ -3645,7 +3636,7 @@ def update_match(bracket_id, match_id):
                 }
             ).eq("id", mid).execute()
 
-    # --- NEW: only clean future matches when current round < highest predicted round
+    # --- only clean future matches when current round < highest predicted round
     highest_round_with_prediction = None
     for m in all_matches:
         if m.get("predicted_winner") is not None:
