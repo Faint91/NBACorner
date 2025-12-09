@@ -3540,10 +3540,11 @@ def update_match(bracket_id, match_id):
     all_matches = matches_resp.data or []
     matches_by_id = {m["id"]: m for m in all_matches}
 
-    # Make sure the current match in the cache is the same object we mutate
-    matches_by_id[match["id"]] = match
+    # Make sure the current match is present in the cache
+    if match["id"] not in matches_by_id:
+        matches_by_id[match["id"]] = match
 
-    touched_match_ids: set = set()
+    touched_match_ids = set()
 
     def _mark_touched(m_row):
         """Record that this match needs to be written back."""
@@ -3629,25 +3630,22 @@ def update_match(bracket_id, match_id):
         if not touched_match_ids:
             return
         now_iso = datetime.utcnow().isoformat()
-        payloads = []
         for mid in touched_match_ids:
             m = matches_by_id.get(mid)
             if not m:
                 continue
-            payloads.append(
+            # We only update the fields your original helpers touched
+            supabase.table("matches").update(
                 {
-                    "id": mid,
                     "team_a": m.get("team_a"),
                     "team_b": m.get("team_b"),
                     "predicted_winner": m.get("predicted_winner"),
                     "predicted_winner_games": m.get("predicted_winner_games"),
                     "updated_at": now_iso,
                 }
-            )
-        if payloads:
-            supabase.table("matches").upsert(payloads).execute()
+            ).eq("id", mid).execute()
 
-    # NEW: compute the highest round that currently has any predicted winner
+    # --- NEW: only clean future matches when current round < highest predicted round
     highest_round_with_prediction = None
     for m in all_matches:
         if m.get("predicted_winner") is not None:
@@ -3678,7 +3676,7 @@ def update_match(bracket_id, match_id):
         if not team:
             return jsonify({"error": "Missing team"}), 400
 
-        # ✅ Force best-of-one for play-in round (unchanged)
+        # ✅ Force best-of-one for play-in round
         if match["round"] == 0:
             games = 1
 
@@ -3700,6 +3698,7 @@ def update_match(bracket_id, match_id):
                     match["next_match_id"], match["next_slot"], old_winner
                 )
                 clear_dest(match["next_match_id"])
+
             # Only clean *future* matches when current round < highest edited round
             if should_cleanup_future():
                 cleanup_future_matches(old_winner)
@@ -3707,7 +3706,7 @@ def update_match(bracket_id, match_id):
             if match["round"] == 0 and match["slot"] == 2:
                 m3 = get_match(match["conference"], 0, 3)
                 if m3:
-                    # Previously a direct DB update; now same fields updated in-memory
+                    # Clear the 7–8 loser in play-in game 3
                     m3["team_b"] = None
                     m3["predicted_winner"] = None
                     m3["predicted_winner_games"] = None
@@ -3715,9 +3714,12 @@ def update_match(bracket_id, match_id):
 
         if old_winner == team:
             if games != old_games:
-                match["predicted_winner_games"] = games
-                match["updated_at"] = datetime.utcnow().isoformat()
-                _mark_touched(match)
+                supabase.table("matches").update(
+                    {
+                        "predicted_winner_games": games,
+                        "updated_at": datetime.utcnow().isoformat(),
+                    }
+                ).eq("id", match_id).execute()
 
             if match["round"] == 0 and match["slot"] == 2:
                 m3 = get_match(match["conference"], 0, 3)
@@ -3732,15 +3734,17 @@ def update_match(bracket_id, match_id):
                 }
             ).eq("id", match["bracket_id"]).execute()
 
-            # flush any propagated changes (e.g. play-in m3)
             flush_touched_matches()
             return jsonify({"message": "Winner updated"}), 200
 
-        # New winner being set: update current match in-memory and mark touched
-        match["predicted_winner"] = team
-        match["predicted_winner_games"] = games
-        match["updated_at"] = datetime.utcnow().isoformat()
-        _mark_touched(match)
+        # New winner being set
+        supabase.table("matches").update(
+            {
+                "predicted_winner": team,
+                "predicted_winner_games": games,
+                "updated_at": datetime.utcnow().isoformat(),
+            }
+        ).eq("id", match_id).execute()
 
         if match.get("next_match_id") and match.get("next_slot"):
             set_in_dest(match["next_match_id"], match["next_slot"], team)
@@ -3764,17 +3768,20 @@ def update_match(bracket_id, match_id):
     elif action == "undo":
         old_winner = match.get("predicted_winner")
 
-        # Clear current match prediction in-memory and mark touched
-        match["predicted_winner"] = None
-        match["predicted_winner_games"] = None
-        match["updated_at"] = datetime.utcnow().isoformat()
-        _mark_touched(match)
+        supabase.table("matches").update(
+            {
+                "predicted_winner": None,
+                "predicted_winner_games": None,
+                "updated_at": datetime.utcnow().isoformat(),
+            }
+        ).eq("id", match_id).execute()
 
         if old_winner and match.get("next_match_id") and match.get("next_slot"):
             clear_in_dest_slot(
                 match["next_match_id"], match["next_slot"], old_winner
             )
             clear_dest(match["next_match_id"])
+
             # Only deep-clean future matches when there's actually a later round with predictions
             if should_cleanup_future():
                 cleanup_future_matches(old_winner)
@@ -3782,7 +3789,6 @@ def update_match(bracket_id, match_id):
         if match["round"] == 0 and match["slot"] == 2:
             m3 = get_match(match["conference"], 0, 3)
             if m3:
-                # Same semantics as previous direct DB update
                 m3["team_b"] = None
                 m3["predicted_winner"] = None
                 m3["predicted_winner_games"] = None
