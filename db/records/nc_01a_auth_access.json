@@ -173,15 +173,16 @@
         }
       ],
       "facts": {},
-      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "requirement_annotation": "The approved saved-only visibility rule supports the observed ordinary-user draft denial. This combined row also includes owner/admin behavior, whose separate requirements remain unreviewed."
     },
     {
       "scenario": "current_behavior__auth__cross_user_saved_owner_display",
       "group": "User/profile access",
       "current_behavior": "Ordinary A can read saved B bracket and its owner id/username/email; no password/reset/admin fields in owner object.",
-      "approved_requirement": null,
-      "classification": "REQUIREMENT NOT YET REVIEWED",
-      "future_business_question": "Which cross-user identity/contact fields should saved-content viewers see?",
+      "approved_requirement": "Other users may see another user's bracket only if it is saved; email addresses must never be exposed.",
+      "classification": "KNOWN GAP",
+      "future_business_question": null,
       "evidence_source": "Live guarded local Flask API; canonical reset per case",
       "evidence": [
         {
@@ -214,7 +215,8 @@
         "email_visible": true,
         "no_profile_write_route": true
       },
-      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "classification_rationale": "Saved-bracket visibility itself is consistent with the approved requirement. Exposing the owner's email in the user-facing response is the confirmed gap."
     },
     {
       "scenario": "current_behavior__auth__duplicate_email",
@@ -1040,10 +1042,11 @@
       "scenario": "current_behavior__auth__display_fields_static",
       "group": "Sensitive-field exposure",
       "current_behavior": "Existing bracket owner/list and league-member display sources include id/username/email; league access semantics are deferred. Auth payloads omit password/reset hashes; admin env response masks values.",
-      "approved_requirement": null,
+      "approved_requirement": "Other users may see another user's bracket only if it is saved; email addresses must never be exposed.",
       "classification": "REQUIREMENT NOT YET REVIEWED",
-      "future_business_question": "Which contact/security fields may be visible across users and features?",
-      "evidence_source": "Static source inspection: get_bracket_by_id; list_all_brackets; get_league_members; auth responses"
+      "future_business_question": "During NC-01C, does the league-member API actually emit email to users contrary to the approved no-email-exposure requirement? Verify saved-bracket listing during NC-01B.",
+      "evidence_source": "Static source inspection: get_bracket_by_id; list_all_brackets; get_league_members; auth responses",
+      "requirement_annotation": "The live saved-bracket email exposure is classified separately as KNOWN GAP. League-member queries statically include email, but NC-01A did not prove runtime emission in a user-facing league API response. Verify runtime exposure during NC-01C \u2014 League characterization. Saved-bracket listing runtime coverage remains deferred to NC-01B."
     },
     {
       "scenario": "current_behavior__auth__frontend_admin_display",
@@ -1235,8 +1238,8 @@
   ],
   "classification_counts": {
     "MATCHES REQUIREMENT": 0,
-    "KNOWN GAP": 0,
-    "REQUIREMENT NOT YET REVIEWED": 33,
+    "KNOWN GAP": 1,
+    "REQUIREMENT NOT YET REVIEWED": 32,
     "UNCLEAR / NEEDS BUSINESS CHECKPOINT": 0
   },
   "offline_tests": 202,
@@ -1247,5 +1250,24 @@
     "deployment": false
   },
   "business_behavior_changed": false,
-  "next_phase": "NC-01B \u2014 Bracket characterization baseline; not started"
+  "next_phase": "NC-01B \u2014 Bracket characterization baseline; not started",
+  "classification_correction": {
+    "phase": "NC-01A1",
+    "starting_heads": {
+      "backend": "a0d5d35239f87bfef47510ae4194ba7c3d84fb53",
+      "frontend": "ce54143006f0409265937f5d548286d0b100d454"
+    },
+    "starting_branches": "main; clean",
+    "approved_requirement": "Other users may see another user's bracket only if it is saved; email addresses must never be exposed.",
+    "corrected_scenario": "current_behavior__auth__cross_user_saved_owner_display",
+    "previous_classification": "REQUIREMENT NOT YET REVIEWED",
+    "corrected_classification": "KNOWN GAP",
+    "observed_evidence_changed": false,
+    "live_tests_rerun": false,
+    "production_contact": false,
+    "business_behavior_changed": false,
+    "characterization_complete": true,
+    "approved_requirement_fully_satisfied": false,
+    "verified_at_utc": "2026-10-14T22:25:32.581159+00:00"
+  }
 }
