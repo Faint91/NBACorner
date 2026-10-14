@@ -135,3 +135,14 @@ Read-only readiness independently verifies all rows/sequences and reports fixtur
 PASS, harness UNMET, mutation_permitted=false. Startup/integration remain blocked.
 Procedure, exact allowlist, checksum definition and schema limitations:
 docs/test-fixtures-reset.md. NC-ENV-06 has not begun.
+
+
+## NC-ENV-06 guarded smoke harness
+
+Only an explicit verified GuardedHarness may temporarily start the local Flask API
+and admit the reviewed smoke reads/writes. Context owns lease/reset/startup/backend
+identity/HTTP admission/egress/session/cleanup. Global mutation remains false; old
+raw/legacy helpers and jobs remain refusing. Normal and intentional-failure runs
+restored nc-fixtures-v1 checksum, stopped Flask and released lease. Exact invocation,
+gate map, response evidence, recovery and NC-01 entry proof:
+docs/test-integration-harness.md. NC-01 has not begun.

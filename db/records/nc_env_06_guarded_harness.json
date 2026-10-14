@@ -1,0 +1,448 @@
+{
+  "phase": "NC-ENV-06",
+  "status": "Completed; harness-scoped smoke allowed; general mutation refused",
+  "verified_at_utc": "2026-10-14T19:12:15.810248+00:00",
+  "starting_state": {
+    "frontend": {
+      "head": "ce54143006f0409265937f5d548286d0b100d454",
+      "branch": "main",
+      "clean": true
+    },
+    "backend": {
+      "head": "8e4430c70928b7aed14dc39db115f49fcd89cd6a",
+      "branch": "main",
+      "clean": true
+    }
+  },
+  "gate_inventory": "docs/test-integration-harness.md",
+  "normal_smoke": {
+    "status": "PASS",
+    "mode": "smoke",
+    "responses": [
+      {
+        "method": "POST",
+        "path": "/bracket/create",
+        "status": 403,
+        "admission": "missing-context-refused"
+      },
+      {
+        "method": "POST",
+        "path": "/auth/login",
+        "status": 200,
+        "role": "user-a",
+        "shape": [
+          "message",
+          "token",
+          "user"
+        ]
+      },
+      {
+        "method": "POST",
+        "path": "/auth/login",
+        "status": 200,
+        "role": "user-b",
+        "shape": [
+          "message",
+          "token",
+          "user"
+        ]
+      },
+      {
+        "method": "POST",
+        "path": "/auth/login",
+        "status": 200,
+        "role": "admin",
+        "shape": [
+          "message",
+          "token",
+          "user"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/",
+        "status": 200,
+        "shape": [
+          "message"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/health",
+        "status": 200,
+        "shape": "text"
+      },
+      {
+        "method": "GET",
+        "path": "/auth/test-me",
+        "status": 200,
+        "shape": [
+          "user"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/brackets/me",
+        "status": 200,
+        "shape": [
+          "bracket",
+          "bracket_creation_open",
+          "playoffs_deadline_utc",
+          "playoffs_locked",
+          "regular_season_end_utc"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/brackets",
+        "status": 200,
+        "shape": "list"
+      },
+      {
+        "method": "GET",
+        "path": "/leagues",
+        "status": 200,
+        "shape": [
+          "leagues"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/leagues/me",
+        "status": 200,
+        "shape": [
+          "leagues"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/leaderboard",
+        "status": 200,
+        "shape": [
+          "master_bracket_id",
+          "master_matchups",
+          "master_updated_at",
+          "rows"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/leaderboard/history",
+        "status": 200,
+        "shape": [
+          "seasons"
+        ]
+      },
+      {
+        "method": "POST",
+        "path": "/bracket/create",
+        "status": 200,
+        "shape": [
+          "bracket",
+          "message"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/bracket/<id>",
+        "status": 200,
+        "shape": [
+          "bracket",
+          "matches"
+        ]
+      },
+      {
+        "method": "PATCH",
+        "path": "/bracket/<id>/match/<id>",
+        "status": 200,
+        "shape": [
+          "message"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/bracket/<id>",
+        "status": 200,
+        "shape": [
+          "bracket",
+          "matches"
+        ]
+      }
+    ],
+    "cleanup": {
+      "counts": {
+        "teams": 30,
+        "users": 4,
+        "leagues": 0,
+        "matches": 0,
+        "seasons": 2,
+        "brackets": 0,
+        "standings": 30,
+        "bracket_scores": 0,
+        "league_members": 0,
+        "password_resets": 0,
+        "leaderboard_history": 0,
+        "leaderboard_history_rows": 0,
+        "leaderboard_history_snapshots": 0
+      },
+      "fixture_version": "nc-fixtures-v1",
+      "fixture_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "mutation_permitted": false
+    },
+    "readiness": {
+      "identity_verified": true,
+      "database_marker": "PASS",
+      "email": "PASS",
+      "providers": "PASS",
+      "external_credentials": "PASS",
+      "jobs": "PASS",
+      "jobs_enabled": false,
+      "fixture_state": "SEEDED",
+      "fixtures_reset": "PASS",
+      "integration_harness": "PASS",
+      "mutation_permitted": false,
+      "harness_state": "AVAILABLE_GUARDED",
+      "harness_scoped_mutation_permitted": false
+    },
+    "harness_scoped_mutation": "allowed only during verified context",
+    "general_mutation_permitted": false,
+    "flask_stopped": true,
+    "lease_released": true
+  },
+  "failure_recovery": {
+    "status": "PASS",
+    "mode": "failure-recovery",
+    "responses": [
+      {
+        "method": "POST",
+        "path": "/bracket/create",
+        "status": 403,
+        "admission": "missing-context-refused"
+      },
+      {
+        "method": "POST",
+        "path": "/auth/login",
+        "status": 200,
+        "role": "user-a",
+        "shape": [
+          "message",
+          "token",
+          "user"
+        ]
+      },
+      {
+        "method": "POST",
+        "path": "/auth/login",
+        "status": 200,
+        "role": "user-b",
+        "shape": [
+          "message",
+          "token",
+          "user"
+        ]
+      },
+      {
+        "method": "POST",
+        "path": "/auth/login",
+        "status": 200,
+        "role": "admin",
+        "shape": [
+          "message",
+          "token",
+          "user"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/",
+        "status": 200,
+        "shape": [
+          "message"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/health",
+        "status": 200,
+        "shape": "text"
+      },
+      {
+        "method": "GET",
+        "path": "/auth/test-me",
+        "status": 200,
+        "shape": [
+          "user"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/brackets/me",
+        "status": 200,
+        "shape": [
+          "bracket",
+          "bracket_creation_open",
+          "playoffs_deadline_utc",
+          "playoffs_locked",
+          "regular_season_end_utc"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/brackets",
+        "status": 200,
+        "shape": "list"
+      },
+      {
+        "method": "GET",
+        "path": "/leagues",
+        "status": 200,
+        "shape": [
+          "leagues"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/leagues/me",
+        "status": 200,
+        "shape": [
+          "leagues"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/leaderboard",
+        "status": 200,
+        "shape": [
+          "master_bracket_id",
+          "master_matchups",
+          "master_updated_at",
+          "rows"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/leaderboard/history",
+        "status": 200,
+        "shape": [
+          "seasons"
+        ]
+      },
+      {
+        "method": "POST",
+        "path": "/bracket/create",
+        "status": 200,
+        "shape": [
+          "bracket",
+          "message"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/bracket/<id>",
+        "status": 200,
+        "shape": [
+          "bracket",
+          "matches"
+        ]
+      },
+      {
+        "method": "PATCH",
+        "path": "/bracket/<id>/match/<id>",
+        "status": 200,
+        "shape": [
+          "message"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/bracket/<id>",
+        "status": 200,
+        "shape": [
+          "bracket",
+          "matches"
+        ]
+      }
+    ],
+    "cleanup": {
+      "counts": {
+        "teams": 30,
+        "users": 4,
+        "leagues": 0,
+        "matches": 0,
+        "seasons": 2,
+        "brackets": 0,
+        "standings": 30,
+        "bracket_scores": 0,
+        "league_members": 0,
+        "password_resets": 0,
+        "leaderboard_history": 0,
+        "leaderboard_history_rows": 0,
+        "leaderboard_history_snapshots": 0
+      },
+      "fixture_version": "nc-fixtures-v1",
+      "fixture_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "mutation_permitted": false
+    },
+    "readiness": {
+      "identity_verified": true,
+      "database_marker": "PASS",
+      "email": "PASS",
+      "providers": "PASS",
+      "external_credentials": "PASS",
+      "jobs": "PASS",
+      "jobs_enabled": false,
+      "fixture_state": "SEEDED",
+      "fixtures_reset": "PASS",
+      "integration_harness": "PASS",
+      "mutation_permitted": false,
+      "harness_state": "AVAILABLE_GUARDED",
+      "harness_scoped_mutation_permitted": false
+    },
+    "harness_scoped_mutation": "allowed only during verified context",
+    "general_mutation_permitted": false,
+    "flask_stopped": true,
+    "lease_released": true
+  },
+  "legacy_integration": "Unchanged; remains blocked; not run",
+  "optional_writes_deferred": [
+    "league",
+    "password reset/email",
+    "provider/job"
+  ],
+  "validation": {
+    "offline_total": 198,
+    "harness_tests": 31,
+    "normal_smoke": "PASS",
+    "failure_smoke": "PASS",
+    "schema_marker_acl": "PASS",
+    "canonical_fixture_checksum": "PASS",
+    "listener_shutdown_lease_reacquisition": "PASS",
+    "log_secret_scope_scan": "PASS",
+    "syntax_format_whitespace": "PASS",
+    "application_baseline_product_bytes_unchanged": true
+  },
+  "entry_criteria": {
+    "separate_nonproduction_db": "PASS",
+    "isolated_credentials": "PASS",
+    "production_denylist": "PASS",
+    "positive_allowlist": "PASS",
+    "fail_closed_startup": "PASS",
+    "deterministic_reset_reseed": "PASS",
+    "email_neutralized": "PASS",
+    "providers_neutralized": "PASS",
+    "jobs_disabled": "PASS",
+    "helpers_cannot_bypass": "PASS",
+    "baseline_reproducible": "PASS",
+    "isolated_application_reads_writes": "PASS"
+  },
+  "production": {
+    "contact": false,
+    "data_used": false,
+    "secrets_used": false,
+    "database_mutation": false,
+    "deployment": false
+  },
+  "business_behavior_changed": false,
+  "remaining_blockers_before_nc01": [],
+  "next_recommended_phase": "NC-01 \u2014 Characterization / Regression Baseline; not started"
+}

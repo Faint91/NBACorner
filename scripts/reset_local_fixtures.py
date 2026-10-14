@@ -5,6 +5,8 @@ import hashlib
 import json
 import subprocess
 import sys
+import queue
+import threading
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -169,7 +171,120 @@ UPDATE nba_corner_test_control.test_environment_identity
     return sql.encode()
 
 
-def run_reset(settings, opt_in):
+class LocalFixtureLease:
+    """Fixed local psql session lease; no public arbitrary-SQL execution API."""
+
+    def __init__(self, settings, *, allow_local_reset=False):
+        self.allow_local_reset = allow_local_reset
+        self.settings = dict(settings)
+        self.active = False
+        self.process = None
+        self.lines = queue.Queue()
+
+    def __enter__(self):
+        preflight(self.settings, self.allow_local_reset)
+        check_configuration()
+        container_identity()
+        self.process = subprocess.Popen(
+            [
+                "docker",
+                "exec",
+                "-i",
+                CONTAINER,
+                "psql",
+                "-X",
+                "-q",
+                "-U",
+                "postgres",
+                "-d",
+                "postgres",
+                "-v",
+                "ON_ERROR_STOP=1",
+                "-At",
+            ],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            env=child_environment(),
+        )
+
+        def drain():
+            for line in self.process.stdout:
+                if line.startswith(b"{"):
+                    self.lines.put(line)
+            self.lines.put(None)
+
+        self.reader = threading.Thread(target=drain, daemon=True)
+        self.reader.start()
+        try:
+            result = self._exchange(
+                b"SELECT jsonb_build_object('lease',pg_try_advisory_lock(50405,1));\n"
+            )
+            if result.get("lease") is not True:
+                raise SafetyError("Exclusive local fixture lease unavailable.")
+            self.active = True
+            return self
+        except BaseException:
+            self.close()
+            raise
+
+    def _exchange(self, sql):
+        if self.process is None or self.process.poll() is not None:
+            raise SafetyError("Local lease session is unavailable.")
+        try:
+            self.process.stdin.write(sql)
+            self.process.stdin.flush()
+            line = self.lines.get(timeout=120)
+            if line is None:
+                raise SafetyError(
+                    "Local lease transaction failed; sensitive diagnostics withheld."
+                )
+            return json.loads(line)
+        except (OSError, ValueError, queue.Empty):
+            raise SafetyError(
+                "Local lease transport failed; recover with approved reset."
+            ) from None
+
+    def reset_foundation(self, marker):
+        if not self.active:
+            raise SafetyError("Active local lease required.")
+        # Same DB session can acquire the transaction-level reset lock reentrantly.
+        # A response is returned only AFTER COMMIT has completed.
+        sql = reset_sql(marker)
+        lines = sql.decode().splitlines(keepends=True)
+        summary = next(
+            line
+            for line in lines
+            if line.startswith("SELECT jsonb_build_object('fixture_version'")
+        )
+        sql = "".join(line for line in lines if line != summary).encode()
+        # Canonical settings are transaction-local; reapply for the post-commit read.
+        sql += b"BEGIN READ ONLY; SET LOCAL timezone='UTC'; SET LOCAL datestyle='ISO, YMD'; SET LOCAL extra_float_digits=3;\n"
+        sql += summary.encode() + b"COMMIT;\n"
+        return self._exchange(sql)
+
+    def close(self):
+        self.active = False
+        if self.process is not None:
+            try:
+                if self.process.poll() is None:
+                    self.process.stdin.write(
+                        b"ROLLBACK; SELECT pg_advisory_unlock(50405,1);\n\\q\n"
+                    )
+                    self.process.stdin.flush()
+                    self.process.wait(timeout=10)
+            except (OSError, subprocess.TimeoutExpired):
+                self.process.kill()
+                self.process.wait(timeout=10)
+            self.process.stdin.close()
+            self.process.stdout.close()
+            self.process = None
+
+    def __exit__(self, *args):
+        self.close()
+
+
+def run_reset(settings, opt_in, *, lease=None):
     # Validate configuration before any docker/DB connection.
     marker = preflight(settings, opt_in)
     check_configuration()
@@ -179,42 +294,51 @@ def run_reset(settings, opt_in):
     if preflight(settings, opt_in) != marker:
         raise SafetyError("Identity changed before reset.")
     container_identity()
-    result = subprocess.run(
-        [
-            "docker",
-            "exec",
-            "-i",
-            CONTAINER,
-            "psql",
-            "-X",
-            "-q",
-            "-U",
-            "postgres",
-            "-d",
-            "postgres",
-            "-v",
-            "ON_ERROR_STOP=1",
-            "-At",
-        ],
-        input=sql,
-        capture_output=True,
-        env=child_environment(),
-        timeout=120,
-    )
-    if result.returncode:
-        raise SafetyError(
-            "Local reset transaction failed; rolled back; SQL/credential-bearing diagnostics withheld."
+    if lease is not None:
+        if (
+            type(lease) is not LocalFixtureLease
+            or not lease.active
+            or lease.settings != settings
+        ):
+            raise SafetyError("Verified matching local lease required.")
+        proof = lease.reset_foundation(marker)
+    else:
+        result = subprocess.run(
+            [
+                "docker",
+                "exec",
+                "-i",
+                CONTAINER,
+                "psql",
+                "-X",
+                "-q",
+                "-U",
+                "postgres",
+                "-d",
+                "postgres",
+                "-v",
+                "ON_ERROR_STOP=1",
+                "-At",
+            ],
+            input=sql,
+            capture_output=True,
+            env=child_environment(),
+            timeout=120,
         )
-    rows = [
-        json.loads(line)
-        for line in result.stdout.decode().splitlines()
-        if line.startswith("{")
-    ]
-    if len(rows) != 1:
-        raise SafetyError(
-            "Reset verification output missing; inspect local state before retrying."
-        )
-    proof = rows[0]
+        if result.returncode:
+            raise SafetyError(
+                "Local reset transaction failed; rolled back; SQL/credential-bearing diagnostics withheld."
+            )
+        rows = [
+            json.loads(line)
+            for line in result.stdout.decode().splitlines()
+            if line.startswith("{")
+        ]
+        if len(rows) != 1:
+            raise SafetyError(
+                "Reset verification output missing; inspect local state before retrying."
+            )
+        proof = rows[0]
     current = verify_live_local_identity(settings)["marker"]
     if (
         current["fixture_state"] != "SEEDED"

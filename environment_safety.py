@@ -489,11 +489,14 @@ def prepare_runtime_environment(dotenv_loader=None):
         raise SafetyError("Production identity cannot use a test configuration.")
     if identity == "test" or config is not None:
         settings = load_test_config(config)
+        from integration_harness import startup_settings, require_harness_startup
+
+        settings = startup_settings(settings)
         target = validate_test_target(settings, load_enrollments())
         validate_test_email_settings(settings, target)
         validate_test_provider_settings(settings, target)
         validate_test_job_settings(settings)
-        require_live_identity(target)
+        require_harness_startup(target)
         return
     if dotenv_loader is None:
         from dotenv import load_dotenv
