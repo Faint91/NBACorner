@@ -1,0 +1,136 @@
+{
+  "baseline_version": "nc-env-02-current-secured-v1",
+  "statement": "This baseline is a consolidated current-state bootstrap. It is not historical migration history.",
+  "prepared_at_utc": "2026-10-14T16:39:02.627203+00:00",
+  "source_audit_date": "Unknown: capture date not recorded in supplied exports",
+  "source_audit_evidence": "NC-00 schema/catalog export bundle, no application row exports",
+  "backend_checkpoint": "da8c6695be0726ef3893ffefe605f6fa6e368f9c",
+  "incorporated_security_phases": [
+    "NC-SEC-01A",
+    "NC-SEC-01B",
+    "NC-SEC-01C",
+    "NC-SEC-01D1"
+  ],
+  "security_verified_utc": {
+    "NC-SEC-01A": "2026-10-14T02:15:48.611961Z",
+    "NC-SEC-01B": "2026-10-14T02:30:08.432404Z",
+    "NC-SEC-01C": "2026-10-14T02:47:31.352597Z",
+    "NC-SEC-01D1": "2026-10-14T03:07:46.688650Z"
+  },
+  "audit_sha256": {
+    "nbacorner_constraints.csv": "f6f3433e9e2a2acc64de7642e7e43a4a106f946b989b53169c97d0c7758a4c69",
+    "nbacorner_extensions.csv": "d6ca9b6b11b0a1edb174f50e3591b19f762eb8eecee86d43be11bd85f4a4f60d",
+    "nbacorner_function_grants.csv": "767b37d8da835f081bca3a745d46a2973bbb5f2dbf3204778d49f5d6058be22d",
+    "nbacorner_functions.csv": "e766299b84b542b33c0eea4074d8dc8ffbfb711b1345c3c96dfb2bd3b13f695e",
+    "nbacorner_grants.csv": "e081a36ea2f3a219914f87104c9e7d1001cf4338888fd510a88ec5f6c665778a",
+    "nbacorner_indexes.csv": "26fa604f95386ff531ced480c9b9598cadd57eec111842ad0328c6bda7e7e44a",
+    "nbacorner_policies.csv": "ecb9cad76c12d1951655d85510a1f5cb3547b9ebd971f8d7501cde9aaf55429f",
+    "nbacorner_rls.csv": "bb6b92388b32aed9812264d34071a102ac9d9b3f75b0e43c877ab27880ed2e0d",
+    "nbacorner_schema.sql": "e636a62b5ee0273bb6fe820637ae4e45b651aef4b183d37dbcf7c643b6eef5d9",
+    "nbacorner_triggers.csv": "9fa410f163731caa6d786f03476f644ebf43bda4c1607951dc3fa669a11322c7",
+    "nbacorner_views.csv": "128e673562a047f3d9ec0f1ca5c406a7bd3ba9d0eeff4363240ccbf134977e47"
+  },
+  "security_evidence_sha256": {
+    "db/migrations/0001_nc_sec_01a_rpc_execution.sql": "112cdd32235ba3d3fb451b950edc0ea7962103f23293900b65858950fd6fcdd8",
+    "db/migrations/0002_nc_sec_01b_bracket_view_access.sql": "fa25425b912cfb712e38721a6a79d34625483f27465212ddc8a0d093e9ac0f31",
+    "db/migrations/0003_nc_sec_01c_server_only_relations.sql": "216253fe6b2fa19a0d603d2551a65900ab1586433782a1ff63a62ea719404ab3",
+    "db/migrations/0004_nc_sec_01d1_table_sequence_defaults.sql": "603a553b3cc11368762d4b45bc939aec937fda5fb5459de979ca64e1771e3c0e",
+    "db/rollback/0001_nc_sec_01a_rpc_execution_rollback.sql": "caaee797ece449b2a2f844440759b7da318b1fd5a4c6ea5557c2e95bbd4583d6",
+    "db/rollback/0002_nc_sec_01b_bracket_view_access_rollback.sql": "63fae4834323493fa282cac2a2662f3d4d01f3e20cec5de968a079659adb25b4",
+    "db/rollback/0003_nc_sec_01c_server_only_relations_rollback.sql": "37e56427b2a11bf4103867efc45ba9ec3c449dc2b0f6d88a479c0a9b74778625",
+    "db/rollback/0004_nc_sec_01d1_table_sequence_defaults_rollback.sql": "e2a29a355ae046e6c02bff53bce3f8074d2631dbf2e71fbb906c5b897baf7e6f",
+    "db/verify/0001_nc_sec_01a_rpc_execution_verify.sql": "adbc4c399d6d42b82e1112f88a56326e81b15bffbf3d062b1412e5163044d107",
+    "db/verify/0002_nc_sec_01b_bracket_view_access_verify.sql": "c8b6786f89c1ee2ea584c259e5c80b93147dc4f566083d981e2db526a8ec3d0d",
+    "db/verify/0003_nc_sec_01c_server_only_relations_verify.sql": "25cc962566db08fdde79e7945aed9f2a398393654ccb82fb6f52bcb213d4f670",
+    "db/verify/0004_nc_sec_01d1_table_sequence_defaults_verify.sql": "bf67c1d3084772101b16a5022e7c25b91968ecbe4c9f0c2352d736ebada89ce8",
+    "db/records/0001_nc_sec_01a.md": "7c14dcb8272691c6c8142bccc64bf452fd9556af9b20135ab2bb357992249faf",
+    "db/records/0002_nc_sec_01b.md": "7e3e75873f0202713d396c3edfc83201ed339649ceba7e4ea4d4be55522e7cab",
+    "db/records/0003_nc_sec_01c.md": "0f878c1673cd2929669ee81c9e68aef2336b743e4e9ea244fe3cf343a41975f0",
+    "db/records/0004_nc_sec_01d1.md": "da0a387ec73a8ed70a2f65c0674a727f1bc6afaa5b8d75c5e710b8249130780b"
+  },
+  "application_ddl_sha256": "73d39a6df85dea9295054b819df3b43fb4aa3447da799bf8072303f612fcf02b",
+  "artifact_sha256": {
+    "000_current_schema.sql": "8ca7b98f54544d177de41511ed9d3d969ac4389591ec966e5730f99369de4209",
+    "manifest.json": "d7c6b947c32fe15546e55f452111b757a8227131c37a5b97bceb2b6bc1da250d",
+    "README.md": "766b35b9238423293df300fd1bbb1732c28c77291b98b419ebfc2f8946fdf112",
+    "validate_baseline.py": "df5da63d5898c53f90330b86df06485a6e8c4cd5314edbfafcf2dbca0b2a07c7",
+    "verify_current_schema.sql": "e041a918814b6a052b82888fddf9e721763884089aecd36a695e3a5ef279252f"
+  },
+  "transformations": [
+    "Remove dump session/public-schema setup and legacy pre-containment grants/defaults",
+    "Strict CREATE replaces application IF NOT EXISTS / OR REPLACE; definitions unchanged",
+    "Direct final NC-SEC ACLs and table/sequence defaults, no historical replay",
+    "Portable catalog guards: no production identifiers/OIDs/counts/hash constants"
+  ],
+  "preserved_current_behavior_future_review": [
+    "Cross-season active-bracket uniqueness retained alongside per-season uniqueness.",
+    "Both master uniqueness indexes retained with differing soft-delete predicates.",
+    "Equivalent duplicate email uniqueness retained.",
+    "Missing brackets.user_id FK; standings without season_id/unique code.",
+    "Text match-team references; cyclic seasons/master pointers; nullable legacy fields.",
+    "Current RLS design, including password_resets insert/view policies using ALL.",
+    "Function authorization shortcomings, unqualified references, absent search_path preserved; four RPCs contained by ACLs.",
+    "Current bracket_view definition/security and trigger behavior.",
+    "Three trigger-only functions retain audited PUBLIC/anon/authenticated EXECUTE."
+  ],
+  "exclusions": [
+    "Application/reference rows and sequence current values",
+    "Credentials/production connection identity/OIDs/counts/hash execution guards",
+    "Supabase-managed/extension implementation objects",
+    "Synthetic fixtures NC-ENV-05; infrastructure/enrollment/marker NC-ENV-03; reset/provider tooling"
+  ],
+  "validation": {
+    "status": "Offline static checks passed; live execution deferred",
+    "parser": "PostgreSQL parser unavailable; lexical checks only, no syntax/live validity claim",
+    "execution": "None; deferred to NC-ENV-03",
+    "object_counts": {
+      "tables": 13,
+      "sequences": 3,
+      "functions": 7,
+      "views": 1,
+      "triggers": 3,
+      "policies": 16,
+      "constraints": 55,
+      "indexes": 38,
+      "columns": 122
+    },
+    "constraint_kinds": {
+      "p": 13,
+      "u": 8,
+      "f": 20,
+      "c": 14
+    },
+    "explicit_indexes": 17,
+    "constraint_backed_indexes": 21,
+    "extension_owned_functions_excluded": 31,
+    "checks": [
+      "Source DDL equality with only documented strict CREATE transformations",
+      "Function body/signature/security-mode, policy/RLS/view/trigger/constraint/index reconciliation",
+      "Exact security ACL statements compared with NC-SEC records",
+      "Scoped defaults and unchanged function/default/platform boundary review",
+      "FK/sequence/view/function dependency order review",
+      "Lexical statement termination and matching embedded verifier",
+      "Production identity/credential/data exclusions and file scope",
+      "Artifact/source/security evidence SHA-256",
+      "Python AST and Black formatting",
+      "UTF-8 LF/terminal-newline/whitespace audit",
+      "Independent all-20 FK target/column-type review and view/trigger prerequisite order"
+    ],
+    "corrections": [
+      "Static CREATE scan limited to DDL rather than preserved PL/pgSQL IF NOT EXISTS",
+      "Mixed escaped/actual audit CSV newlines normalized without changing bodies",
+      "View/policy deparser flags aligned with audited system-view output",
+      "Extensions namespace kept qualified during catalog deparsing",
+      "Explicit C collation for portable name/ACL comparison ordering",
+      "Function REVOKE applies only to four contained RPCs; trigger-only grants preserved directly"
+    ],
+    "verified_at_utc": "2026-10-14T16:49:44.937279+00:00"
+  },
+  "recovery": "Previous write rejected before execution; clean checkpoints, no partial files; nothing discarded",
+  "security_checkpoint_commits": {
+    "NC-SEC-01A": "a15bd1effcb75b6b61ed2b689655d3272c543412",
+    "NC-SEC-01B": "6039b06cc58e2b819f8aa9516271f54e459a29e2",
+    "NC-SEC-01C": "2afbcb486f8846f049a68308134b1de9c3086132",
+    "NC-SEC-01D1": "616e77f411b3ed94549298c17a9a08f5dc4539bd"
+  }
+}

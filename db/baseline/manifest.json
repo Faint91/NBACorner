@@ -1,0 +1,1870 @@
+{
+  "baseline_version": "nc-env-02-current-secured-v1",
+  "classification": "Consolidated current-state bootstrap, not historical migration history",
+  "backend_checkpoint": "da8c6695be0726ef3893ffefe605f6fa6e368f9c",
+  "prerequisites": {
+    "postgresql": "17 characterization target; >=17 required for MAINTAIN; newer major requires review",
+    "roles": [
+      "postgres",
+      "anon",
+      "authenticated",
+      "service_role"
+    ],
+    "schemas": [
+      "public",
+      "auth",
+      "extensions"
+    ],
+    "functions": [
+      "auth.uid() -> uuid",
+      "extensions.uuid_generate_v4() -> uuid"
+    ],
+    "owner_and_session": "postgres, required rather than normalized",
+    "schema_usage": "All four roles have public USAGE; platform schema owner/ACL unchanged",
+    "function_defaults": "Supplied built-in global PUBLIC/owner EXECUTE; public-scoped postgres/anon/authenticated/service_role EXECUTE; never changed",
+    "not_recreated": [
+      "Managed schemas/Auth internals",
+      "Platform roles/memberships",
+      "PostgREST/Supabase infrastructure",
+      "Extension implementations"
+    ]
+  },
+  "extensions": [
+    {
+      "name": "pg_stat_statements",
+      "audited_version": "1.11",
+      "required_by_application": false,
+      "treatment": "Supplied/verified; never installed by baseline",
+      "purpose": "Optional observability-only",
+      "version_policy": "Evidence, not forced version pin; verify compatible supplied platform in NC-ENV-03"
+    },
+    {
+      "name": "pg_trgm",
+      "audited_version": "1.6",
+      "required_by_application": false,
+      "treatment": "Supplied/verified; never installed by baseline",
+      "purpose": "Relevant platform extension; 31 C-language functions excluded",
+      "version_policy": "Evidence, not forced version pin; verify compatible supplied platform in NC-ENV-03"
+    },
+    {
+      "name": "pgcrypto",
+      "audited_version": "1.3",
+      "required_by_application": false,
+      "treatment": "Supplied/verified; never installed by baseline",
+      "purpose": "Relevant platform extension; no application DDL dependency",
+      "version_policy": "Evidence, not forced version pin; verify compatible supplied platform in NC-ENV-03"
+    },
+    {
+      "name": "plpgsql",
+      "audited_version": "1.0",
+      "required_by_application": true,
+      "treatment": "Supplied/verified; never installed by baseline",
+      "purpose": "Application language; normal platform prerequisite",
+      "version_policy": "Evidence, not forced version pin; verify compatible supplied platform in NC-ENV-03"
+    },
+    {
+      "name": "supabase_vault",
+      "audited_version": "0.3.1",
+      "required_by_application": false,
+      "treatment": "Supplied/verified; never installed by baseline",
+      "purpose": "Platform-managed; no application DDL dependency",
+      "version_policy": "Evidence, not forced version pin; verify compatible supplied platform in NC-ENV-03"
+    },
+    {
+      "name": "uuid-ossp",
+      "audited_version": "1.1",
+      "required_by_application": true,
+      "treatment": "Supplied/verified; never installed by baseline",
+      "purpose": "UUID defaults require extensions.uuid_generate_v4()",
+      "version_policy": "Evidence, not forced version pin; verify compatible supplied platform in NC-ENV-03"
+    }
+  ],
+  "application": {
+    "owner": "postgres",
+    "tables": {
+      "bracket_scores": [
+        {
+          "name": "bracket_id",
+          "type": "uuid",
+          "not_null": true,
+          "default": null
+        },
+        {
+          "name": "master_bracket_id",
+          "type": "uuid",
+          "not_null": true,
+          "default": null
+        },
+        {
+          "name": "total_points",
+          "type": "integer",
+          "not_null": true,
+          "default": "0"
+        },
+        {
+          "name": "full_hits",
+          "type": "integer",
+          "not_null": true,
+          "default": "0"
+        },
+        {
+          "name": "partial_hits",
+          "type": "integer",
+          "not_null": true,
+          "default": "0"
+        },
+        {
+          "name": "misses",
+          "type": "integer",
+          "not_null": true,
+          "default": "0"
+        },
+        {
+          "name": "bonus_finalists",
+          "type": "integer",
+          "not_null": true,
+          "default": "0"
+        },
+        {
+          "name": "bonus_champion",
+          "type": "integer",
+          "not_null": true,
+          "default": "0"
+        },
+        {
+          "name": "points_by_round",
+          "type": "jsonb",
+          "not_null": true,
+          "default": "'{}'::\"jsonb\""
+        },
+        {
+          "name": "points_by_match",
+          "type": "jsonb",
+          "not_null": true,
+          "default": "'{}'::\"jsonb\""
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "not_null": true,
+          "default": "\"now\"()"
+        },
+        {
+          "name": "season_id",
+          "type": "uuid",
+          "not_null": true,
+          "default": null
+        }
+      ],
+      "brackets": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "not_null": true,
+          "default": "\"extensions\".\"uuid_generate_v4\"()"
+        },
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "not_null": true,
+          "default": null
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "not_null": false,
+          "default": "\"now\"()"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "not_null": false,
+          "default": "\"now\"()"
+        },
+        {
+          "name": "is_done",
+          "type": "boolean",
+          "not_null": false,
+          "default": "false"
+        },
+        {
+          "name": "saved_at",
+          "type": "timestamp with time zone",
+          "not_null": false,
+          "default": null
+        },
+        {
+          "name": "deleted_at",
+          "type": "timestamp with time zone",
+          "not_null": false,
+          "default": null
+        },
+        {
+          "name": "deleted_by_user_id",
+          "type": "uuid",
+          "not_null": false,
+          "default": null
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "not_null": false,
+          "default": null
+        },
+        {
+          "name": "is_master",
+          "type": "boolean",
+          "not_null": true,
+          "default": "false"
+        },
+        {
+          "name": "season_id",
+          "type": "uuid",
+          "not_null": true,
+          "default": null
+        }
+      ],
+      "matches": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "not_null": true,
+          "default": "\"extensions\".\"uuid_generate_v4\"()"
+        },
+        {
+          "name": "bracket_id",
+          "type": "uuid",
+          "not_null": true,
+          "default": null
+        },
+        {
+          "name": "round",
+          "type": "integer",
+          "not_null": true,
+          "default": null
+        },
+        {
+          "name": "slot",
+          "type": "integer",
+          "not_null": true,
+          "default": null
+        },
+        {
+          "name": "team_a",
+          "type": "text",
+          "not_null": false,
+          "default": null
+        },
+        {
+          "name": "team_b",
+          "type": "text",
+          "not_null": false,
+          "default": null
+        },
+        {
+          "name": "team_a_locked",
+          "type": "boolean",
+          "not_null": false,
+          "default": "false"
+        },
+        {
+          "name": "team_b_locked",
+          "type": "boolean",
+          "not_null": false,
+          "default": "false"
+        },
+        {
+          "name": "predicted_winner",
+          "type": "text",
+          "not_null": false,
+          "default": null
+        },
+        {
+          "name": "predicted_winner_games",
+          "type": "integer",
+          "not_null": false,
+          "default": null
+        },
+        {
+          "name": "next_match_id",
+          "type": "uuid",
+          "not_null": false,
+          "default": null
+        },
+        {
+          "name": "next_slot",
+          "type": "text",
+          "not_null": false,
+          "default": null
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "not_null": false,
+          "default": "\"now\"()"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "not_null": false,
+          "default": "\"now\"()"
+        },
+        {
+          "name": "conference",
+          "type": "text",
+          "not_null": false,
+          "default": "'East'::\"text\""
+        },
+        {
+          "name": "season_id",
+          "type": "uuid",
+          "not_null": true,
+          "default": null
+        }
+      ],
+      "leaderboard_history": [
+        {
+          "name": "id",
+          "type": "bigint",
+          "not_null": true,
+          "default": "\"nextval\"('\"public\".\"leaderboard_history_id_seq\"'::\"regclass\")"
+        },
+        {
+          "name": "season_id",
+          "type": "uuid",
+          "not_null": true,
+          "default": null
+        },
+        {
+          "name": "season_code",
+          "type": "text",
+          "not_null": true,
+          "default": null
+        },
+        {
+          "name": "snapshot_at",
+          "type": "timestamp with time zone",
+          "not_null": true,
+          "default": "\"now\"()"
+        },
+        {
+          "name": "rank",
+          "type": "integer",
+          "not_null": true,
+          "default": null
+        },
+        {
+          "name": "bracket_name",
+          "type": "text",
+          "not_null": true,
+          "default": null
+        },
+        {
+          "name": "username",
+          "type": "text",
+          "not_null": true,
+          "default": null
+        },
+        {
+          "name": "total_points",
+          "type": "integer",
+          "not_null": true,
+          "default": null
+        },
+        {
+          "name": "full_hits",
+          "type": "integer",
+          "not_null": true,
+          "default": null
+        },
+        {
+          "name": "partial_hits",
+          "type": "integer",
+          "not_null": true,
+          "default": null
+        },
+        {
+          "name": "misses",
+          "type": "integer",
+          "not_null": true,
+          "default": null
+        },
+        {
+          "name": "bonus_finalists",
+          "type": "integer",
+          "not_null": true,
+          "default": null
+        },
+        {
+          "name": "bonus_champion",
+          "type": "integer",
+          "not_null": true,
+          "default": null
+        },
+        {
+          "name": "points_by_match",
+          "type": "jsonb",
+          "not_null": true,
+          "default": "'{}'::\"jsonb\""
+        },
+        {
+          "name": "bracket_id",
+          "type": "uuid",
+          "not_null": false,
+          "default": null
+        },
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "not_null": false,
+          "default": null
+        }
+      ],
+      "leaderboard_history_rows": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "not_null": true,
+          "default": "\"extensions\".\"uuid_generate_v4\"()"
+        },
+        {
+          "name": "snapshot_id",
+          "type": "uuid",
+          "not_null": true,
+          "default": null
+        },
+        {
+          "name": "rank",
+          "type": "integer",
+          "not_null": false,
+          "default": null
+        },
+        {
+          "name": "display_name",
+          "type": "text",
+          "not_null": true,
+          "default": null
+        },
+        {
+          "name": "total_points",
+          "type": "integer",
+          "not_null": true,
+          "default": "0"
+        },
+        {
+          "name": "bonus_finalists",
+          "type": "integer",
+          "not_null": true,
+          "default": "0"
+        },
+        {
+          "name": "bonus_champion",
+          "type": "integer",
+          "not_null": true,
+          "default": "0"
+        },
+        {
+          "name": "full_hits",
+          "type": "integer",
+          "not_null": true,
+          "default": "0"
+        },
+        {
+          "name": "partial_hits",
+          "type": "integer",
+          "not_null": true,
+          "default": "0"
+        },
+        {
+          "name": "misses",
+          "type": "integer",
+          "not_null": true,
+          "default": "0"
+        },
+        {
+          "name": "per_match_points",
+          "type": "jsonb",
+          "not_null": true,
+          "default": "'{}'::\"jsonb\""
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "not_null": true,
+          "default": "\"now\"()"
+        }
+      ],
+      "leaderboard_history_snapshots": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "not_null": true,
+          "default": "\"extensions\".\"uuid_generate_v4\"()"
+        },
+        {
+          "name": "season_id",
+          "type": "uuid",
+          "not_null": true,
+          "default": null
+        },
+        {
+          "name": "season_code",
+          "type": "text",
+          "not_null": true,
+          "default": null
+        },
+        {
+          "name": "snapshot_at",
+          "type": "timestamp with time zone",
+          "not_null": true,
+          "default": "\"now\"()"
+        },
+        {
+          "name": "columns",
+          "type": "jsonb",
+          "not_null": true,
+          "default": "'[]'::\"jsonb\""
+        },
+        {
+          "name": "note",
+          "type": "text",
+          "not_null": false,
+          "default": null
+        },
+        {
+          "name": "created_by",
+          "type": "uuid",
+          "not_null": false,
+          "default": null
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "not_null": true,
+          "default": "\"now\"()"
+        }
+      ],
+      "league_members": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "not_null": true,
+          "default": "\"extensions\".\"uuid_generate_v4\"()"
+        },
+        {
+          "name": "league_id",
+          "type": "uuid",
+          "not_null": true,
+          "default": null
+        },
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "not_null": true,
+          "default": null
+        },
+        {
+          "name": "joined_at",
+          "type": "timestamp with time zone",
+          "not_null": true,
+          "default": "\"now\"()"
+        }
+      ],
+      "leagues": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "not_null": true,
+          "default": "\"extensions\".\"uuid_generate_v4\"()"
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "not_null": true,
+          "default": null
+        },
+        {
+          "name": "password_hash",
+          "type": "text",
+          "not_null": false,
+          "default": null
+        },
+        {
+          "name": "owner_user_id",
+          "type": "uuid",
+          "not_null": true,
+          "default": null
+        },
+        {
+          "name": "is_global",
+          "type": "boolean",
+          "not_null": true,
+          "default": "false"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "not_null": true,
+          "default": "\"now\"()"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "not_null": true,
+          "default": "\"now\"()"
+        }
+      ],
+      "password_resets": [
+        {
+          "name": "id",
+          "type": "integer",
+          "not_null": true,
+          "default": "\"nextval\"('\"public\".\"password_resets_id_seq\"'::\"regclass\")"
+        },
+        {
+          "name": "token",
+          "type": "text",
+          "not_null": true,
+          "default": null
+        },
+        {
+          "name": "expires_at",
+          "type": "timestamp without time zone",
+          "not_null": true,
+          "default": null
+        },
+        {
+          "name": "used",
+          "type": "boolean",
+          "not_null": false,
+          "default": "false"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp without time zone",
+          "not_null": false,
+          "default": "CURRENT_TIMESTAMP"
+        },
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "not_null": false,
+          "default": null
+        }
+      ],
+      "seasons": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "not_null": true,
+          "default": "\"extensions\".\"uuid_generate_v4\"()"
+        },
+        {
+          "name": "code",
+          "type": "text",
+          "not_null": true,
+          "default": null
+        },
+        {
+          "name": "regular_season_end_utc",
+          "type": "timestamp with time zone",
+          "not_null": false,
+          "default": null
+        },
+        {
+          "name": "playoffs_start_utc",
+          "type": "timestamp with time zone",
+          "not_null": false,
+          "default": null
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "not_null": true,
+          "default": "\"now\"()"
+        },
+        {
+          "name": "master_bracket_id",
+          "type": "uuid",
+          "not_null": false,
+          "default": null
+        }
+      ],
+      "standings": [
+        {
+          "name": "id",
+          "type": "integer",
+          "not_null": true,
+          "default": "\"nextval\"('\"public\".\"standings_id_seq\"'::\"regclass\")"
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "not_null": true,
+          "default": null
+        },
+        {
+          "name": "code",
+          "type": "text",
+          "not_null": true,
+          "default": null
+        },
+        {
+          "name": "wins",
+          "type": "integer",
+          "not_null": true,
+          "default": "0"
+        },
+        {
+          "name": "losses",
+          "type": "integer",
+          "not_null": true,
+          "default": "0"
+        },
+        {
+          "name": "conference",
+          "type": "text",
+          "not_null": true,
+          "default": null
+        },
+        {
+          "name": "seed",
+          "type": "integer",
+          "not_null": false,
+          "default": null
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp without time zone",
+          "not_null": false,
+          "default": "\"now\"()"
+        },
+        {
+          "name": "win_pct",
+          "type": "double precision",
+          "not_null": false,
+          "default": null
+        }
+      ],
+      "teams": [
+        {
+          "name": "id",
+          "type": "text",
+          "not_null": true,
+          "default": null
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "not_null": true,
+          "default": null
+        },
+        {
+          "name": "conference",
+          "type": "text",
+          "not_null": true,
+          "default": null
+        },
+        {
+          "name": "code",
+          "type": "text",
+          "not_null": true,
+          "default": null
+        },
+        {
+          "name": "logo_url",
+          "type": "text",
+          "not_null": false,
+          "default": null
+        },
+        {
+          "name": "primary_color",
+          "type": "text",
+          "not_null": false,
+          "default": null
+        },
+        {
+          "name": "secondary_color",
+          "type": "text",
+          "not_null": false,
+          "default": null
+        }
+      ],
+      "users": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "not_null": true,
+          "default": "\"extensions\".\"uuid_generate_v4\"()"
+        },
+        {
+          "name": "username",
+          "type": "text",
+          "not_null": true,
+          "default": null
+        },
+        {
+          "name": "email",
+          "type": "text",
+          "not_null": false,
+          "default": null
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "not_null": false,
+          "default": "\"now\"()"
+        },
+        {
+          "name": "password",
+          "type": "text",
+          "not_null": false,
+          "default": null
+        },
+        {
+          "name": "is_admin",
+          "type": "boolean",
+          "not_null": false,
+          "default": "false"
+        },
+        {
+          "name": "reset_token",
+          "type": "text",
+          "not_null": false,
+          "default": null
+        },
+        {
+          "name": "reset_token_expires",
+          "type": "timestamp without time zone",
+          "not_null": false,
+          "default": null
+        }
+      ]
+    },
+    "sequences": [
+      {
+        "name": "leaderboard_history_id_seq",
+        "type": "bigint",
+        "start": 1,
+        "increment": 1,
+        "min": 1,
+        "max": 9223372036854775807,
+        "cache": 1,
+        "cycle": false,
+        "owned_table": "leaderboard_history",
+        "owned_column": "id"
+      },
+      {
+        "name": "password_resets_id_seq",
+        "type": "integer",
+        "start": 1,
+        "increment": 1,
+        "min": 1,
+        "max": 2147483647,
+        "cache": 1,
+        "cycle": false,
+        "owned_table": "password_resets",
+        "owned_column": "id"
+      },
+      {
+        "name": "standings_id_seq",
+        "type": "integer",
+        "start": 1,
+        "increment": 1,
+        "min": 1,
+        "max": 2147483647,
+        "cache": 1,
+        "cycle": false,
+        "owned_table": "standings",
+        "owned_column": "id"
+      }
+    ],
+    "functions": [
+      {
+        "name": "_set_bracket_scores_season_id",
+        "identity_arguments": "",
+        "arguments": "",
+        "result": "trigger",
+        "security_definer": false,
+        "body": "BEGIN\n  SELECT season_id INTO NEW.season_id FROM public.brackets WHERE id = NEW.bracket_id;\n  RETURN NEW;\nEND",
+        "signature": "public._set_bracket_scores_season_id()",
+        "trigger_only": true
+      },
+      {
+        "name": "_set_matches_season_id",
+        "identity_arguments": "",
+        "arguments": "",
+        "result": "trigger",
+        "security_definer": false,
+        "body": "BEGIN\n  SELECT season_id INTO NEW.season_id FROM public.brackets WHERE id = NEW.bracket_id;\n  RETURN NEW;\nEND",
+        "signature": "public._set_matches_season_id()",
+        "trigger_only": true
+      },
+      {
+        "name": "atomic_update_match",
+        "identity_arguments": "p_match_id uuid, p_action text, p_new_team text, p_games integer",
+        "arguments": "p_match_id uuid, p_action text, p_new_team text DEFAULT NULL::text, p_games integer DEFAULT NULL::integer",
+        "result": "json",
+        "security_definer": true,
+        "body": "declare\n  cur_match record;\n  old_winner text;\n  next_id uuid;\n  nm record;\nbegin\n  perform 1;\n  -- load match\n  select * into cur_match from matches where id = p_match_id;\n  if cur_match is null then\n    return json_build_object('ok', false, 'message', 'match not found');\n  end if;\n\n  if p_action = 'set_games' then\n    update matches set predicted_winner_games = p_games, updated_at = now() where id = p_match_id;\n    return json_build_object('ok', true, 'message', 'games updated');\n  elsif p_action = 'set_winner' then\n    if p_new_team is null then\n      return json_build_object('ok', false, 'message', 'missing p_new_team');\n    end if;\n\n    old_winner := cur_match.predicted_winner;\n\n    -- set this match's winner & games\n    update matches set predicted_winner = p_new_team,\n                       predicted_winner_games = p_games,\n                       updated_at = now()\n    where id = p_match_id;\n\n    -- clear descendants that involve old_winner (only if old_winner not null)\n    if old_winner is not null and old_winner <> p_new_team then\n      next_id := cur_match.next_match_id;\n      while next_id is not null loop\n        select * into nm from matches where id = next_id;\n        exit when nm is null;\n\n        -- if nm.predicted_winner == old_winner -> clear it\n        if nm.predicted_winner = old_winner then\n          update matches set predicted_winner = null, predicted_winner_games = null, updated_at = now()\n          where id = nm.id;\n        end if;\n\n        -- if team_a == old_winner and team_a not locked -> remove it\n        if nm.team_a = old_winner and (nm.team_a_locked is distinct from true) then\n          update matches set team_a = null, updated_at = now() where id = nm.id;\n        end if;\n\n        -- same for team_b\n        if nm.team_b = old_winner and (nm.team_b_locked is distinct from true) then\n          update matches set team_b = null, updated_at = now() where id = nm.id;\n        end if;\n\n        next_id := nm.next_match_id;\n      end loop;\n    end if;\n\n    -- place new_team into immediate next_match slot (but do NOT set predicted_winner there)\n    if cur_match.next_match_id is not null then\n      select * into nm from matches where id = cur_match.next_match_id;\n      if nm is not null then\n        if cur_match.next_slot = 'a' then\n          if nm.team_a_locked is distinct from true then\n            update matches set team_a = p_new_team, predicted_winner = null, predicted_winner_games = null, updated_at = now()\n            where id = nm.id;\n          end if;\n        else\n          if nm.team_b_locked is distinct from true then\n            update matches set team_b = p_new_team, predicted_winner = null, predicted_winner_games = null, updated_at = now()\n            where id = nm.id;\n          end if;\n        end if;\n      end if;\n    end if;\n\n    return json_build_object('ok', true, 'message', 'winner set');\n  elsif p_action = 'undo' then\n    old_winner := cur_match.predicted_winner;\n    if old_winner is null then\n      return json_build_object('ok', true, 'message', 'nothing to undo');\n    end if;\n\n    -- clear this match\n    update matches set predicted_winner = null, predicted_winner_games = null, updated_at = now() where id = p_match_id;\n\n    -- clear propagated descendants and remove from slots (if not locked)\n    next_id := cur_match.next_match_id;\n    while next_id is not null loop\n      select * into nm from matches where id = next_id;\n      exit when nm is null;\n\n      if nm.team_a = old_winner and (nm.team_a_locked is distinct from true) then\n        update matches set team_a = null, updated_at = now() where id = nm.id;\n      end if;\n      if nm.team_b = old_winner and (nm.team_b_locked is distinct from true) then\n        update matches set team_b = null, updated_at = now() where id = nm.id;\n      end if;\n      if nm.predicted_winner = old_winner then\n        update matches set predicted_winner = null, predicted_winner_games = null, updated_at = now() where id = nm.id;\n      end if;\n\n      next_id := nm.next_match_id;\n    end loop;\n\n    return json_build_object('ok', true, 'message', 'undo complete');\n  else\n    return json_build_object('ok', false, 'message', 'invalid action');\n  end if;\n\nend;",
+        "signature": "public.atomic_update_match(uuid,text,text,integer)",
+        "trigger_only": false
+      },
+      {
+        "name": "fix_season_master_on_bracket_soft_delete",
+        "identity_arguments": "",
+        "arguments": "",
+        "result": "trigger",
+        "security_definer": false,
+        "body": "BEGIN\n  -- Act only on transition to soft-deleted\n  IF TG_OP = 'UPDATE'\n     AND NEW.deleted_at IS NOT NULL\n     AND (OLD.deleted_at IS NULL OR OLD.deleted_at <> NEW.deleted_at) THEN\n\n    -- Demote master flag on the row being updated (avoid recursive UPDATE by assigning NEW)\n    IF NEW.is_master IS TRUE THEN\n      NEW.is_master := FALSE;\n    END IF;\n\n    -- If the season points to this bracket, null it out\n    UPDATE public.seasons\n       SET master_bracket_id = NULL\n     WHERE id = NEW.season_id\n       AND master_bracket_id = NEW.id;\n  END IF;\n\n  RETURN NEW;\nEND",
+        "signature": "public.fix_season_master_on_bracket_soft_delete()",
+        "trigger_only": true
+      },
+      {
+        "name": "set_master_bracket",
+        "identity_arguments": "season_id uuid, bracket_id uuid",
+        "arguments": "season_id uuid, bracket_id uuid",
+        "result": "void",
+        "security_definer": true,
+        "body": "DECLARE\n  prev_master uuid;\nBEGIN\n  -- Safety: make sure the bracket belongs to that season\n  IF NOT EXISTS (\n    SELECT 1 FROM public.brackets b\n    WHERE b.id = bracket_id AND b.season_id = season_id\n  ) THEN\n    RAISE EXCEPTION 'Bracket % does not belong to season %', bracket_id, season_id;\n  END IF;\n\n  -- Lock the season row to avoid races\n  SELECT master_bracket_id\n    INTO prev_master\n  FROM public.seasons\n  WHERE id = season_id\n  FOR UPDATE;\n\n  -- Demote prior master (if any)\n  IF prev_master IS NOT NULL AND prev_master <> bracket_id THEN\n    UPDATE public.brackets\n    SET is_master = FALSE\n    WHERE id = prev_master;\n  END IF;\n\n  -- Promote the new master\n  UPDATE public.brackets\n  SET is_master = TRUE\n  WHERE id = bracket_id;\n\n  -- Point season to the new master\n  UPDATE public.seasons\n  SET master_bracket_id = bracket_id\n  WHERE id = season_id;\nEND;",
+        "signature": "public.set_master_bracket(uuid,uuid)",
+        "trigger_only": false
+      },
+      {
+        "name": "set_winner_atomic",
+        "identity_arguments": "in_match uuid, in_new_team text, in_games integer",
+        "arguments": "in_match uuid, in_new_team text, in_games integer",
+        "result": "jsonb",
+        "security_definer": false,
+        "body": "declare\n  start_row record;\n  old_winner text;\n  next_id uuid;\n  nm record;\n  cur_id uuid;\n  affected_count integer := 0;\nbegin\n  -- lock the starting match row\n  select * into start_row from matches where id = in_match for update;\n  if start_row is null then\n    return jsonb_build_object('ok', false, 'error', 'match_not_found');\n  end if;\n\n  old_winner := start_row.predicted_winner;\n\n  -- update this match with the new prediction\n  update matches set predicted_winner = in_new_team,\n                     predicted_winner_games = in_games,\n                     updated_at = now()\n    where id = in_match;\n\n  affected_count := affected_count + 1;\n\n  -- If there was an old winner, walk forward and clear it wherever it appears due to predictions\n  cur_id := in_match;\n  while true loop\n    select next_match_id into next_id from matches where id = cur_id;\n    if next_id is null then\n      exit;\n    end if;\n\n    -- lock the child row\n    select * into nm from matches where id = next_id for update;\n    if nm is null then\n      exit;\n    end if;\n\n    -- If nm.predicted_winner was the old_winner, clear it\n    if old_winner is not null then\n      if nm.predicted_winner = old_winner then\n        update matches set predicted_winner = null, predicted_winner_games = null, updated_at = now() where id = nm.id;\n        affected_count := affected_count + 1;\n      end if;\n\n      -- If old_winner was placed into team_a or team_b (because it was advanced previously), clear that slot.\n      if nm.team_a = old_winner then\n        update matches set team_a = null, updated_at = now() where id = nm.id;\n        affected_count := affected_count + 1;\n      end if;\n      if nm.team_b = old_winner then\n        update matches set team_b = null, updated_at = now() where id = nm.id;\n        affected_count := affected_count + 1;\n      end if;\n    end if;\n\n    -- continue down the chain\n    cur_id := nm.id;\n  end loop;\n\n  -- Place the new winner in the immediate next match slot (if exists), but keep predicted_winner null for that next match\n  select next_match_id into next_id from matches where id = in_match;\n  if next_id is not null then\n    select * into nm from matches where id = next_id for update;\n    if nm is not null then\n      if (select next_slot from matches where id = in_match) = 'a' then\n        update matches set team_a = in_new_team, predicted_winner = null, predicted_winner_games = null, updated_at = now() where id = nm.id;\n      else\n        update matches set team_b = in_new_team, predicted_winner = null, predicted_winner_games = null, updated_at = now() where id = nm.id;\n      end if;\n      affected_count := affected_count + 1;\n    end if;\n  end if;\n\n  return jsonb_build_object('ok', true, 'affected', affected_count);\nend;",
+        "signature": "public.set_winner_atomic(uuid,text,integer)",
+        "trigger_only": false
+      },
+      {
+        "name": "undo_prediction_atomic",
+        "identity_arguments": "in_match uuid",
+        "arguments": "in_match uuid",
+        "result": "jsonb",
+        "security_definer": false,
+        "body": "declare\n  start_row record;\n  old_winner text;\n  next_id uuid;\n  nm record;\n  cur_id uuid;\n  affected_count integer := 0;\nbegin\n  select * into start_row from matches where id = in_match for update;\n  if start_row is null then\n    return jsonb_build_object('ok', false, 'error', 'match_not_found');\n  end if;\n\n  old_winner := start_row.predicted_winner;\n\n  -- clear this match\n  update matches set predicted_winner = null, predicted_winner_games = null, updated_at = now() where id = in_match;\n  affected_count := affected_count + 1;\n\n  -- walk forward and remove old_winner from slots and clear downstream predictions\n  cur_id := in_match;\n  while true loop\n    select next_match_id into next_id from matches where id = cur_id;\n    if next_id is null then\n      exit;\n    end if;\n\n    select * into nm from matches where id = next_id for update;\n    if nm is null then\n      exit;\n    end if;\n\n    if nm.team_a = old_winner then\n      update matches set team_a = null, updated_at = now() where id = nm.id;\n      affected_count := affected_count + 1;\n    end if;\n    if nm.team_b = old_winner then\n      update matches set team_b = null, updated_at = now() where id = nm.id;\n      affected_count := affected_count + 1;\n    end if;\n    if nm.predicted_winner = old_winner then\n      update matches set predicted_winner = null, predicted_winner_games = null, updated_at = now() where id = nm.id;\n      affected_count := affected_count + 1;\n    end if;\n\n    cur_id := nm.id;\n  end loop;\n\n  return jsonb_build_object('ok', true, 'affected', affected_count);\nend;",
+        "signature": "public.undo_prediction_atomic(uuid)",
+        "trigger_only": false
+      }
+    ],
+    "view": {
+      "schemaname": "public",
+      "viewname": "bracket_view",
+      "viewowner": "postgres",
+      "definition": " SELECT m.id,\n    m.bracket_id,\n    m.round,\n    m.slot,\n    m.team_a,\n    m.team_b,\n    m.team_a_locked,\n    m.team_b_locked,\n    m.predicted_winner,\n    m.predicted_winner_games,\n    m.next_match_id,\n    m.next_slot,\n    m.created_at,\n    m.updated_at,\n    b.user_id\n   FROM (matches m\n     JOIN brackets b ON ((b.id = m.bracket_id)));"
+    },
+    "triggers": [
+      {
+        "schema_name": "public",
+        "table_name": "bracket_scores",
+        "trigger_name": "trg_bracket_scores_set_season",
+        "trigger_definition": "CREATE TRIGGER trg_bracket_scores_set_season BEFORE INSERT OR UPDATE OF bracket_id ON bracket_scores FOR EACH ROW EXECUTE FUNCTION _set_bracket_scores_season_id()"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "brackets",
+        "trigger_name": "trg_fix_season_master_on_bracket_soft_delete",
+        "trigger_definition": "CREATE TRIGGER trg_fix_season_master_on_bracket_soft_delete BEFORE UPDATE ON brackets FOR EACH ROW EXECUTE FUNCTION fix_season_master_on_bracket_soft_delete()"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "matches",
+        "trigger_name": "trg_matches_set_season",
+        "trigger_definition": "CREATE TRIGGER trg_matches_set_season BEFORE INSERT OR UPDATE OF bracket_id ON matches FOR EACH ROW EXECUTE FUNCTION _set_matches_season_id()"
+      }
+    ],
+    "policies": [
+      {
+        "schemaname": "public",
+        "tablename": "brackets",
+        "policyname": "Admins can manage all brackets",
+        "permissive": "PERMISSIVE",
+        "roles": "{public}",
+        "cmd": "ALL",
+        "using_expression": "(EXISTS ( SELECT 1\n   FROM users u\n  WHERE ((u.id = auth.uid()) AND (u.is_admin = true))))",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "brackets",
+        "policyname": "Users can delete their own brackets",
+        "permissive": "PERMISSIVE",
+        "roles": "{public}",
+        "cmd": "DELETE",
+        "using_expression": "(auth.uid() = user_id)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "brackets",
+        "policyname": "Users can insert their own brackets",
+        "permissive": "PERMISSIVE",
+        "roles": "{public}",
+        "cmd": "INSERT",
+        "using_expression": null,
+        "with_check": "(auth.uid() = user_id)"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "brackets",
+        "policyname": "Users can update their own brackets",
+        "permissive": "PERMISSIVE",
+        "roles": "{public}",
+        "cmd": "UPDATE",
+        "using_expression": "(auth.uid() = user_id)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "brackets",
+        "policyname": "Users can view their own brackets",
+        "permissive": "PERMISSIVE",
+        "roles": "{public}",
+        "cmd": "SELECT",
+        "using_expression": "(auth.uid() = user_id)",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "matches",
+        "policyname": "Admins can manage all matches",
+        "permissive": "PERMISSIVE",
+        "roles": "{public}",
+        "cmd": "ALL",
+        "using_expression": "(EXISTS ( SELECT 1\n   FROM users u\n  WHERE ((u.id = auth.uid()) AND (u.is_admin = true))))",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "matches",
+        "policyname": "Users can delete matches of their own brackets",
+        "permissive": "PERMISSIVE",
+        "roles": "{public}",
+        "cmd": "DELETE",
+        "using_expression": "(EXISTS ( SELECT 1\n   FROM brackets b\n  WHERE ((b.id = matches.bracket_id) AND (b.user_id = auth.uid()))))",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "matches",
+        "policyname": "Users can insert matches of their own brackets",
+        "permissive": "PERMISSIVE",
+        "roles": "{public}",
+        "cmd": "INSERT",
+        "using_expression": null,
+        "with_check": "(EXISTS ( SELECT 1\n   FROM brackets b\n  WHERE ((b.id = matches.bracket_id) AND (b.user_id = auth.uid()))))"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "matches",
+        "policyname": "Users can update matches of their own brackets",
+        "permissive": "PERMISSIVE",
+        "roles": "{public}",
+        "cmd": "UPDATE",
+        "using_expression": "(EXISTS ( SELECT 1\n   FROM brackets b\n  WHERE ((b.id = matches.bracket_id) AND (b.user_id = auth.uid()))))",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "matches",
+        "policyname": "Users can view matches of their own brackets",
+        "permissive": "PERMISSIVE",
+        "roles": "{public}",
+        "cmd": "SELECT",
+        "using_expression": "(EXISTS ( SELECT 1\n   FROM brackets b\n  WHERE ((b.id = matches.bracket_id) AND (b.user_id = auth.uid()))))",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "password_resets",
+        "policyname": "Admins can manage all password resets",
+        "permissive": "PERMISSIVE",
+        "roles": "{public}",
+        "cmd": "ALL",
+        "using_expression": "(EXISTS ( SELECT 1\n   FROM users u\n  WHERE ((u.id = auth.uid()) AND (u.is_admin = true))))",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "password_resets",
+        "policyname": "Users can insert their own password resets",
+        "permissive": "PERMISSIVE",
+        "roles": "{public}",
+        "cmd": "ALL",
+        "using_expression": null,
+        "with_check": "(EXISTS ( SELECT 1\n   FROM users u\n  WHERE ((u.id = auth.uid()) AND (u.id = password_resets.user_id))))"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "password_resets",
+        "policyname": "Users can view their own password resets",
+        "permissive": "PERMISSIVE",
+        "roles": "{public}",
+        "cmd": "ALL",
+        "using_expression": "(EXISTS ( SELECT 1\n   FROM users u\n  WHERE ((u.id = auth.uid()) AND (u.id = password_resets.user_id))))",
+        "with_check": null
+      },
+      {
+        "schemaname": "public",
+        "tablename": "users",
+        "policyname": "Service role can manage all users",
+        "permissive": "PERMISSIVE",
+        "roles": "{service_role}",
+        "cmd": "ALL",
+        "using_expression": "true",
+        "with_check": "true"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "users",
+        "policyname": "Users can update their own data",
+        "permissive": "PERMISSIVE",
+        "roles": "{public}",
+        "cmd": "UPDATE",
+        "using_expression": "(auth.uid() = id)",
+        "with_check": "(auth.uid() = id)"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "users",
+        "policyname": "Users can view their own data",
+        "permissive": "PERMISSIVE",
+        "roles": "{public}",
+        "cmd": "SELECT",
+        "using_expression": "(auth.uid() = id)",
+        "with_check": null
+      }
+    ],
+    "constraints": [
+      {
+        "schema_name": "public",
+        "table_name": "bracket_scores",
+        "constraint_name": "bracket_scores_bonus_champion_check",
+        "constraint_type": "c",
+        "definition": "CHECK (bonus_champion >= 0)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "bracket_scores",
+        "constraint_name": "bracket_scores_bonus_finalists_check",
+        "constraint_type": "c",
+        "definition": "CHECK (bonus_finalists >= 0)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "bracket_scores",
+        "constraint_name": "bracket_scores_bracket_id_fkey",
+        "constraint_type": "f",
+        "definition": "FOREIGN KEY (bracket_id) REFERENCES brackets(id) ON DELETE CASCADE"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "bracket_scores",
+        "constraint_name": "bracket_scores_full_hits_check",
+        "constraint_type": "c",
+        "definition": "CHECK (full_hits >= 0)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "bracket_scores",
+        "constraint_name": "bracket_scores_master_bracket_id_fkey",
+        "constraint_type": "f",
+        "definition": "FOREIGN KEY (master_bracket_id) REFERENCES brackets(id) ON DELETE CASCADE"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "bracket_scores",
+        "constraint_name": "bracket_scores_misses_check",
+        "constraint_type": "c",
+        "definition": "CHECK (misses >= 0)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "bracket_scores",
+        "constraint_name": "bracket_scores_partial_hits_check",
+        "constraint_type": "c",
+        "definition": "CHECK (partial_hits >= 0)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "bracket_scores",
+        "constraint_name": "bracket_scores_pkey",
+        "constraint_type": "p",
+        "definition": "PRIMARY KEY (bracket_id)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "bracket_scores",
+        "constraint_name": "bracket_scores_season_id_fkey",
+        "constraint_type": "f",
+        "definition": "FOREIGN KEY (season_id) REFERENCES seasons(id)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "bracket_scores",
+        "constraint_name": "bracket_scores_total_points_check",
+        "constraint_type": "c",
+        "definition": "CHECK (total_points >= 0)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "brackets",
+        "constraint_name": "brackets_pkey",
+        "constraint_type": "p",
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "brackets",
+        "constraint_name": "brackets_season_id_fkey",
+        "constraint_type": "f",
+        "definition": "FOREIGN KEY (season_id) REFERENCES seasons(id)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "leaderboard_history",
+        "constraint_name": "leaderboard_history_bonus_champion_check",
+        "constraint_type": "c",
+        "definition": "CHECK (bonus_champion >= 0)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "leaderboard_history",
+        "constraint_name": "leaderboard_history_bonus_finalists_check",
+        "constraint_type": "c",
+        "definition": "CHECK (bonus_finalists >= 0)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "leaderboard_history",
+        "constraint_name": "leaderboard_history_full_hits_check",
+        "constraint_type": "c",
+        "definition": "CHECK (full_hits >= 0)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "leaderboard_history",
+        "constraint_name": "leaderboard_history_misses_check",
+        "constraint_type": "c",
+        "definition": "CHECK (misses >= 0)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "leaderboard_history",
+        "constraint_name": "leaderboard_history_partial_hits_check",
+        "constraint_type": "c",
+        "definition": "CHECK (partial_hits >= 0)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "leaderboard_history",
+        "constraint_name": "leaderboard_history_pkey",
+        "constraint_type": "p",
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "leaderboard_history",
+        "constraint_name": "leaderboard_history_rank_check",
+        "constraint_type": "c",
+        "definition": "CHECK (rank > 0)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "leaderboard_history",
+        "constraint_name": "leaderboard_history_season_id_fkey",
+        "constraint_type": "f",
+        "definition": "FOREIGN KEY (season_id) REFERENCES seasons(id)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "leaderboard_history",
+        "constraint_name": "leaderboard_history_total_points_check",
+        "constraint_type": "c",
+        "definition": "CHECK (total_points >= 0)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "leaderboard_history_rows",
+        "constraint_name": "leaderboard_history_rows_pkey",
+        "constraint_type": "p",
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "leaderboard_history_rows",
+        "constraint_name": "leaderboard_history_rows_snapshot_id_fkey",
+        "constraint_type": "f",
+        "definition": "FOREIGN KEY (snapshot_id) REFERENCES leaderboard_history_snapshots(id) ON DELETE CASCADE"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "leaderboard_history_snapshots",
+        "constraint_name": "leaderboard_history_snapshots_created_by_fkey",
+        "constraint_type": "f",
+        "definition": "FOREIGN KEY (created_by) REFERENCES users(id)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "leaderboard_history_snapshots",
+        "constraint_name": "leaderboard_history_snapshots_pkey",
+        "constraint_type": "p",
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "leaderboard_history_snapshots",
+        "constraint_name": "leaderboard_history_snapshots_season_id_fkey",
+        "constraint_type": "f",
+        "definition": "FOREIGN KEY (season_id) REFERENCES seasons(id) ON DELETE CASCADE"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "league_members",
+        "constraint_name": "league_members_league_id_fkey",
+        "constraint_type": "f",
+        "definition": "FOREIGN KEY (league_id) REFERENCES leagues(id) ON DELETE CASCADE"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "league_members",
+        "constraint_name": "league_members_league_user_unique",
+        "constraint_type": "u",
+        "definition": "UNIQUE (league_id, user_id)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "league_members",
+        "constraint_name": "league_members_pkey",
+        "constraint_type": "p",
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "league_members",
+        "constraint_name": "league_members_user_id_fkey",
+        "constraint_type": "f",
+        "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "leagues",
+        "constraint_name": "leagues_name_unique",
+        "constraint_type": "u",
+        "definition": "UNIQUE (name)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "leagues",
+        "constraint_name": "leagues_owner_user_id_fkey",
+        "constraint_type": "f",
+        "definition": "FOREIGN KEY (owner_user_id) REFERENCES users(id)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "leagues",
+        "constraint_name": "leagues_pkey",
+        "constraint_type": "p",
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "matches",
+        "constraint_name": "matches_bracket_id_fkey",
+        "constraint_type": "f",
+        "definition": "FOREIGN KEY (bracket_id) REFERENCES brackets(id) ON DELETE CASCADE"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "matches",
+        "constraint_name": "matches_next_match_id_fkey",
+        "constraint_type": "f",
+        "definition": "FOREIGN KEY (next_match_id) REFERENCES matches(id) ON DELETE SET NULL"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "matches",
+        "constraint_name": "matches_next_slot_check",
+        "constraint_type": "c",
+        "definition": "CHECK (next_slot = ANY (ARRAY['a'::text, 'b'::text]))"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "matches",
+        "constraint_name": "matches_pkey",
+        "constraint_type": "p",
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "matches",
+        "constraint_name": "matches_predicted_winner_fkey",
+        "constraint_type": "f",
+        "definition": "FOREIGN KEY (predicted_winner) REFERENCES teams(id)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "matches",
+        "constraint_name": "matches_season_id_fkey",
+        "constraint_type": "f",
+        "definition": "FOREIGN KEY (season_id) REFERENCES seasons(id)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "matches",
+        "constraint_name": "matches_team_a_fkey",
+        "constraint_type": "f",
+        "definition": "FOREIGN KEY (team_a) REFERENCES teams(id)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "matches",
+        "constraint_name": "matches_team_b_fkey",
+        "constraint_type": "f",
+        "definition": "FOREIGN KEY (team_b) REFERENCES teams(id)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "password_resets",
+        "constraint_name": "password_resets_pkey",
+        "constraint_type": "p",
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "password_resets",
+        "constraint_name": "password_resets_token_key",
+        "constraint_type": "u",
+        "definition": "UNIQUE (token)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "password_resets",
+        "constraint_name": "password_resets_user_id_fkey",
+        "constraint_type": "f",
+        "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "seasons",
+        "constraint_name": "seasons_code_key",
+        "constraint_type": "u",
+        "definition": "UNIQUE (code)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "seasons",
+        "constraint_name": "seasons_master_bracket_fk",
+        "constraint_type": "f",
+        "definition": "FOREIGN KEY (master_bracket_id) REFERENCES brackets(id) ON DELETE SET NULL"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "seasons",
+        "constraint_name": "seasons_pkey",
+        "constraint_type": "p",
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "standings",
+        "constraint_name": "standings_code_fkey",
+        "constraint_type": "f",
+        "definition": "FOREIGN KEY (code) REFERENCES teams(code)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "standings",
+        "constraint_name": "standings_pkey",
+        "constraint_type": "p",
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "teams",
+        "constraint_name": "teams_code_key",
+        "constraint_type": "u",
+        "definition": "UNIQUE (code)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "teams",
+        "constraint_name": "teams_pkey",
+        "constraint_type": "p",
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "users",
+        "constraint_name": "users_email_key",
+        "constraint_type": "u",
+        "definition": "UNIQUE (email)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "users",
+        "constraint_name": "users_email_unique",
+        "constraint_type": "u",
+        "definition": "UNIQUE (email)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "users",
+        "constraint_name": "users_pkey",
+        "constraint_type": "p",
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "users",
+        "constraint_name": "users_username_unique",
+        "constraint_type": "u",
+        "definition": "UNIQUE (username)"
+      }
+    ],
+    "indexes": [
+      {
+        "schemaname": "public",
+        "tablename": "bracket_scores",
+        "indexname": "bracket_scores_master_idx",
+        "indexdef": "CREATE INDEX bracket_scores_master_idx ON public.bracket_scores USING btree (master_bracket_id)"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "bracket_scores",
+        "indexname": "bracket_scores_pkey",
+        "indexdef": "CREATE UNIQUE INDEX bracket_scores_pkey ON public.bracket_scores USING btree (bracket_id)"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "bracket_scores",
+        "indexname": "bracket_scores_total_points_idx",
+        "indexdef": "CREATE INDEX bracket_scores_total_points_idx ON public.bracket_scores USING btree (total_points)"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "bracket_scores",
+        "indexname": "idx_bracket_scores_season_points",
+        "indexdef": "CREATE INDEX idx_bracket_scores_season_points ON public.bracket_scores USING btree (season_id, total_points DESC)"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "brackets",
+        "indexname": "brackets_pkey",
+        "indexdef": "CREATE UNIQUE INDEX brackets_pkey ON public.brackets USING btree (id)"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "brackets",
+        "indexname": "idx_brackets_season_created",
+        "indexdef": "CREATE INDEX idx_brackets_season_created ON public.brackets USING btree (season_id, created_at DESC)"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "brackets",
+        "indexname": "idx_brackets_user_id",
+        "indexdef": "CREATE INDEX idx_brackets_user_id ON public.brackets USING btree (user_id)"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "brackets",
+        "indexname": "uniq_active_bracket_per_user_per_season",
+        "indexdef": "CREATE UNIQUE INDEX uniq_active_bracket_per_user_per_season ON public.brackets USING btree (user_id, season_id) WHERE (deleted_at IS NULL)"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "brackets",
+        "indexname": "unique_active_bracket_per_user",
+        "indexdef": "CREATE UNIQUE INDEX unique_active_bracket_per_user ON public.brackets USING btree (user_id) WHERE (deleted_at IS NULL)"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "brackets",
+        "indexname": "uq_master_per_season",
+        "indexdef": "CREATE UNIQUE INDEX uq_master_per_season ON public.brackets USING btree (season_id) WHERE ((is_master IS TRUE) AND (deleted_at IS NULL))"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "brackets",
+        "indexname": "ux_brackets_one_master_per_season",
+        "indexdef": "CREATE UNIQUE INDEX ux_brackets_one_master_per_season ON public.brackets USING btree (season_id) WHERE (is_master = true)"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "leaderboard_history",
+        "indexname": "idx_leaderboard_history_season_rank",
+        "indexdef": "CREATE INDEX idx_leaderboard_history_season_rank ON public.leaderboard_history USING btree (season_id, rank)"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "leaderboard_history",
+        "indexname": "leaderboard_history_pkey",
+        "indexdef": "CREATE UNIQUE INDEX leaderboard_history_pkey ON public.leaderboard_history USING btree (id)"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "leaderboard_history_rows",
+        "indexname": "idx_leaderboard_history_rows_snapshot",
+        "indexdef": "CREATE INDEX idx_leaderboard_history_rows_snapshot ON public.leaderboard_history_rows USING btree (snapshot_id)"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "leaderboard_history_rows",
+        "indexname": "leaderboard_history_rows_pkey",
+        "indexdef": "CREATE UNIQUE INDEX leaderboard_history_rows_pkey ON public.leaderboard_history_rows USING btree (id)"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "leaderboard_history_snapshots",
+        "indexname": "idx_leaderboard_history_snapshots_code",
+        "indexdef": "CREATE INDEX idx_leaderboard_history_snapshots_code ON public.leaderboard_history_snapshots USING btree (season_code)"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "leaderboard_history_snapshots",
+        "indexname": "idx_leaderboard_history_snapshots_season",
+        "indexdef": "CREATE INDEX idx_leaderboard_history_snapshots_season ON public.leaderboard_history_snapshots USING btree (season_id)"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "leaderboard_history_snapshots",
+        "indexname": "leaderboard_history_snapshots_pkey",
+        "indexdef": "CREATE UNIQUE INDEX leaderboard_history_snapshots_pkey ON public.leaderboard_history_snapshots USING btree (id)"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "league_members",
+        "indexname": "league_members_league_id_idx",
+        "indexdef": "CREATE INDEX league_members_league_id_idx ON public.league_members USING btree (league_id)"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "league_members",
+        "indexname": "league_members_league_user_unique",
+        "indexdef": "CREATE UNIQUE INDEX league_members_league_user_unique ON public.league_members USING btree (league_id, user_id)"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "league_members",
+        "indexname": "league_members_pkey",
+        "indexdef": "CREATE UNIQUE INDEX league_members_pkey ON public.league_members USING btree (id)"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "league_members",
+        "indexname": "league_members_user_id_idx",
+        "indexdef": "CREATE INDEX league_members_user_id_idx ON public.league_members USING btree (user_id)"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "leagues",
+        "indexname": "leagues_name_unique",
+        "indexdef": "CREATE UNIQUE INDEX leagues_name_unique ON public.leagues USING btree (name)"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "leagues",
+        "indexname": "leagues_pkey",
+        "indexdef": "CREATE UNIQUE INDEX leagues_pkey ON public.leagues USING btree (id)"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "matches",
+        "indexname": "idx_matches_bracket",
+        "indexdef": "CREATE INDEX idx_matches_bracket ON public.matches USING btree (bracket_id, round)"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "matches",
+        "indexname": "idx_matches_season_bracket",
+        "indexdef": "CREATE INDEX idx_matches_season_bracket ON public.matches USING btree (season_id, bracket_id)"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "matches",
+        "indexname": "matches_pkey",
+        "indexdef": "CREATE UNIQUE INDEX matches_pkey ON public.matches USING btree (id)"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "password_resets",
+        "indexname": "password_resets_pkey",
+        "indexdef": "CREATE UNIQUE INDEX password_resets_pkey ON public.password_resets USING btree (id)"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "password_resets",
+        "indexname": "password_resets_token_key",
+        "indexdef": "CREATE UNIQUE INDEX password_resets_token_key ON public.password_resets USING btree (token)"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "seasons",
+        "indexname": "seasons_code_key",
+        "indexdef": "CREATE UNIQUE INDEX seasons_code_key ON public.seasons USING btree (code)"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "seasons",
+        "indexname": "seasons_pkey",
+        "indexdef": "CREATE UNIQUE INDEX seasons_pkey ON public.seasons USING btree (id)"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "standings",
+        "indexname": "standings_pkey",
+        "indexdef": "CREATE UNIQUE INDEX standings_pkey ON public.standings USING btree (id)"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "teams",
+        "indexname": "teams_code_key",
+        "indexdef": "CREATE UNIQUE INDEX teams_code_key ON public.teams USING btree (code)"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "teams",
+        "indexname": "teams_pkey",
+        "indexdef": "CREATE UNIQUE INDEX teams_pkey ON public.teams USING btree (id)"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "users",
+        "indexname": "users_email_key",
+        "indexdef": "CREATE UNIQUE INDEX users_email_key ON public.users USING btree (email)"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "users",
+        "indexname": "users_email_unique",
+        "indexdef": "CREATE UNIQUE INDEX users_email_unique ON public.users USING btree (email)"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "users",
+        "indexname": "users_pkey",
+        "indexdef": "CREATE UNIQUE INDEX users_pkey ON public.users USING btree (id)"
+      },
+      {
+        "schemaname": "public",
+        "tablename": "users",
+        "indexname": "users_username_unique",
+        "indexdef": "CREATE UNIQUE INDEX users_username_unique ON public.users USING btree (username)"
+      }
+    ],
+    "rls": {
+      "bracket_scores": {
+        "enabled": false,
+        "forced": false
+      },
+      "bracket_view": {
+        "enabled": false,
+        "forced": false
+      },
+      "brackets": {
+        "enabled": true,
+        "forced": false
+      },
+      "leaderboard_history": {
+        "enabled": false,
+        "forced": false
+      },
+      "leaderboard_history_rows": {
+        "enabled": false,
+        "forced": false
+      },
+      "leaderboard_history_snapshots": {
+        "enabled": false,
+        "forced": false
+      },
+      "league_members": {
+        "enabled": false,
+        "forced": false
+      },
+      "leagues": {
+        "enabled": false,
+        "forced": false
+      },
+      "matches": {
+        "enabled": true,
+        "forced": false
+      },
+      "password_resets": {
+        "enabled": true,
+        "forced": false
+      },
+      "seasons": {
+        "enabled": false,
+        "forced": false
+      },
+      "standings": {
+        "enabled": false,
+        "forced": false
+      },
+      "teams": {
+        "enabled": false,
+        "forced": false
+      },
+      "users": {
+        "enabled": true,
+        "forced": false
+      }
+    }
+  },
+  "acl": {
+    "table_privileges": [
+      "SELECT",
+      "INSERT",
+      "UPDATE",
+      "DELETE",
+      "TRUNCATE",
+      "REFERENCES",
+      "TRIGGER",
+      "MAINTAIN"
+    ],
+    "sequence_privileges": [
+      "USAGE",
+      "SELECT",
+      "UPDATE"
+    ],
+    "trusted": [
+      "postgres",
+      "service_role"
+    ],
+    "denied": [
+      "PUBLIC",
+      "anon",
+      "authenticated"
+    ],
+    "trigger_only_execute": [
+      "PUBLIC",
+      "postgres",
+      "anon",
+      "authenticated",
+      "service_role"
+    ],
+    "defaults": "postgres/public TABLES and SEQUENCES: owner/service only; all other defaults unchanged"
+  },
+  "preserved_current_behavior_future_review": [
+    "Cross-season active-bracket uniqueness retained alongside per-season uniqueness.",
+    "Both master uniqueness indexes retained with differing soft-delete predicates.",
+    "Equivalent duplicate email uniqueness retained.",
+    "Missing brackets.user_id FK; standings without season_id/unique code.",
+    "Text match-team references; cyclic seasons/master pointers; nullable legacy fields.",
+    "Current RLS design, including password_resets insert/view policies using ALL.",
+    "Function authorization shortcomings, unqualified references, absent search_path preserved; four RPCs contained by ACLs.",
+    "Current bracket_view definition/security and trigger behavior.",
+    "Three trigger-only functions retain audited PUBLIC/anon/authenticated EXECUTE."
+  ],
+  "exclusions": [
+    "Application/reference rows and sequence current values",
+    "Credentials/production connection identity/OIDs/counts/hash execution guards",
+    "Supabase-managed/extension implementation objects",
+    "Synthetic fixtures NC-ENV-05; infrastructure/enrollment/marker NC-ENV-03; reset/provider tooling"
+  ],
+  "validation": "Offline lexical/source-semantic only; PostgreSQL parser unavailable; live bootstrap deferred NC-ENV-03"
+}
