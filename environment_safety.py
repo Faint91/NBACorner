@@ -594,6 +594,15 @@ def verify_provider_job_readiness(settings):
     validate_test_provider_settings(settings, target)
     validate_test_job_settings(settings)
     identity = verify_live_local_identity(settings)
+    fixture_reset = "UNMET"
+    if identity["marker"]["fixture_state"] == "SEEDED":
+        from scripts.reset_local_fixtures import verify_fixture_readiness
+
+        # Read-only full-row/sequence proof, not trust in marker metadata alone.
+        proof = verify_fixture_readiness(settings)
+        if proof["mutation_permitted"] is not False:
+            raise SafetyError("Fixture verification cannot grant mutation permission.")
+        fixture_reset = "PASS"
     return {
         "identity_verified": identity["identity_verified"],
         "database_marker": "PASS",
@@ -603,7 +612,7 @@ def verify_provider_job_readiness(settings):
         "jobs": "PASS",
         "jobs_enabled": False,
         "fixture_state": identity["marker"]["fixture_state"],
-        "fixtures_reset": "UNMET",
+        "fixtures_reset": fixture_reset,
         "integration_harness": "UNMET",
         "mutation_permitted": False,
     }

@@ -1,0 +1,128 @@
+{
+  "phase": "NC-ENV-05",
+  "status": "Completed; local foundation seeded; general mutation remains blocked",
+  "verified_at_utc": "2026-10-14T18:46:39.720688+00:00",
+  "starting_heads": {
+    "frontend": "ce54143006f0409265937f5d548286d0b100d454",
+    "backend": "ff4017bdffac58e875662ea645a6a3774c21094f"
+  },
+  "starting_branches": "main; both clean",
+  "initial_marker": "v2 UNSEEDED, NULL version/checksum",
+  "fixture_version": "nc-fixtures-v1",
+  "cycle_1": {
+    "counts": {
+      "teams": 30,
+      "users": 4,
+      "leagues": 0,
+      "matches": 0,
+      "seasons": 2,
+      "brackets": 0,
+      "standings": 30,
+      "bracket_scores": 0,
+      "league_members": 0,
+      "password_resets": 0,
+      "leaderboard_history": 0,
+      "leaderboard_history_rows": 0,
+      "leaderboard_history_snapshots": 0
+    },
+    "fixture_version": "nc-fixtures-v1",
+    "fixture_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+    "mutation_permitted": false
+  },
+  "cycle_2": {
+    "counts": {
+      "teams": 30,
+      "users": 4,
+      "leagues": 0,
+      "matches": 0,
+      "seasons": 2,
+      "brackets": 0,
+      "standings": 30,
+      "bracket_scores": 0,
+      "league_members": 0,
+      "password_resets": 0,
+      "leaderboard_history": 0,
+      "leaderboard_history_rows": 0,
+      "leaderboard_history_snapshots": 0
+    },
+    "fixture_version": "nc-fixtures-v1",
+    "fixture_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+    "mutation_permitted": false
+  },
+  "determinism": {
+    "all_typed_application_rows_verified": true,
+    "all_columns_included": true,
+    "all_owned_sequence_states_included": true,
+    "same_checksum_counts_relationships": true,
+    "single_synthetic_standings_drift_removed": true,
+    "actual_lease_conflict_refused": true,
+    "actual_post_truncation_failure_rolled_back": true
+  },
+  "marker_after": {
+    "version": "2",
+    "fixture_state": "SEEDED",
+    "fixture_version": "nc-fixtures-v1",
+    "fixture_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+    "identity_baseline_created_at_security": "unchanged"
+  },
+  "scenario_model": "Pure independent builders; no scenario persisted; not approved business requirements",
+  "inventory_and_limitations": "docs/test-fixtures-reset.md",
+  "safety": {
+    "exact_application_tables": [
+      "teams",
+      "users",
+      "leagues",
+      "matches",
+      "seasons",
+      "brackets",
+      "standings",
+      "bracket_scores",
+      "league_members",
+      "password_resets",
+      "leaderboard_history",
+      "leaderboard_history_rows",
+      "leaderboard_history_snapshots"
+    ],
+    "remote_support": false,
+    "arbitrary_sql_tables_url": false,
+    "opt_in": "--allow-local-reset",
+    "transactional": true,
+    "lease": "pg_advisory_xact_lock(50405,1)",
+    "cascade": false,
+    "auth_platform_targets": false
+  },
+  "validation": {
+    "environment_tests": 61,
+    "email_tests": 20,
+    "provider_job_tests": 28,
+    "marker_tests": 17,
+    "reset_fixture_tests": 41,
+    "total_offline": 167,
+    "semantic_verifier_after_each_cycle": "PASS",
+    "marker_acl_verifier_after_each_cycle": "PASS",
+    "syntax_format_whitespace": "PASS",
+    "secret_production_data_scope_scan": "PASS",
+    "application_baseline_product_bytes_unchanged": true
+  },
+  "readiness": {
+    "identity": "PASS",
+    "marker": "PASS",
+    "email": "PASS",
+    "providers": "PASS",
+    "jobs": "PASS",
+    "fixture_reset": "PASS",
+    "harness": "UNMET",
+    "mutation_permitted": false
+  },
+  "local_flask_smoke": "Not run; intentionally blocked pending guarded harness",
+  "production": {
+    "contact": false,
+    "data_copied": false,
+    "secrets_used": false,
+    "deployment": false
+  },
+  "remaining_blockers": [
+    "Final guarded integration harness"
+  ],
+  "next_recommended_phase": "NC-ENV-06 \u2014 Guarded integration harness and isolated read/write smoke validation; not started"
+}

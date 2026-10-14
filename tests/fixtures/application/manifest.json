@@ -1,0 +1,190 @@
+{
+  "fixture_version": "nc-fixtures-v1",
+  "classification": "Synthetic test states; not approved business requirements",
+  "columns": {
+    "users": [
+      "id",
+      "username",
+      "email",
+      "created_at",
+      "password",
+      "is_admin",
+      "reset_token",
+      "reset_token_expires"
+    ],
+    "seasons": [
+      "id",
+      "code",
+      "regular_season_end_utc",
+      "playoffs_start_utc",
+      "created_at",
+      "master_bracket_id"
+    ],
+    "teams": [
+      "id",
+      "name",
+      "conference",
+      "code",
+      "logo_url",
+      "primary_color",
+      "secondary_color"
+    ],
+    "standings": [
+      "id",
+      "name",
+      "code",
+      "wins",
+      "losses",
+      "conference",
+      "seed",
+      "updated_at",
+      "win_pct"
+    ],
+    "brackets": [
+      "id",
+      "user_id",
+      "created_at",
+      "updated_at",
+      "is_done",
+      "saved_at",
+      "deleted_at",
+      "deleted_by_user_id",
+      "name",
+      "is_master",
+      "season_id"
+    ],
+    "matches": [
+      "id",
+      "bracket_id",
+      "round",
+      "slot",
+      "team_a",
+      "team_b",
+      "team_a_locked",
+      "team_b_locked",
+      "predicted_winner",
+      "predicted_winner_games",
+      "next_match_id",
+      "next_slot",
+      "created_at",
+      "updated_at",
+      "conference",
+      "season_id"
+    ],
+    "bracket_scores": [
+      "bracket_id",
+      "master_bracket_id",
+      "total_points",
+      "full_hits",
+      "partial_hits",
+      "misses",
+      "bonus_finalists",
+      "bonus_champion",
+      "points_by_round",
+      "points_by_match",
+      "updated_at",
+      "season_id"
+    ],
+    "leagues": [
+      "id",
+      "name",
+      "password_hash",
+      "owner_user_id",
+      "is_global",
+      "created_at",
+      "updated_at"
+    ],
+    "league_members": [
+      "id",
+      "league_id",
+      "user_id",
+      "joined_at"
+    ],
+    "password_resets": [
+      "id",
+      "token",
+      "expires_at",
+      "used",
+      "created_at",
+      "user_id"
+    ],
+    "leaderboard_history": [
+      "id",
+      "season_id",
+      "season_code",
+      "snapshot_at",
+      "rank",
+      "bracket_name",
+      "username",
+      "total_points",
+      "full_hits",
+      "partial_hits",
+      "misses",
+      "bonus_finalists",
+      "bonus_champion",
+      "points_by_match",
+      "bracket_id",
+      "user_id"
+    ],
+    "leaderboard_history_snapshots": [
+      "id",
+      "season_id",
+      "season_code",
+      "snapshot_at",
+      "columns",
+      "note",
+      "created_by",
+      "created_at"
+    ],
+    "leaderboard_history_rows": [
+      "id",
+      "snapshot_id",
+      "rank",
+      "display_name",
+      "total_points",
+      "bonus_finalists",
+      "bonus_champion",
+      "full_hits",
+      "partial_hits",
+      "misses",
+      "per_match_points",
+      "created_at"
+    ]
+  },
+  "reset_tables": [
+    "users",
+    "seasons",
+    "teams",
+    "standings",
+    "brackets",
+    "matches",
+    "bracket_scores",
+    "leagues",
+    "league_members",
+    "password_resets",
+    "leaderboard_history",
+    "leaderboard_history_snapshots",
+    "leaderboard_history_rows"
+  ],
+  "owned_sequences": [
+    "standings_id_seq",
+    "password_resets_id_seq",
+    "leaderboard_history_id_seq"
+  ],
+  "foundation_counts": {
+    "users": 4,
+    "seasons": 2,
+    "teams": 30,
+    "standings": 30,
+    "brackets": 0,
+    "matches": 0,
+    "bracket_scores": 0,
+    "leagues": 0,
+    "league_members": 0,
+    "password_resets": 0,
+    "leaderboard_history": 0,
+    "leaderboard_history_snapshots": 0,
+    "leaderboard_history_rows": 0
+  },
+  "checksum": "SHA256 of PostgreSQL jsonb text of fixture_version, complete typed rows for all 13 tables (sorted by to_jsonb(row)::text COLLATE C), and all 3 owned sequence last_value/is_called; UTC/ISO and fixed float rendering; excludes nothing from application rows"
+}

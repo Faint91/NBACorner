@@ -124,3 +124,14 @@ NULL; SEEDED requires a valid version and SHA-256 checksum. Metadata validity is
 fixture integrity proof or an execution permit. Mutation/startup/guarded transport
 remain blocked. No application fixtures or reset occurred. Migration, security proof
 and ownership rules: test-infrastructure/local-supabase/README.md (NC-ENV-05A section).
+
+
+## NC-ENV-05 deterministic fixture/reset proof
+
+Local marker v2 is now SEEDED with nc-fixtures-v1 and a verified full DB-state checksum.
+Only the small synthetic foundation is installed; pure scenario builders are separate.
+Two reset cycles, drift recovery, lease refusal and transactional rollback passed.
+Read-only readiness independently verifies all rows/sequences and reports fixture/reset
+PASS, harness UNMET, mutation_permitted=false. Startup/integration remain blocked.
+Procedure, exact allowlist, checksum definition and schema limitations:
+docs/test-fixtures-reset.md. NC-ENV-06 has not begun.

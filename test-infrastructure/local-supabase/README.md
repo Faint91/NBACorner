@@ -179,3 +179,14 @@ provider and jobs gates PASS; fixtures/reset and final harness remain UNMET;
 mutation_permitted=false. Startup, integration transport and runtime job gates stay
 closed. Original NC-ENV-05 may resume after review and explicit authorization; it
 has not resumed automatically. This marker is test infrastructure, not product data.
+
+
+## NC-ENV-05 deterministic fixture/reset proof
+
+Local marker v2 is now SEEDED with nc-fixtures-v1 and a verified full DB-state checksum.
+Only the small synthetic foundation is installed; pure scenario builders are separate.
+Two reset cycles, drift recovery, lease refusal and transactional rollback passed.
+Read-only readiness independently verifies all rows/sequences and reports fixture/reset
+PASS, harness UNMET, mutation_permitted=false. Startup/integration remain blocked.
+Procedure, exact allowlist, checksum definition and schema limitations:
+docs/test-fixtures-reset.md. NC-ENV-06 has not begun.
