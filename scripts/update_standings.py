@@ -1,10 +1,15 @@
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 import os
 import requests
 from datetime import datetime, timezone
 from supabase import create_client, Client
-from dotenv import load_dotenv
+from environment_safety import prepare_runtime_environment
 
-load_dotenv()
+prepare_runtime_environment()
 
 # ✅ Initialize Supabase client
 SUPABASE_URL = os.getenv("SUPABASE_URL")

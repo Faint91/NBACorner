@@ -1,0 +1,321 @@
+"""Fail-closed test entry guards. No network access or live enrollment bypass."""
+
+import base64
+import json
+import os
+import re
+from dataclasses import dataclass
+from pathlib import Path
+from urllib.parse import unquote, urlsplit
+
+PRODUCTION_PROJECTS = frozenset({"rpwesmvzmgoctrokrbhy"})
+PRODUCTION_HOSTS = frozenset(
+    {
+        "rpwesmvzmgoctrokrbhy.supabase.co",
+        "db.rpwesmvzmgoctrokrbhy.supabase.co",
+        "nbacorner.onrender.com",
+        "nbacorner.com",
+    }
+)
+REGISTRY_PATH = Path(__file__).with_name("test_environments.json")
+CONFIG_FIELDS = frozenset(
+    {
+        "NBA_CORNER_ENV",
+        "NBA_CORNER_ALLOW_MUTATING_TESTS",
+        "NBA_CORNER_TEST_TARGET",
+        "NBA_CORNER_EXPECTED_PROJECT_REF",
+        "SUPABASE_URL",
+        "NBACORNER_BASE_URL",
+        "SUPABASE_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "JWT_SECRET",
+        "JWT_ALGORITHM",
+        "CURRENT_SEASON_CODE",
+        "REGULAR_SEASON_END_UTC",
+        "PLAYOFFS_START_UTC",
+        "HEALTHCHECK_TOKEN",
+        "STANDINGS_CRON_TOKEN",
+        "BCRYPT_ROUNDS",
+        "FRONTEND_ORIGIN",
+        "NBA_STANDINGS_SEASON",
+        "NBA_CORNER_EMAIL_MODE",
+        "NBA_CORNER_PROVIDER_MODE",
+        "NBA_CORNER_JOBS_ENABLED",
+    }
+)
+
+
+class SafetyError(RuntimeError):
+    """Errors deliberately omit supplied URLs, credentials and file contents."""
+
+
+@dataclass(frozen=True)
+class TestTarget:
+    name: str
+    project_ref: str
+    supabase_origin: str
+    backend_origin: str
+    marker_id: str
+    marker_version: str
+
+
+def reject_production(value):
+    normalized = unquote(unquote(str(value))).lower()
+    if any(ref in normalized for ref in PRODUCTION_PROJECTS):
+        raise SafetyError("Known production project is prohibited for tests.")
+    try:
+        host = urlsplit(normalized).hostname or normalized.rstrip(".")
+    except ValueError:
+        raise SafetyError("Malformed target.") from None
+    host = host.rstrip(".")
+    if any(host == h or host.endswith("." + h) for h in PRODUCTION_HOSTS):
+        raise SafetyError("Known production hostname is prohibited for tests.")
+
+
+def normalize_origin(value):
+    if not isinstance(value, str) or not value or value != value.strip():
+        raise SafetyError("Explicit, well-formed target origin is required.")
+    reject_production(value)
+    if any(c.isspace() or ord(c) < 32 for c in value) or "\\" in value:
+        raise SafetyError("Malformed target origin.")
+    try:
+        parsed = urlsplit(value)
+        host = (parsed.hostname or "").lower().rstrip(".")
+        port = parsed.port
+    except ValueError:
+        raise SafetyError("Malformed target origin.") from None
+    if parsed.username is not None or parsed.password is not None:
+        raise SafetyError("Credential-bearing target URLs are prohibited.")
+    if parsed.scheme.lower() not in {"http", "https"} or not host:
+        raise SafetyError("HTTP(S) origin required.")
+    if "%" in parsed.netloc or parsed.query or parsed.fragment:
+        raise SafetyError("Encoded hosts, query strings and fragments are prohibited.")
+    if parsed.path not in {"", "/"}:
+        raise SafetyError("Configure an origin, not an application URL path.")
+    if parsed.scheme.lower() == "http" and host not in {
+        "localhost",
+        "127.0.0.1",
+        "::1",
+    }:
+        raise SafetyError("Remote test origins must use HTTPS.")
+    if parsed.netloc.endswith(":"):
+        raise SafetyError("Malformed empty URL port.")
+    try:
+        host = host.encode("idna").decode("ascii")
+    except UnicodeError:
+        raise SafetyError("Malformed hostname.") from None
+    reject_production(host)
+    authority = f"[{host}]" if ":" in host else host
+    default_port = 443 if parsed.scheme.lower() == "https" else 80
+    if port is not None and port != default_port:
+        authority += f":{port}"
+    return f"{parsed.scheme.lower()}://{authority}"
+
+
+def project_reference(origin):
+    host = urlsplit(normalize_origin(origin)).hostname
+    match = re.fullmatch(r"([a-z]{20})\.supabase\.co", host or "")
+    if not match:
+        raise SafetyError("Expected an enrolled Supabase project API hostname.")
+    return match.group(1)
+
+
+def load_enrollments():
+    try:
+        document = json.loads(REGISTRY_PATH.read_text(encoding="utf-8"))
+        if document.get("version") != 1 or not isinstance(
+            document.get("targets"), list
+        ):
+            raise ValueError
+        targets = tuple(TestTarget(**item) for item in document["targets"])
+        if len({target.name for target in targets}) != len(targets):
+            raise ValueError
+        for target in targets:
+            if project_reference(target.supabase_origin) != target.project_ref:
+                raise ValueError
+            normalize_origin(target.backend_origin)
+            if not target.name or not target.marker_id or not target.marker_version:
+                raise ValueError
+        return targets
+    except (OSError, ValueError, TypeError, KeyError):
+        raise SafetyError(
+            "Invalid or missing reviewed test enrollment registry."
+        ) from None
+
+
+def validate_test_target(settings, enrollments):
+    if settings.get("NBA_CORNER_ENV") != "test":
+        raise SafetyError("Mutating tooling requires explicit NBA_CORNER_ENV=test.")
+    if settings.get("NBA_CORNER_ALLOW_MUTATING_TESTS") != "1":
+        raise SafetyError("Explicit mutating-test opt-in is required.")
+    expected = settings.get("NBA_CORNER_EXPECTED_PROJECT_REF", "")
+    reject_production(expected)
+    if not re.fullmatch(r"[a-z]{20}", expected):
+        raise SafetyError("Explicit expected test project reference is required.")
+    supabase_origin = normalize_origin(settings.get("SUPABASE_URL"))
+    backend_origin = normalize_origin(settings.get("NBACORNER_BASE_URL"))
+    if project_reference(supabase_origin) != expected:
+        raise SafetyError("Configured project and Supabase host disagree.")
+    matches = [
+        t for t in enrollments if t.name == settings.get("NBA_CORNER_TEST_TARGET")
+    ]
+    if len(matches) != 1:
+        raise SafetyError("Target is not enrolled. NC-ENV-03 enrollment is required.")
+    target = matches[0]
+    if (
+        target.project_ref != expected
+        or normalize_origin(target.supabase_origin) != supabase_origin
+        or normalize_origin(target.backend_origin) != backend_origin
+        or not target.marker_id
+        or not target.marker_version
+    ):
+        raise SafetyError("Configuration does not match reviewed target enrollment.")
+    for field in ("SUPABASE_KEY", "SUPABASE_SERVICE_ROLE_KEY"):
+        key = settings.get(field)
+        if not key:
+            continue
+        if key.startswith("sb_secret_"):
+            continue  # Opaque keys still require authenticated live verification later.
+        try:
+            parts = key.split(".")
+            if len(parts) != 3:
+                raise ValueError
+            payload = json.loads(
+                base64.urlsafe_b64decode(parts[1] + "=" * (-len(parts[1]) % 4))
+            )
+            if not isinstance(payload, dict):
+                raise ValueError
+            reject_production(payload.get("ref", ""))
+            if payload.get("ref") != expected or payload.get("role") != "service_role":
+                raise SafetyError(
+                    "Server credential metadata does not match enrollment."
+                )
+        except (ValueError, TypeError, KeyError, UnicodeError):
+            raise SafetyError("Malformed server credential metadata.") from None
+    return target
+
+
+def validate_identity_evidence(target, database_marker, backend_identity):
+    """Pure future interface, NOT proof of origin/authenticity or an execution permit."""
+    required = {
+        "environment": "test",
+        "project_ref": target.project_ref,
+        "marker_id": target.marker_id,
+        "marker_version": target.marker_version,
+    }
+    if any(database_marker.get(k) != v for k, v in required.items()):
+        raise SafetyError("Database non-production identity is missing or mismatched.")
+    if any(backend_identity.get(k) != v for k, v in required.items()):
+        raise SafetyError("Backend non-production identity is missing or mismatched.")
+    if backend_identity.get("backend_origin") != target.backend_origin:
+        raise SafetyError("Backend origin disagrees with enrollment.")
+    if (
+        backend_identity.get("email_mode") != "capture"
+        or backend_identity.get("provider_mode") != "fixtures"
+        or backend_identity.get("jobs_enabled") is not False
+    ):
+        raise SafetyError("Non-production side-effect safety has not been established.")
+
+
+def refuse_redirect(target, destination):
+    reject_production(destination)
+    raise SafetyError("Redirects are prohibited for guarded test traffic.")
+
+
+def require_live_identity(target):
+    # No flag, caller-supplied dictionary or enrollment entry bypasses this gate.
+    raise SafetyError(
+        "Live non-production identity verification is not implemented; "
+        "NC-ENV-03 and later safety phases must complete before execution."
+    )
+
+
+def load_test_config(filename):
+    if not filename:
+        raise SafetyError("Explicit ignored test configuration file is required.")
+    path = Path(filename)
+    if not path.is_absolute() or not re.fullmatch(
+        r"\.env\.test(?:\.[a-zA-Z0-9_-]+)?\.local", path.name
+    ):
+        raise SafetyError(
+            "Use an absolute path to an ignored .env.test[.name].local file."
+        )
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except (OSError, UnicodeError):
+        raise SafetyError("Test configuration cannot be read.") from None
+    settings = {}
+    for line in lines:
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        name, separator, value = line.partition("=")
+        name, value = name.strip(), value.strip()
+        if not separator or name not in CONFIG_FIELDS or name in settings:
+            raise SafetyError(
+                "Unknown, duplicated or malformed test configuration field."
+            )
+        if value.startswith(("'", '"')):
+            if len(value) < 2 or value[-1] != value[0]:
+                raise SafetyError("Malformed quoted test configuration value.")
+            value = value[1:-1]
+        if "$" in value or "\x00" in value:
+            raise SafetyError("Test configuration interpolation is prohibited.")
+        settings[name] = value
+    return settings
+
+
+def controlled_child_environment(settings, filename, parent=None):
+    parent = os.environ if parent is None else parent
+    child = {
+        k: parent[k]
+        for k in ("SYSTEMROOT", "SystemRoot", "WINDIR", "PATH", "TEMP", "TMP")
+        if k in parent
+    }
+    child.update({k: v for k, v in settings.items() if k in CONFIG_FIELDS})
+    child.update(
+        NBA_CORNER_TEST_CONFIG=str(Path(filename).resolve()),
+        PYTHONUTF8="1",
+        PYTHONDONTWRITEBYTECODE="1",
+    )
+    return child
+
+
+def prepare_runtime_environment(dotenv_loader=None):
+    """Legacy production loading preserved; test requests refuse before client creation."""
+    identity = os.environ.get("NBA_CORNER_ENV")
+    config = os.environ.get("NBA_CORNER_TEST_CONFIG")
+    if identity not in {None, "production", "test"}:
+        raise SafetyError("Unrecognized explicit environment identity.")
+    if identity == "production" and config is not None:
+        raise SafetyError("Production identity cannot use a test configuration.")
+    if identity == "test" or config is not None:
+        target = validate_test_target(load_test_config(config), load_enrollments())
+        require_live_identity(target)
+        return
+    if dotenv_loader is None:
+        from dotenv import load_dotenv
+
+        dotenv_loader = load_dotenv
+    dotenv_loader()
+    # A hidden test identity in the ordinary .env must not initialize a client.
+    if (
+        os.environ.get("NBA_CORNER_ENV") not in {None, "production"}
+        or os.environ.get("NBA_CORNER_TEST_CONFIG") is not None
+    ):
+        raise SafetyError("Test identity must use explicit controlled configuration.")
+
+
+class GuardedTestClient:
+    def __init__(self):
+        settings = load_test_config(os.environ.get("NBA_CORNER_TEST_CONFIG"))
+        self.target = validate_test_target(settings, load_enrollments())
+        require_live_identity(self.target)
+
+    def request(self, method, path, **kwargs):
+        # Transport intentionally unavailable in this phase, even for GET.
+        raise SafetyError("Guarded test transport is not enabled.")
+
+
+def get_test_client():
+    return GuardedTestClient()

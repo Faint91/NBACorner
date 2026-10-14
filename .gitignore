@@ -2,3 +2,9 @@
 import_2022_23_history.py
 insert_2022_23_history.sql
 Paréntesis. - Ranking 2023.csv
+
+# Explicit non-production configuration and offline Python caches
+.env.test.local
+.env.test.*.local
+__pycache__/
+.pytest_cache/

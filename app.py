@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from flask import Flask, request, jsonify, make_response, send_from_directory
 from flask_cors import CORS
 from supabase import create_client
-from dotenv import load_dotenv
+from environment_safety import prepare_runtime_environment
 from collections import defaultdict
 import time
 import threading
@@ -26,7 +26,7 @@ class APIError(Exception):
         self.status_code = status_code
 
 # load .env
-load_dotenv()
+prepare_runtime_environment()
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")

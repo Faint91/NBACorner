@@ -1,29 +1,24 @@
-import os
 import uuid
 import requests
 from typing import Dict, Any, List
 
-BASE_URL = os.getenv("NBACORNER_BASE_URL", "https://nbacorner.onrender.com")
+from environment_safety import get_test_client
 
 
 def _post(path: str, json: Dict[str, Any], headers: Dict[str, str] = None) -> requests.Response:
-    url = f"{BASE_URL}{path}"
-    return requests.post(url, json=json, headers=headers or {}, timeout=15)
+    return get_test_client().request("POST", path, json=json, headers=headers or {}, timeout=15)
 
 
 def _get(path: str, headers: Dict[str, str] = None) -> requests.Response:
-    url = f"{BASE_URL}{path}"
-    return requests.get(url, headers=headers or {}, timeout=15)
+    return get_test_client().request("GET", path, headers=headers or {}, timeout=15)
 
 
 def _patch(path: str, json: Dict[str, Any], headers: Dict[str, str] = None) -> requests.Response:
-    url = f"{BASE_URL}{path}"
-    return requests.patch(url, json=json, headers=headers or {}, timeout=15)
+    return get_test_client().request("PATCH", path, json=json, headers=headers or {}, timeout=15)
 
 
 def _delete(path: str, headers: Dict[str, str] = None) -> requests.Response:
-    url = f"{BASE_URL}{path}"
-    return requests.delete(url, headers=headers or {}, timeout=15)
+    return get_test_client().request("DELETE", path, headers=headers or {}, timeout=15)
 
 
 def register_and_login() -> Dict[str, Any]:
