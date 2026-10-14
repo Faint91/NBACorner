@@ -1,0 +1,1251 @@
+{
+  "phase": "NC-01A",
+  "passed": true,
+  "tests_run": 33,
+  "failures": 0,
+  "errors": 0,
+  "findings": [
+    {
+      "scenario": "current_behavior__auth__admin_boundary",
+      "group": "Admin authorization",
+      "current_behavior": "Admin env diagnostic: missing auth 401, ordinary 403, admin 200; response only masks configuration presence.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve admin diagnostic visibility and response schema?",
+      "evidence_source": "Live guarded local Flask API; canonical reset per case",
+      "evidence": [
+        {
+          "method": "GET",
+          "path": "/admin/env-check",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/admin/env-check",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/admin/env-check",
+          "status": 200,
+          "shape": [
+            "env",
+            "ok"
+          ]
+        }
+      ],
+      "facts": {
+        "env_values_masked": true,
+        "response_fields": [
+          "env",
+          "ok"
+        ]
+      },
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__auth__admin_claim_db_recheck",
+      "group": "Admin authorization",
+      "current_behavior": "Locally signed ordinary-user JWT claiming admin is returned by identity endpoint, but DB admin recheck rejects admin diagnostic with 403.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Which authorization decisions must refresh database roles rather than trust claims?",
+      "evidence_source": "Live guarded local Flask API; canonical reset per case",
+      "evidence": [
+        {
+          "method": "GET",
+          "path": "/auth/test-me",
+          "status": 200,
+          "shape": [
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/admin/env-check",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "facts": {
+        "synthetic_server_signed_claim_only": true,
+        "not_an_unsigned_token_bypass": true
+      },
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__auth__cross_user_draft_boundary",
+      "group": "User/profile access",
+      "current_behavior": "Ordinary A gets 403 for B draft; B owner and admin get 200. Only access boundary is tested.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve draft/owner/admin identity visibility boundaries?",
+      "evidence_source": "Live guarded local Flask API; canonical reset per case",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/bracket/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/bracket/<id>",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "matches"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/bracket/<id>",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "matches"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__auth__cross_user_saved_owner_display",
+      "group": "User/profile access",
+      "current_behavior": "Ordinary A can read saved B bracket and its owner id/username/email; no password/reset/admin fields in owner object.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Which cross-user identity/contact fields should saved-content viewers see?",
+      "evidence_source": "Live guarded local Flask API; canonical reset per case",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/bracket/<id>",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "matches"
+          ]
+        }
+      ],
+      "facts": {
+        "cross_user_owner_fields": [
+          "email",
+          "id",
+          "username"
+        ],
+        "email_visible": true,
+        "no_profile_write_route": true
+      },
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__auth__duplicate_email",
+      "group": "Registration",
+      "current_behavior": "Duplicate email is normalized to lowercase and rejected with 400.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve email normalization and duplicate response policy?",
+      "evidence_source": "Live guarded local Flask API; canonical reset per case",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/register",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__auth__duplicate_username",
+      "group": "Registration",
+      "current_behavior": "Duplicate valid username rejected with 400.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve username uniqueness and normalization?",
+      "evidence_source": "Live guarded local Flask API; canonical reset per case",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/register",
+          "status": 201,
+          "shape": [
+            "message",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/register",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__auth__fixture_username_login",
+      "group": "Login/session",
+      "current_behavior": "Fixture usernames contain hyphens and are rejected by current username-login regex; their email login works.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Should username format and fixture/user identity conventions be reconciled later?",
+      "evidence_source": "Live guarded local Flask API; canonical reset per case",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__auth__login_failures",
+      "group": "Login/session",
+      "current_behavior": "Wrong password/unknown user/malformed identifier return 401; missing fields return 400.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve failure categories and enumeration behavior?",
+      "evidence_source": "Live guarded local Flask API; canonical reset per case",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__auth__login_metadata",
+      "group": "Login/session",
+      "current_behavior": "Email login succeeds with case/outer whitespace normalization; JWT contains identity/admin/expiry and ~7-day expiration.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve JWT lifetime, claims and email-login normalization?",
+      "evidence_source": "Live guarded local Flask API; canonical reset per case",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        }
+      ],
+      "facts": {
+        "jwt_claim_fields": [
+          "exp",
+          "is_admin",
+          "user_id",
+          "username"
+        ],
+        "expiry_days": 7,
+        "algorithm": "HS256",
+        "user_fields": [
+          "created_at",
+          "email",
+          "id",
+          "is_admin",
+          "username"
+        ]
+      },
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__auth__password_whitespace",
+      "group": "Login/session",
+      "current_behavior": "Registration preserves password whitespace while login strips it, preventing login with that stored password.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Should password normalization be consistent?",
+      "evidence_source": "Live guarded local Flask API; canonical reset per case",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/register",
+          "status": 201,
+          "shape": [
+            "message",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__auth__public_health",
+      "group": "Login/session",
+      "current_behavior": "Local health returns 200 without JWT when no health token is configured; identity route remains harness-protected.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve health endpoint and token policy per deployment configuration?",
+      "evidence_source": "Live guarded local Flask API; canonical reset per case",
+      "evidence": [
+        {
+          "method": "GET",
+          "path": "/health",
+          "status": 200,
+          "shape": "text"
+        }
+      ],
+      "facts": {
+        "health_token_configured": false,
+        "rate_limits_disabled": false
+      },
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__auth__registration_invalid_fields",
+      "group": "Registration",
+      "current_behavior": "Missing fields, invalid email and invalid username return 400.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "What request validation contract should be approved?",
+      "evidence_source": "Live guarded local Flask API; canonical reset per case",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/register",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/register",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/register",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__auth__registration_nonobject",
+      "group": "Registration",
+      "current_behavior": "Truthy non-object JSON causes sanitized 500.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Should non-object JSON be an explicit client error?",
+      "evidence_source": "Live guarded local Flask API; canonical reset per case",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/register",
+          "status": 500,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__auth__registration_password_policy",
+      "group": "Registration",
+      "current_behavior": "Weak or non-string passwords rejected with 400.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve the current length/character policy?",
+      "evidence_source": "Live guarded local Flask API; canonical reset per case",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/register",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/register",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__auth__required_identity_access",
+      "group": "User/profile access",
+      "current_behavior": "Missing, malformed and expired tokens return 401; A/B identities come from their JWT claims.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve identity/profile payload and session verification contract?",
+      "evidence_source": "Live guarded local Flask API; canonical reset per case",
+      "evidence": [
+        {
+          "method": "GET",
+          "path": "/auth/test-me",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/auth/test-me",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/auth/test-me",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/auth/test-me",
+          "status": 200,
+          "shape": [
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/auth/test-me",
+          "status": 200,
+          "shape": [
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/auth/test-me",
+          "status": 200,
+          "shape": [
+            "user"
+          ]
+        }
+      ],
+      "facts": {
+        "identity_fields": [
+          "exp",
+          "is_admin",
+          "user_id",
+          "username"
+        ],
+        "user_a_b_identity_is_token_bound": true
+      },
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__auth__reset_completion_and_sessions",
+      "group": "Password reset",
+      "current_behavior": "Valid unused reset changes password and marks token used; old password fails/new succeeds; pre-reset JWT still valid.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Should password changes revoke existing sessions?",
+      "evidence_source": "Live guarded local Flask API; canonical reset per case",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/forgot-password",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/reset-password",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/auth/test-me",
+          "status": 200,
+          "shape": [
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/reset-password",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "facts": {
+        "old_password_rejected": true,
+        "new_password_accepted": true,
+        "token_marked_used": true,
+        "pre_reset_jwt_accepted": true
+      },
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__auth__reset_delivery_failure",
+      "group": "Password reset",
+      "current_behavior": "A capture transport reporting delivery failure still yields neutral 200 and stored unused reset.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve ignored delivery result and operational visibility?",
+      "evidence_source": "Live guarded local Flask API; canonical reset per case",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/forgot-password",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__auth__reset_expired_invalid",
+      "group": "Password reset",
+      "current_behavior": "Expired and invalid tokens return 400; expired token remains unused.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve expired/invalid token behavior and cleanup policy?",
+      "evidence_source": "Live guarded local Flask API; canonical reset per case",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/forgot-password",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/reset-password",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/reset-password",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__auth__reset_invalid_payload",
+      "group": "Password reset",
+      "current_behavior": "Missing fields and weak new password return 400; truthy non-object JSON returns sanitized 500.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve input validation and response categories?",
+      "evidence_source": "Live guarded local Flask API; canonical reset per case",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/reset-password",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/reset-password",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/reset-password",
+          "status": 500,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__auth__reset_request_metadata",
+      "group": "Password reset",
+      "current_behavior": "Existing user request returns neutral 200; stores unused reset and captures a loopback link with ~24-hour expiry.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve lifetime, link contract, storage and delivery behavior?",
+      "evidence_source": "Live guarded local Flask API; canonical reset per case",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/forgot-password",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        }
+      ],
+      "facts": {
+        "captured": 1,
+        "reset_rows": 1,
+        "unused": true,
+        "expiry_hours": 24,
+        "link_loopback": true,
+        "token_matches_db": true,
+        "tokens_logged": false
+      },
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__auth__reset_request_repeated",
+      "group": "Password reset",
+      "current_behavior": "Repeated requests create distinct unused records and captured messages; older record remains unused.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Should newer requests invalidate earlier reset tokens?",
+      "evidence_source": "Live guarded local Flask API; canonical reset per case",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/forgot-password",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/forgot-password",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__auth__reset_request_unknown",
+      "group": "Password reset",
+      "current_behavior": "Unknown/missing/malformed identifiers return neutral 200 without reset rows or email.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve neutral response and error categories?",
+      "evidence_source": "Live guarded local Flask API; canonical reset per case",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/forgot-password",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/forgot-password",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/forgot-password",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__auth__test_email_boundary",
+      "group": "Sensitive-field exposure",
+      "current_behavior": "Admin test-email requires JWT + DB admin; missing auth 401/ordinary 403/admin 200, sending to capture only.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve test-email authorization and operational endpoint availability?",
+      "evidence_source": "Live guarded local Flask API; canonical reset per case",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/test-email",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/test-email",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/test-email",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__auth__username_case_resolution",
+      "group": "Login/session",
+      "current_behavior": "Username storage is case-sensitive, login lowercases identifiers; case-distinct registered accounts can resolve to the lowercase account.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve case handling and which account a username identifies?",
+      "evidence_source": "Live guarded local Flask API; canonical reset per case",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/register",
+          "status": 201,
+          "shape": [
+            "message",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/register",
+          "status": 201,
+          "shape": [
+            "message",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        }
+      ],
+      "facts": {
+        "case_distinct_accounts_created": true,
+        "uppercase_login_resolved_lowercase_account": true
+      },
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__auth__valid_registration",
+      "group": "Registration",
+      "current_behavior": "Valid synthetic registration returns 201, message/user, no JWT or auto-login.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Should registration create a session or require login?",
+      "evidence_source": "Live guarded local Flask API; canonical reset per case",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/register",
+          "status": 201,
+          "shape": [
+            "message",
+            "user"
+          ]
+        }
+      ],
+      "facts": {
+        "response_fields": [
+          "message",
+          "user"
+        ],
+        "user_fields": [
+          "created_at",
+          "email",
+          "id",
+          "username"
+        ],
+        "token_issued": false
+      },
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__auth__account_route_absence",
+      "group": "User/profile access",
+      "current_behavior": "No dedicated account/profile read/write or server logout route; auth/test-me returns JWT claims, and AccountPage uses cached user fields.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Which profile/account mutation and session-revocation features are required?",
+      "evidence_source": "Static source inspection: Flask route inventory; AccountPage.tsx; test_me"
+    },
+    {
+      "scenario": "current_behavior__auth__display_fields_static",
+      "group": "Sensitive-field exposure",
+      "current_behavior": "Existing bracket owner/list and league-member display sources include id/username/email; league access semantics are deferred. Auth payloads omit password/reset hashes; admin env response masks values.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Which contact/security fields may be visible across users and features?",
+      "evidence_source": "Static source inspection: get_bracket_by_id; list_all_brackets; get_league_members; auth responses"
+    },
+    {
+      "scenario": "current_behavior__auth__frontend_admin_display",
+      "group": "Frontend auth behavior",
+      "current_behavior": "Admin UI is driven by cached user.is_admin checks; tested server admin diagnostic independently verifies JWT claim and DB role.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve cached role refresh and server enforcement coverage?",
+      "evidence_source": "Static source inspection: AdminPage.tsx; AuthContext.tsx; admin_env_check"
+    },
+    {
+      "scenario": "current_behavior__auth__frontend_login_register_flow",
+      "group": "Frontend auth behavior",
+      "current_behavior": "Login caches returned session and navigates dashboard; registration navigates login with registered/email state; callers use VITE_API_URL.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve login/register navigation and API environment contract?",
+      "evidence_source": "Static source inspection: LoginPage.tsx; RegisterPage.tsx; api/client.ts"
+    },
+    {
+      "scenario": "current_behavior__auth__frontend_reset_request_only",
+      "group": "Frontend auth behavior",
+      "current_behavior": "ResetPasswordPage requests forgot-password only; no token-query/new-password completion UI or reset-password POST is present. AccountPage also requests reset email.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "What complete browser reset flow should be approved?",
+      "evidence_source": "Static source inspection: ResetPasswordPage.tsx; AccountPage.tsx; main.tsx"
+    },
+    {
+      "scenario": "current_behavior__auth__frontend_storage_logout_guard",
+      "group": "Frontend auth behavior",
+      "current_behavior": "AuthContext stores/restores auth_token/auth_user in localStorage; logout clears client state only; ProtectedRoute checks token presence, not validity.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve storage, logout/revocation and expired-session handling?",
+      "evidence_source": "Static source inspection: AuthContext.tsx; main.tsx"
+    },
+    {
+      "scenario": "current_behavior__auth__implementation_defaults",
+      "group": "Login/session",
+      "current_behavior": "Custom PyJWT uses user_id/username/is_admin/exp, seven-day tokens, configurable algorithm/key with a hardcoded development fallback; bcrypt defaults to cost 12. Supabase Auth is not the app identity model.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve key configuration, lifetime, claim freshness and hashing policy?",
+      "evidence_source": "Static source inspection: generate_token; decode_token; environment globals"
+    },
+    {
+      "scenario": "current_behavior__auth__rate_limit_static",
+      "group": "Login/session",
+      "current_behavior": "In-memory rate limits: login 10/IP/60s and 5/identifier/60s; forgot 5/IP/300s and 3/identifier/300s; register 3/IP/hour. X-Forwarded-For is honored; unknown buckets fail open. test_email_ip is missing from the configured map.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve proxy trust, thresholds and unknown-bucket behavior?",
+      "evidence_source": "Static source inspection: RATE_LIMITS; get_client_ip; is_rate_limited"
+    }
+  ],
+  "readiness": {
+    "identity_verified": true,
+    "database_marker": "PASS",
+    "email": "PASS",
+    "providers": "PASS",
+    "external_credentials": "PASS",
+    "jobs": "PASS",
+    "jobs_enabled": false,
+    "fixture_state": "SEEDED",
+    "fixtures_reset": "PASS",
+    "integration_harness": "PASS",
+    "mutation_permitted": false,
+    "harness_state": "AVAILABLE_GUARDED",
+    "harness_scoped_mutation_permitted": false
+  },
+  "live_tests": 25,
+  "static_tests": 8,
+  "verified_at_utc": "2026-10-14T22:19:51.973088+00:00",
+  "starting_heads": {
+    "frontend": "ce54143006f0409265937f5d548286d0b100d454",
+    "backend": "b0e87c8470b14417e48d2bd42a5521290918afbc"
+  },
+  "starting_branches": "main; clean",
+  "route_inventory": [
+    [
+      "POST",
+      "/auth/register",
+      "No",
+      "No",
+      "users lookup/insert",
+      "Write",
+      "RegisterPage"
+    ],
+    [
+      "POST",
+      "/auth/login",
+      "No",
+      "No",
+      "users lookup; JWT creation",
+      "DB read/session issue",
+      "LoginPage; api/auth"
+    ],
+    [
+      "GET",
+      "/auth/test-me",
+      "JWT",
+      "No",
+      "Decoded JWT only",
+      "Read",
+      "No caller found"
+    ],
+    [
+      "POST",
+      "/auth/forgot-password",
+      "No",
+      "No",
+      "users lookup; password_resets insert; email capture/live production transport",
+      "Write/send",
+      "ResetPasswordPage; AccountPage"
+    ],
+    [
+      "POST",
+      "/auth/reset-password",
+      "No",
+      "No",
+      "password_resets lookup/update; users password update",
+      "Write",
+      "No completion caller found"
+    ],
+    [
+      "GET",
+      "/admin/env-check",
+      "JWT",
+      "JWT claim + DB role",
+      "users lookup; sanitized environment presence",
+      "Read",
+      "No caller found"
+    ],
+    [
+      "POST",
+      "/test-email",
+      "JWT",
+      "JWT claim + DB role",
+      "users lookup; email send",
+      "Send",
+      "No caller found"
+    ],
+    [
+      "GET/HEAD",
+      "/health",
+      "Optional health token; no JWT",
+      "No",
+      "In-memory rate buckets",
+      "Health/read",
+      "No auth UI caller found"
+    ],
+    [
+      "GET",
+      "/",
+      "No",
+      "No",
+      "None",
+      "Read",
+      "No auth UI caller found"
+    ],
+    [
+      "GET",
+      "/bracket/<id>",
+      "JWT",
+      "Owner/admin bypass draft restriction",
+      "users/brackets/seasons/matches/teams reads; owner display",
+      "Read; boundary only",
+      "BracketPage; domain semantics deferred"
+    ],
+    [
+      "GET",
+      "/brackets",
+      "JWT",
+      "No",
+      "saved brackets/users; display includes email",
+      "Read; static exposure only",
+      "Domain UI; NC-01B deferred"
+    ],
+    [
+      "GET",
+      "/leagues/<id>/members",
+      "JWT",
+      "Membership/owner/admin logic",
+      "leagues/members/users; display includes email",
+      "Read; static exposure only",
+      "LeagueInfoPage; NC-01C deferred"
+    ]
+  ],
+  "classification_counts": {
+    "MATCHES REQUIREMENT": 0,
+    "KNOWN GAP": 0,
+    "REQUIREMENT NOT YET REVIEWED": 33,
+    "UNCLEAR / NEEDS BUSINESS CHECKPOINT": 0
+  },
+  "offline_tests": 202,
+  "production": {
+    "contact": false,
+    "mutation": false,
+    "secrets_used": false,
+    "deployment": false
+  },
+  "business_behavior_changed": false,
+  "next_phase": "NC-01B \u2014 Bracket characterization baseline; not started"
+}

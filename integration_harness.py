@@ -105,7 +105,15 @@ def validate_backend_identity(target, response):
 
 
 class GuardedHarness:
-    def __init__(self, config, *, allow_local_mutations=False):
+    def __init__(
+        self, config, *, allow_local_mutations=False, characterization_scope=None
+    ):
+        if characterization_scope not in {None, "NC-01A"}:
+            raise safety.SafetyError("Unreviewed characterization scope.")
+        self.characterization_scope = characterization_scope
+        self._auth_subjects = {
+            identity(role) for role in ("user-a", "user-b", "admin", "owner")
+        }
         self.config = config
         self.original_settings = safety.load_test_config(config)
         self.settings = dict(self.original_settings)
@@ -313,6 +321,23 @@ class GuardedHarness:
     def _check_path(self, method, path, *, identity_bootstrap=False):
         if not isinstance(path, str) or "?" in path or "%" in path or "\\" in path:
             raise safety.SafetyError("Unexpected guarded HTTP path.")
+        if getattr(self, "characterization_scope", None) == "NC-01A":
+            if method == "POST" and path in {
+                "/auth/register",
+                "/auth/login",
+                "/auth/forgot-password",
+                "/auth/reset-password",
+                "/test-email",
+            }:
+                return
+            if method == "GET" and (
+                path in {"/admin/env-check", "/auth/test-me", "/health"}
+                or path == "/__test__/identity"
+                and identity_bootstrap
+                or path in {"/bracket/" + bid for bid in self._brackets}
+            ):
+                return
+            raise safety.SafetyError("Outside NC-01A route scope.")
         reads = {
             "/",
             "/health",
@@ -418,6 +443,113 @@ class GuardedHarness:
                     for match in matches:
                         self._matches.add((path.split("/")[-1], match["id"]))
         return status, body
+
+    def _require_auth_scope(self):
+        self._require_lease()
+        if (
+            not self._ready
+            or self.characterization_scope != "NC-01A"
+            or threading.get_ident() != self._owner
+        ):
+            raise safety.SafetyError("Explicit verified NC-01A context required.")
+
+    def auth_request(self, method, path, *, payload=None, role=None):
+        self._require_auth_scope()
+        allowed = {
+            ("POST", "/auth/register"),
+            ("POST", "/auth/login"),
+            ("POST", "/auth/forgot-password"),
+            ("POST", "/auth/reset-password"),
+            ("POST", "/test-email"),
+            ("GET", "/auth/test-me"),
+            ("GET", "/admin/env-check"),
+            ("GET", "/health"),
+        }
+        if method == "GET" and path in {"/bracket/" + bid for bid in self._brackets}:
+            allowed.add((method, path))
+        if (method, path) not in allowed:
+            raise safety.SafetyError("Outside auth characterization scope.")
+        if isinstance(payload, dict):
+            for key in ("email", "to"):
+                value = payload.get(key)
+                if (
+                    isinstance(value, str)
+                    and "@" in value
+                    and not value.strip().lower().endswith(".example")
+                ):
+                    raise safety.SafetyError("Only reserved synthetic auth addresses.")
+        status, body = self._exchange(method, path, payload, role)
+        self.summary.append(
+            {
+                "method": method,
+                "path": re.sub(r"[0-9a-f]{8}-[0-9a-f-]{27}", "<id>", path),
+                "status": status,
+                "shape": (
+                    sorted(body)
+                    if isinstance(body, dict)
+                    else "list" if isinstance(body, list) else "text"
+                ),
+            }
+        )
+        if path == "/auth/register" and status == 201:
+            self._auth_subjects.add(body["user"]["id"])
+        return status, body
+
+    def auth_token_variant(self, variant):
+        self._require_auth_scope()
+        if variant == "malformed":
+            self._tokens[variant] = "invalid.synthetic.token"
+        elif variant in {"expired-user-a", "signed-user-a-admin-claim"}:
+            import jwt
+            from datetime import datetime, timezone, timedelta
+
+            payload = {
+                "user_id": identity("user-a"),
+                "username": "fixture-user-a",
+                "is_admin": variant == "signed-user-a-admin-claim",
+                "exp": datetime.now(timezone.utc)
+                + timedelta(seconds=-60 if variant == "expired-user-a" else 60),
+            }
+            self._tokens[variant] = jwt.encode(
+                payload, self.module.JWT_SECRET, algorithm=self.module.JWT_ALGORITHM
+            )
+        else:
+            raise safety.SafetyError("Unreviewed synthetic token variant.")
+        return variant
+
+    def install_auth_boundary_bracket(self, *, saved):
+        self._require_auth_scope()
+        if type(saved) is not bool or self._brackets:
+            raise safety.SafetyError("Single reviewed auth boundary fixture only.")
+        from synthetic_fixtures import bracket_scenario
+
+        row = bracket_scenario("saved" if saved else "draft")["brackets"][0]
+        row["user_id"] = identity("user-b")
+        # No match/progression setup: only owner and is_done access boundary.
+        self.module.supabase.table("brackets").insert(row).execute()
+        self._brackets.add(row["id"])
+        return row["id"]
+
+    def auth_reset_records(self):
+        self._require_auth_scope()
+        rows = (
+            self.module.supabase.table("password_resets")
+            .select("id,user_id,token,expires_at,used,created_at")
+            .execute()
+            .data
+            or []
+        )
+        if any(row["user_id"] not in self._auth_subjects for row in rows):
+            raise safety.SafetyError("Unexpected reset subject.")
+        return rows  # Deliberate in-memory inspection only; never serialize in reports.
+
+    def expire_auth_reset(self, token):
+        self._require_auth_scope()
+        if token not in {row["token"] for row in self.auth_reset_records()}:
+            raise safety.SafetyError("Only existing synthetic reset may be expired.")
+        self.module.supabase.table("password_resets").update(
+            {"expires_at": "2000-01-01T00:00:00"}
+        ).eq("token", token).execute()
 
     def verify_admission_denial(self):
         self._require_lease()
