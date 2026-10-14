@@ -1,0 +1,3347 @@
+{
+  "phase": "NC-01B",
+  "passed": true,
+  "tests_run": 37,
+  "failures": 0,
+  "errors": 0,
+  "findings": [
+    {
+      "scenario": "current_behavior__bracket__admin_arbitrary_mutations",
+      "group": "admin/master behavior",
+      "current_behavior": "Admin predicts, undoes, saves and deletes another ordinary user's bracket; games-only route still requires owner.",
+      "classification": "KNOWN GAP",
+      "approved_requirement": "Admins should edit only the master bracket, not arbitrary user brackets.",
+      "future_business_question": null,
+      "evidence_source": "LIVE guarded local Flask; canonical reset before/after sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 200,
+          "shape": [
+            "message",
+            "name",
+            "saved_at"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/bracket/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__bracket__admin_creation_bypass",
+      "group": "admin/master behavior",
+      "current_behavior": "Admin creation bypasses early/locked windows and promotes new bracket with season master linkage.",
+      "classification": "MATCHES REQUIREMENT",
+      "approved_requirement": "Admin bracket creation may bypass the normal creation window.",
+      "future_business_question": null,
+      "evidence_source": "LIVE guarded local Flask; canonical reset before/after sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "message"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/bracket/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "message"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__bracket__admin_draft_visibility",
+      "group": "visibility/privacy",
+      "current_behavior": "Admin can read another ordinary user's unsaved draft.",
+      "classification": "KNOWN GAP",
+      "approved_requirement": "Other users may see another user's bracket only if it is saved.",
+      "future_business_question": null,
+      "evidence_source": "LIVE guarded local Flask; canonical reset before/after sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/bracket/<id>",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "matches"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__bracket__creation_payload",
+      "group": "creation",
+      "current_behavior": "Create ignores request fields/non-object body; authenticated open-window request still creates draft.",
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "approved_requirement": null,
+      "future_business_question": "Approve ignored creation payload behavior?",
+      "evidence_source": "LIVE guarded local Flask; canonical reset before/after sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "message"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__bracket__creation_windows",
+      "group": "creation",
+      "current_behavior": "Ordinary creation rejected before regular-season end and after playoff start; unauthenticated creation rejected.",
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "approved_requirement": null,
+      "future_business_question": "Approve normal creation window and missing-date policies?",
+      "evidence_source": "LIVE guarded local Flask; canonical reset before/after sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__bracket__delete_recreate",
+      "group": "deletion",
+      "current_behavior": "Owner can soft-delete draft/saved after lock; matches retained, detail hidden and same-season recreation possible in open window.",
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "approved_requirement": null,
+      "future_business_question": "Is deletion content-changing or unrelated? Approve deletion/recreation/history retention policy?",
+      "evidence_source": "LIVE guarded local Flask; canonical reset before/after sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/bracket/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/bracket/<id>",
+          "status": 404,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/bracket/<id>",
+          "status": 404,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "message"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__bracket__edge_errors",
+      "group": "edge/errors",
+      "current_behavior": "Invalid IDs/actions/fields return 400, missing IDs 404, non-object save/prediction/game payloads 500, missing auth 401.",
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "approved_requirement": null,
+      "future_business_question": "Approve edge-error status and payload contract?",
+      "evidence_source": "LIVE guarded local Flask; canonical reset before/after sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/bracket/invalid",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/bracket/<id>",
+          "status": 404,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 404,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/invalid",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 500,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 500,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 500,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/bracket/<id>",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__bracket__email_serialization",
+      "group": "visibility/privacy",
+      "current_behavior": "Saved bracket detail/list expose owner email; same issue previously established in NC-01A1, now confirmed for listing too.",
+      "classification": "KNOWN GAP",
+      "approved_requirement": "Emails must never be exposed in bracket responses.",
+      "future_business_question": null,
+      "evidence_source": "LIVE guarded local Flask; canonical reset before/after sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/bracket/<id>",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "matches"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/brackets",
+          "status": 200,
+          "shape": "list"
+        }
+      ],
+      "facts": {
+        "owner_fields": [
+          "email",
+          "id",
+          "username"
+        ],
+        "list_user_fields": [
+          "email",
+          "id",
+          "username"
+        ],
+        "previously_established": "NC-01A1",
+        "same_requirement_issue": true
+      },
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "existing_gap_reference": "NC-01A1 cross_user_saved_owner_display; same email privacy issue, additional bracket-list confirmation"
+    },
+    {
+      "scenario": "current_behavior__bracket__game_count_values",
+      "group": "game counts",
+      "current_behavior": "Games-only accepts negative/zero/large counts, requires field, leaves saved state unchanged; absent set-winner count persists NULL outside play-in.",
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "approved_requirement": null,
+      "future_business_question": "Approve range/required count and games-only unsave semantics?",
+      "evidence_source": "LIVE guarded local Flask; canonical reset before/after sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 200,
+          "shape": [
+            "ok"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 200,
+          "shape": [
+            "ok"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 200,
+          "shape": [
+            "ok"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 200,
+          "shape": [
+            "ok"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__bracket__games_only_saved_edit",
+      "group": "save/resubmit",
+      "current_behavior": "Games-only edits to a saved bracket do not clear is_done/saved_at, bypassing required resubmission state.",
+      "classification": "KNOWN GAP",
+      "approved_requirement": "A saved/submitted bracket may be edited before final lock; editing requires saving/submitting again.",
+      "future_business_question": null,
+      "evidence_source": "LIVE guarded local Flask; canonical reset before/after sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 200,
+          "shape": [
+            "message",
+            "name",
+            "saved_at"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 200,
+          "shape": [
+            "ok"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__bracket__historical_boundaries",
+      "group": "historical brackets",
+      "current_behavior": "Historical saved/draft detail returns 404 even to owner/admin due current-season filter; historical writes rejected; history routes require auth and read snapshots.",
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "approved_requirement": null,
+      "future_business_question": "Should public historical visibility be implemented? Requirement permits public history but does not mandate anonymous routes.",
+      "evidence_source": "LIVE guarded local Flask; canonical reset before/after sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/bracket/<id>",
+          "status": 404,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/bracket/<id>",
+          "status": 404,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/bracket/<id>",
+          "status": 404,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/bracket/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leaderboard/history",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leaderboard/history",
+          "status": 200,
+          "shape": [
+            "seasons"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leaderboard/history/2024-25",
+          "status": 404,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__bracket__historical_creation_constraint",
+      "group": "schema/timing quirks",
+      "current_behavior": "Historical active bracket blocks new current-season creation through global user uniqueness despite per-season Flask lookup.",
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "approved_requirement": null,
+      "future_business_question": "Approve cross-season active-bracket policy? PRESERVED CURRENT BEHAVIOR / CHARACTERIZATION LIMITATION.",
+      "evidence_source": "LIVE guarded local Flask; canonical reset before/after sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__bracket__master_delete",
+      "group": "deletion",
+      "current_behavior": "Master soft-delete demotes flag and clears season pointer; admin can recreate master afterward.",
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "approved_requirement": null,
+      "future_business_question": "Approve master deletion/replacement lifecycle?",
+      "evidence_source": "LIVE guarded local Flask; canonical reset before/after sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/bracket/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "message"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__bracket__master_mutations",
+      "group": "admin/master behavior",
+      "current_behavior": "Admin-owned master supports prediction, undo, games-only and save after playoff start.",
+      "classification": "MATCHES REQUIREMENT",
+      "approved_requirement": "Admins should edit only the master bracket, not arbitrary user brackets.",
+      "future_business_question": null,
+      "evidence_source": "LIVE guarded local Flask; canonical reset before/after sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 200,
+          "shape": [
+            "ok"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 200,
+          "shape": [
+            "message",
+            "name",
+            "saved_at"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__bracket__master_replacement",
+      "group": "admin/master behavior",
+      "current_behavior": "New admin creation demotes existing other-owner master, updates pointer; ordinary payload cannot request master status.",
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "approved_requirement": null,
+      "future_business_question": "Approve automatic master replacement policy?",
+      "evidence_source": "LIVE guarded local Flask; canonical reset before/after sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "message"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "message"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__bracket__nonowner_mutations",
+      "group": "cross-user authorization",
+      "current_behavior": "Other ordinary user cannot predict, undo, change games, save or delete an owner's current bracket.",
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "approved_requirement": null,
+      "future_business_question": "Approve non-owner mutation policy for all routes?",
+      "evidence_source": "LIVE guarded local Flask; canonical reset before/after sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/bracket/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__bracket__ordinary_creation",
+      "group": "creation",
+      "current_behavior": "Open-window ordinary creation produces 21 current-season matches, draft state and active-user duplicate rejection.",
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "approved_requirement": null,
+      "future_business_question": "Approve initial graph and duplicate response contract?",
+      "evidence_source": "LIVE guarded local Flask; canonical reset before/after sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/brackets/me",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "bracket_creation_open",
+            "playoffs_deadline_utc",
+            "playoffs_locked",
+            "regular_season_end_utc"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "message"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "facts": {
+        "initial_matches": 21,
+        "initial_saved": false,
+        "current_season": true,
+        "duplicate_created": false
+      },
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__bracket__owner_undo",
+      "group": "undo",
+      "current_behavior": "Owner undo succeeds before lock; repeated/no-prior undo succeeds and clears prediction/count.",
+      "classification": "MATCHES REQUIREMENT",
+      "approved_requirement": "Ordinary bracket owners may undo predictions before lock.",
+      "future_business_question": null,
+      "evidence_source": "LIVE guarded local Flask; canonical reset before/after sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__bracket__partial_graph_save",
+      "group": "save/resubmit",
+      "current_behavior": "Partial graph with ready but unpredicted pairs is rejected at save; missing-pair skip is separately static evidence.",
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "approved_requirement": null,
+      "future_business_question": "Approve what completion means for unpopulated downstream matches?",
+      "evidence_source": "LIVE guarded local Flask; canonical reset before/after sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "facts": {
+        "incomplete_ready_pairs_rejected": true,
+        "static_skip_missing_pairs": true
+      },
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__bracket__postlock_content",
+      "group": "playoff lock",
+      "current_behavior": "Ordinary predictions, undo and both series-count paths still mutate after playoff lock.",
+      "classification": "KNOWN GAP",
+      "approved_requirement": "At playoff start ordinary users may not select/change winners, undo, change series counts or save/resubmit.",
+      "future_business_question": null,
+      "evidence_source": "LIVE guarded local Flask; canonical reset before/after sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 200,
+          "shape": [
+            "ok"
+          ]
+        }
+      ],
+      "facts": {
+        "playoffs_locked": true,
+        "winner_and_undo_and_counts_mutate": true
+      },
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__bracket__postlock_save",
+      "group": "playoff lock",
+      "current_behavior": "Ordinary save/resubmit rejected after playoff start even when complete.",
+      "classification": "MATCHES REQUIREMENT",
+      "approved_requirement": "At playoff start ordinary users may not select/change winners, undo, change series counts or save/resubmit.",
+      "future_business_question": null,
+      "evidence_source": "LIVE guarded local Flask; canonical reset before/after sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 200,
+          "shape": [
+            "message",
+            "name",
+            "saved_at"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/bracket/<id>",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "matches"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/auth/test-me",
+          "status": 200,
+          "shape": [
+            "user"
+          ]
+        }
+      ],
+      "facts": {
+        "identity_read_not_blanket_blocked": true,
+        "bracket_read_not_locked": true
+      },
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__bracket__prediction_validation",
+      "group": "predictions",
+      "current_behavior": "Valid winner advances to existing child; play-in games forced to one; unsupported actions/invalid winner fail; one-sided not-ready match can accept its populated team.",
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "approved_requirement": null,
+      "future_business_question": "Approve readiness, action and winner-input contract?",
+      "evidence_source": "LIVE guarded local Flask; canonical reset before/after sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        }
+      ],
+      "facts": {
+        "match_count_remains": 21,
+        "one_sided_match_accepted": true
+      },
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__bracket__save_edit_resubmit",
+      "group": "save/resubmit",
+      "current_behavior": "Complete bracket saves repeatedly; pre-lock winner/count edits through set_winner clear is_done/saved_at and require explicit resave.",
+      "classification": "MATCHES REQUIREMENT",
+      "approved_requirement": "A saved/submitted bracket may be edited before final lock; editing requires saving/submitting again.",
+      "future_business_question": null,
+      "evidence_source": "LIVE guarded local Flask; canonical reset before/after sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 200,
+          "shape": [
+            "message",
+            "name",
+            "saved_at"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 200,
+          "shape": [
+            "message",
+            "name",
+            "saved_at"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 200,
+          "shape": [
+            "message",
+            "name",
+            "saved_at"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__bracket__undo_graph",
+      "group": "match propagation",
+      "current_behavior": "Undo with downstream selections clears advanced slots/predictions/counts; 7-8 play-in winner/loser feeds two branches.",
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "approved_requirement": null,
+      "future_business_question": "Approve play-in loser branches and deep undo clearing semantics?",
+      "evidence_source": "LIVE guarded local Flask; canonical reset before/after sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__bracket__visibility_boundary",
+      "group": "visibility/privacy",
+      "current_behavior": "Ordinary other-user draft detail is denied; saved detail is readable; anonymous detail/list denied; owners can read draft/saved.",
+      "classification": "MATCHES REQUIREMENT",
+      "approved_requirement": "Other users may see another user's bracket only if it is saved.",
+      "future_business_question": null,
+      "evidence_source": "LIVE guarded local Flask; canonical reset before/after sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/bracket/<id>",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "matches"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/bracket/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/bracket/<id>",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/brackets",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 200,
+          "shape": [
+            "message",
+            "name",
+            "saved_at"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/bracket/<id>",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "matches"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/bracket/<id>",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "matches"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__bracket__winner_change_graph",
+      "group": "match propagation",
+      "current_behavior": "Full graph progresses through 21 matches to Finals; changing earlier winner clears propagated old team and downstream picks/counts.",
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "approved_requirement": null,
+      "future_business_question": "Approve exact downstream clearing rules?",
+      "evidence_source": "LIVE guarded local Flask; canonical reset before/after sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        }
+      ],
+      "facts": {
+        "matches": 21,
+        "finals_populated_before_change": true,
+        "earlier_losing_team_removed": true
+      },
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__bracket__wrong_bracket_deleted",
+      "group": "edge/errors",
+      "current_behavior": "Match from another bracket returns 400; deleted bracket predictions/games denied; drafts omitted from saved listing.",
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "approved_requirement": null,
+      "future_business_question": "Approve error precedence and deleted-record visibility?",
+      "evidence_source": "LIVE guarded local Flask; canonical reset before/after sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/brackets",
+          "status": 200,
+          "shape": "list"
+        },
+        {
+          "method": "DELETE",
+          "path": "/bracket/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 404,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__bracket__frontend_controls",
+      "group": "frontend behavior",
+      "current_behavior": "Frontend allows owner editing and admin-master editing; game options are 4\u20137, play-in one; pending games local until winner; edits reload backend state.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve UI count range, optimistic state and admin-owner overlap?",
+      "evidence_source": "STATIC source inspection; no browser/runtime claim"
+    },
+    {
+      "scenario": "current_behavior__bracket__frontend_creation",
+      "group": "frontend behavior",
+      "current_behavior": "Dashboard uses brackets/me and saved list, creates/deletes via backend; actual createDisabled lets admins bypass creation timing despite stale comment.",
+      "approved_requirement": "Admin bracket creation may bypass the normal creation window.",
+      "classification": "MATCHES REQUIREMENT",
+      "future_business_question": null,
+      "evidence_source": "STATIC source inspection; no browser/runtime claim"
+    },
+    {
+      "scenario": "current_behavior__bracket__frontend_lock",
+      "group": "frontend behavior",
+      "current_behavior": "Winner and game controls check ownership/admin-master and readiness, but not playoff lock; save alone checks savingLockedForUser.",
+      "approved_requirement": "At playoff start ordinary users may not select/change winners, undo, change series counts or save/resubmit.",
+      "classification": "KNOWN GAP",
+      "future_business_question": null,
+      "evidence_source": "STATIC source inspection; no browser/runtime claim"
+    },
+    {
+      "scenario": "current_behavior__bracket__frontend_undo",
+      "group": "frontend behavior",
+      "current_behavior": "Ordinary owner undo is suppressed by admin+master-only UI handler, although backend accepts pre-lock owner undo.",
+      "approved_requirement": "Ordinary bracket owners may undo predictions before lock.",
+      "classification": "KNOWN GAP",
+      "future_business_question": null,
+      "evidence_source": "STATIC source inspection; no browser/runtime claim"
+    },
+    {
+      "scenario": "current_behavior__bracket__history_source",
+      "group": "historical brackets",
+      "current_behavior": "No archive/public bracket-display endpoint; current bracket routes filter current season; PastSeasonsPage reads leaderboard snapshot routes, not raw historical brackets.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve public history and historical bracket access scope?",
+      "evidence_source": "STATIC source inspection; no browser/runtime claim"
+    },
+    {
+      "scenario": "current_behavior__bracket__save_completeness_static",
+      "group": "save/resubmit",
+      "current_behavior": "Save requires name and predictions/counts only for matches with both teams; empty or missing-pair matches skipped. No exact 21-match completion requirement.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve completion validation for absent/unpopulated matches?",
+      "evidence_source": "STATIC source inspection; no browser/runtime claim"
+    },
+    {
+      "scenario": "current_behavior__bracket__schema_constraints",
+      "group": "schema/timing quirks",
+      "current_behavior": "Two active-user unique indexes include a global user predicate; two master indexes differ on deleted_at; season/master foreign keys form cyclic linkage. No fixes.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve cross-season uniqueness and soft-deleted master constraints?",
+      "evidence_source": "STATIC source inspection; no browser/runtime claim"
+    },
+    {
+      "scenario": "current_behavior__bracket__state_model",
+      "group": "state/lifecycle",
+      "current_behavior": "is_done/saved_at encode submission; deleted_at/deleted_by encode soft deletion; is_master plus season pointer derive master. Historical/locked are contextual, not enum states.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve formal state transitions and derived-master precedence?",
+      "evidence_source": "STATIC source inspection; no browser/runtime claim"
+    },
+    {
+      "scenario": "current_behavior__bracket__timing",
+      "group": "schema/timing quirks",
+      "current_behavior": "DB season timestamps resolve UTC globals at startup; env fallbacks, missing lock defaults 2099; lock is now>=start, creation requires end<=now<start. No shared blanket request lock.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve date defaults, refresh and timezone contract?",
+      "evidence_source": "STATIC source inspection; no browser/runtime claim"
+    },
+    {
+      "scenario": "current_behavior__bracket__triggers_rpc",
+      "group": "schema/timing quirks",
+      "current_behavior": "Match season IDs copied from bracket by trigger; soft-delete trigger demotes master and clears pointer. Flask graph updates are individual requests, not atomic RPC calls.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve partial-write/transaction contract and trigger behavior?",
+      "evidence_source": "STATIC source inspection; no browser/runtime claim"
+    }
+  ],
+  "readiness": {
+    "identity_verified": true,
+    "database_marker": "PASS",
+    "email": "PASS",
+    "providers": "PASS",
+    "external_credentials": "PASS",
+    "jobs": "PASS",
+    "jobs_enabled": false,
+    "fixture_state": "SEEDED",
+    "fixtures_reset": "PASS",
+    "integration_harness": "PASS",
+    "mutation_permitted": false,
+    "harness_state": "AVAILABLE_GUARDED",
+    "harness_scoped_mutation_permitted": false
+  },
+  "business_behavior_changed": false,
+  "production": {
+    "contact": false,
+    "mutation": false,
+    "secrets_used": false,
+    "deployment": false
+  },
+  "classification_counts": {
+    "MATCHES REQUIREMENT": 7,
+    "KNOWN GAP": 7,
+    "REQUIREMENT NOT YET REVIEWED": 23,
+    "UNCLEAR / NEEDS BUSINESS CHECKPOINT": 0
+  },
+  "live_tests": 27,
+  "static_tests": 10,
+  "offline_tests": 206,
+  "starting_heads": {
+    "frontend": "ce54143006f0409265937f5d548286d0b100d454",
+    "backend": "771a1bea72db85a7241fd703d87f55b899b5ef15"
+  },
+  "starting_branches": "main; clean",
+  "verified_at_utc": "2026-10-14T22:39:38.683027+00:00",
+  "canonical_cleanup": {
+    "checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+    "flask_stopped": true,
+    "lease_released": true,
+    "email_capture_clear": true,
+    "semantic_verifier": "PASS",
+    "marker_acl_verifier": "PASS",
+    "fixture_readiness": "PASS",
+    "fixture_version": "nc-fixtures-v1",
+    "fixture_state": "SEEDED",
+    "marker_version": 2,
+    "verification_basis": "27 successful context exits and canonical reset proofs; independent post-run readiness/checksum; localhost connection refused"
+  },
+  "next_phase": "NC-01C \u2014 League characterization baseline; not started",
+  "route_inventory": [
+    {
+      "method": "POST",
+      "path": "/admin/leaderboard/snapshot",
+      "auth": "JWT",
+      "access": "JWT admin plus DB admin; STATIC inventory only, not invoked",
+      "effect": "Write",
+      "tables_functions": "users, leaderboard_history_snapshots, leaderboard_history_rows, bracket_scores (via snapshot helper)",
+      "frontend_caller": "AdminPage",
+      "function": "admin_snapshot_leaderboard",
+      "source_line": 799
+    },
+    {
+      "method": "POST",
+      "path": "/admin/season/rollover",
+      "auth": "JWT",
+      "access": "JWT admin plus DB admin; STATIC inventory only, not invoked",
+      "effect": "Write",
+      "tables_functions": "users, seasons, brackets, standings; snapshot/history helpers (deferred)",
+      "frontend_caller": "AdminPage",
+      "function": "admin_season_rollover",
+      "source_line": 855
+    },
+    {
+      "method": "POST",
+      "path": "/admin/score/master/<master_bracket_id>/recompute",
+      "auth": "JWT",
+      "access": "JWT admin; current master-ID lookup; STATIC inventory only, not invoked",
+      "effect": "Write",
+      "tables_functions": "brackets, matches, bracket_scores (via score helpers; deferred)",
+      "frontend_caller": "No caller found",
+      "function": "recompute_scores",
+      "source_line": 1586
+    },
+    {
+      "method": "POST",
+      "path": "/bracket/create",
+      "auth": "JWT",
+      "access": "JWT subject; JWT admin bypasses date window",
+      "effect": "Write",
+      "tables_functions": "brackets, matches, seasons, standings, teams",
+      "frontend_caller": "DashboardPage",
+      "function": "create_bracket_for_user",
+      "source_line": 2726
+    },
+    {
+      "method": "PATCH",
+      "path": "/bracket/<bracket_id>/save",
+      "auth": "JWT",
+      "access": "Owner or DB admin; current/nondeleted; ordinary playoff lock",
+      "effect": "Write",
+      "tables_functions": "brackets, matches, users",
+      "frontend_caller": "BracketPage",
+      "function": "save_bracket",
+      "source_line": 3006
+    },
+    {
+      "method": "GET",
+      "path": "/brackets/me",
+      "auth": "JWT",
+      "access": "Own current/nondeleted",
+      "effect": "Read",
+      "tables_functions": "brackets, users",
+      "frontend_caller": "DashboardPage; BracketPage; AccountPage",
+      "function": "get_my_bracket",
+      "source_line": 3090
+    },
+    {
+      "method": "GET",
+      "path": "/bracket/<bracket_id>",
+      "auth": "JWT",
+      "access": "Own or DB admin or saved; current/nondeleted",
+      "effect": "Read",
+      "tables_functions": "brackets, matches, seasons, teams, users",
+      "frontend_caller": "BracketPage",
+      "function": "get_bracket_by_id",
+      "source_line": 3158
+    },
+    {
+      "method": "GET",
+      "path": "/brackets",
+      "auth": "JWT",
+      "access": "Authenticated; saved/current/nondeleted/nonmaster; optional league filter (deferred)",
+      "effect": "Read",
+      "tables_functions": "brackets, league_members, leagues, users",
+      "frontend_caller": "DashboardPage",
+      "function": "list_all_brackets",
+      "source_line": 3294
+    },
+    {
+      "method": "DELETE",
+      "path": "/bracket/<bracket_id>",
+      "auth": "JWT",
+      "access": "Owner or DB admin; current/nondeleted; no date lock",
+      "effect": "Write",
+      "tables_functions": "bracket_scores, brackets, users",
+      "frontend_caller": "DashboardPage",
+      "function": "delete_bracket",
+      "source_line": 3423
+    },
+    {
+      "method": "PATCH",
+      "path": "/bracket/<bracket_id>/match/<match_id>",
+      "auth": "JWT",
+      "access": "Owner or JWT admin; current/nondeleted; no date lock",
+      "effect": "Write",
+      "tables_functions": "brackets, matches",
+      "frontend_caller": "BracketPage (set_winner/undo)",
+      "function": "update_match",
+      "source_line": 3480
+    },
+    {
+      "method": "PATCH",
+      "path": "/bracket/match/<match_id>/games",
+      "auth": "JWT",
+      "access": "Owner only; current/nondeleted; no date lock",
+      "effect": "Write",
+      "tables_functions": "brackets, matches",
+      "frontend_caller": "No caller found; BracketPage counts use set_winner",
+      "function": "set_match_games",
+      "source_line": 3826
+    },
+    {
+      "method": "GET",
+      "path": "/leaderboard/history",
+      "auth": "JWT",
+      "access": "JWT; snapshot read",
+      "effect": "Read",
+      "tables_functions": "leaderboard_history_snapshots",
+      "frontend_caller": "PastSeasonsPage",
+      "function": "leaderboard_history_index",
+      "source_line": 4467
+    },
+    {
+      "method": "GET",
+      "path": "/leaderboard/history/<season_code>",
+      "auth": "JWT",
+      "access": "JWT; snapshot read",
+      "effect": "Read",
+      "tables_functions": "leaderboard_history_rows, leaderboard_history_snapshots",
+      "frontend_caller": "PastSeasonsPage",
+      "function": "leaderboard_history_season",
+      "source_line": 4505
+    }
+  ]
+}

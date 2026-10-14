@@ -108,7 +108,7 @@ class GuardedHarness:
     def __init__(
         self, config, *, allow_local_mutations=False, characterization_scope=None
     ):
-        if characterization_scope not in {None, "NC-01A"}:
+        if characterization_scope not in {None, "NC-01A", "NC-01B"}:
             raise safety.SafetyError("Unreviewed characterization scope.")
         self.characterization_scope = characterization_scope
         self._auth_subjects = {
@@ -321,6 +321,37 @@ class GuardedHarness:
     def _check_path(self, method, path, *, identity_bootstrap=False):
         if not isinstance(path, str) or "?" in path or "%" in path or "\\" in path:
             raise safety.SafetyError("Unexpected guarded HTTP path.")
+        if getattr(self, "characterization_scope", None) == "NC-01B":
+            if (method, path) in {
+                ("POST", "/auth/login"),
+                ("POST", "/bracket/create"),
+                ("GET", "/brackets/me"),
+                ("GET", "/brackets"),
+                ("GET", "/auth/test-me"),
+                ("GET", "/health"),
+                ("GET", "/leaderboard/history"),
+                ("GET", "/leaderboard/history/2024-25"),
+            } or (
+                method == "GET" and path == "/__test__/identity" and identity_bootstrap
+            ):
+                return
+            bids = self._brackets | {identity("missing-bracket"), "invalid"}
+            mids = {mid for _, mid in self._matches} | {
+                identity("missing-match"),
+                "invalid",
+            }
+            if (
+                method in {"GET", "DELETE"}
+                and path in {f"/bracket/{b}" for b in bids}
+                or method == "PATCH"
+                and path in {f"/bracket/{b}/save" for b in bids}
+                or method == "PATCH"
+                and path in {f"/bracket/{b}/match/{m}" for b in bids for m in mids}
+                or method == "PATCH"
+                and path in {f"/bracket/match/{m}/games" for m in mids}
+            ):
+                return
+            raise safety.SafetyError("Outside NC-01B route scope.")
         if getattr(self, "characterization_scope", None) == "NC-01A":
             if method == "POST" and path in {
                 "/auth/register",
@@ -443,6 +474,114 @@ class GuardedHarness:
                     for match in matches:
                         self._matches.add((path.split("/")[-1], match["id"]))
         return status, body
+
+    def _require_bracket_scope(self):
+        self._require_lease()
+        if (
+            not self._ready
+            or self.characterization_scope != "NC-01B"
+            or threading.get_ident() != self._owner
+        ):
+            raise safety.SafetyError("Explicit verified NC-01B context required.")
+
+    def bracket_request(self, method, path, *, payload=None, role=None):
+        self._require_bracket_scope()
+        if path == "/auth/login":
+            raise safety.SafetyError("Use synthetic login method.")
+        status, body = self._exchange(method, path, payload, role)
+        self.summary.append(
+            {
+                "method": method,
+                "path": re.sub(r"[0-9a-f]{8}-[0-9a-f-]{27}", "<id>", path),
+                "status": status,
+                "shape": (
+                    sorted(body)
+                    if isinstance(body, dict)
+                    else "list" if isinstance(body, list) else "text"
+                ),
+            }
+        )
+        if method == "POST" and path == "/bracket/create" and status == 200:
+            self._brackets.add(body["bracket"]["id"])
+            self.bracket_snapshot()
+        return status, body
+
+    def bracket_timing(self, mode):
+        self._require_bracket_scope()
+        from datetime import datetime, timezone, timedelta
+
+        if mode not in {"early", "open", "locked", "boundary"}:
+            raise safety.SafetyError("Unreviewed local season-date scenario.")
+        now = datetime.now(timezone.utc)
+        end = now + timedelta(days=2 if mode == "early" else -2)
+        start = now + timedelta(days=-1 if mode in {"locked", "boundary"} else 2)
+        self.module.supabase.table("seasons").update(
+            {
+                "regular_season_end_utc": end.isoformat(),
+                "playoffs_start_utc": start.isoformat(),
+            }
+        ).eq("id", identity("current")).execute()
+        self.module._resolve_season_globals()
+        return {
+            "locked": self.module.playoffs_locked(),
+            "creation_open": self.module.bracket_creation_open(),
+        }
+
+    def install_bracket_scenario(self, kind, *, role="user-a"):
+        self._require_bracket_scope()
+        from synthetic_fixtures import bracket_scenario
+
+        if kind not in {
+            "draft",
+            "saved",
+            "master",
+            "deleted",
+            "historical",
+        } or role not in {"user-a", "user-b", "admin"}:
+            raise safety.SafetyError("Unreviewed synthetic bracket scenario.")
+        data = bracket_scenario(kind)
+        row = data["brackets"][0]
+        row["user_id"] = identity(role)
+        if row["id"] in self._brackets:
+            raise safety.SafetyError("Synthetic bracket already installed.")
+        self.module.supabase.table("brackets").insert(row).execute()
+        self._brackets.add(row["id"])
+        matches = data["matches"]
+        self.module.supabase.table("matches").insert(
+            [dict(m, next_match_id=None, next_slot=None) for m in matches]
+        ).execute()
+        for m in matches:
+            if m["next_match_id"]:
+                self.module.supabase.table("matches").update(
+                    {"next_match_id": m["next_match_id"], "next_slot": m["next_slot"]}
+                ).eq("id", m["id"]).execute()
+            self._matches.add((row["id"], m["id"]))
+        if kind == "master":
+            self.module.supabase.table("seasons").update(
+                {"master_bracket_id": row["id"]}
+            ).eq("id", row["season_id"]).execute()
+        return row["id"]
+
+    def bracket_snapshot(self):
+        self._require_bracket_scope()
+        brackets = (
+            self.module.supabase.table("brackets").select("*").execute().data or []
+        )
+        if any(r["user_id"] not in self._auth_subjects for r in brackets):
+            raise safety.SafetyError("Unexpected bracket subject.")
+        matches = self.module.supabase.table("matches").select("*").execute().data or []
+        for r in brackets:
+            self._brackets.add(r["id"])
+        if any(m["bracket_id"] not in self._brackets for m in matches):
+            raise safety.SafetyError("Unexpected match subject.")
+        self._matches.update((m["bracket_id"], m["id"]) for m in matches)
+        seasons = (
+            self.module.supabase.table("seasons")
+            .select("id,master_bracket_id")
+            .execute()
+            .data
+        )
+        return {"brackets": brackets, "matches": matches, "seasons": seasons}
 
     def _require_auth_scope(self):
         self._require_lease()
