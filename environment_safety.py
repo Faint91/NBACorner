@@ -39,6 +39,7 @@ CONFIG_FIELDS = frozenset(
         "FRONTEND_ORIGIN",
         "NBA_STANDINGS_SEASON",
         "NBA_CORNER_EMAIL_MODE",
+        "NBA_CORNER_RESET_LINK_ORIGIN",
         "NBA_CORNER_PROVIDER_MODE",
         "NBA_CORNER_JOBS_ENABLED",
     }
@@ -349,12 +350,49 @@ def verify_live_local_identity(settings, enrollments=None):
         connection.close()
 
 
+def validate_test_email_settings(settings, target, ambient=None):
+    """Pure capture/reset-origin gate; no credentials, content or URLs in errors."""
+    ambient = os.environ if ambient is None else ambient
+    for source in (settings, ambient):
+        if any(
+            value and (name.startswith("BREVO_") or name.startswith("SENDINBLUE_"))
+            for name, value in source.items()
+        ):
+            raise SafetyError(
+                "Live email provider configuration is prohibited in test mode."
+            )
+    if (
+        settings.get("NBA_CORNER_ENV") != "test"
+        or settings.get("NBA_CORNER_EMAIL_MODE") != "capture"
+    ):
+        raise SafetyError("Test email mode must explicitly select local capture.")
+    origin = normalize_origin(settings.get("NBA_CORNER_RESET_LINK_ORIGIN"))
+    if origin != normalize_origin(target.backend_origin):
+        raise SafetyError(
+            "Reset-link origin must match the enrolled test backend origin."
+        )
+    return origin
+
+
+def verify_test_email_readiness(settings):
+    target = validate_test_target(settings, load_enrollments(), identity_only=True)
+    origin = validate_test_email_settings(settings, target)
+    identity = verify_live_local_identity(settings)
+    return {
+        "identity_verified": identity["identity_verified"],
+        "email_gate_passed": True,
+        "email_mode": "capture",
+        "reset_link_origin": origin,
+        "mutation_permitted": False,
+    }
+
+
 def require_live_identity(target):
     # Identity-only verification never permits application startup/mutation.
     # No opt-in, marker, caller dictionary or enrollment bypasses later gates.
     raise SafetyError(
         "Mutation/startup remains blocked: UNSEEDED fixtures and unverified "
-        "email/provider/job/reset safety must be resolved in later phases."
+        "provider/job/reset/harness safety must be resolved in later phases."
     )
 
 
@@ -418,7 +456,9 @@ def prepare_runtime_environment(dotenv_loader=None):
     if identity == "production" and config is not None:
         raise SafetyError("Production identity cannot use a test configuration.")
     if identity == "test" or config is not None:
-        target = validate_test_target(load_test_config(config), load_enrollments())
+        settings = load_test_config(config)
+        target = validate_test_target(settings, load_enrollments())
+        validate_test_email_settings(settings, target)
         require_live_identity(target)
         return
     if dotenv_loader is None:

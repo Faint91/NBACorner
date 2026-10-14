@@ -5,6 +5,7 @@ from flask import Flask, request, jsonify, make_response, send_from_directory
 from flask_cors import CORS
 from supabase import create_client
 from environment_safety import prepare_runtime_environment
+from email_transport import deliver_email, build_reset_link
 from collections import defaultdict
 import time
 import threading
@@ -2531,7 +2532,7 @@ def forgot_password():
         return jsonify({"error": "Failed to save reset token"}), 500
 
     # Send reset email via Brevo
-    reset_link = f"https://nbacorner.onrender.com/reset-password?token={token}"
+    reset_link = build_reset_link(token)
     subject = "NBACorner Password Reset"
     body = f"""
         <html>
@@ -2667,7 +2668,7 @@ def test_email():
         return jsonify({"error": "Failed to send email"}), 500
 
 
-def send_email_via_brevo(to_email, subject, body):
+def _send_email_via_brevo_production(to_email, subject, body):
     """Send an email using Brevo's transactional email API."""
     url = "https://api.brevo.com/v3/smtp/email"
     headers = {
@@ -2695,6 +2696,11 @@ def send_email_via_brevo(to_email, subject, body):
         if ENABLE_DEBUG_LOGS:
             safe_print("🚨 Error sending email via Brevo (class):", type(e).__name__)
         return False
+
+
+def send_email_via_brevo(to_email, subject, body):
+    """Central seam: unchanged production Brevo or verified test-only capture."""
+    return deliver_email(_send_email_via_brevo_production, to_email, subject, body)
 
 
 # --------------------------------------------------------

@@ -93,3 +93,14 @@ until later fixture/email/provider/job/reset requirements are proven. Production
 startup and all denylist behavior remain unchanged. See the complete lifecycle and
 execution proof in test-infrastructure/local-supabase/README.md. No production env
 file, application data or secrets are copied into the local stack.
+
+## NC-ENV-04A email gate
+
+Test email now uses deterministic in-memory capture exclusively. Controlled test
+config requires NBA_CORNER_EMAIL_MODE=capture and NBA_CORNER_RESET_LINK_ORIGIN
+matching its enrolled backend origin. Live/ambient Brevo fields refuse test email;
+production's existing Brevo transport and reset URL remain unchanged. The local
+helper's email-readiness action verifies this gate plus authenticated DB identity,
+without authorizing mutation. Capture inspection/clear and token-safe handling are
+in docs/test-email-safety.md. Other provider/job/fixture/reset/harness gates remain
+closed; no DB fixtures or integration mutations are enabled.

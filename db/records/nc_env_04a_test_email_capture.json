@@ -1,0 +1,58 @@
+{
+  "phase": "NC-ENV-04A",
+  "status": "Completed; email gate passed; mutation gates remain closed",
+  "verified_at_utc": "2026-10-14T17:48:15.838324+00:00",
+  "starting_heads": {
+    "frontend": "ce54143006f0409265937f5d548286d0b100d454",
+    "backend": "254e201a41f52c0a8bd833666b686a1ebf9601af"
+  },
+  "email_paths": [
+    "POST /auth/forgot-password",
+    "POST /auth/reset-password (no send)",
+    "POST /test-email (admin-only)"
+  ],
+  "production": {
+    "transport": "Existing Brevo helper preserved behind wrapper",
+    "provider_body_ast_unchanged": true,
+    "other_application_functions_ast_unchanged": 62,
+    "forgot_password_change": "Reset link builder only; effective production URL unchanged",
+    "email_sent": false,
+    "database_changed": false,
+    "secrets_changed": false,
+    "deployed": false
+  },
+  "test": {
+    "transport": "In-process CaptureMailbox",
+    "mode": "capture",
+    "reset_link_origin": "http://127.0.0.1:55410",
+    "email_gate_passed": true,
+    "identity_verified": true,
+    "fixture_state": "UNSEEDED",
+    "mutation_permitted": false,
+    "credentials": "Ignored local file unchanged except two non-secret email fields; no provider credentials"
+  },
+  "validation": {
+    "environment_tests": 61,
+    "email_tests": 20,
+    "production_request_mock_characterization": "Passed",
+    "capture_log_token_safety": "Passed",
+    "syntax_ast": "Passed",
+    "formatting": "New/changed safety and transport modules formatted; legacy app formatting retained",
+    "secret_scan": "Passed",
+    "production_id_review": "Only preserved production transport/link constants and denial test cases",
+    "whitespace": "Passed"
+  },
+  "preserved_current_behavior": [
+    "Forgot-password ignores transport failure result and returns existing neutral message",
+    "Duplicate status log when production debug enabled",
+    "Original production reset URL/value"
+  ],
+  "remaining_gates": [
+    "External provider fixtures/egress",
+    "Jobs/schedules neutralization",
+    "Synthetic fixtures/reset",
+    "Final guarded test harness"
+  ],
+  "out_of_scope_changes": false,
+  "next_phase": "NC-ENV-04B \u2014 External provider fixtures and job/schedule neutralization; explicit authorization required"
+}
