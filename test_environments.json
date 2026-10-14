@@ -1,1 +1,13 @@
-{"version": 1, "targets": []}
+{
+  "version": 1,
+  "targets": [
+    {
+      "name": "local-nba-corner-test",
+      "project_ref": "local:nba-corner-local-test",
+      "supabase_origin": "http://127.0.0.1:55421",
+      "backend_origin": "http://127.0.0.1:55410",
+      "marker_id": "nba-corner-local-test",
+      "marker_version": "1"
+    }
+  ]
+}

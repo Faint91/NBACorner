@@ -1,0 +1,21 @@
+{
+  "attempts": [
+    {
+      "target": "LOCAL TEST ONLY: nba-corner-local-test",
+      "container": "supabase_db_nba-corner-local-test",
+      "started_at_utc": "2026-10-14T17:12:24.523235+00:00",
+      "completed_at_utc": "2026-10-14T17:12:24.837838+00:00",
+      "baseline_sha256": "8ca7b98f54544d177de41511ed9d3d969ac4389591ec966e5730f99369de4209",
+      "exit_code": 3,
+      "diagnostic": "ERROR:  Baseline mismatch: function _set_bracket_scores_season_id body\nCONTEXT:  PL/pgSQL function inline_code_block line 2686 at RAISE\n"
+    },
+    {
+      "started_at_utc": "2026-10-14T17:13:00.004237+00:00",
+      "completed_at_utc": "2026-10-14T17:13:00.340055+00:00",
+      "exit_code": 0,
+      "transport": "Binary UTF-8 bytes; no Windows stdin newline translation",
+      "diagnostic": "Transaction and embedded semantic assertions passed"
+    }
+  ],
+  "baseline_corrections": []
+}

@@ -184,8 +184,11 @@ class SafetyTests(unittest.TestCase):
         with self.assertRaises(safety.SafetyError):
             safety.validate_test_target(settings(), ())
 
-    def test_registry_has_no_enrolled_target(self):
-        self.assertEqual(safety.load_enrollments(), ())
+    def test_registry_has_only_reviewed_local_target(self):
+        targets = safety.load_enrollments()
+        self.assertEqual(len(targets), 1)
+        self.assertEqual(targets[0].project_ref, "local:nba-corner-local-test")
+        safety.validate_local_enrollment(targets[0])
 
     def test_unknown_enrollment_name(self):
         self.rejected(NBA_CORNER_TEST_TARGET="other")
@@ -494,6 +497,180 @@ class SafetyTests(unittest.TestCase):
                 )
                 with self.subTest(helper=name), self.assertRaises(safety.SafetyError):
                     namespace[name](*args)
+
+
+LOCAL = safety.TestTarget(
+    "local-offline",
+    "local:nba-corner-local-test",
+    "http://127.0.0.1:55421",
+    "http://127.0.0.1:55410",
+    "nba-corner-local-test",
+    "1",
+)
+
+
+def local_settings():
+    return {
+        "NBA_CORNER_ENV": "test",
+        "NBA_CORNER_ALLOW_MUTATING_TESTS": "0",
+        "NBA_CORNER_TEST_TARGET": LOCAL.name,
+        "NBA_CORNER_EXPECTED_PROJECT_REF": LOCAL.project_ref,
+        "SUPABASE_URL": LOCAL.supabase_origin,
+        "NBACORNER_BASE_URL": LOCAL.backend_origin,
+        "SUPABASE_KEY": "sb_secret_offline_fixture",
+    }
+
+
+def local_marker():
+    return {
+        "environment": "test",
+        "project_ref": LOCAL.project_ref,
+        "marker_id": LOCAL.marker_id,
+        "marker_version": "1",
+        "baseline_version": "nc-env-02-current-secured-v1",
+        "baseline_checkpoint": "da8c6695be0726ef3893ffefe605f6fa6e368f9c",
+        "baseline_commit": "2e9d6752ce0a5f559673b99221d88c7f51c9d8ea",
+        "fixture_state": "UNSEEDED",
+    }
+
+
+class LocalIdentityTests(unittest.TestCase):
+    def setUp(self):
+        SafetyTests.setUp(self)  # Keep real sockets prohibited for every offline test.
+
+    def connection(self, rows=None, status=200):
+        connection = Mock()
+        response = Mock(status=status)
+        response.read.return_value = json.dumps(
+            [local_marker()] if rows is None else rows
+        ).encode()
+        connection.getresponse.return_value = response
+        return connection
+
+    def test_local_pure_identity_with_mutation_opt_in_off(self):
+        self.assertEqual(
+            safety.validate_test_target(local_settings(), (LOCAL,), identity_only=True),
+            LOCAL,
+        )
+
+    def test_local_mutation_opt_in_still_required(self):
+        with self.assertRaises(safety.SafetyError):
+            safety.validate_test_target(local_settings(), (LOCAL,))
+
+    def test_local_live_identity_accepts_only_loopback_get(self):
+        connection = self.connection()
+        with patch("http.client.HTTPConnection", return_value=connection) as factory:
+            result = safety.verify_live_local_identity(local_settings(), (LOCAL,))
+        factory.assert_called_once_with("127.0.0.1", 55421, timeout=5)
+        self.assertEqual(connection.request.call_args.args[0], "GET")
+        self.assertEqual(
+            connection.request.call_args.kwargs["headers"]["Accept-Profile"],
+            "nba_corner_test_control",
+        )
+        connection.close.assert_called_once()
+        self.assertTrue(result["identity_verified"])
+        self.assertFalse(result["mutation_permitted"])
+
+    def test_marker_mismatches(self):
+        for key in local_marker():
+            marker = dict(local_marker(), **{key: "wrong"})
+            with self.subTest(key=key), self.assertRaises(safety.SafetyError):
+                safety.validate_local_marker(LOCAL, marker)
+
+    def test_missing_marker(self):
+        with patch(
+            "http.client.HTTPConnection", return_value=self.connection(rows=[])
+        ), self.assertRaises(safety.SafetyError):
+            safety.verify_live_local_identity(local_settings(), (LOCAL,))
+
+    def test_duplicate_marker(self):
+        with patch(
+            "http.client.HTTPConnection",
+            return_value=self.connection(rows=[local_marker(), local_marker()]),
+        ), self.assertRaises(safety.SafetyError):
+            safety.verify_live_local_identity(local_settings(), (LOCAL,))
+
+    def test_redirect_and_auth_failure_refused(self):
+        for status in [301, 302, 401, 403, 500]:
+            with self.subTest(status=status), patch(
+                "http.client.HTTPConnection",
+                return_value=self.connection(status=status),
+            ), self.assertRaises(safety.SafetyError):
+                safety.verify_live_local_identity(local_settings(), (LOCAL,))
+
+    def test_production_swaps_refused_before_network(self):
+        for changes in [
+            {"SUPABASE_URL": "https://rpwesmvzmgoctrokrbhy.supabase.co"},
+            {"NBA_CORNER_EXPECTED_PROJECT_REF": "rpwesmvzmgoctrokrbhy"},
+            {"NBACORNER_BASE_URL": "https://nbacorner.onrender.com"},
+        ]:
+            settings = dict(local_settings(), **changes)
+            with patch("http.client.HTTPConnection") as factory, self.assertRaises(
+                safety.SafetyError
+            ):
+                safety.verify_live_local_identity(settings, (LOCAL,))
+            factory.assert_not_called()
+
+    def test_wrong_loopback_port_refused(self):
+        settings = dict(local_settings(), SUPABASE_URL="http://127.0.0.1:55423")
+        with self.assertRaises(safety.SafetyError):
+            safety.validate_test_target(settings, (LOCAL,), identity_only=True)
+
+    def test_remote_local_enrollment_refused(self):
+        target = safety.TestTarget(
+            LOCAL.name,
+            LOCAL.project_ref,
+            "https://example.invalid",
+            LOCAL.backend_origin,
+            LOCAL.marker_id,
+            "1",
+        )
+        with self.assertRaises(safety.SafetyError):
+            safety.validate_local_enrollment(target)
+
+    def test_hosted_identity_is_not_network_enabled(self):
+        with patch("http.client.HTTPConnection") as factory, self.assertRaises(
+            safety.SafetyError
+        ):
+            safety.verify_live_local_identity(settings(), (TARGET,))
+        factory.assert_not_called()
+
+    def test_unseeded_even_opt_in_cannot_open_mutation_gate(self):
+        config = dict(local_settings(), NBA_CORNER_ALLOW_MUTATING_TESTS="1")
+        target = safety.validate_test_target(config, (LOCAL,))
+        with self.assertRaises(safety.SafetyError):
+            safety.require_live_identity(target)
+        with patch.object(
+            safety, "load_test_config", return_value=config
+        ), patch.object(
+            safety, "load_enrollments", return_value=(LOCAL,)
+        ), self.assertRaises(
+            safety.SafetyError
+        ):
+            safety.GuardedTestClient()
+
+    def test_large_malformed_response_refused(self):
+        for body in [b"x" * 16385, b"not-json", b"{}"]:
+            connection = self.connection()
+            connection.getresponse.return_value.read.return_value = body
+            with patch(
+                "http.client.HTTPConnection", return_value=connection
+            ), self.assertRaises(safety.SafetyError):
+                safety.verify_live_local_identity(local_settings(), (LOCAL,))
+
+    def test_production_credential_rejected_for_local(self):
+        claims = (
+            base64.urlsafe_b64encode(
+                json.dumps(
+                    {"ref": "rpwesmvzmgoctrokrbhy", "role": "service_role"}
+                ).encode()
+            )
+            .decode()
+            .rstrip("=")
+        )
+        config = dict(local_settings(), SUPABASE_KEY="offline." + claims + ".fixture")
+        with self.assertRaises(safety.SafetyError):
+            safety.validate_test_target(config, (LOCAL,), identity_only=True)
 
 
 if __name__ == "__main__":

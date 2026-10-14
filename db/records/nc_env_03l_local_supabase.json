@@ -1,0 +1,94 @@
+{
+  "phase": "NC-ENV-03L",
+  "status": "Completed; local identity verified; mutation execution blocked",
+  "verified_at_utc": "2026-10-14T17:25:39.671679+00:00",
+  "starting_heads": {
+    "frontend": "ce54143006f0409265937f5d548286d0b100d454",
+    "backend": "2e9d6752ce0a5f559673b99221d88c7f51c9d8ea"
+  },
+  "identity": {
+    "scope": "LOCAL TEST ONLY",
+    "project_id": "nba-corner-local-test",
+    "project_ref": "local:nba-corner-local-test",
+    "api_origin": "http://127.0.0.1:55421",
+    "db_host": "127.0.0.1",
+    "db_port": 55422,
+    "backend_origin_reserved": "http://127.0.0.1:55410",
+    "network": "supabase_network_nba-corner-local-test",
+    "postgres_version": "17.6",
+    "postgres_image": "public.ecr.aws/supabase/postgres:17.6.1.171"
+  },
+  "tools": {
+    "docker_desktop": "4.95.0",
+    "docker_engine": "29.8.2",
+    "supabase_cli": "2.118.0",
+    "node": "24.14.0",
+    "npm": "11.9.0",
+    "installation_upgrade": "none"
+  },
+  "baseline": {
+    "commit": "2e9d6752ce0a5f559673b99221d88c7f51c9d8ea",
+    "sha256": "8ca7b98f54544d177de41511ed9d3d969ac4389591ec966e5730f99369de4209",
+    "application": "Passed using unchanged binary SQL bytes after verified rollback of text-transport attempt",
+    "semantic_verification": "Embedded and standalone passed, also after marker installation",
+    "corrections": [],
+    "inventory": {
+      "tables": 13,
+      "columns": 122,
+      "sequences": 3,
+      "functions": 7,
+      "views": 1,
+      "triggers": 3,
+      "policies": 16,
+      "constraints": 55,
+      "indexes": 38
+    },
+    "application_rows": 0
+  },
+  "marker": {
+    "object": "nba_corner_test_control.test_environment_identity",
+    "version": "1",
+    "rows": 1,
+    "fixture_state": "UNSEEDED",
+    "ordinary_access": false,
+    "service_read": true,
+    "service_write": false
+  },
+  "tests": {
+    "offline": 61,
+    "live_correct_identity": "passed",
+    "live_wrong_marker_id_version_project": "refused",
+    "anonymous_marker_get": 401,
+    "baseline_static": "passed",
+    "acl_semantic": "passed",
+    "formatting": "passed",
+    "secret_scan": "passed",
+    "git_whitespace": "passed"
+  },
+  "mutations": {
+    "permitted": false,
+    "remaining_gates": [
+      "UNSEEDED fixtures",
+      "email capture",
+      "provider fixtures/egress",
+      "full job neutralization",
+      "deterministic reset"
+    ]
+  },
+  "production": {
+    "database_changed": false,
+    "secrets_used": false,
+    "data_copied": false,
+    "requests": false,
+    "hosted_project_created": false,
+    "billing_changed": false,
+    "deployed": false
+  },
+  "limitations": [
+    "No application characterization/function mutation invocation",
+    "Docker native all-interface port mappings; clients use loopback; host-firewall/container-egress isolation not claimed",
+    "Local credentials are ignored and never printed or committed",
+    "Historical NC-ENV-02 artifacts unchanged; subsequent live result recorded here"
+  ],
+  "next_phase": "NC-ENV-04, subject to explicit authorization and the approved environment phase plan"
+}

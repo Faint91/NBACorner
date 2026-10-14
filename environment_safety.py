@@ -1,4 +1,4 @@
-"""Fail-closed test entry guards. No network access or live enrollment bypass."""
+"""Fail-closed mutation guards and separate read-only LOCAL identity verification."""
 
 import base64
 import json
@@ -120,6 +120,28 @@ def project_reference(origin):
     return match.group(1)
 
 
+def is_local_target(target):
+    return target.project_ref.startswith("local:")
+
+
+def validate_local_enrollment(target):
+    reject_production(target.project_ref)
+    if not re.fullmatch(
+        r"local:[a-z][a-z0-9-]{0,62}", target.project_ref
+    ) or not target.name.startswith("local-"):
+        raise SafetyError("Explicit LOCAL TEST ONLY enrollment identity is required.")
+    for origin in (target.supabase_origin, target.backend_origin):
+        parsed = urlsplit(normalize_origin(origin))
+        if (
+            parsed.scheme != "http"
+            or parsed.hostname != "127.0.0.1"
+            or parsed.port is None
+        ):
+            raise SafetyError(
+                "Local enrollment requires exact numeric loopback origins and ports."
+            )
+
+
 def load_enrollments():
     try:
         document = json.loads(REGISTRY_PATH.read_text(encoding="utf-8"))
@@ -131,7 +153,14 @@ def load_enrollments():
         if len({target.name for target in targets}) != len(targets):
             raise ValueError
         for target in targets:
-            if project_reference(target.supabase_origin) != target.project_ref:
+            if not all(
+                isinstance(getattr(target, field), str)
+                for field in TestTarget.__dataclass_fields__
+            ):
+                raise ValueError
+            if is_local_target(target):
+                validate_local_enrollment(target)
+            elif project_reference(target.supabase_origin) != target.project_ref:
                 raise ValueError
             normalize_origin(target.backend_origin)
             if not target.name or not target.marker_id or not target.marker_version:
@@ -143,18 +172,25 @@ def load_enrollments():
         ) from None
 
 
-def validate_test_target(settings, enrollments):
+def validate_test_target(settings, enrollments, *, identity_only=False):
     if settings.get("NBA_CORNER_ENV") != "test":
         raise SafetyError("Mutating tooling requires explicit NBA_CORNER_ENV=test.")
-    if settings.get("NBA_CORNER_ALLOW_MUTATING_TESTS") != "1":
+    if not identity_only and settings.get("NBA_CORNER_ALLOW_MUTATING_TESTS") != "1":
         raise SafetyError("Explicit mutating-test opt-in is required.")
     expected = settings.get("NBA_CORNER_EXPECTED_PROJECT_REF", "")
+    if not isinstance(expected, str):
+        raise SafetyError("Explicit expected test identity is required.")
     reject_production(expected)
-    if not re.fullmatch(r"[a-z]{20}", expected):
+    local = expected.startswith("local:")
+    if not (
+        re.fullmatch(r"local:[a-z][a-z0-9-]{0,62}", expected)
+        if local
+        else re.fullmatch(r"[a-z]{20}", expected)
+    ):
         raise SafetyError("Explicit expected test project reference is required.")
     supabase_origin = normalize_origin(settings.get("SUPABASE_URL"))
     backend_origin = normalize_origin(settings.get("NBACORNER_BASE_URL"))
-    if project_reference(supabase_origin) != expected:
+    if not local and project_reference(supabase_origin) != expected:
         raise SafetyError("Configured project and Supabase host disagree.")
     matches = [
         t for t in enrollments if t.name == settings.get("NBA_CORNER_TEST_TARGET")
@@ -162,6 +198,8 @@ def validate_test_target(settings, enrollments):
     if len(matches) != 1:
         raise SafetyError("Target is not enrolled. NC-ENV-03 enrollment is required.")
     target = matches[0]
+    if local:
+        validate_local_enrollment(target)
     if (
         target.project_ref != expected
         or normalize_origin(target.supabase_origin) != supabase_origin
@@ -186,7 +224,13 @@ def validate_test_target(settings, enrollments):
             if not isinstance(payload, dict):
                 raise ValueError
             reject_production(payload.get("ref", ""))
-            if payload.get("ref") != expected or payload.get("role") != "service_role":
+            credential_ref = payload.get("ref")
+            ref_matches = credential_ref == expected or (
+                local
+                and credential_ref is None
+                and payload.get("iss") in {"supabase", "supabase-demo"}
+            )
+            if not ref_matches or payload.get("role") != "service_role":
                 raise SafetyError(
                     "Server credential metadata does not match enrollment."
                 )
@@ -222,11 +266,95 @@ def refuse_redirect(target, destination):
     raise SafetyError("Redirects are prohibited for guarded test traffic.")
 
 
+def validate_local_marker(target, marker):
+    validate_local_enrollment(target)
+    baseline = json.loads(
+        (Path(__file__).parent / "db/baseline/manifest.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    expected = {
+        "environment": "test",
+        "project_ref": target.project_ref,
+        "marker_id": target.marker_id,
+        "marker_version": target.marker_version,
+        "baseline_version": baseline["baseline_version"],
+        "baseline_checkpoint": baseline["backend_checkpoint"],
+        "baseline_commit": "2e9d6752ce0a5f559673b99221d88c7f51c9d8ea",
+        "fixture_state": "UNSEEDED",
+    }
+    if not isinstance(marker, dict) or any(
+        marker.get(k) != v for k, v in expected.items()
+    ):
+        raise SafetyError(
+            "Local database marker/baseline identity is missing or mismatched."
+        )
+    return marker
+
+
+def verify_live_local_identity(settings, enrollments=None):
+    """Authenticated loopback GET only. Success NEVER enables mutation/startup."""
+    import http.client
+
+    target = validate_test_target(
+        settings,
+        load_enrollments() if enrollments is None else enrollments,
+        identity_only=True,
+    )
+    if not is_local_target(target):
+        raise SafetyError(
+            "Read-only live identity is implemented for LOCAL targets only."
+        )
+    validate_local_enrollment(target)
+    key = settings.get("SUPABASE_SERVICE_ROLE_KEY") or settings.get("SUPABASE_KEY")
+    if not key or any(c in key for c in "\r\n"):
+        raise SafetyError("Explicit local server credential is required.")
+    origin = urlsplit(normalize_origin(target.supabase_origin))
+    connection = http.client.HTTPConnection("127.0.0.1", origin.port, timeout=5)
+    try:
+        connection.request(
+            "GET",
+            "/rest/v1/test_environment_identity?select=environment,project_ref,marker_id,marker_version,baseline_version,baseline_checkpoint,baseline_commit,fixture_state&limit=2",
+            headers={
+                "apikey": key,
+                "Authorization": "Bearer " + key,
+                "Accept-Profile": "nba_corner_test_control",
+            },
+        )
+        response = connection.getresponse()
+        if response.status != 200:
+            raise SafetyError(
+                "Local identity read failed; redirects and non-success responses are prohibited."
+            )
+        raw = response.read(16385)
+        if len(raw) > 16384:
+            raise SafetyError("Local identity response exceeds allowed size.")
+        rows = json.loads(raw)
+        if not isinstance(rows, list) or len(rows) != 1:
+            raise SafetyError(
+                "Exactly one authoritative local identity marker is required."
+            )
+        marker = validate_local_marker(target, rows[0])
+        return {
+            "identity_verified": True,
+            "target": target.name,
+            "marker": marker,
+            "mutation_permitted": False,
+        }
+    except SafetyError:
+        raise
+    except (OSError, ValueError, TypeError, http.client.HTTPException):
+        raise SafetyError("Local identity verification failed.") from None
+    finally:
+        connection.close()
+
+
 def require_live_identity(target):
-    # No flag, caller-supplied dictionary or enrollment entry bypasses this gate.
+    # Identity-only verification never permits application startup/mutation.
+    # No opt-in, marker, caller dictionary or enrollment bypasses later gates.
     raise SafetyError(
-        "Live non-production identity verification is not implemented; "
-        "NC-ENV-03 and later safety phases must complete before execution."
+        "Mutation/startup remains blocked: UNSEEDED fixtures and unverified "
+        "email/provider/job/reset safety must be resolved in later phases."
     )
 
 

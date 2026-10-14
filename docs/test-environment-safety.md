@@ -79,3 +79,17 @@ Entries are backend, standings and integration. Do not invoke the existing live
 integration test or standings updater directly to verify this phase. No DB
 baseline, marker table, seeds/reset, providers/email fixtures, endpoint, workflow,
 frontend change or production deployment is implemented here.
+
+## NC-ENV-03L local identity completion (mutation gates still closed)
+
+One LOCAL TEST ONLY enrollment now exists with the original six-field registry
+shape: local:nba-corner-local-test, numeric-loopback API 55421/backend 55410.
+The original statements above describe the NC-ENV-01 checkpoint. The hosted live
+verifier remains unavailable; the new verify_live_local_identity seam authenticates
+only a loopback GET to the ACL-protected local test-control marker. Identity-only
+validation may use mutation opt-in=0. Success is not an execution permit.
+require_live_identity, guarded client transport and launcher/startup remain refusing
+until later fixture/email/provider/job/reset requirements are proven. Production
+startup and all denylist behavior remain unchanged. See the complete lifecycle and
+execution proof in test-infrastructure/local-supabase/README.md. No production env
+file, application data or secrets are copied into the local stack.
