@@ -438,7 +438,13 @@ def controlled_child_environment(settings, filename, parent=None):
         for k in ("SYSTEMROOT", "SystemRoot", "WINDIR", "PATH", "TEMP", "TMP")
         if k in parent
     }
-    child.update({k: v for k, v in settings.items() if k in CONFIG_FIELDS})
+    child.update(
+        {
+            k: v
+            for k, v in settings.items()
+            if k in CONFIG_FIELDS and k not in OPERATIONAL_SECRETS
+        }
+    )
     child.update(
         NBA_CORNER_TEST_CONFIG=str(Path(filename).resolve()),
         PYTHONUTF8="1",
@@ -459,6 +465,8 @@ def prepare_runtime_environment(dotenv_loader=None):
         settings = load_test_config(config)
         target = validate_test_target(settings, load_enrollments())
         validate_test_email_settings(settings, target)
+        validate_test_provider_settings(settings, target)
+        validate_test_job_settings(settings)
         require_live_identity(target)
         return
     if dotenv_loader is None:
@@ -487,3 +495,101 @@ class GuardedTestClient:
 
 def get_test_client():
     return GuardedTestClient()
+
+
+PROVIDER_PREFIXES = (
+    "BALLDONTLIE_",
+    "ESPN_",
+    "NBA_STATS_",
+    "BREVO_",
+    "SENDINBLUE_",
+    "GA_",
+    "GOOGLE_ANALYTICS_",
+)
+OPERATIONAL_SECRETS = frozenset(
+    {"STANDINGS_CRON_TOKEN", "HEALTHCHECK_TOKEN", "JWT_SECRET"}
+)
+
+
+def runtime_safety_settings():
+    identity = os.environ.get("NBA_CORNER_ENV")
+    config = os.environ.get("NBA_CORNER_TEST_CONFIG")
+    if identity == "test" or config is not None:
+        if identity not in {None, "test"}:
+            raise SafetyError("Production cannot use controlled test configuration.")
+        return load_test_config(config)
+    if identity not in {None, "production"}:
+        raise SafetyError("Unrecognized environment identity.")
+    return {"NBA_CORNER_ENV": identity}
+
+
+def validate_test_provider_settings(settings, target, ambient=None):
+    ambient = os.environ if ambient is None else ambient
+    validate_local_enrollment(target)
+    if (
+        settings.get("NBA_CORNER_ENV") != "test"
+        or settings.get("NBA_CORNER_PROVIDER_MODE") != "fixtures"
+    ):
+        raise SafetyError("Test provider mode must explicitly select fixtures.")
+    for source in (settings, ambient):
+        if any(
+            v
+            and (
+                k.upper().startswith(PROVIDER_PREFIXES)
+                or k.upper() in OPERATIONAL_SECRETS
+            )
+            for k, v in source.items()
+        ):
+            raise SafetyError(
+                "Live provider and operational credentials/configuration are prohibited in test mode."
+            )
+    return "fixtures"
+
+
+def jobs_enabled(settings):
+    if settings.get("NBA_CORNER_ENV") == "test":
+        if settings.get("NBA_CORNER_JOBS_ENABLED") not in {None, "false"}:
+            raise SafetyError("Automatic test jobs cannot be enabled.")
+        return False
+    if settings.get("NBA_CORNER_ENV") not in {None, "production"}:
+        raise SafetyError("Unrecognized job environment identity.")
+    return True  # production schedules/authorization retain their original behavior
+
+
+def validate_test_job_settings(settings):
+    if jobs_enabled(settings) or settings.get("NBA_CORNER_JOBS_ENABLED") != "false":
+        raise SafetyError("Readiness requires an explicit jobs-disabled state.")
+    return False
+
+
+def verify_provider_job_readiness(settings):
+    target = validate_test_target(settings, load_enrollments(), identity_only=True)
+    validate_test_email_settings(settings, target)
+    validate_test_provider_settings(settings, target)
+    validate_test_job_settings(settings)
+    identity = verify_live_local_identity(settings)
+    return {
+        "identity_verified": identity["identity_verified"],
+        "database_marker": "PASS",
+        "email": "PASS",
+        "providers": "PASS",
+        "external_credentials": "PASS",
+        "jobs": "PASS",
+        "jobs_enabled": False,
+        "fixture_state": identity["marker"]["fixture_state"],
+        "fixtures_reset": "UNMET",
+        "integration_harness": "UNMET",
+        "mutation_permitted": False,
+    }
+
+
+def validate_test_destination(target, url):
+    """Pure allowlist for future local traffic; does not enable a transport."""
+    validate_local_enrollment(target)
+    parsed = urlsplit(url)
+    if parsed.username or parsed.password or parsed.fragment or "\\" in url:
+        raise SafetyError("Unexpected test destination.")
+    origin = normalize_origin(f"{parsed.scheme}://{parsed.netloc}")
+    if origin not in {target.supabase_origin, target.backend_origin}:
+        raise SafetyError("Only enrolled numeric-loopback destinations are allowed.")
+    return origin

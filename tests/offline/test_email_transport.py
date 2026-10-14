@@ -332,7 +332,11 @@ class EmailTests(unittest.TestCase):
             safety,
             "require_live_identity",
             side_effect=safety.SafetyError("Remaining gates closed"),
-        ) as remaining, self.assertRaises(
+        ) as remaining, patch.object(
+            safety, "validate_test_provider_settings"
+        ), patch.object(
+            safety, "validate_test_job_settings"
+        ), self.assertRaises(
             safety.SafetyError
         ):
             safety.prepare_runtime_environment(

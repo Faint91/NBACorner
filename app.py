@@ -6,6 +6,8 @@ from flask_cors import CORS
 from supabase import create_client
 from environment_safety import prepare_runtime_environment
 from email_transport import deliver_email, build_reset_link
+from provider_transport import provider_get, provider_uses_fixtures
+from job_safety import guard_runtime_job
 from collections import defaultdict
 import time
 import threading
@@ -451,6 +453,7 @@ def _compute_score_for_bracket(master_matches_by_key: dict, master_bracket_id: s
 
     Scoring rules unchanged (see original docstring).
     """
+    guard_runtime_job("score-recompute")
     # Sanity: both brackets must exist, be active, and belong to CURRENT_SEASON_ID
     brs = (
         supabase.table("brackets")
@@ -803,6 +806,7 @@ def admin_snapshot_leaderboard():
       * snapshot already exists for this season
       * there are no leaderboard rows to snapshot
     """
+    guard_runtime_job("leaderboard-snapshot")
     user_info = request.user or {}
     user_id = user_info.get("user_id")
     is_admin_token = user_info.get("is_admin", False)
@@ -863,6 +867,7 @@ def admin_season_rollover():
     CURRENT_SEASON_CODE / REGULAR_SEASON_END_UTC / PLAYOFFS_START_UTC in your
     deployment config and redeploy the backend.
     """
+    guard_runtime_job("season-rollover")
     user_info = request.user or {}
     user_id = user_info.get("user_id")
     is_admin_token = user_info.get("is_admin", False)
@@ -946,10 +951,11 @@ def fetch_and_sync_standings_from_nba():
     standings (wins/losses + seeds) for the CURRENT_SEASON_ID, then upsert
     into public.standings.
     """
+    guard_runtime_job("standings-refresh")
     API_BASE = "https://api.balldontlie.io/v1"
     
     # Build headers for Balldontlie (requires API key)
-    if not BALLDONTLIE_API_KEY:
+    if not provider_uses_fixtures() and not BALLDONTLIE_API_KEY:
         raise APIError("BALLDONTLIE_API_KEY is not configured", 500)
 
     headers = {
@@ -1004,7 +1010,7 @@ def fetch_and_sync_standings_from_nba():
 
         try:
             safe_print(f"🔵 Calling Balldontlie: {API_BASE}/games with params={params}")
-            resp = _requests.get(
+            resp = provider_get(_requests.get,
                 f"{API_BASE}/games",
                 params=params,
                 headers=headers,   # <- keep this if you added Authorization earlier
@@ -1151,6 +1157,7 @@ def admin_refresh_standings():
       - Call manually from an admin UI / Postman with a valid admin JWT.
       - Or let a scheduled job (see /internal/standings/refresh) call the same helper.
     """
+    guard_runtime_job("standings-refresh")
     user_info = request.user or {}
     user_id = user_info.get("user_id")
     is_admin_token = user_info.get("is_admin", False)
@@ -1188,6 +1195,7 @@ def internal_cron_refresh_standings():
           * Header: X-Cron-Token: <token>
           * Or query param: ?token=<token>
     """
+    guard_runtime_job("standings-refresh")
     token_supplied = (
         request.headers.get("X-Cron-Token")
         or request.args.get("token")
@@ -1217,6 +1225,7 @@ def internal_overwrite_standings():
     The script calling this endpoint does NOT need to send season_id or updated_at;
     those are filled in here using CURRENT_SEASON_ID and now_utc().
     """
+    guard_runtime_job("standings-overwrite")
 
     # --- Auth with the same secret token you already use for cron ---
     token_supplied = (
@@ -1355,6 +1364,7 @@ def admin_insert_test_teams():
       If not, it falls back to inserting without season_id (or skips if constraints prevent it).
     - If team codes are missing (required by standings FK), standings seeding is skipped for those teams.
     """
+    guard_runtime_job("team-insert")
     user_info = request.user or {}
     user_id = user_info.get("user_id")
     is_admin_token = user_info.get("is_admin", False)
@@ -1578,6 +1588,7 @@ def recompute_scores(master_bracket_id):
     Admin-only: recompute bracket_scores for ALL saved brackets
     in the CURRENT season against the given master_bracket_id.
     """
+    guard_runtime_job("score-recompute")
     # --- Admin check (JWT flag) ---
     user_info = request.user or {}
     user_id = user_info.get("user_id")
@@ -1758,6 +1769,7 @@ def _snapshot_leaderboard_for_current_season():
     or:
       { "error": "...", "status": 400/404/etc }
     """
+    guard_runtime_job("leaderboard-snapshot")
     # Make sure season globals are resolved
     ensure_season_globals()
 
@@ -2034,6 +2046,7 @@ def _rollover_current_season(
       - new_season: {id, code, regular_season_end_utc, playoffs_start_utc} on success
       - env_next_actions: suggested env values to set for the new season
     """
+    guard_runtime_job("season-rollover")
     # Make sure CURRENT_SEASON_ID / gates are resolved
     ensure_season_globals()
 

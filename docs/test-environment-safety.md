@@ -104,3 +104,13 @@ helper's email-readiness action verifies this gate plus authenticated DB identit
 without authorizing mutation. Capture inspection/clear and token-safe handling are
 in docs/test-email-safety.md. Other provider/job/fixture/reset/harness gates remain
 closed; no DB fixtures or integration mutations are enabled.
+
+
+## NC-ENV-04B provider/job gate
+
+ESPN and active Balldontlie GET paths now have deterministic provider response
+fixtures and no test live fallback. Explicit fixtures mode, absent external/operational
+credentials and jobs-disabled state are required. Runtime job entrypoints are guarded;
+explicit in-process job requests still stop at the unconditional UNSEEDED/reset/harness
+mutation block. No production workflow changes. Full inventory, preserved quirks,
+local read-only readiness command and limitations: docs/test-provider-job-safety.md.

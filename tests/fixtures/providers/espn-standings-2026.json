@@ -1,0 +1,55 @@
+{
+  "standings": {
+    "entries": [
+      {
+        "team": {
+          "displayName": "New York Knicks",
+          "abbreviation": "NY"
+        },
+        "stats": [
+          {
+            "type": "wins",
+            "value": 12
+          },
+          {
+            "type": "losses",
+            "value": 8
+          },
+          {
+            "type": "winpercent",
+            "value": 0.6
+          },
+          {
+            "type": "playoffseed",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "team": {
+          "displayName": "Los Angeles Lakers",
+          "abbreviation": "LAL"
+        },
+        "stats": [
+          {
+            "name": "wins",
+            "value": 0,
+            "summary": "9"
+          },
+          {
+            "name": "losses",
+            "summary": "11"
+          },
+          {
+            "name": "winpercent",
+            "value": 0
+          },
+          {
+            "name": "playoffseed",
+            "summary": "4"
+          }
+        ]
+      }
+    ]
+  }
+}

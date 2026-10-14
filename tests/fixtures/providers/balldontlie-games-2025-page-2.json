@@ -1,0 +1,40 @@
+{
+  "data": [
+    {
+      "home_team": {
+        "abbreviation": "LAL"
+      },
+      "visitor_team": {
+        "abbreviation": "NYK"
+      },
+      "home_team_score": 105,
+      "visitor_team_score": 100,
+      "postseason": false
+    },
+    {
+      "home_team": {
+        "abbreviation": "NYK"
+      },
+      "visitor_team": {
+        "abbreviation": "LAL"
+      },
+      "home_team_score": 100,
+      "visitor_team_score": 100,
+      "postseason": false
+    },
+    {
+      "home_team": {
+        "abbreviation": "XXX"
+      },
+      "visitor_team": {
+        "abbreviation": "NYK"
+      },
+      "home_team_score": 105,
+      "visitor_team_score": 100,
+      "postseason": false
+    }
+  ],
+  "meta": {
+    "next_cursor": null
+  }
+}

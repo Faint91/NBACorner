@@ -8,7 +8,10 @@ import requests
 from datetime import datetime, timezone
 from supabase import create_client, Client
 from environment_safety import prepare_runtime_environment
+from provider_transport import provider_get
+from job_safety import guard_runtime_job
 
+guard_runtime_job("standings-script")
 prepare_runtime_environment()
 
 # ✅ Initialize Supabase client
@@ -121,6 +124,7 @@ def _safe_float(val, default=0.0):
 
 
 def update_standings_from_json():
+    guard_runtime_job("standings-script")
     # Determine which season to ask ESPN for
     if NBA_STANDINGS_SEASON_OVERRIDE:
         try:
@@ -149,7 +153,7 @@ def update_standings_from_json():
             ),
             "Accept": "application/json, text/plain, */*",
         }
-        response = requests.get(standings_url, timeout=30, headers=headers)
+        response = provider_get(requests.get, standings_url, timeout=30, headers=headers)
 
         if DEBUG_STANDINGS:
             print("---- DEBUG: NBA standings HTTP response ----")

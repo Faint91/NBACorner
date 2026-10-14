@@ -15,7 +15,10 @@ PROJECT = "nba-corner-local-test"
 CONTAINER = "supabase_db_" + PROJECT
 CLI_VERSION = "2.118.0"
 sys.path.insert(0, str(ROOT))
-from environment_safety import verify_test_email_readiness
+from environment_safety import (
+    verify_test_email_readiness,
+    verify_provider_job_readiness,
+)
 from environment_safety import SafetyError, load_test_config, verify_live_local_identity
 
 
@@ -183,6 +186,7 @@ def main():
             "configure",
             "identity",
             "email-readiness",
+            "provider-job-readiness",
         ],
     )
     parser.add_argument("--config", type=Path)
@@ -259,6 +263,7 @@ def main():
                     "SUPABASE_KEY": key,
                     "SUPABASE_SERVICE_ROLE_KEY": key,
                     "NBA_CORNER_JOBS_ENABLED": "false",
+                    "NBA_CORNER_PROVIDER_MODE": "fixtures",
                     "NBA_CORNER_EMAIL_MODE": "capture",
                     "NBA_CORNER_RESET_LINK_ORIGIN": "http://127.0.0.1:55410",
                 }
@@ -277,9 +282,13 @@ def main():
                 raise SafetyError("Explicit ignored local test configuration required.")
             settings = load_test_config(str(args.config))
             result = (
-                verify_test_email_readiness(settings)
-                if args.action == "email-readiness"
-                else verify_live_local_identity(settings)
+                verify_provider_job_readiness(settings)
+                if args.action == "provider-job-readiness"
+                else (
+                    verify_test_email_readiness(settings)
+                    if args.action == "email-readiness"
+                    else verify_live_local_identity(settings)
+                )
             )
             print(json.dumps(result, indent=2))
         return 0
