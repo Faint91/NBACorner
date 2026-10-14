@@ -1,0 +1,394 @@
+{
+  "phase": "NC-ENV-05A",
+  "status": "Completed; marker-only evolution; seed/reset not started",
+  "verified_at_utc": "2026-10-14T18:26:04.991583+00:00",
+  "starting_state": {
+    "frontend": {
+      "branch": "main",
+      "head": "ce54143006f0409265937f5d548286d0b100d454",
+      "clean": true
+    },
+    "backend": {
+      "branch": "main",
+      "head": "30d8eb8f8c8309c970032d0f89ba64e480e4aa1e",
+      "clean": true
+    }
+  },
+  "marker_before": {
+    "columns": [
+      {
+        "name": "singleton",
+        "type": "boolean",
+        "nullable": "NO",
+        "default": "true"
+      },
+      {
+        "name": "environment",
+        "type": "text",
+        "nullable": "NO",
+        "default": null
+      },
+      {
+        "name": "project_ref",
+        "type": "text",
+        "nullable": "NO",
+        "default": null
+      },
+      {
+        "name": "marker_id",
+        "type": "text",
+        "nullable": "NO",
+        "default": null
+      },
+      {
+        "name": "marker_version",
+        "type": "text",
+        "nullable": "NO",
+        "default": null
+      },
+      {
+        "name": "baseline_version",
+        "type": "text",
+        "nullable": "NO",
+        "default": null
+      },
+      {
+        "name": "baseline_checkpoint",
+        "type": "text",
+        "nullable": "NO",
+        "default": null
+      },
+      {
+        "name": "baseline_commit",
+        "type": "text",
+        "nullable": "NO",
+        "default": null
+      },
+      {
+        "name": "fixture_state",
+        "type": "text",
+        "nullable": "NO",
+        "default": null
+      },
+      {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": "NO",
+        "default": "now()"
+      }
+    ],
+    "constraints": [
+      {
+        "name": "test_environment_identity_environment_check",
+        "type": "c",
+        "definition": "CHECK ((environment = 'test'::text))"
+      },
+      {
+        "name": "test_environment_identity_fixture_state_check",
+        "type": "c",
+        "definition": "CHECK ((fixture_state = 'UNSEEDED'::text))"
+      },
+      {
+        "name": "test_environment_identity_pkey",
+        "type": "p",
+        "definition": "PRIMARY KEY (singleton)"
+      },
+      {
+        "name": "test_environment_identity_project_ref_check",
+        "type": "c",
+        "definition": "CHECK ((project_ref = 'local:nba-corner-local-test'::text))"
+      },
+      {
+        "name": "test_environment_identity_singleton_check",
+        "type": "c",
+        "definition": "CHECK (singleton)"
+      }
+    ],
+    "owner": "postgres",
+    "table_acl": "{postgres=arwdDxtm/postgres,service_role=r/postgres}",
+    "schema_acl": "{postgres=UC/postgres,service_role=U/postgres}",
+    "row": {
+      "marker_id": "nba-corner-local-test",
+      "singleton": true,
+      "created_at": "2026-10-14T17:15:07.899256+00:00",
+      "environment": "test",
+      "project_ref": "local:nba-corner-local-test",
+      "fixture_state": "UNSEEDED",
+      "marker_version": "1",
+      "baseline_commit": "2e9d6752ce0a5f559673b99221d88c7f51c9d8ea",
+      "baseline_version": "nc-env-02-current-secured-v1",
+      "baseline_checkpoint": "da8c6695be0726ef3893ffefe605f6fa6e368f9c"
+    },
+    "role_access": [
+      {
+        "role": "anon",
+        "schema_usage": false,
+        "select": false,
+        "insert": false,
+        "update": false,
+        "delete": false
+      },
+      {
+        "role": "authenticated",
+        "schema_usage": false,
+        "select": false,
+        "insert": false,
+        "update": false,
+        "delete": false
+      },
+      {
+        "role": "postgres",
+        "schema_usage": true,
+        "select": true,
+        "insert": true,
+        "update": true,
+        "delete": true
+      },
+      {
+        "role": "service_role",
+        "schema_usage": true,
+        "select": true,
+        "insert": false,
+        "update": false,
+        "delete": false
+      }
+    ],
+    "application_counts": {
+      "bracket_scores": 0,
+      "brackets": 0,
+      "leaderboard_history": 0,
+      "leaderboard_history_rows": 0,
+      "leaderboard_history_snapshots": 0,
+      "league_members": 0,
+      "leagues": 0,
+      "matches": 0,
+      "password_resets": 0,
+      "seasons": 0,
+      "standings": 0,
+      "teams": 0,
+      "users": 0
+    }
+  },
+  "marker_after": {
+    "columns": [
+      {
+        "name": "singleton",
+        "type": "boolean",
+        "nullable": "NO",
+        "default": "true"
+      },
+      {
+        "name": "environment",
+        "type": "text",
+        "nullable": "NO",
+        "default": null
+      },
+      {
+        "name": "project_ref",
+        "type": "text",
+        "nullable": "NO",
+        "default": null
+      },
+      {
+        "name": "marker_id",
+        "type": "text",
+        "nullable": "NO",
+        "default": null
+      },
+      {
+        "name": "marker_version",
+        "type": "text",
+        "nullable": "NO",
+        "default": null
+      },
+      {
+        "name": "baseline_version",
+        "type": "text",
+        "nullable": "NO",
+        "default": null
+      },
+      {
+        "name": "baseline_checkpoint",
+        "type": "text",
+        "nullable": "NO",
+        "default": null
+      },
+      {
+        "name": "baseline_commit",
+        "type": "text",
+        "nullable": "NO",
+        "default": null
+      },
+      {
+        "name": "fixture_state",
+        "type": "text",
+        "nullable": "NO",
+        "default": null
+      },
+      {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": "NO",
+        "default": "now()"
+      },
+      {
+        "name": "fixture_version",
+        "type": "text",
+        "nullable": "YES",
+        "default": null
+      },
+      {
+        "name": "fixture_checksum",
+        "type": "text",
+        "nullable": "YES",
+        "default": null
+      }
+    ],
+    "constraints": [
+      {
+        "name": "test_environment_identity_environment_check",
+        "type": "c",
+        "definition": "CHECK ((environment = 'test'::text))"
+      },
+      {
+        "name": "test_environment_identity_fixture_metadata_check",
+        "type": "c",
+        "definition": "CHECK ((((fixture_state = 'UNSEEDED'::text) AND (fixture_version IS NULL) AND (fixture_checksum IS NULL)) OR ((fixture_state = 'SEEDED'::text) AND (fixture_version IS NOT NULL) AND (fixture_checksum IS NOT NULL) AND (fixture_version ~ '^[a-z0-9][a-z0-9._-]{0,79}$'::text) AND (fixture_checksum ~ '^[a-f0-9]{64}$'::text))))"
+      },
+      {
+        "name": "test_environment_identity_fixture_state_check",
+        "type": "c",
+        "definition": "CHECK ((fixture_state = ANY (ARRAY['UNSEEDED'::text, 'SEEDED'::text])))"
+      },
+      {
+        "name": "test_environment_identity_pkey",
+        "type": "p",
+        "definition": "PRIMARY KEY (singleton)"
+      },
+      {
+        "name": "test_environment_identity_project_ref_check",
+        "type": "c",
+        "definition": "CHECK ((project_ref = 'local:nba-corner-local-test'::text))"
+      },
+      {
+        "name": "test_environment_identity_singleton_check",
+        "type": "c",
+        "definition": "CHECK (singleton)"
+      }
+    ],
+    "owner": "postgres",
+    "table_acl": "{postgres=arwdDxtm/postgres,service_role=r/postgres}",
+    "schema_acl": "{postgres=UC/postgres,service_role=U/postgres}",
+    "row": {
+      "marker_id": "nba-corner-local-test",
+      "singleton": true,
+      "created_at": "2026-10-14T17:15:07.899256+00:00",
+      "environment": "test",
+      "project_ref": "local:nba-corner-local-test",
+      "fixture_state": "UNSEEDED",
+      "marker_version": "2",
+      "baseline_commit": "2e9d6752ce0a5f559673b99221d88c7f51c9d8ea",
+      "fixture_version": null,
+      "baseline_version": "nc-env-02-current-secured-v1",
+      "fixture_checksum": null,
+      "baseline_checkpoint": "da8c6695be0726ef3893ffefe605f6fa6e368f9c"
+    },
+    "role_access": [
+      {
+        "role": "anon",
+        "schema_usage": false,
+        "select": false,
+        "insert": false,
+        "update": false,
+        "delete": false
+      },
+      {
+        "role": "authenticated",
+        "schema_usage": false,
+        "select": false,
+        "insert": false,
+        "update": false,
+        "delete": false
+      },
+      {
+        "role": "postgres",
+        "schema_usage": true,
+        "select": true,
+        "insert": true,
+        "update": true,
+        "delete": true
+      },
+      {
+        "role": "service_role",
+        "schema_usage": true,
+        "select": true,
+        "insert": false,
+        "update": false,
+        "delete": false
+      }
+    ],
+    "application_counts": {
+      "bracket_scores": 0,
+      "brackets": 0,
+      "leaderboard_history": 0,
+      "leaderboard_history_rows": 0,
+      "leaderboard_history_snapshots": 0,
+      "league_members": 0,
+      "leagues": 0,
+      "matches": 0,
+      "password_resets": 0,
+      "seasons": 0,
+      "standings": 0,
+      "teams": 0,
+      "users": 0
+    }
+  },
+  "migration": "test-infrastructure/local-supabase/fixture-marker-v2.sql",
+  "verifier": "test-infrastructure/local-supabase/verify-fixture-marker-v2.sql",
+  "preservation": {
+    "row_fields_other_than_marker_version_unchanged": true,
+    "created_at_unchanged": true,
+    "baseline_identity_unchanged": true,
+    "owner_acl_unchanged": true,
+    "ordinary_role_actual_select_denied": [
+      "anon",
+      "authenticated"
+    ],
+    "service_role_read_only": true,
+    "all_application_counts_unchanged": true,
+    "all_application_counts_zero": true,
+    "application_semantic_verifier_before_after": "PASS",
+    "application_baseline_files_unchanged": true,
+    "product_code_unchanged": true
+  },
+  "validation": {
+    "environment_tests": 61,
+    "email_tests": 20,
+    "provider_job_tests": 28,
+    "marker_lifecycle_tests": 17,
+    "actual_check_expression_matrix_cases": 11,
+    "actual_check_expression_matrix": "PASS; read-only virtual candidates, no seeded updates",
+    "formatting": "PASS",
+    "syntax": "PASS",
+    "secret_scope_scan": "PASS",
+    "whitespace": "PASS"
+  },
+  "readiness": {
+    "identity": "PASS",
+    "marker": "PASS",
+    "email": "PASS",
+    "providers": "PASS",
+    "jobs": "PASS",
+    "fixtures_reset": "UNMET",
+    "harness": "UNMET",
+    "mutation_permitted": false
+  },
+  "production": {
+    "contact": false,
+    "database_changed": false,
+    "secrets_used": false,
+    "deployment": false
+  },
+  "application_data_seeded_or_reset": false,
+  "next": "Original NC-ENV-05 can resume after review and explicit authorization; not resumed"
+}

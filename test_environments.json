@@ -7,7 +7,7 @@
       "supabase_origin": "http://127.0.0.1:55421",
       "backend_origin": "http://127.0.0.1:55410",
       "marker_id": "nba-corner-local-test",
-      "marker_version": "1"
+      "marker_version": "2"
     }
   ]
 }

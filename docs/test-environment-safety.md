@@ -114,3 +114,13 @@ credentials and jobs-disabled state are required. Runtime job entrypoints are gu
 explicit in-process job requests still stop at the unconditional UNSEEDED/reset/harness
 mutation block. No production workflow changes. Full inventory, preserved quirks,
 local read-only readiness command and limitations: docs/test-provider-job-safety.md.
+
+
+## NC-ENV-05A marker lifecycle contract
+
+The enrolled local marker is now version 2. Read-only identity verification requires
+v2 and the explicit fixture_version/fixture_checksum fields. UNSEEDED requires both
+NULL; SEEDED requires a valid version and SHA-256 checksum. Metadata validity is not
+fixture integrity proof or an execution permit. Mutation/startup/guarded transport
+remain blocked. No application fixtures or reset occurred. Migration, security proof
+and ownership rules: test-infrastructure/local-supabase/README.md (NC-ENV-05A section).

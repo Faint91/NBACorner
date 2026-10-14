@@ -123,3 +123,59 @@ changed. The local four-container stack is left running for read-only review.
 
 References: Supabase CLI configuration
 https://supabase.com/docs/guides/local-development/cli/config
+
+
+## NC-ENV-05A: local fixture marker v2
+
+The local-only test-control marker is now contract version `2`; registry format
+stays version `1` and the six enrollment fields are unchanged. Normal authenticated
+identity validation requires marker version `2`, refusing version `1` even if an
+old enrollment is supplied. The historical identity-marker.sql v1 artifact is kept;
+fresh empty-target bootstrap now immediately applies fixture-marker-v2.sql and its
+read-only verifier. Do not rerun bootstrap or the one-shot v1 migration on this
+already initialized v2 target. `verify` checks both application and marker schemas.
+
+Only nba_corner_test_control.test_environment_identity changed. Added nullable text
+columns fixture_version and fixture_checksum (no defaults). The state CHECK allows
+exactly UNSEEDED and SEEDED. A consistency CHECK requires both metadata fields NULL
+when UNSEEDED, and both non-NULL when SEEDED. Seeded fixture versions use a 1–80
+character lowercase identifier `[a-z0-9][a-z0-9._-]{0,79}`; checksum is a lowercase
+64-character SHA-256 hex digest. No partial/empty/malformed metadata is accepted.
+This validates the metadata contract only: a checksum's existence does not prove
+that fixture data matches it, and never authorizes integration mutations.
+
+The migration is transactional, checks the exact enrolled v1 marker/column inventory,
+execution role/database, baseline identity, owner and ACLs, acquires a transaction
+advisory lease and an exclusive marker-table lock, and fails on incompatibility.
+It changes only marker_version to `2`, adds NULL metadata and replaces the fixture
+CHECK. Existing environment/project/baseline fields, singleton PK, created_at,
+other CHECKs and ACLs remain unchanged. It requests only the local PostgREST schema
+cache refresh. No product endpoint was added or changed.
+
+Observed authoritative state after evolution: UNSEEDED; fixture_version=NULL;
+fixture_checksum=NULL. All 13 application row counts remain zero. Anon and
+authenticated lack schema/table access (actual local SELECT attempts denied);
+service_role retains SELECT only; postgres remains owner. The NC-ENV-02 semantic
+verifier passed before and after; application tables, sequences, functions, view,
+policies, constraints/indexes and baseline files are unchanged.
+
+Only future authorized NC-ENV-05 seed tooling may persist the SEEDED transition,
+with the explicit fixture version and verified deterministic checksum after a
+successful seed. Later reset/reseed tooling owns subsequent transitions. NC-ENV-05A
+performed neither seed/reset nor a transient SEEDED update. The read-only verifier
+checks actual CHECK expressions using virtual candidate states. No app fixtures,
+passwords or tokens were created.
+
+Read-only review:
+
+```text
+python -B scripts/local_supabase_environment.py verify
+python -B scripts/local_supabase_environment.py identity --config C:/NBACorner/backend/.env.test.nba-local.local
+python -B scripts/local_supabase_environment.py provider-job-readiness --config C:/NBACorner/backend/.env.test.nba-local.local
+```
+
+126 offline safety tests passed, including 17 lifecycle tests. Identity, email,
+provider and jobs gates PASS; fixtures/reset and final harness remain UNMET;
+mutation_permitted=false. Startup, integration transport and runtime job gates stay
+closed. Original NC-ENV-05 may resume after review and explicit authorization; it
+has not resumed automatically. This marker is test infrastructure, not product data.

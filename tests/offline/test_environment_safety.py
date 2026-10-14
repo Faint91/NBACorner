@@ -505,7 +505,7 @@ LOCAL = safety.TestTarget(
     "http://127.0.0.1:55421",
     "http://127.0.0.1:55410",
     "nba-corner-local-test",
-    "1",
+    "2",
 )
 
 
@@ -526,11 +526,13 @@ def local_marker():
         "environment": "test",
         "project_ref": LOCAL.project_ref,
         "marker_id": LOCAL.marker_id,
-        "marker_version": "1",
+        "marker_version": "2",
         "baseline_version": "nc-env-02-current-secured-v1",
         "baseline_checkpoint": "da8c6695be0726ef3893ffefe605f6fa6e368f9c",
         "baseline_commit": "2e9d6752ce0a5f559673b99221d88c7f51c9d8ea",
         "fixture_state": "UNSEEDED",
+        "fixture_version": None,
+        "fixture_checksum": None,
     }
 
 
@@ -623,7 +625,7 @@ class LocalIdentityTests(unittest.TestCase):
             "https://example.invalid",
             LOCAL.backend_origin,
             LOCAL.marker_id,
-            "1",
+            "2",
         )
         with self.assertRaises(safety.SafetyError):
             safety.validate_local_enrollment(target)

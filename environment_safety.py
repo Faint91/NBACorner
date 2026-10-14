@@ -17,6 +17,7 @@ PRODUCTION_HOSTS = frozenset(
         "nbacorner.com",
     }
 )
+LOCAL_MARKER_VERSION = "2"
 REGISTRY_PATH = Path(__file__).with_name("test_environments.json")
 CONFIG_FIELDS = frozenset(
     {
@@ -267,8 +268,33 @@ def refuse_redirect(target, destination):
     raise SafetyError("Redirects are prohibited for guarded test traffic.")
 
 
+def validate_fixture_marker_metadata(marker):
+    """Validate lifecycle metadata only; no fixture integrity or mutation permit."""
+    if (
+        not isinstance(marker, dict)
+        or not {"fixture_state", "fixture_version", "fixture_checksum"} <= marker.keys()
+    ):
+        raise SafetyError("Fixture lifecycle metadata is missing.")
+    state, version, checksum = (
+        marker[k] for k in ("fixture_state", "fixture_version", "fixture_checksum")
+    )
+    if state == "UNSEEDED" and version is None and checksum is None:
+        return
+    if (
+        state == "SEEDED"
+        and isinstance(version, str)
+        and isinstance(checksum, str)
+        and re.fullmatch(r"[a-z0-9][a-z0-9._-]{0,79}", version)
+        and re.fullmatch(r"[a-f0-9]{64}", checksum)
+    ):
+        return
+    raise SafetyError("Fixture lifecycle metadata is contradictory or malformed.")
+
+
 def validate_local_marker(target, marker):
     validate_local_enrollment(target)
+    if target.marker_version != LOCAL_MARKER_VERSION:
+        raise SafetyError("Reviewed local marker v2 contract is required.")
     baseline = json.loads(
         (Path(__file__).parent / "db/baseline/manifest.json").read_text(
             encoding="utf-8"
@@ -282,7 +308,6 @@ def validate_local_marker(target, marker):
         "baseline_version": baseline["baseline_version"],
         "baseline_checkpoint": baseline["backend_checkpoint"],
         "baseline_commit": "2e9d6752ce0a5f559673b99221d88c7f51c9d8ea",
-        "fixture_state": "UNSEEDED",
     }
     if not isinstance(marker, dict) or any(
         marker.get(k) != v for k, v in expected.items()
@@ -290,6 +315,7 @@ def validate_local_marker(target, marker):
         raise SafetyError(
             "Local database marker/baseline identity is missing or mismatched."
         )
+    validate_fixture_marker_metadata(marker)
     return marker
 
 
@@ -315,7 +341,7 @@ def verify_live_local_identity(settings, enrollments=None):
     try:
         connection.request(
             "GET",
-            "/rest/v1/test_environment_identity?select=environment,project_ref,marker_id,marker_version,baseline_version,baseline_checkpoint,baseline_commit,fixture_state&limit=2",
+            "/rest/v1/test_environment_identity?select=environment,project_ref,marker_id,marker_version,baseline_version,baseline_checkpoint,baseline_commit,fixture_state,fixture_version,fixture_checksum&limit=2",
             headers={
                 "apikey": key,
                 "Authorization": "Bearer " + key,

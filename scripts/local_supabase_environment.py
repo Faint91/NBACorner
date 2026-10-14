@@ -212,8 +212,11 @@ def main():
             sql_file(ROOT / "db/baseline/000_current_schema.sql")
             sql_file(ROOT / "db/baseline/verify_current_schema.sql")
             sql_file(WORK / "identity-marker.sql")
+            sql_file(WORK / "fixture-marker-v2.sql")
+            sql_file(WORK / "verify-fixture-marker-v2.sql")
         elif args.action == "verify":
             sql_file(ROOT / "db/baseline/verify_current_schema.sql")
+            sql_file(WORK / "verify-fixture-marker-v2.sql")
         elif args.action == "configure":
             container_identity()
             destination = ROOT / ".env.test.nba-local.local"
