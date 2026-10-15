@@ -6,8 +6,7 @@ user's bracket only if it is saved; email addresses must never be exposed.**
 The live saved-bracket owner-email finding is KNOWN GAP: saved-bracket visibility
 is permitted, but email exposure violates the requirement. The combined row is
 counted once; its visibility and email findings are not conflated or duplicated.
-Counts: MATCHES REQUIREMENT=0; KNOWN GAP=1; REQUIREMENT NOT YET REVIEWED=32;
-UNCLEAR / NEEDS BUSINESS CHECKPOINT=0 (33 rows total). Other requirements remain
+Counts: MATCHES REQUIREMENT=0; KNOWN GAP=3; REQUIREMENT NOT YET REVIEWED=30; UNCLEAR / NEEDS BUSINESS CHECKPOINT=0 (33 rows total). Other unrelated requirements remain
 unreviewed. Passing characterization tests records behavior; it does not establish
 full product compliance. Safety constraints are separately verified.
 
@@ -107,7 +106,9 @@ separately unreviewed. Static saved-bracket-list and league-member queries inclu
 email. NC-01A did not prove user-facing runtime email emission for those endpoints.
 NC-01C — League characterization must verify league-member runtime exposure against
 the approved rule; NC-01B retains saved-bracket-list coverage. The static combined
-row remains REQUIREMENT NOT YET REVIEWED, not a second confirmed runtime gap.
+row was originally unreviewed; NC-01F now classifies its email exposure as KNOWN GAP
+using the completed NC-01B/NC-01C evidence. It is another finding surface, not a
+new independent email defect.
 
 ## Completion / gap matrix
 
@@ -144,7 +145,7 @@ current_behavior__auth__<scenario> throughout.
 
 | Scenario/test | Observed current behavior | Classification | Coverage/evidence | Future business checkpoint |
 | --- | --- | --- | --- | --- |
-| cross_user_draft_boundary | Ordinary A gets 403 for B draft; B owner and admin get 200. Only access boundary is tested. Ordinary-user denial supports the approved saved-only visibility rule; separate owner/admin requirements remain unreviewed. | REQUIREMENT NOT YET REVIEWED | Live local sequence | Approve draft/owner/admin identity visibility boundaries? |
+| cross_user_draft_boundary | Ordinary A gets 403 for B draft; B owner and admin get 200. Only access boundary is tested. Ordinary-user denial supports the approved saved-only visibility rule; separate owner/admin requirements remain unreviewed. | KNOWN GAP | Live local sequence | Approve draft/owner/admin identity visibility boundaries? |
 | cross_user_saved_owner_display | Ordinary A can read saved B bracket and its owner id/username/email; no password/reset/admin fields in owner object. Approved requirement permits saved-bracket visibility but forbids email exposure. Visibility is consistent; owner-email exposure is the gap. | KNOWN GAP | Live local sequence | None: the no-email-exposure requirement is already approved. |
 | required_identity_access | Missing, malformed and expired tokens return 401; A/B identities come from their JWT claims. | REQUIREMENT NOT YET REVIEWED | Live local sequence | Approve identity/profile payload and session verification contract? |
 | account_route_absence | No dedicated account/profile read/write or server logout route; auth/test-me returns JWT claims, and AccountPage uses cached user fields. | REQUIREMENT NOT YET REVIEWED | Static source inspection: Flask route inventory; AccountPage.tsx; test_me | Which profile/account mutation and session-revocation features are required? |
@@ -173,7 +174,7 @@ current_behavior__auth__<scenario> throughout.
 | Scenario/test | Observed current behavior | Classification | Coverage/evidence | Future business checkpoint |
 | --- | --- | --- | --- | --- |
 | test_email_boundary | Admin test-email requires JWT + DB admin; missing auth 401/ordinary 403/admin 200, sending to capture only. | REQUIREMENT NOT YET REVIEWED | Live local sequence | Approve test-email authorization and operational endpoint availability? |
-| display_fields_static | Existing bracket owner/list and league-member display sources include id/username/email; league access semantics are deferred. Auth payloads omit password/reset hashes; admin env response masks values. Approved no-email-exposure rule applies; the live saved-bracket gap is counted separately. | REQUIREMENT NOT YET REVIEWED | Static source inspection: get_bracket_by_id; list_all_brackets; get_league_members; auth responses; league runtime emission not proven | NC-01C: verify whether league-member API emits email to users against the approved rule. NC-01B: verify saved-bracket listing. |
+| display_fields_static | Existing bracket owner/list and league-member display sources include id/username/email; league access semantics are deferred. Auth payloads omit password/reset hashes; admin env response masks values. Approved no-email-exposure rule applies; the live saved-bracket gap is counted separately. | KNOWN GAP | Static source inspection: get_bracket_by_id; list_all_brackets; get_league_members; auth responses; league runtime emission not proven | NC-01C: verify whether league-member API emits email to users against the approved rule. NC-01B: verify saved-bracket listing. |
 
 ### Frontend auth behavior
 
@@ -228,3 +229,17 @@ full compliance with the approved requirement is not passed because the confirme
 email-exposure gap remains. This phase does not remediate it. No application,
 frontend, fixture, environment-safety or production changes were made. NC-01B —
 Bracket characterization baseline is the recommended next phase and has not begun.
+
+### NC-01F explicit classification audit: cross_user_draft_boundary
+
+Previous: REQUIREMENT NOT YET REVIEWED. Corrected: **KNOWN GAP**.
+Approved requirement: Other users may see another user's bracket only if it is saved.
+
+Ordinary draft denial matches the rule, but admin access to another user draft violates it. Confirmed by the existing NC-01A live case and NC-01B admin_draft_visibility; no admin exception was approved. No observed behavior or original test result changed.
+
+### NC-01F explicit classification audit: display_fields_static
+
+Previous: REQUIREMENT NOT YET REVIEWED. Corrected: **KNOWN GAP**.
+Approved requirement: Email addresses must never be exposed.
+
+Static serialization finding is now corroborated by existing NC-01B email_serialization and NC-01C member_email. Runtime league exposure is no longer pending; other non-email fields remain unreviewed. No observed behavior or original test result changed.

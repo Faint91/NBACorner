@@ -145,7 +145,7 @@ Counts are matrix-row counts, not distinct requirement counts. Backend and front
 lock manifestations have separate coverage; the previously established email issue
 is cross-referenced. Every KNOWN GAP below names its approved requirement.
 
-Classification totals: MATCHES REQUIREMENT=7; KNOWN GAP=7; REQUIREMENT NOT YET REVIEWED=23; UNCLEAR / NEEDS BUSINESS CHECKPOINT=0. Total=37.
+Classification totals: MATCHES REQUIREMENT=7; KNOWN GAP=8; REQUIREMENT NOT YET REVIEWED=22; UNCLEAR / NEEDS BUSINESS CHECKPOINT=0. Total=37.
 
 ### creation
 
@@ -177,7 +177,7 @@ Classification totals: MATCHES REQUIREMENT=7; KNOWN GAP=7; REQUIREMENT NOT YET R
 
 | Scenario/test | Current observed behavior | Approved requirement | Classification | Coverage | Later checkpoint |
 | --- | --- | --- | --- | --- | --- |
-| game_count_values | Games-only accepts negative/zero/large counts, requires field, leaves saved state unchanged; absent set-winner count persists NULL outside play-in. | None explicitly approved | REQUIREMENT NOT YET REVIEWED | LIVE guarded local Flask; canonical reset before/after sequence | Approve range/required count and games-only unsave semantics? |
+| game_count_values | Games-only accepts negative/zero/large counts, requires field, leaves saved state unchanged; absent set-winner count persists NULL outside play-in. | None explicitly approved | KNOWN GAP | LIVE guarded local Flask; canonical reset before/after sequence | Approve range/required count and games-only unsave semantics? |
 
 ### save/resubmit
 
@@ -311,3 +311,10 @@ Neither probe made a mutation or contacted production.
 No business behavior changed. No production contact, production mutation, production
 secret use, deployment or browser test. Next candidate: **NC-01C — League
 characterization baseline**. Not started; no remediation performed.
+
+### NC-01F explicit classification audit: game_count_values
+
+Previous: REQUIREMENT NOT YET REVIEWED. Corrected: **KNOWN GAP**.
+Approved requirement: Editing a previously saved bracket before lock requires saving/submitting again.
+
+Numeric range/NULL policy remains unreviewed, but leaving saved state unchanged after games-only edit violates resubmission. Same issue as games_only_saved_edit. No observed behavior or original test result changed.

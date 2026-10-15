@@ -654,8 +654,8 @@
       "scenario": "current_behavior__bracket__game_count_values",
       "group": "game counts",
       "current_behavior": "Games-only accepts negative/zero/large counts, requires field, leaves saved state unchanged; absent set-winner count persists NULL outside play-in.",
-      "classification": "REQUIREMENT NOT YET REVIEWED",
-      "approved_requirement": null,
+      "classification": "KNOWN GAP",
+      "approved_requirement": "Editing a previously saved bracket before lock requires saving/submitting again.",
       "future_business_question": "Approve range/required count and games-only unsave semantics?",
       "evidence_source": "LIVE guarded local Flask; canonical reset before/after sequence",
       "evidence": [
@@ -720,7 +720,13 @@
         }
       ],
       "facts": {},
-      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "classification_audit": {
+        "phase": "NC-01F",
+        "previous_classification": "REQUIREMENT NOT YET REVIEWED",
+        "reason": "Numeric range/NULL policy remains unreviewed, but leaving saved state unchanged after games-only edit violates resubmission. Same issue as games_only_saved_edit.",
+        "observations_changed": false
+      }
     },
     {
       "scenario": "current_behavior__bracket__games_only_saved_edit",
@@ -3172,8 +3178,8 @@
   },
   "classification_counts": {
     "MATCHES REQUIREMENT": 7,
-    "KNOWN GAP": 7,
-    "REQUIREMENT NOT YET REVIEWED": 23,
+    "KNOWN GAP": 8,
+    "REQUIREMENT NOT YET REVIEWED": 22,
     "UNCLEAR / NEEDS BUSINESS CHECKPOINT": 0
   },
   "live_tests": 27,

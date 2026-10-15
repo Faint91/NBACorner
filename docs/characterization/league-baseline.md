@@ -162,7 +162,7 @@ are separated by surface/role; existing bracket privacy findings are cross-refer
 Each known gap lists the exact approved requirement. STATIC findings are not browser
 claims and passing characterization does not mean desired policy is approved.
 
-Classification totals: MATCHES REQUIREMENT=2; KNOWN GAP=7; REQUIREMENT NOT YET REVIEWED=26; UNCLEAR / NEEDS BUSINESS CHECKPOINT=0. Total=35.
+Classification totals: MATCHES REQUIREMENT=2; KNOWN GAP=8; REQUIREMENT NOT YET REVIEWED=25; UNCLEAR / NEEDS BUSINESS CHECKPOINT=0. Total=35.
 
 ### creation
 
@@ -235,7 +235,7 @@ Public metadata/member/draft/saved coverage is recorded in discovery, membership
 | --- | --- | --- | --- | --- | --- |
 | leaderboard_private_surface | Global leaderboard is anonymous and ignores league_id; league filtering is client-side. Nonmember can obtain saved private-member score/bracket rows; no email fields there. | Private-league bracket information requires league membership. | KNOWN GAP | LIVE guarded local Flask; canonical reset per sequence | None required for classification |
 | missing_scores | Members with no score rows absent from leaderboard; saved member ID remains in member list; empty score surface returns empty rows. | None explicitly approved | REQUIREMENT NOT YET REVIEWED | LIVE guarded local Flask; canonical reset per sequence | Approve missing-score/member presentation and tie policy? |
-| frontend_leaderboard | LeaderboardPage fetches global leaderboard then filters rows by IDs from member endpoint; points/full-hits/saved-time ordering and ties are presentation only here. | None explicitly approved | REQUIREMENT NOT YET REVIEWED | STATIC source/schema/frontend; no browser claim | Approve membership enforcement placement and league tie/display contract? |
+| frontend_leaderboard | LeaderboardPage fetches global leaderboard then filters rows by IDs from member endpoint; points/full-hits/saved-time ordering and ties are presentation only here. | None explicitly approved | KNOWN GAP | STATIC source/schema/frontend; no browser claim | Approve membership enforcement placement and league tie/display contract? |
 | draft_scored_leaderboard | Stored score row for an unsaved member bracket appears in anonymous/global and league-query leaderboard, despite member list hiding its draft ID. | Another user may see a bracket only if that bracket is saved. | KNOWN GAP | LIVE guarded local Flask; canonical reset per sequence | None required for classification |
 
 ### owner powers
@@ -323,3 +323,10 @@ No application, frontend, schema, fixture builder, environment safety or earlier
 reports changed. No business behavior changed; no production contact/mutation/secrets/
 deployment. Next candidate: **NC-01D — Scoring / leaderboard / history
 characterization baseline**. Not started. No fixes performed.
+
+### NC-01F explicit classification audit: frontend_leaderboard
+
+Previous: REQUIREMENT NOT YET REVIEWED. Corrected: **KNOWN GAP**.
+Approved requirement: Private-league bracket information requires membership.
+
+Client-side filtering follows an unrestricted global download; existing leaderboard_private_surface and NC-01D league_surface confirm private data exposure. Other score/rank presentation details remain unreviewed. No observed behavior or original test result changed.

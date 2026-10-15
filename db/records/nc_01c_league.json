@@ -2372,10 +2372,16 @@
       "scenario": "current_behavior__league__frontend_leaderboard",
       "group": "league leaderboard",
       "current_behavior": "LeaderboardPage fetches global leaderboard then filters rows by IDs from member endpoint; points/full-hits/saved-time ordering and ties are presentation only here.",
-      "approved_requirement": null,
-      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "approved_requirement": "Private-league bracket information requires membership.",
+      "classification": "KNOWN GAP",
       "future_business_question": "Approve membership enforcement placement and league tie/display contract?",
-      "evidence_source": "STATIC source/schema/frontend; no browser claim"
+      "evidence_source": "STATIC source/schema/frontend; no browser claim",
+      "classification_audit": {
+        "phase": "NC-01F",
+        "previous_classification": "REQUIREMENT NOT YET REVIEWED",
+        "reason": "Client-side filtering follows an unrestricted global download; existing leaderboard_private_surface and NC-01D league_surface confirm private data exposure. Other score/rank presentation details remain unreviewed.",
+        "observations_changed": false
+      }
     },
     {
       "scenario": "current_behavior__league__frontend_members",
@@ -2579,8 +2585,8 @@
   },
   "classification_counts": {
     "MATCHES REQUIREMENT": 2,
-    "KNOWN GAP": 7,
-    "REQUIREMENT NOT YET REVIEWED": 26,
+    "KNOWN GAP": 8,
+    "REQUIREMENT NOT YET REVIEWED": 25,
     "UNCLEAR / NEEDS BUSINESS CHECKPOINT": 0
   },
   "live_tests": 26,
