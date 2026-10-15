@@ -97,7 +97,27 @@ def main():
     for row in rows:
         assert row["evidence_type"] in {"LIVE", "OFFLINE", "STATIC"}
         test = row["test_reference"]
-        tree = ast.parse((ROOT / test["file"]).read_text(encoding="utf-8"))
+        # NC-01 evidence is historical; repaired tests retain names but may move.
+        historical_source = subprocess.check_output(
+            [
+                "git",
+                "-c",
+                "safe.directory=" + str(ROOT).replace("\\", "/"),
+                "-C",
+                str(ROOT),
+                "show",
+                "b572b95c1322fe7660d55cd25eba8da99db0dae0:" + test["file"],
+            ],
+            text=True,
+            encoding="utf-8",
+        )
+        tree = ast.parse(historical_source)
+        assert any(
+            isinstance(n, ast.FunctionDef) and n.name == test["name"]
+            for n in ast.walk(
+                ast.parse((ROOT / test["file"]).read_text(encoding="utf-8"))
+            )
+        )
         assert any(
             isinstance(n, ast.FunctionDef)
             and n.name == test["name"]

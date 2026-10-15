@@ -75,7 +75,7 @@ class CurrentStaticScoring(unittest.TestCase):
         "Private-league bracket information requires membership.",
     )
     def current_behavior__scoring__league_surface(self):
-        self.assertNotIn("league_id", self.fn("leaderboard"))
+        self.assertIn("require_private_league_membership", self.fn("leaderboard"))
         s = (ROOT.parent / "frontend/src/pages/LeaderboardPage.tsx").read_text(
             encoding="utf-8"
         )
@@ -150,3 +150,9 @@ class CurrentStaticScoring(unittest.TestCase):
         ]
         self.assertNotIn("user_id", segment)
         self.assertIn("display_name", segment)
+
+
+# Preserve NC-01 provenance while explicitly marking approved repair acceptance.
+from scripts.nc02a1_acceptance_metadata import mark_acceptance
+
+mark_acceptance(CurrentStaticScoring)

@@ -521,13 +521,13 @@ class CurrentAuthBehavior(unittest.TestCase):
         body = self.call("GET", "/bracket/" + bid, 200, role="user-a")
         owner = body["bracket"]["owner"]
         self.assertTrue(
-            set(owner) == {"id", "username", "email"}
+            set(owner) == {"id", "username"}
             and owner["id"] == identity("user-b")
-            and owner["email"].endswith(".example")
+            and "email" not in owner
         )
         self.facts = {
             "cross_user_owner_fields": sorted(owner),
-            "email_visible": True,
+            "email_visible": False,
             "no_profile_write_route": True,
         }
 
@@ -538,7 +538,7 @@ class CurrentAuthBehavior(unittest.TestCase):
     )
     def current_behavior__auth__cross_user_draft_boundary(self):
         bid = self.context.install_auth_boundary_bracket(saved=False)
-        for role, status in (("user-a", 403), ("user-b", 200), ("admin", 200)):
+        for role, status in (("user-a", 403), ("user-b", 200), ("admin", 403)):
             self.context.login(role)
             self.call("GET", "/bracket/" + bid, status, role=role)
 
@@ -553,3 +553,9 @@ class CurrentAuthBehavior(unittest.TestCase):
             "health_token_configured": False,
             "rate_limits_disabled": self.context.module.DISABLE_RATE_LIMITS,
         }
+
+
+# Preserve NC-01 provenance while explicitly marking approved repair acceptance.
+from scripts.nc02a1_acceptance_metadata import mark_acceptance
+
+mark_acceptance(CurrentAuthBehavior)

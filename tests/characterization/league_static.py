@@ -159,7 +159,7 @@ class CurrentStaticLeagueBehavior(unittest.TestCase):
             "rows.filter((r) => selectedLeagueMemberIds.includes(r.user_id))", source
         )
         self.assertIn("getLeagueMembers(leagueId)", source)
-        self.assertNotIn('request.args.get("league_id")', self.fn("leaderboard"))
+        self.assertIn('request.args.get("league_id")', self.fn("leaderboard"))
         for x in ["total_points", "full_hits", "saved_at", "rows_out.sort"]:
             self.assertIn(x, self.fn("leaderboard"))
 
@@ -205,3 +205,9 @@ class CurrentStaticLeagueBehavior(unittest.TestCase):
         self.assertIn("members", self.fn("leave_league"))
         for name in ["create_league", "join_league", "leave_league", "delete_league"]:
             self.assertNotIn(".rpc(", self.fn(name))
+
+
+# Preserve NC-01 provenance while explicitly marking approved repair acceptance.
+from scripts.nc02a1_acceptance_metadata import mark_acceptance
+
+mark_acceptance(CurrentStaticLeagueBehavior)

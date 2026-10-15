@@ -1,0 +1,1024 @@
+{
+  "phase": "NC-02A1",
+  "passed": true,
+  "tests_run": 7,
+  "failures": 0,
+  "errors": 0,
+  "findings": [
+    {
+      "scenario": "test_discovery_and_boolean_password_state",
+      "classification": "APPROVED REQUIREMENT",
+      "requirements": [
+        "P1",
+        "P3",
+        "P8"
+      ],
+      "phase": "NC-02A1",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "owner",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues",
+          "status": 200,
+          "shape": [
+            "leagues"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/me",
+          "status": 200,
+          "shape": [
+            "leagues"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues",
+          "status": 200,
+          "shape": [
+            "leagues"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/me",
+          "status": 200,
+          "shape": [
+            "leagues"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues",
+          "status": 200,
+          "shape": [
+            "leagues"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/me",
+          "status": 200,
+          "shape": [
+            "leagues"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues",
+          "status": 200,
+          "shape": [
+            "leagues"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/me",
+          "status": 200,
+          "shape": [
+            "leagues"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "test_membership_removal_takes_effect_without_new_token",
+      "classification": "APPROVED REQUIREMENT",
+      "requirements": [
+        "P2",
+        "P7",
+        "P10"
+      ],
+      "phase": "NC-02A1",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "owner",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leaderboard?league_id=<id>",
+          "status": 200,
+          "shape": [
+            "master_bracket_id",
+            "master_matchups",
+            "master_updated_at",
+            "rows"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/leagues/<id>/membership",
+          "status": 200,
+          "shape": [
+            "league"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/<id>/members",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/brackets?league_id=<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leaderboard?league_id=<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/stats/champion-picks?league_id=<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "test_owner_without_membership_all_private_surfaces",
+      "classification": "APPROVED REQUIREMENT",
+      "requirements": [
+        "P2",
+        "P6",
+        "P7",
+        "P10"
+      ],
+      "phase": "NC-02A1",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "owner",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues/<id>/join",
+          "status": 201,
+          "shape": [
+            "league"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/<id>/members",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/<id>/members",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/<id>/members",
+          "status": 200,
+          "shape": [
+            "league",
+            "members"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/brackets?league_id=<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/brackets?league_id=<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/brackets?league_id=<id>",
+          "status": 200,
+          "shape": "list"
+        },
+        {
+          "method": "GET",
+          "path": "/leaderboard?league_id=<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leaderboard?league_id=<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leaderboard?league_id=<id>",
+          "status": 200,
+          "shape": [
+            "master_bracket_id",
+            "master_matchups",
+            "master_updated_at",
+            "rows"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/stats/champion-picks?league_id=<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/stats/champion-picks?league_id=<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/stats/champion-picks?league_id=<id>",
+          "status": 200,
+          "shape": [
+            "league_id",
+            "rows",
+            "scope",
+            "total_brackets"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "test_private_direct_api_role_matrix",
+      "classification": "APPROVED REQUIREMENT",
+      "requirements": [
+        "P1",
+        "P2",
+        "P6",
+        "P7",
+        "P8",
+        "P10"
+      ],
+      "phase": "NC-02A1",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "owner",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/<id>/members",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/<id>/members",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/<id>/members",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/<id>/members",
+          "status": 200,
+          "shape": [
+            "league",
+            "members"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/<id>/members",
+          "status": 200,
+          "shape": [
+            "league",
+            "members"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/brackets?league_id=<id>",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/brackets?league_id=<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/brackets?league_id=<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/brackets?league_id=<id>",
+          "status": 200,
+          "shape": "list"
+        },
+        {
+          "method": "GET",
+          "path": "/brackets?league_id=<id>",
+          "status": 200,
+          "shape": "list"
+        },
+        {
+          "method": "GET",
+          "path": "/leaderboard?league_id=<id>",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leaderboard?league_id=<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leaderboard?league_id=<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leaderboard?league_id=<id>",
+          "status": 200,
+          "shape": [
+            "master_bracket_id",
+            "master_matchups",
+            "master_updated_at",
+            "rows"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leaderboard?league_id=<id>",
+          "status": 200,
+          "shape": [
+            "master_bracket_id",
+            "master_matchups",
+            "master_updated_at",
+            "rows"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/stats/champion-picks?league_id=<id>",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/stats/champion-picks?league_id=<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/stats/champion-picks?league_id=<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/stats/champion-picks?league_id=<id>",
+          "status": 200,
+          "shape": [
+            "league_id",
+            "rows",
+            "scope",
+            "total_brackets"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/stats/champion-picks?league_id=<id>",
+          "status": 200,
+          "shape": [
+            "league_id",
+            "rows",
+            "scope",
+            "total_brackets"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/stats/champion-picks?league_id=<id>&season_code=2024-25",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/stats/champion-picks?league_id=<id>&season_code=2024-25",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/stats/champion-picks?league_id=<id>&season_code=2024-25",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/stats/champion-picks?league_id=<id>&season_code=2024-25",
+          "status": 200,
+          "shape": [
+            "league_id",
+            "rows",
+            "scope",
+            "total_brackets"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/stats/champion-picks?league_id=<id>&season_code=2024-25",
+          "status": 200,
+          "shape": [
+            "league_id",
+            "rows",
+            "scope",
+            "total_brackets"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "test_public_access_and_general_saved_visibility_preserved",
+      "classification": "APPROVED REQUIREMENT",
+      "requirements": [
+        "P1",
+        "P2",
+        "P6",
+        "P8"
+      ],
+      "phase": "NC-02A1",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "owner",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/<id>/members",
+          "status": 200,
+          "shape": [
+            "league",
+            "members"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/stats/champion-picks?league_id=<id>",
+          "status": 200,
+          "shape": [
+            "league_id",
+            "rows",
+            "scope",
+            "total_brackets"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/<id>/members",
+          "status": 200,
+          "shape": [
+            "league",
+            "members"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/stats/champion-picks?league_id=<id>",
+          "status": 200,
+          "shape": [
+            "league_id",
+            "rows",
+            "scope",
+            "total_brackets"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/<id>/members",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/brackets?league_id=<id>",
+          "status": 200,
+          "shape": "list"
+        },
+        {
+          "method": "GET",
+          "path": "/leaderboard",
+          "status": 200,
+          "shape": [
+            "master_bracket_id",
+            "master_matchups",
+            "master_updated_at",
+            "rows"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leaderboard?league_id=<id>",
+          "status": 200,
+          "shape": [
+            "master_bracket_id",
+            "master_matchups",
+            "master_updated_at",
+            "rows"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "test_public_user_allowlist_and_nested_bracket_payloads",
+      "classification": "APPROVED REQUIREMENT",
+      "requirements": [
+        "P1",
+        "P8"
+      ],
+      "phase": "NC-02A1",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "owner",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/bracket/<id>",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "matches"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/brackets?league_id=<id>",
+          "status": 200,
+          "shape": "list"
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "test_scoped_error_contracts",
+      "classification": "APPROVED REQUIREMENT",
+      "requirements": [
+        "P2",
+        "P7"
+      ],
+      "phase": "NC-02A1",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "owner",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/brackets?league_id=invalid",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/brackets?league_id=<id>",
+          "status": 404,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leaderboard?league_id=invalid",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leaderboard?league_id=<id>",
+          "status": 404,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/stats/champion-picks?league_id=invalid",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/stats/champion-picks?league_id=<id>",
+          "status": 404,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    }
+  ],
+  "readiness": {
+    "identity_verified": true,
+    "database_marker": "PASS",
+    "email": "PASS",
+    "providers": "PASS",
+    "external_credentials": "PASS",
+    "jobs": "PASS",
+    "jobs_enabled": false,
+    "fixture_state": "SEEDED",
+    "fixtures_reset": "PASS",
+    "integration_harness": "PASS",
+    "mutation_permitted": false,
+    "harness_state": "AVAILABLE_GUARDED",
+    "harness_scoped_mutation_permitted": false
+  },
+  "canonical_cleanup": {
+    "fixture_readiness": {
+      "identity": "PASS",
+      "marker": "PASS",
+      "email": "PASS",
+      "providers": "PASS",
+      "jobs": "PASS",
+      "fixture_reset": "PASS",
+      "harness": "UNMET",
+      "fixture_version": "nc-fixtures-v1",
+      "fixture_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "mutation_permitted": false
+    },
+    "flask_stopped": true,
+    "email_capture_empty": true,
+    "app_import_removed": true
+  },
+  "production_contact": false,
+  "historical_NC01_evidence_rewritten": false
+}

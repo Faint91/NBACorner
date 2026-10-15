@@ -473,9 +473,9 @@ class CurrentBracketBehavior(unittest.TestCase):
         bid = self.setup_bracket("saved", role="user-b")
         self.context.login("user-a")
         body = self.call("GET", f"/bracket/{bid}", 200, role="user-a")
-        self.assertEqual(set(body["bracket"]["owner"]), {"id", "username", "email"})
+        self.assertEqual(set(body["bracket"]["owner"]), {"id", "username"})
         rows = self.call("GET", "/brackets", 200, role="user-a")
-        self.assertEqual(set(rows[0]["user"]), {"id", "username", "email"})
+        self.assertEqual(set(rows[0]["user"]), {"id", "username"})
         self.facts = {
             "owner_fields": sorted(body["bracket"]["owner"]),
             "list_user_fields": sorted(rows[0]["user"]),
@@ -510,7 +510,7 @@ class CurrentBracketBehavior(unittest.TestCase):
     def current_behavior__bracket__admin_draft_visibility(self):
         bid = self.setup_bracket()
         self.context.login("admin")
-        self.call("GET", f"/bracket/{bid}", 200, role="admin")
+        self.call("GET", f"/bracket/{bid}", 403, role="admin")
 
     @behavior(
         "playoff lock",
@@ -685,3 +685,9 @@ class CurrentBracketBehavior(unittest.TestCase):
             role="user-a",
             payload={"games": 4},
         )
+
+
+# Preserve NC-01 provenance while explicitly marking approved repair acceptance.
+from scripts.nc02a1_acceptance_metadata import mark_acceptance
+
+mark_acceptance(CurrentBracketBehavior)

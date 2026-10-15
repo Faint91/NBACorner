@@ -685,6 +685,94 @@ def require_auth(f):
     return wrapper
 
 
+def public_user(user):
+    """Allowlisted other-user identity; own-account auth responses stay separate."""
+    return {"id": user.get("id"), "username": user.get("username")}
+
+
+def require_private_league_membership(league_id, user, *, public_members_only=False):
+    """Private member data requires a current membership, never ownership/admin alone.
+
+    Public member/stat endpoints retain their existing member/owner/admin policy.
+    Returned metadata cannot carry the stored password hash into a response.
+    """
+    if not is_uuid(league_id):
+        return None, False, (jsonify({"error": "Invalid league id"}), 400)
+    rows = (
+        supabase.table("leagues")
+        .select(
+            "id, name, owner_user_id, is_global, password_hash, created_at, updated_at"
+        )
+        .eq("id", league_id)
+        .limit(1)
+        .execute()
+        .data
+        or []
+    )
+    if not rows:
+        return None, False, (jsonify({"error": "League not found"}), 404)
+    league = dict(rows[0])
+    private = bool(league.pop("password_hash", None))
+    league["requires_password"] = private
+    user_id = user.get("user_id")
+    membership = (
+        (
+            supabase.table("league_members")
+            .select("id")
+            .eq("league_id", league_id)
+            .eq("user_id", user_id)
+            .limit(1)
+            .execute()
+            .data
+            or []
+        )
+        if user_id
+        else []
+    )
+    is_member = bool(membership)
+    public_allowed = (
+        is_member
+        or league.get("owner_user_id") == user_id
+        or bool(user.get("is_admin"))
+    )
+    if (private and not is_member) or (
+        not private and public_members_only and not public_allowed
+    ):
+        return (
+            None,
+            is_member,
+            (jsonify({"error": "You are not a member of this league."}), 403),
+        )
+    return league, is_member, None
+
+
+def require_auth_for_league_scope(f):
+    """Authenticate private scope only; public/global leaderboard stays unchanged."""
+    authenticated = require_auth(f)
+
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        league_id = request.args.get("league_id")
+        if league_id and is_uuid(league_id):
+            try:
+                rows = (
+                    supabase.table("leagues")
+                    .select("password_hash")
+                    .eq("id", league_id)
+                    .limit(1)
+                    .execute()
+                    .data
+                    or []
+                )
+            except Exception:
+                return jsonify({"error": "Unexpected error"}), 500
+            if rows and rows[0].get("password_hash"):
+                return authenticated(*args, **kwargs)
+        return f(*args, **kwargs)
+
+    return wrapper
+
+
 @app.route("/auth/test-me", methods=["GET"])
 @require_auth
 def test_me():
@@ -3162,16 +3250,6 @@ def get_bracket_by_id(bracket_id):
     viewer = getattr(request, "user", None) or {}
     viewer_id = viewer.get("user_id")
 
-    viewer_res = (
-        supabase.table("users")
-        .select("id, is_admin")
-        .eq("id", viewer_id)
-        .limit(1)
-        .execute()
-    )
-    viewer_rows = viewer_res.data or []
-    is_admin = bool(viewer_rows and str(viewer_rows[0].get("is_admin")).lower() in ("true", "t", "1", "yes"))
-
     br_res = (
         supabase.table("brackets")
         .select("id, user_id, is_done, deleted_at, name, created_at, saved_at, season_id, is_master")
@@ -3211,7 +3289,7 @@ def get_bracket_by_id(bracket_id):
     owner_id = bracket.get("user_id")
     is_owner = str(viewer_id) == str(owner_id)
 
-    if not (is_owner or is_admin) and not bracket.get("is_done", False):
+    if not is_owner and not bracket.get("is_done", False):
         return jsonify({"error": "Bracket not yet saved or not accessible"}), 403
 
     matches_res = (
@@ -3268,7 +3346,7 @@ def get_bracket_by_id(bracket_id):
 
     owner_res = (
         supabase.table("users")
-        .select("id, username, email")
+        .select("id, username")
         .eq("id", owner_id)
         .limit(1)
         .execute()
@@ -3280,7 +3358,7 @@ def get_bracket_by_id(bracket_id):
     return jsonify({
         "bracket": {
             **bracket,
-            "owner": {"id": owner.get("id"), "username": owner.get("username"), "email": owner.get("email")},
+            "owner": public_user(owner),
             "is_owner": is_owner,
             "is_master": bool(derived_is_master),
             "isMaster": bool(derived_is_master),
@@ -3314,21 +3392,9 @@ def list_all_brackets():
         league_user_ids = None
 
         if league_id:
-            # Basic UUID validation
-            if not is_uuid(league_id):
-                return jsonify({"error": "Invalid league id"}), 400
-
-            # 1) Check league exists
-            league_res = (
-                supabase.table("leagues")
-                .select("id")
-                .eq("id", league_id)
-                .limit(1)
-                .execute()
-            )
-            league_rows = league_res.data or []
-            if not league_rows:
-                return jsonify({"error": "League not found"}), 404
+            _, _, error = require_private_league_membership(league_id, user_info)
+            if error:
+                return error
 
             # 2) Get members of this league
             mem_res = (
@@ -3376,7 +3442,7 @@ def list_all_brackets():
         if user_ids:
             users_res = (
                 supabase.table("users")
-                .select("id, username, email")
+                .select("id, username")
                 .in_("id", user_ids)
                 .execute()
             )
@@ -3393,11 +3459,7 @@ def list_all_brackets():
                     "saved_at": b.get("saved_at"),
                     "created_at": b.get("created_at"),
                     "is_done": b.get("is_done", False),
-                    "user": {
-                        "id": b["user_id"],
-                        "username": user_info.get("username"),
-                        "email": user_info.get("email"),
-                    },
+                    "user": public_user({**user_info, "id": b["user_id"]}),
                     # convenience flags for the UI
                     "playoffs_locked": locked,
                     "bracket_creation_open": creation_open,
@@ -3863,12 +3925,31 @@ def set_match_games(match_id):
 
 
 @app.route("/leaderboard", methods=["GET"])
+@require_auth_for_league_scope
 def leaderboard():
     """
     Returns leaderboard rows for the CURRENT season plus a full master_matchups map.
     Each matchup includes team codes; if a side isn't known yet we return "TBD".
     """
     try:
+        league_id = request.args.get("league_id")
+        league_user_ids = None
+        if league_id:
+            league, _, error = require_private_league_membership(
+                league_id, getattr(request, "user", None) or {}
+            )
+            if error:
+                return error
+            # Public league_id was historically ignored here; P9 remains deferred.
+            if league["requires_password"]:
+                members = (
+                    supabase.table("league_members")
+                    .select("user_id")
+                    .eq("league_id", league_id)
+                    .execute().data or []
+                )
+                league_user_ids = {m["user_id"] for m in members if m.get("user_id")}
+
         # -------- 1) Scores for current season --------
         scores_q = (
             supabase.table("bracket_scores")
@@ -3940,6 +4021,8 @@ def leaderboard():
             bid = s.get("bracket_id")
             b = br_by_id.get(bid)
             if not bid or not b:
+                continue
+            if league_user_ids is not None and b.get("user_id") not in league_user_ids:
                 continue
             u = users_by_id.get(b["user_id"], {})
             rows_out.append({
@@ -4119,15 +4202,11 @@ def champion_pick_stats():
 
     Access:
     - Global (no league_id): any authenticated user.
-    - League scope: same rule as get_league_members:
-        - league member, OR
-        - league owner, OR
-        - admin.
+    - Private league scope: active membership, including owners/admins.
+    - Public league scope: existing member/owner/admin rule.
     """
     # Auth context
     user = getattr(request, "user", None) or {}
-    user_id = user.get("user_id")
-    is_admin = bool(user.get("is_admin"))
 
     league_id = request.args.get("league_id") or None
     scope = "global"
@@ -4147,33 +4226,11 @@ def champion_pick_stats():
 
             scope = "league"
 
-            league_res = (
-                supabase.table("leagues")
-                .select("id, name, owner_user_id, created_at, updated_at")
-                .eq("id", league_id)
-                .limit(1)
-                .execute()
+            league_row, _, error = require_private_league_membership(
+                league_id, user, public_members_only=True
             )
-            league_rows = league_res.data or []
-            if not league_rows:
-                return jsonify({"error": "League not found"}), 404
-
-            league_row = league_rows[0]
-
-            # Check if current user is a member/owner/admin
-            mem_res_for_user = (
-                supabase.table("league_members")
-                .select("id")
-                .eq("league_id", league_row["id"])
-                .eq("user_id", user_id)
-                .limit(1)
-                .execute()
-            )
-            is_member = bool(mem_res_for_user.data)
-            is_owner = user_id and user_id == league_row.get("owner_user_id")
-
-            if not (is_member or is_owner or is_admin):
-                return jsonify({"error": "You are not a member of this league."}), 403
+            if error:
+                return error
 
             # Load all members of the league
             mem_res = (
@@ -4733,7 +4790,7 @@ def get_my_leagues():
                     "created_at": league.get("created_at"),
                     "updated_at": league.get("updated_at"),
                     "joined_at": m.get("joined_at"),
-                    "requires_password": league.get("password_hash", True),
+                    "requires_password": bool(league.get("password_hash")),
                 }
             )
 
@@ -4815,7 +4872,11 @@ def list_leagues():
                 {
                     "id": lid,
                     "name": league.get("name"),
-                    "owner_user_id": league.get("owner_user_id"),
+                    **(
+                        {"owner_user_id": league.get("owner_user_id")}
+                        if lid in member_league_ids or not league.get("password_hash")
+                        else {}
+                    ),
                     "is_global": league.get("is_global", False),
                     "created_at": league.get("created_at"),
                     "updated_at": league.get("updated_at"),
@@ -5263,33 +5324,11 @@ def get_league_members(league_id):
     Get all members of a league, plus whether they have a bracket for
     the current season.
 
-    Access:
-    - Auth required.
-    - Allowed if the current user:
-      - Is a member of the league, OR
-      - Is the league owner, OR
-      - Is an admin.
-
-    Response shape:
-    {
-      "league": { ... },
-      "members": [
-        {
-          "user_id": "...",
-          "username": "...",
-          "email": "...",
-          "joined_at": "...",
-          "is_owner": true/false,
-          "has_bracket": true/false,
-          "bracket_id": "..." | null
-        },
-        ...
-      ]
-    }
+    Private member data requires active membership. Public leagues retain the
+    existing member/owner/admin access rule. User display never includes email.
     """
     user_info = getattr(request, "user", None) or {}
     user_id = user_info.get("user_id")
-    is_admin = bool(user_info.get("is_admin"))
 
     if not user_id:
         return jsonify({"error": "Unauthorized"}), 401
@@ -5298,35 +5337,11 @@ def get_league_members(league_id):
         return jsonify({"error": "Invalid league id"}), 400
 
     try:
-        # 1) Load league
-        league_res = (
-            supabase.table("leagues")
-            .select("id, name, owner_user_id, is_global, created_at, updated_at")
-            .eq("id", league_id)
-            .limit(1)
-            .execute()
+        league, _, error = require_private_league_membership(
+            league_id, user_info, public_members_only=True
         )
-        league_rows = league_res.data or []
-        if not league_rows:
-            return jsonify({"error": "League not found"}), 404
-
-        league = league_rows[0]
-
-        # 2) Check membership of current user (for access control)
-        mem_res_for_user = (
-            supabase.table("league_members")
-            .select("id")
-            .eq("league_id", league["id"])
-            .eq("user_id", user_id)
-            .limit(1)
-            .execute()
-        )
-        is_member = bool(mem_res_for_user.data)
-
-        is_owner = league.get("owner_user_id") == user_id
-
-        if not (is_member or is_owner or is_admin):
-            return jsonify({"error": "You are not a member of this league."}), 403
+        if error:
+            return error
 
         # 3) Get all memberships for this league
         mem_res = (
@@ -5352,7 +5367,7 @@ def get_league_members(league_id):
         if user_ids:
             users_res = (
                 supabase.table("users")
-                .select("id, username, email")
+                .select("id, username")
                 .in_("id", user_ids)
                 .execute()
             )
@@ -5386,13 +5401,12 @@ def get_league_members(league_id):
         joined_by_user = {m["user_id"]: m["joined_at"] for m in mem_rows if m.get("user_id")}
 
         for uid in user_ids:
-            u = users_by_id.get(uid, {})
+            u = public_user(users_by_id.get(uid, {}))
             bracket = brackets_by_user.get(uid)
             members_out.append(
                 {
                     "user_id": uid,
                     "username": u.get("username"),
-                    "email": u.get("email"),
                     "joined_at": joined_by_user.get(uid),
                     "is_owner": uid == owner_id,
                     "has_bracket": bracket is not None,

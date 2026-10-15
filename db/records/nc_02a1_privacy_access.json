@@ -1,0 +1,682 @@
+{
+  "phase": "NC-02A1",
+  "status": "COMPLETED",
+  "verified_at_utc": "2026-10-15T01:15:58.604261+00:00",
+  "starting_repositories": {
+    "backend": {
+      "branch": "main",
+      "head": "b572b95c1322fe7660d55cd25eba8da99db0dae0",
+      "clean": true
+    },
+    "frontend": {
+      "branch": "main",
+      "head": "ce54143006f0409265937f5d548286d0b100d454",
+      "clean": true
+    }
+  },
+  "requirements_implemented": [
+    "P1",
+    "P2",
+    "P3",
+    "P6",
+    "P7",
+    "P8",
+    "P10"
+  ],
+  "requirements_deferred": [
+    "P4",
+    "P5",
+    "P9"
+  ],
+  "authoritative_baseline": "db/records/nc_01_consolidated.json",
+  "historical_evidence_unchanged": true,
+  "route_inventory": [
+    {
+      "route": "GET /bracket/<id>",
+      "before": "Owner email and admin draft read bypass.",
+      "after": "Safe id/username owner; drafts readable only by owner.",
+      "requirements": [
+        "P1",
+        "P6",
+        "P8"
+      ]
+    },
+    {
+      "route": "GET /brackets",
+      "before": "Nested other-user email.",
+      "after": "Safe public user allowlist; saved eligibility unchanged.",
+      "requirements": [
+        "P1",
+        "P8"
+      ]
+    },
+    {
+      "route": "GET /brackets?league_id=<private>",
+      "before": "Missing requester membership gate.",
+      "after": "Active membership before member IDs or brackets are read.",
+      "requirements": [
+        "P2",
+        "P7",
+        "P10"
+      ]
+    },
+    {
+      "route": "GET /leagues",
+      "before": "Private discovery exposed owner identity.",
+      "after": "Private nonmember metadata omits owner identity; count remains aggregate, password flag boolean.",
+      "requirements": [
+        "P3",
+        "P8"
+      ]
+    },
+    {
+      "route": "GET /leagues/me",
+      "before": "requires_password contained raw stored hash.",
+      "after": "Boolean hash-presence flag only.",
+      "requirements": [
+        "P8"
+      ]
+    },
+    {
+      "route": "GET /leagues/<id>/members",
+      "before": "Other-user email plus owner/admin private membership exceptions.",
+      "after": "Safe member display; private membership mandatory, public authorization unchanged.",
+      "requirements": [
+        "P1",
+        "P2",
+        "P6",
+        "P7",
+        "P8",
+        "P10"
+      ]
+    },
+    {
+      "route": "GET /stats/champion-picks?league_id=<private>[&season_code=...]",
+      "before": "Owner/admin private membership bypass.",
+      "after": "Current membership required before current/past member-derived data.",
+      "requirements": [
+        "P2",
+        "P6",
+        "P7",
+        "P10"
+      ]
+    },
+    {
+      "route": "GET /leaderboard?league_id=<private>",
+      "before": "Query ignored, anonymous unscoped result.",
+      "after": "Private authentication and membership required, member owner rows filtered server-side; math unchanged.",
+      "requirements": [
+        "P2",
+        "P7",
+        "P10"
+      ]
+    },
+    {
+      "route": "GET /leaderboard (global/public scope)",
+      "before": "Global stored-score eligibility and client filtering.",
+      "after": "Preserved for P4/P5/P9; no email/security fields.",
+      "requirements": [
+        "P1",
+        "P8"
+      ]
+    },
+    {
+      "route": "GET /leaderboard/history[/{season}]",
+      "before": "Safe structured history, no league scope.",
+      "after": "Reviewed; unchanged.",
+      "requirements": [
+        "P1",
+        "P8"
+      ]
+    },
+    {
+      "route": "GET /brackets/me; POST /auth/login, /auth/register; GET /auth/test-me",
+      "before": "Own-account representation.",
+      "after": "Reviewed; legitimate own email/session behavior unchanged.",
+      "requirements": [
+        "P1",
+        "P8"
+      ]
+    },
+    {
+      "route": "League create/join/leave/delete; admin diagnostics",
+      "before": "Explicit projections and masked diagnostics.",
+      "after": "Reviewed; lifecycle/password validation/diagnostics unchanged.",
+      "requirements": [
+        "P1",
+        "P8"
+      ]
+    }
+  ],
+  "safe_user_serializer": {
+    "path": "app.py:public_user",
+    "allowlist": [
+      "id",
+      "username"
+    ],
+    "email_query_columns_removed": true,
+    "own_account_serialization_separate": true
+  },
+  "private_authorization": {
+    "path": "app.py:require_private_league_membership",
+    "active_means": "Current league_members row; no active flag exists in present schema.",
+    "owner_admin_substitute_for_private_membership": false,
+    "public_rules_preserved": true
+  },
+  "discovery": {
+    "nonmember_private_fields": [
+      "id",
+      "name",
+      "is_global",
+      "created_at",
+      "updated_at",
+      "is_member",
+      "member_count",
+      "requires_password"
+    ],
+    "aggregate_member_count": "Preserved per explicit prompt allowance and existing FindLeaguesPage UX.",
+    "owner_identity": "Returned for private members only; public behavior unchanged."
+  },
+  "password_repair": {
+    "tracking_id": "NC-02A1-P8-HASH",
+    "source_finding_id": "NC-01C:current_behavior__league__own_list_hash_surface",
+    "original_classification": "REQUIREMENT NOT YET REVIEWED",
+    "current_approval": "P8",
+    "status": "FIXED",
+    "value": "Boolean presence only; hash values never recorded."
+  },
+  "canonical_gap_status": [
+    {
+      "gap_id": "GAP-EMAIL-001",
+      "status": "FIXED",
+      "approved_requirement_id": "REQ-PRIVACY-EMAIL-001",
+      "source_finding_ids": [
+        "NC-01A:current_behavior__auth__cross_user_saved_owner_display",
+        "NC-01A:current_behavior__auth__display_fields_static",
+        "NC-01B:current_behavior__bracket__email_serialization",
+        "NC-01C:current_behavior__league__member_email"
+      ],
+      "reason": "Approved NC-02A1 scope repaired."
+    },
+    {
+      "gap_id": "GAP-ADMIN-DRAFT-001",
+      "status": "FIXED",
+      "approved_requirement_id": "REQ-BRACKET-SAVED-001",
+      "source_finding_ids": [
+        "NC-01A:current_behavior__auth__cross_user_draft_boundary",
+        "NC-01B:current_behavior__bracket__admin_draft_visibility"
+      ],
+      "reason": "Approved NC-02A1 scope repaired."
+    },
+    {
+      "gap_id": "GAP-ADMIN-MUTATE-001",
+      "status": "DEFERRED",
+      "approved_requirement_id": "REQ-BRACKET-ADMIN-001",
+      "source_finding_ids": [
+        "NC-01B:current_behavior__bracket__admin_arbitrary_mutations"
+      ],
+      "reason": "Unrelated or explicitly deferred business behavior unchanged."
+    },
+    {
+      "gap_id": "GAP-RESAVE-001",
+      "status": "DEFERRED",
+      "approved_requirement_id": "REQ-BRACKET-RESAVE-001",
+      "source_finding_ids": [
+        "NC-01B:current_behavior__bracket__game_count_values",
+        "NC-01B:current_behavior__bracket__games_only_saved_edit"
+      ],
+      "reason": "Unrelated or explicitly deferred business behavior unchanged."
+    },
+    {
+      "gap_id": "GAP-LOCK-BACKEND-001",
+      "status": "DEFERRED",
+      "approved_requirement_id": "REQ-BRACKET-LOCK-001",
+      "source_finding_ids": [
+        "NC-01B:current_behavior__bracket__postlock_content"
+      ],
+      "reason": "Unrelated or explicitly deferred business behavior unchanged."
+    },
+    {
+      "gap_id": "GAP-LOCK-FRONTEND-001",
+      "status": "DEFERRED",
+      "approved_requirement_id": "REQ-BRACKET-LOCK-001",
+      "source_finding_ids": [
+        "NC-01B:current_behavior__bracket__frontend_lock"
+      ],
+      "reason": "Unrelated or explicitly deferred business behavior unchanged."
+    },
+    {
+      "gap_id": "GAP-UNDO-FRONTEND-001",
+      "status": "DEFERRED",
+      "approved_requirement_id": "REQ-BRACKET-UNDO-001",
+      "source_finding_ids": [
+        "NC-01B:current_behavior__bracket__frontend_undo"
+      ],
+      "reason": "Unrelated or explicitly deferred business behavior unchanged."
+    },
+    {
+      "gap_id": "GAP-PRIVATE-LIST-001",
+      "status": "FIXED",
+      "approved_requirement_id": "REQ-LEAGUE-PRIVATE-001",
+      "source_finding_ids": [
+        "NC-01C:current_behavior__league__private_bracket_bypass"
+      ],
+      "reason": "Approved NC-02A1 scope repaired."
+    },
+    {
+      "gap_id": "GAP-PRIVATE-DETAIL-001",
+      "status": "DEFERRED",
+      "approved_requirement_id": "REQ-LEAGUE-PRIVATE-001",
+      "source_finding_ids": [
+        "NC-01C:current_behavior__league__private_bracket_bypass"
+      ],
+      "reason": "General saved-detail access explicitly preserved by the current approved scope; broader bracket visibility not redesigned."
+    },
+    {
+      "gap_id": "GAP-PRIVATE-MEMBERS-001",
+      "status": "FIXED",
+      "approved_requirement_id": "REQ-LEAGUE-PRIVATE-001",
+      "source_finding_ids": [
+        "NC-01C:current_behavior__league__admin_private_bracket",
+        "NC-01C:current_behavior__league__owner_not_member"
+      ],
+      "reason": "Approved NC-02A1 scope repaired."
+    },
+    {
+      "gap_id": "GAP-PRIVATE-STATS-001",
+      "status": "FIXED",
+      "approved_requirement_id": "REQ-LEAGUE-PRIVATE-001",
+      "source_finding_ids": [
+        "NC-01C:current_behavior__league__stats_admin_bypass"
+      ],
+      "reason": "Approved NC-02A1 scope repaired."
+    },
+    {
+      "gap_id": "GAP-PRIVATE-SCORES-001",
+      "status": "PARTIALLY FIXED",
+      "approved_requirement_id": "REQ-LEAGUE-PRIVATE-001",
+      "source_finding_ids": [
+        "NC-01C:current_behavior__league__leaderboard_private_surface",
+        "NC-01C:current_behavior__league__frontend_leaderboard",
+        "NC-01D:current_behavior__scoring__league_surface"
+      ],
+      "reason": "Private-scoped score access protected; general global/public competition eligibility/client filtering retained for P4/P5/P9."
+    },
+    {
+      "gap_id": "GAP-DRAFT-SCORES-001",
+      "status": "DEFERRED",
+      "approved_requirement_id": "REQ-BRACKET-SAVED-001",
+      "source_finding_ids": [
+        "NC-01C:current_behavior__league__draft_scored_leaderboard",
+        "NC-01D:current_behavior__scoring__draft"
+      ],
+      "reason": "Unrelated or explicitly deferred business behavior unchanged."
+    },
+    {
+      "gap_id": "GAP-CHAMPION-001",
+      "status": "DEFERRED",
+      "approved_requirement_id": "REQ-SCORING-CHAMPION-001",
+      "source_finding_ids": [
+        "NC-01D:current_behavior__scoring__champion_bonus"
+      ],
+      "reason": "Unrelated or explicitly deferred business behavior unchanged."
+    },
+    {
+      "gap_id": "GAP-FINALISTS-001",
+      "status": "DEFERRED",
+      "approved_requirement_id": "REQ-SCORING-FINALISTS-001",
+      "source_finding_ids": [
+        "NC-01D:current_behavior__scoring__finalist_bonus"
+      ],
+      "reason": "Unrelated or explicitly deferred business behavior unchanged."
+    },
+    {
+      "gap_id": "GAP-SNAPSHOT-TIE-001",
+      "status": "DEFERRED",
+      "approved_requirement_id": "REQ-LEADERBOARD-TIE-001",
+      "source_finding_ids": [
+        "NC-01D:current_behavior__history__snapshot_tie"
+      ],
+      "reason": "Unrelated or explicitly deferred business behavior unchanged."
+    },
+    {
+      "gap_id": "GAP-STANDINGS-PROVIDER-001",
+      "status": "DEFERRED",
+      "approved_requirement_id": "REQ-STANDINGS-SOURCE-001",
+      "source_finding_ids": [
+        "NC-01E:current_behavior__standings__active_provider"
+      ],
+      "reason": "Unrelated or explicitly deferred business behavior unchanged."
+    },
+    {
+      "gap_id": "GAP-STANDINGS-FREEZE-001",
+      "status": "DEFERRED",
+      "approved_requirement_id": "REQ-STANDINGS-FREEZE-001",
+      "source_finding_ids": [
+        "NC-01E:current_behavior__standings__freeze"
+      ],
+      "reason": "Unrelated or explicitly deferred business behavior unchanged."
+    },
+    {
+      "gap_id": "GAP-SEASON-SOURCES-001",
+      "status": "DEFERRED",
+      "approved_requirement_id": "REQ-SEASON-SOURCE-001",
+      "source_finding_ids": [
+        "NC-01E:current_behavior__standings__season_sources",
+        "NC-01E:current_behavior__standings__year"
+      ],
+      "reason": "Unrelated or explicitly deferred business behavior unchanged."
+    }
+  ],
+  "regression_transitions": [
+    {
+      "file": "tests/characterization/auth_access.py",
+      "name": "current_behavior__auth__cross_user_draft_boundary",
+      "source_finding_id": "NC-01A:current_behavior__auth__cross_user_draft_boundary",
+      "gap_ids": [
+        "GAP-ADMIN-DRAFT-001"
+      ],
+      "requirement_ids": [
+        "REQ-BRACKET-SAVED-001"
+      ],
+      "disposition": "APPROVED REQUIREMENT acceptance (NC-02A1); prior NC-01 evidence remains immutable"
+    },
+    {
+      "file": "tests/characterization/auth_access.py",
+      "name": "current_behavior__auth__cross_user_saved_owner_display",
+      "source_finding_id": "NC-01A:current_behavior__auth__cross_user_saved_owner_display",
+      "gap_ids": [
+        "GAP-EMAIL-001"
+      ],
+      "requirement_ids": [
+        "REQ-PRIVACY-EMAIL-001",
+        "REQ-BRACKET-SAVED-001"
+      ],
+      "disposition": "APPROVED REQUIREMENT acceptance (NC-02A1); prior NC-01 evidence remains immutable"
+    },
+    {
+      "file": "tests/characterization/auth_static.py",
+      "name": "current_behavior__auth__display_fields_static",
+      "source_finding_id": "NC-01A:current_behavior__auth__display_fields_static",
+      "gap_ids": [
+        "GAP-EMAIL-001"
+      ],
+      "requirement_ids": [
+        "REQ-PRIVACY-EMAIL-001"
+      ],
+      "disposition": "APPROVED REQUIREMENT acceptance (NC-02A1); prior NC-01 evidence remains immutable"
+    },
+    {
+      "file": "tests/characterization/bracket_access.py",
+      "name": "current_behavior__bracket__admin_draft_visibility",
+      "source_finding_id": "NC-01B:current_behavior__bracket__admin_draft_visibility",
+      "gap_ids": [
+        "GAP-ADMIN-DRAFT-001"
+      ],
+      "requirement_ids": [
+        "REQ-BRACKET-SAVED-001"
+      ],
+      "disposition": "APPROVED REQUIREMENT acceptance (NC-02A1); prior NC-01 evidence remains immutable"
+    },
+    {
+      "file": "tests/characterization/bracket_access.py",
+      "name": "current_behavior__bracket__email_serialization",
+      "source_finding_id": "NC-01B:current_behavior__bracket__email_serialization",
+      "gap_ids": [
+        "GAP-EMAIL-001"
+      ],
+      "requirement_ids": [
+        "REQ-PRIVACY-EMAIL-001"
+      ],
+      "disposition": "APPROVED REQUIREMENT acceptance (NC-02A1); prior NC-01 evidence remains immutable"
+    },
+    {
+      "file": "tests/characterization/league_access.py",
+      "name": "current_behavior__league__admin_private_bracket",
+      "source_finding_id": "NC-01C:current_behavior__league__admin_private_bracket",
+      "gap_ids": [
+        "GAP-PRIVATE-MEMBERS-001"
+      ],
+      "requirement_ids": [
+        "REQ-LEAGUE-PRIVATE-001"
+      ],
+      "disposition": "APPROVED REQUIREMENT acceptance (NC-02A1); prior NC-01 evidence remains immutable"
+    },
+    {
+      "file": "tests/characterization/league_access.py",
+      "name": "current_behavior__league__draft_saved_visibility",
+      "source_finding_id": "NC-01C:current_behavior__league__draft_saved_visibility",
+      "gap_ids": [],
+      "requirement_ids": [
+        "REQ-BRACKET-SAVED-001"
+      ],
+      "disposition": "APPROVED REQUIREMENT acceptance (NC-02A1); prior NC-01 evidence remains immutable"
+    },
+    {
+      "file": "tests/characterization/league_access.py",
+      "name": "current_behavior__league__leaderboard_private_surface",
+      "source_finding_id": "NC-01C:current_behavior__league__leaderboard_private_surface",
+      "gap_ids": [
+        "GAP-PRIVATE-SCORES-001"
+      ],
+      "requirement_ids": [
+        "REQ-LEAGUE-PRIVATE-001"
+      ],
+      "disposition": "APPROVED REQUIREMENT acceptance (NC-02A1); prior NC-01 evidence remains immutable"
+    },
+    {
+      "file": "tests/characterization/league_access.py",
+      "name": "current_behavior__league__member_email",
+      "source_finding_id": "NC-01C:current_behavior__league__member_email",
+      "gap_ids": [
+        "GAP-EMAIL-001"
+      ],
+      "requirement_ids": [
+        "REQ-PRIVACY-EMAIL-001"
+      ],
+      "disposition": "APPROVED REQUIREMENT acceptance (NC-02A1); prior NC-01 evidence remains immutable"
+    },
+    {
+      "file": "tests/characterization/league_access.py",
+      "name": "current_behavior__league__own_list_hash_surface",
+      "source_finding_id": "NC-01C:current_behavior__league__own_list_hash_surface",
+      "gap_ids": [],
+      "requirement_ids": [
+        "NC-02A1-P8"
+      ],
+      "disposition": "APPROVED REQUIREMENT acceptance (NC-02A1); prior NC-01 evidence remains immutable"
+    },
+    {
+      "file": "tests/characterization/league_access.py",
+      "name": "current_behavior__league__owner_not_member",
+      "source_finding_id": "NC-01C:current_behavior__league__owner_not_member",
+      "gap_ids": [
+        "GAP-PRIVATE-MEMBERS-001"
+      ],
+      "requirement_ids": [
+        "REQ-LEAGUE-PRIVATE-001"
+      ],
+      "disposition": "APPROVED REQUIREMENT acceptance (NC-02A1); prior NC-01 evidence remains immutable"
+    },
+    {
+      "file": "tests/characterization/league_access.py",
+      "name": "current_behavior__league__private_bracket_bypass",
+      "source_finding_id": "NC-01C:current_behavior__league__private_bracket_bypass",
+      "gap_ids": [
+        "GAP-PRIVATE-LIST-001",
+        "GAP-PRIVATE-DETAIL-001"
+      ],
+      "requirement_ids": [
+        "REQ-LEAGUE-PRIVATE-001"
+      ],
+      "disposition": "APPROVED REQUIREMENT acceptance (NC-02A1); prior NC-01 evidence remains immutable"
+    },
+    {
+      "file": "tests/characterization/league_access.py",
+      "name": "current_behavior__league__stats_admin_bypass",
+      "source_finding_id": "NC-01C:current_behavior__league__stats_admin_bypass",
+      "gap_ids": [
+        "GAP-PRIVATE-STATS-001"
+      ],
+      "requirement_ids": [
+        "REQ-LEAGUE-PRIVATE-001"
+      ],
+      "disposition": "APPROVED REQUIREMENT acceptance (NC-02A1); prior NC-01 evidence remains immutable"
+    },
+    {
+      "file": "tests/characterization/league_static.py",
+      "name": "current_behavior__league__frontend_leaderboard",
+      "source_finding_id": "NC-01C:current_behavior__league__frontend_leaderboard",
+      "gap_ids": [
+        "GAP-PRIVATE-SCORES-001"
+      ],
+      "requirement_ids": [
+        "REQ-LEAGUE-PRIVATE-001"
+      ],
+      "disposition": "APPROVED REQUIREMENT acceptance (NC-02A1); prior NC-01 evidence remains immutable"
+    },
+    {
+      "file": "tests/characterization/league_access.py",
+      "name": "current_behavior__league__draft_scored_leaderboard",
+      "source_finding_id": "NC-01C:current_behavior__league__draft_scored_leaderboard",
+      "gap_ids": [
+        "GAP-DRAFT-SCORES-001"
+      ],
+      "requirement_ids": [
+        "REQ-BRACKET-SAVED-001"
+      ],
+      "disposition": "KNOWN-GAP retained: P4/P5 now observed via unscoped global leaderboard; private scoped access covered separately"
+    },
+    {
+      "file": "tests/characterization/scoring_static.py",
+      "name": "current_behavior__scoring__league_surface",
+      "source_finding_id": "NC-01D:current_behavior__scoring__league_surface",
+      "gap_ids": [
+        "GAP-PRIVATE-SCORES-001"
+      ],
+      "requirement_ids": [
+        "REQ-LEAGUE-PRIVATE-001"
+      ],
+      "disposition": "APPROVED REQUIREMENT acceptance (NC-02A1); prior NC-01 evidence remains immutable"
+    }
+  ],
+  "test_transition_counts": {
+    "known_gap_to_acceptance": 13,
+    "prior_requirement_regression_adapted": 1,
+    "newly_approved_hash_test": 1,
+    "known_draft_gap_retained": 1,
+    "new_guarded_acceptance_sequences": 7
+  },
+  "validation": {
+    "all_required_coverage_passed": true,
+    "existing_regressions": {
+      "passed": 130,
+      "auth": 33,
+      "bracket": 37,
+      "league": 35,
+      "scoring_history": 25
+    },
+    "new_acceptance_passed": 7,
+    "offline_safety_passed": 217,
+    "initial_combined_attempt": {
+      "tests_run": 137,
+      "passed": 136,
+      "errors": 1,
+      "failure_kind": "New acceptance used /brackets outside NC-01C allowlist; guarded harness correctly refused.",
+      "affected_test": "test_public_user_allowlist_and_nested_bracket_payloads",
+      "resolution": "Changed test only to existing allowed public-league scoped list route; no guard expanded; all seven acceptance cases rerun successfully.",
+      "evidence": "db/records/nc_02a1_validation.json"
+    },
+    "final_focused_attempt": {
+      "tests_run": 7,
+      "passed": true,
+      "evidence": "db/records/nc_02a1_privacy_validation.json"
+    },
+    "semantic_schema": "PASS",
+    "fixture_marker_v2": "PASS",
+    "historical_baseline_validator": "PASS (155 rows, 19 requirements, 19 gaps)",
+    "syntax_ast": "PASS (11 changed Python files, no bytecode writes)",
+    "black": "PASS (10 Python test/tooling files and 3 added helpers)",
+    "whitespace": "PASS with cr-at-eol, preserving original app.py CRLF",
+    "credential_hash_scan": "PASS",
+    "type_checks": "No configured Python static type checker; syntax/AST compiled. Frontend untouched.",
+    "existing_functions_changed": [
+      "get_bracket_by_id",
+      "list_all_brackets",
+      "leaderboard",
+      "champion_pick_stats",
+      "get_my_leagues",
+      "list_leagues",
+      "get_league_members"
+    ],
+    "all_other_application_functions_ast_unchanged": true
+  },
+  "canonical_cleanup": {
+    "fixture_state": "SEEDED",
+    "fixture_version": "nc-fixtures-v1",
+    "fixture_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+    "flask_stopped": true,
+    "lease_released": true,
+    "email_capture_empty_same_process": true,
+    "jobs_disabled": true,
+    "readiness": {
+      "identity_verified": true,
+      "database_marker": "PASS",
+      "email": "PASS",
+      "providers": "PASS",
+      "external_credentials": "PASS",
+      "jobs": "PASS",
+      "jobs_enabled": false,
+      "fixture_state": "SEEDED",
+      "fixtures_reset": "PASS",
+      "integration_harness": "PASS",
+      "mutation_permitted": false,
+      "harness_state": "AVAILABLE_GUARDED",
+      "harness_scoped_mutation_permitted": false
+    },
+    "fixture_proof": {
+      "identity": "PASS",
+      "marker": "PASS",
+      "email": "PASS",
+      "providers": "PASS",
+      "jobs": "PASS",
+      "fixture_reset": "PASS",
+      "harness": "UNMET",
+      "fixture_version": "nc-fixtures-v1",
+      "fixture_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "mutation_permitted": false
+    }
+  },
+  "frontend_changes": false,
+  "schema_changes": false,
+  "environment_guard_changes": false,
+  "unrelated_business_behavior_changes": false,
+  "production": {
+    "contact": false,
+    "mutation": false,
+    "credentials_used": false,
+    "deployment": false
+  },
+  "intended_behavior_impact": "Only approved other-user serialization, private-league read authorization/discovery and admin draft-read privacy. Global/public competition eligibility and general saved-detail visibility preserved.",
+  "files_changed": [
+    "app.py",
+    "scripts/nc02a1_acceptance_metadata.py",
+    "scripts/run_privacy_access_acceptance.py",
+    "scripts/validate_consolidated_baseline.py",
+    "tests/characterization/auth_access.py",
+    "tests/characterization/auth_static.py",
+    "tests/characterization/bracket_access.py",
+    "tests/characterization/league_access.py",
+    "tests/characterization/league_static.py",
+    "tests/characterization/scoring_static.py",
+    "tests/characterization/privacy_access.py",
+    "docs/repairs/nc-02a1-privacy-access.md",
+    "db/records/nc_02a1_privacy_access.json",
+    "db/records/nc_02a1_validation.json",
+    "db/records/nc_02a1_privacy_validation.json"
+  ],
+  "next_phase": {
+    "name": "NC-02A2 \u2014 Draft/saved competitive visibility and eligibility",
+    "started": false
+  }
+}

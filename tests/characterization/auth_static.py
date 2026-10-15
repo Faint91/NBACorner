@@ -190,7 +190,13 @@ class CurrentStaticAuthBehavior(unittest.TestCase):
     def current_behavior__auth__display_fields_static(self):
         source = self.backend()
         self.assertTrue(
-            '.select("id, username, email")' in source
-            and '"email": u.get("email")' in source
+            '.select("id, username")' in source
+            and '"email": u.get("email")' not in source
             and '"preview": "set" if os.getenv(name) else "unset"' in source
         )
+
+
+# Preserve NC-01 provenance while explicitly marking approved repair acceptance.
+from scripts.nc02a1_acceptance_metadata import mark_acceptance
+
+mark_acceptance(CurrentStaticAuthBehavior)

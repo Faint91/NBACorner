@@ -214,20 +214,15 @@ class CurrentLeagueBehavior(unittest.TestCase):
     def current_behavior__league__own_list_hash_surface(self):
         ids = self.setup_leagues()
         rows = self.call("GET", "/leagues/me", 200, role="user-a")["leagues"]
-        value = next(r for r in rows if r["id"] == ids["private"])["requires_password"]
-        stored = next(
-            r
-            for r in self.context.league_snapshot()["leagues"]
-            if r["id"] == ids["private"]
-        )["password_hash"]
-        self.assertTrue(
-            isinstance(value, str) and value == stored and value.startswith("$2")
+        self.assertIs(
+            next(r for r in rows if r["id"] == ids["private"])["requires_password"],
+            True,
         )
-        self.facts = {
-            "requires_password_type": "string",
-            "equals_stored_hash": True,
-            "value_recorded": False,
-        }
+        self.assertIs(
+            next(r for r in rows if r["id"] == ids["public"])["requires_password"],
+            False,
+        )
+        self.facts = {"requires_password_type": "boolean", "hash_exposed": False}
 
     @behavior(
         "join",
@@ -340,9 +335,12 @@ class CurrentLeagueBehavior(unittest.TestCase):
         ids = self.setup_leagues()
         for lid in ids.values():
             for role in ("user-a", "owner", "admin"):
+                if lid == ids["private"] and role == "admin":
+                    self.members(lid, role=role, status=403)
+                    continue
                 rows = self.members(lid, role=role)["members"]
                 others = [r for r in rows if r["user_id"] != identity(role)]
-                self.assertTrue(others and all(r["email"] for r in others))
+                self.assertTrue(others and all("email" not in r for r in others))
                 self.assertTrue(
                     all(
                         not (
@@ -354,7 +352,7 @@ class CurrentLeagueBehavior(unittest.TestCase):
                 )
         self.facts = {
             "member_fields": sorted(rows[0]),
-            "other_user_email_present": True,
+            "other_user_email_present": False,
             "prior_reference": "NC-01A display_fields_static",
         }
 
@@ -366,15 +364,8 @@ class CurrentLeagueBehavior(unittest.TestCase):
     )
     def current_behavior__league__admin_private_bracket(self):
         ids = self.setup_leagues()
-        bid = self.context.install_bracket_scenario("saved", role="user-a")
-        rows = self.members(ids["private"], role="admin")["members"]
-        self.assertTrue(any(r["bracket_id"] == bid for r in rows))
-        self.assertFalse(
-            any(
-                m["user_id"] == identity("admin")
-                for m in self.context.league_snapshot()["members"]
-            )
-        )
+        self.context.install_bracket_scenario("saved", role="user-a")
+        self.members(ids["private"], role="admin", status=403)
 
     @behavior(
         "member bracket access",
@@ -386,15 +377,12 @@ class CurrentLeagueBehavior(unittest.TestCase):
         ids = self.setup_leagues()
         bid = self.context.install_bracket_scenario("saved", role="user-a")
         self.members(ids["private"], role="user-b", status=403)
-        rows = self.call(
-            "GET", f"/brackets?league_id={ids['private']}", 200, role="user-b"
-        )
-        self.assertTrue(any(r["bracket_id"] == bid for r in rows))
-        self.call("GET", f"/bracket/{bid}", 200, role="user-b")
+        self.call("GET", f"/brackets?league_id={ids['private']}", 403, role="user-b")
+        body = self.call("GET", f"/bracket/{bid}", 200, role="user-b")
+        self.assertNotIn("email", body["bracket"]["owner"])
         self.facts = {
-            "nonmember_saved_list_access": True,
-            "nonmember_saved_detail_access": True,
-            "prior_bracket_reference": "NC-01B",
+            "private_list_denied": True,
+            "general_saved_detail_unchanged": True,
         }
 
     @behavior(
@@ -418,8 +406,13 @@ class CurrentLeagueBehavior(unittest.TestCase):
             self.call("GET", f"/bracket/{draft}", 403, role="owner")
             self.call("GET", f"/bracket/{draft}", 403, role="user-b")
             self.call("GET", f"/bracket/{saved}", 200, role="user-a")
-            listed = self.call("GET", f"/brackets?league_id={lid}", 200, role="user-b")
-            self.assertTrue(all(r["bracket_id"] != draft for r in listed))
+            if lid == ids["private"]:
+                self.call("GET", f"/brackets?league_id={lid}", 403, role="user-b")
+            else:
+                listed = self.call(
+                    "GET", f"/brackets?league_id={lid}", 200, role="user-b"
+                )
+                self.assertTrue(all(r["bracket_id"] != draft for r in listed))
         self.facts = {
             "draft_id_hidden": True,
             "draft_predictions_hidden": True,
@@ -435,20 +428,16 @@ class CurrentLeagueBehavior(unittest.TestCase):
     def current_behavior__league__leaderboard_private_surface(self):
         ids = self.setup_leagues()
         bids = self.context.install_league_score_surface()
-        global_body = self.call("GET", "/leaderboard", 200)
-        scoped = self.call(
-            "GET", f"/leaderboard?league_id={ids['private']}", 200, role="user-b"
-        )
-        self.assertEqual(scoped, global_body)
-        self.assertEqual(len(scoped["rows"]), 2)
-        self.assertTrue(any(r["bracket_id"] == bids["user-a"] for r in scoped["rows"]))
+        self.assertEqual(len(self.call("GET", "/leaderboard", 200)["rows"]), 2)
+        path = f"/leaderboard?league_id={ids['private']}"
+        self.call("GET", path, 401)
+        self.call("GET", path, 403, role="user-b")
+        scoped = self.call("GET", path, 200, role="user-a")
+        self.assertEqual([r["bracket_id"] for r in scoped["rows"]], [bids["user-a"]])
         self.assertTrue(all("email" not in r for r in scoped["rows"]))
         self.facts = {
-            "rows": 2,
-            "equal_score_tie_fixture": True,
-            "row_fields": sorted(scoped["rows"][0]),
-            "filter_ignored": True,
-            "score_math_validated": False,
+            "private_scope_enforced": True,
+            "global_eligibility_unchanged": True,
         }
 
     @behavior(
@@ -490,17 +479,12 @@ class CurrentLeagueBehavior(unittest.TestCase):
     def current_behavior__league__stats_admin_bypass(self):
         ids = self.setup_leagues()
         self.context.install_bracket_scenario("saved", role="user-a")
-        body = self.call(
+        self.call(
             "GET",
             f"/stats/champion-picks?league_id={ids['private']}",
-            200,
+            403,
             role="admin",
         )
-        self.assertEqual(body["total_brackets"], 1)
-        self.facts = {
-            "nonmember_admin_private_aggregate": True,
-            "math_validated": False,
-        }
 
     @behavior(
         "password behavior",
@@ -594,13 +578,8 @@ class CurrentLeagueBehavior(unittest.TestCase):
     def current_behavior__league__owner_not_member(self):
         ids = self.setup_leagues(empty=True)
         self.join(ids["private"], password=PASSWORD, role="user-a")
-        bid = self.context.install_bracket_scenario("saved", role="user-a")
-        self.assertTrue(
-            any(
-                r["bracket_id"] == bid
-                for r in self.members(ids["private"], role="owner")["members"]
-            )
-        )
+        self.context.install_bracket_scenario("saved", role="user-a")
+        self.members(ids["private"], role="owner", status=403)
 
     @behavior(
         "schema/edge behavior",
@@ -632,9 +611,7 @@ class CurrentLeagueBehavior(unittest.TestCase):
         )
         self.assertFalse(member["has_bracket"])
         for role in (None, "user-b", "user-a"):
-            body = self.call(
-                "GET", f"/leaderboard?league_id={ids['private']}", 200, role=role
-            )
+            body = self.call("GET", "/leaderboard", 200, role=role)
             self.assertTrue(
                 any(r["bracket_id"] == bids["user-a"] for r in body["rows"])
             )
@@ -642,3 +619,9 @@ class CurrentLeagueBehavior(unittest.TestCase):
             "draft_id_and_stored_score_visible": True,
             "scenario_basis": "existing score fixture with member submission flag cleared; score math not run",
         }
+
+
+# Preserve NC-01 provenance while explicitly marking approved repair acceptance.
+from scripts.nc02a1_acceptance_metadata import mark_acceptance
+
+mark_acceptance(CurrentLeagueBehavior)
