@@ -1,0 +1,79 @@
+{
+  "phase": "NC-02C1",
+  "passed": true,
+  "tests_run": 3,
+  "failures": 0,
+  "errors": 0,
+  "findings": [
+    {
+      "phase": "NC-02C1",
+      "scenario": "test_c1_explicit_switch_visible_without_restart",
+      "passed": true,
+      "requirements": [
+        "S1",
+        "S2",
+        "S12",
+        "S14"
+      ],
+      "production_contact": false
+    },
+    {
+      "phase": "NC-02C1",
+      "scenario": "test_c1_missing_state_503_and_restored_next_request",
+      "passed": true,
+      "requirements": [
+        "S1",
+        "S2",
+        "S12",
+        "S14"
+      ],
+      "production_contact": false
+    },
+    {
+      "phase": "NC-02C1",
+      "scenario": "test_c1_status_and_bracket_share_canonical_identity",
+      "passed": true,
+      "requirements": [
+        "S1",
+        "S2",
+        "S12",
+        "S14"
+      ],
+      "production_contact": false
+    }
+  ],
+  "readiness": {
+    "identity_verified": true,
+    "database_marker": "PASS",
+    "email": "PASS",
+    "providers": "PASS",
+    "external_credentials": "PASS",
+    "jobs": "PASS",
+    "jobs_enabled": false,
+    "fixture_state": "SEEDED",
+    "fixtures_reset": "PASS",
+    "integration_harness": "PASS",
+    "mutation_permitted": false,
+    "harness_state": "AVAILABLE_GUARDED",
+    "harness_scoped_mutation_permitted": false
+  },
+  "canonical_cleanup": {
+    "fixture_readiness": {
+      "identity": "PASS",
+      "marker": "PASS",
+      "email": "PASS",
+      "providers": "PASS",
+      "jobs": "PASS",
+      "fixture_reset": "PASS",
+      "harness": "UNMET",
+      "fixture_version": "nc-fixtures-v1",
+      "fixture_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "mutation_permitted": false
+    },
+    "flask_stopped": true,
+    "email_capture_empty": true,
+    "app_import_removed": true
+  },
+  "production_contact": false,
+  "historical_NC01_evidence_rewritten": false
+}

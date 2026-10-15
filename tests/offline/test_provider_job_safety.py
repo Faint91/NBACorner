@@ -387,10 +387,15 @@ class ProviderJobTests(unittest.TestCase):
             with self.assertRaises(safety.SafetyError):
                 safety.validate_test_destination(TARGET, url)
 
-    def test_workflow_byte_preserved(self):
+    def test_workflow_preserved_except_approved_legacy_season_retirement(self):
         self.assertEqual(
             hashlib.sha256(
-                (ROOT / ".github/workflows/standings-cron.yml").read_bytes()
+                (ROOT / ".github/workflows/standings-cron.yml")
+                .read_bytes()
+                .replace(
+                    b"# Season selection comes from application_season; legacy NBA_SEASON_YEAR removed.",
+                    b'NBA_SEASON_YEAR: "2025"  # adjust if needed',
+                )
             ).hexdigest(),
             "0adbf07c1c28d3463a293f4656f2840c910f80f017cd14ffb912c1f3590ba6a2",
         )

@@ -119,6 +119,7 @@ class GuardedHarness:
             "NC-02B1",
             "NC-02B2",
             "NC-02B3",
+            "NC-02C1",
         }:
             raise safety.SafetyError("Unreviewed characterization scope.")
         self.characterization_scope = characterization_scope
@@ -131,7 +132,7 @@ class GuardedHarness:
         if allow_local_mutations is True:
             self.settings["NBA_CORNER_ALLOW_MUTATING_TESTS"] = "1"
         self.target = validate_harness_settings(self.settings, allow_local_mutations)
-        self.settings["CURRENT_SEASON_CODE"] = "2025-26"
+        # Canonical season is designated by guarded fixture reset, never environment.
         self._owner = threading.get_ident()
         self._starting = False
         self._ready = False
@@ -227,7 +228,14 @@ class GuardedHarness:
                         (
                             request.full_path.removesuffix("?")
                             if self.characterization_scope
-                            in {"NC-01C", "NC-02A2", "NC-02B1", "NC-02B2", "NC-02B3"}
+                            in {
+                                "NC-01C",
+                                "NC-02A2",
+                                "NC-02B1",
+                                "NC-02B2",
+                                "NC-02B3",
+                                "NC-02C1",
+                            }
                             else request.path
                         ),
                         identity_bootstrap=True,
@@ -342,9 +350,11 @@ class GuardedHarness:
             "NC-02B1",
             "NC-02B2",
             "NC-02B3",
+            "NC-02C1",
         }:
             lids = getattr(self, "_leagues", set())
             reads = {
+                "/season",
                 "/leaderboard",
                 "/brackets",
                 "/brackets/me",
@@ -372,7 +382,8 @@ class GuardedHarness:
             if method == "POST" and path == "/auth/login":
                 return
             if (
-                self.characterization_scope in {"NC-02B1", "NC-02B2", "NC-02B3"}
+                self.characterization_scope
+                in {"NC-02B1", "NC-02B2", "NC-02B3", "NC-02C1"}
                 and method == "POST"
                 and path == "/bracket/create"
             ):
@@ -618,7 +629,15 @@ class GuardedHarness:
         if (
             not self._ready
             or self.characterization_scope
-            not in {"NC-01B", "NC-01C", "NC-02A2", "NC-02B1", "NC-02B2", "NC-02B3"}
+            not in {
+                "NC-01B",
+                "NC-01C",
+                "NC-02A2",
+                "NC-02B1",
+                "NC-02B2",
+                "NC-02B3",
+                "NC-02C1",
+            }
             or threading.get_ident() != self._owner
         ):
             raise safety.SafetyError("Explicit verified NC-01B context required.")
@@ -644,6 +663,22 @@ class GuardedHarness:
             self._brackets.add(body["bracket"]["id"])
             self.bracket_snapshot()
         return status, body
+
+    def canonical_fixture_season(self, mode):
+        self._require_bracket_scope()
+        if self.characterization_scope != "NC-02C1" or mode not in {
+            "current",
+            "historical",
+            "missing",
+        }:
+            raise safety.SafetyError(
+                "Fixed NC-02C1 canonical fixture scenario required"
+            )
+        table = self.module.supabase.table("application_season")
+        if mode == "missing":
+            table.delete().eq("singleton", True).execute()
+        else:
+            table.upsert({"singleton": True, "season_id": identity(mode)}).execute()
 
     def bracket_timing(self, mode):
         self._require_bracket_scope()
@@ -675,13 +710,14 @@ class GuardedHarness:
             "NC-02B1",
             "NC-02B2",
             "NC-02B3",
+            "NC-02C1",
         } or relative not in {
             "before",
             "at",
             "after",
         }:
             raise safety.SafetyError("Unreviewed deadline boundary context.")
-        instant = self.module.PLAYOFFS_START_UTC + timedelta(
+        instant = self.module.current_season().playoff_lock_at + timedelta(
             microseconds={"before": -1, "at": 0, "after": 1}[relative]
         )
         self.stack.enter_context(patch.object(self.module, "now_utc", lambda: instant))
@@ -818,7 +854,7 @@ class GuardedHarness:
         } or role not in (
             {"user-a", "user-b", "admin", "owner"}
             if self.characterization_scope
-            in {"NC-01C", "NC-02A2", "NC-02B1", "NC-02B2", "NC-02B3"}
+            in {"NC-01C", "NC-02A2", "NC-02B1", "NC-02B2", "NC-02B3", "NC-02C1"}
             else {"user-a", "user-b", "admin"}
         ):
             raise safety.SafetyError("Unreviewed synthetic bracket scenario.")
@@ -871,7 +907,7 @@ class GuardedHarness:
         if (
             not self._ready
             or self.characterization_scope
-            not in {"NC-01C", "NC-02A2", "NC-02B1", "NC-02B2", "NC-02B3"}
+            not in {"NC-01C", "NC-02A2", "NC-02B1", "NC-02B2", "NC-02B3", "NC-02C1"}
             or threading.get_ident() != self._owner
         ):
             raise safety.SafetyError("Explicit verified NC-01C context required.")
@@ -975,7 +1011,7 @@ class GuardedHarness:
         self._require_league_scope()
         if (
             self.characterization_scope
-            not in {"NC-02A2", "NC-02B1", "NC-02B2", "NC-02B3"}
+            not in {"NC-02A2", "NC-02B1", "NC-02B2", "NC-02B3", "NC-02C1"}
             or self._brackets
         ):
             raise safety.SafetyError("Fresh verified NC-02A2 context required.")
@@ -1047,6 +1083,7 @@ class GuardedHarness:
             "NC-02B1",
             "NC-02B2",
             "NC-02B3",
+            "NC-02C1",
         }:
             raise safety.SafetyError("Verified NC-02A2 context required.")
         result = self.bracket_snapshot()
@@ -1295,7 +1332,7 @@ class GuardedHarness:
         if not self._ready or role not in (
             {"user-a", "user-b", "admin", "owner"}
             if self.characterization_scope
-            in {"NC-01C", "NC-02A2", "NC-02B1", "NC-02B2", "NC-02B3"}
+            in {"NC-01C", "NC-02A2", "NC-02B1", "NC-02B2", "NC-02B3", "NC-02C1"}
             else {"user-a", "user-b", "admin"}
         ):
             raise safety.SafetyError("Seeded smoke login required.")

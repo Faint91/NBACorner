@@ -103,3 +103,20 @@ rollback, then matched the canonical fixture checksum. Proof serialization uses
 the same UTC/ISO/float settings as fixture reset. The proof DB was removed; the
 fixture lease is released, guarded Flask stopped, jobs disabled and email capture
 empty. Fixture version/checksum remain unchanged. Production was not contacted.
+
+
+## NC-02C1 canonical designation
+
+Apply baseline -> 0001 -> 0002 -> current verifier. Migration 0002 leaves
+application_season empty on purpose. Production requires a separately authorized,
+verified existing season designation and valid opening/lock timestamps; runtime
+fails closed without it. Guarded local seed deterministically designates the current
+synthetic fixture, preserving old row/version/checksum and independently verifying
+the pointer. No canonical advancement is added to rollover until NC-02C3.
+
+The new singleton table is postgres-owned, RLS-enabled, no policies, no PUBLIC/anon/
+authenticated access; trusted postgres/service_role only. No privileged function
+added. Existing B3/baseline security assertions remain intact except the explicit
+new relation inventory entry. New strict verifier assertions cover columns, types,
+defaults, owner, PK/check/FK, ACL, RLS, policy/trigger/index inventory. See the C1
+repair record for preflight, controlled rollout and configuration-preserving rollback.

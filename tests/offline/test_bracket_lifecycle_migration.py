@@ -34,7 +34,7 @@ class LifecycleMigrationSafety(unittest.TestCase):
             )
             .rsplit("COMMIT;", 1)[0]
         )
-        evolved = (ROOT / "db/post-baseline/verify_current_schema.sql").read_text(
+        evolved = (ROOT / "db/post-baseline/verify_nc_02b3_schema.sql").read_text(
             encoding="utf-8"
         )
         self.assertEqual(
@@ -42,9 +42,9 @@ class LifecycleMigrationSafety(unittest.TestCase):
         )
         self.assertEqual(
             hashlib.sha256(
-                (ROOT / "db/post-baseline/verify_current_schema.sql").read_bytes()
+                (ROOT / "db/post-baseline/verify_nc_02b3_schema.sql").read_bytes()
             ).hexdigest(),
-            VERIFIER_SHA,
+            "7ff200f3d75b5697c68587942a78f30d36b357c4f086ac5792e973dbec91606e",
         )
 
     def test_migration_is_portable_and_seals_new_rpc_in_same_transaction(self):

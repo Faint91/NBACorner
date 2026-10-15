@@ -1,8 +1,9 @@
+from canonical_season import get_current_season, SeasonConfigurationError, season_start_year
 from bracket_rules import game_count_error, apply_prediction, submission_error
 # app.py
 from functools import wraps
 from datetime import datetime, timedelta, timezone
-from flask import Flask, request, jsonify, make_response, send_from_directory
+from flask import Flask, request, jsonify, make_response, send_from_directory, g, has_request_context
 from flask_cors import CORS
 from supabase import create_client
 from environment_safety import prepare_runtime_environment
@@ -77,13 +78,6 @@ if not SUPABASE_URL or not SUPABASE_KEY:
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# --- Season + gate globals (resolved from DB, with env fallback) ---
-
-# Resolved globals
-CURRENT_SEASON_ID = None
-REGULAR_SEASON_END_UTC = None
-PLAYOFFS_START_UTC = None
-
 def parse_iso8601_utc(val):
     """
     Accepts:
@@ -116,61 +110,19 @@ def parse_iso8601_utc(val):
         return None
 
 
+def current_season():
+    """Pin one canonical row per request; no stale process-wide season cache."""
+    if not has_request_context():
+        return get_current_season(supabase)
+    if "canonical_season" not in g:
+        g.canonical_season = get_current_season(supabase)
+    return g.canonical_season
+
+
 def _resolve_season_globals():
-    """
-    Resolve CURRENT_SEASON_ID and the gate datetimes from DB (seasons table),
-    falling back to env vars REGULAR_SEASON_END_UTC / PLAYOFFS_START_UTC.
-    Safe defaults:
-      - If PLAYOFFS_START_UTC is still None → set very far future
-      - If REGULAR_SEASON_END_UTC is None → 'too-early' check is skipped
-    """
-    global CURRENT_SEASON_ID, REGULAR_SEASON_END_UTC, PLAYOFFS_START_UTC
+    # Compatibility entry for guarded test tooling: validate, never set globals.
+    return current_season()
 
-    # 1) Try DB first
-    try:
-        row = (
-            supabase.table("seasons")
-            .select("id, code, regular_season_end_utc, playoffs_start_utc")
-            .eq("code", CURRENT_SEASON_CODE)
-            .limit(1)
-            .execute()
-        ).data
-        season = row[0] if row else None
-
-        if season:
-            CURRENT_SEASON_ID = season["id"]
-            REGULAR_SEASON_END_UTC = parse_iso8601_utc(season.get("regular_season_end_utc"))
-            PLAYOFFS_START_UTC = parse_iso8601_utc(season.get("playoffs_start_utc"))
-        else:
-            try:
-                safe_print(f"⚠️ CURRENT_SEASON '{CURRENT_SEASON_CODE}' not found in DB. Falling back to env dates.")
-            except Exception:
-                pass
-    except Exception as e:
-        try:
-            safe_print("⚠️ Could not load season row (class):", type(e).__name__)
-        except Exception:
-            pass
-
-    # 2) Env fallbacks/overrides
-    if REGULAR_SEASON_END_UTC is None:
-        REGULAR_SEASON_END_UTC = parse_iso8601_utc(os.getenv("REGULAR_SEASON_END_UTC"))
-
-    if PLAYOFFS_START_UTC is None:
-        PLAYOFFS_START_UTC = parse_iso8601_utc(os.getenv("PLAYOFFS_START_UTC"))
-
-    # 3) Final safety default so brackets don't lock accidentally
-    if PLAYOFFS_START_UTC is None:
-        from datetime import datetime, timezone
-        PLAYOFFS_START_UTC = datetime(2099, 1, 1, tzinfo=timezone.utc)
-
-
-CURRENT_SEASON_CODE = os.getenv("CURRENT_SEASON_CODE")
-if not CURRENT_SEASON_CODE:
-    raise RuntimeError("CURRENT_SEASON (or CURRENT_SEASON_CODE) must be set")
-
-# Call once at startup (after supabase is created)
-_resolve_season_globals()
 
 app = Flask(__name__)
 
@@ -378,7 +330,10 @@ def playoffs_locked() -> bool:
     """
     Playoffs considered 'locked' at or after PLAYOFFS_START_UTC.
     """
-    return bool(PLAYOFFS_START_UTC and now_utc() >= PLAYOFFS_START_UTC)
+    return bool(
+        current_season().playoff_lock_at
+        and now_utc() >= current_season().playoff_lock_at
+    )
 
 
 def bracket_final_lock_error():
@@ -391,7 +346,7 @@ def current_master_bracket(bracket):
         seasons = (
             supabase.table("seasons")
             .select("master_bracket_id")
-            .eq("id", CURRENT_SEASON_ID)
+            .eq("id", current_season().id)
             .limit(1)
             .execute()
             .data
@@ -436,16 +391,19 @@ def bracket_content_mutation_error(bracket, user_id):
 def bracket_creation_open() -> bool:
     """
     Creation is allowed only after regular season has ended AND before playoffs start.
-    If either timestamp is missing, we 'fail open' for that side (same behavior as before).
+    Canonical timestamps are required; missing configuration fails closed.
     """
     now = now_utc()
 
     # Too early?
-    if REGULAR_SEASON_END_UTC and now < REGULAR_SEASON_END_UTC:
+    if (
+        current_season().bracket_creation_opens_at
+        and now < current_season().bracket_creation_opens_at
+    ):
         return False
 
     # Too late?
-    if PLAYOFFS_START_UTC and now >= PLAYOFFS_START_UTC:
+    if current_season().playoff_lock_at and now >= current_season().playoff_lock_at:
         return False
 
     return True
@@ -474,7 +432,7 @@ def _fetch_matches_for_bracket(bracket_id: str):
     if not br or br[0].get("deleted_at") is not None:
         raise APIError("Bracket not found", 404)
 
-    if br[0].get("season_id") != CURRENT_SEASON_ID:
+    if br[0].get("season_id") != current_season().id:
         raise APIError("Bracket is not in the current season", 400)
 
     rows = (
@@ -499,7 +457,9 @@ def _fetch_matches_for_bracket(bracket_id: str):
     return by_key
 
 
-def _compute_score_for_bracket(master_matches_by_key: dict, master_bracket_id: str, bracket_id: str):
+def _compute_score_for_bracket(
+    master_matches_by_key: dict, master_bracket_id: str, bracket_id: str
+):
     """
     Compare one user bracket against the master bracket and upsert into bracket_scores.
     Ensures both brackets are in the CURRENT_SEASON_ID.
@@ -520,7 +480,7 @@ def _compute_score_for_bracket(master_matches_by_key: dict, master_bracket_id: s
 
     season_ok = True
     for b in brs:
-        if b.get("deleted_at") is not None or b.get("season_id") != CURRENT_SEASON_ID:
+        if b.get("deleted_at") is not None or b.get("season_id") != current_season().id:
             season_ok = False
             break
     if not season_ok:
@@ -539,8 +499,8 @@ def _compute_score_for_bracket(master_matches_by_key: dict, master_bracket_id: s
     bonus_finalists = 0
     bonus_champion = 0
 
-    points_by_round = {}   # e.g. { "0": 5, "1": 12, ... }
-    points_by_match = {}   # e.g. { "east-1-4": { ... }, ... }
+    points_by_round = {}  # e.g. { "0": 5, "1": 12, ... }
+    points_by_match = {}  # e.g. { "east-1-4": { ... }, ... }
 
     for key, m_master in master_matches_by_key.items():
         m_user = user_matches.get(key)
@@ -651,7 +611,7 @@ def _compute_score_for_bracket(master_matches_by_key: dict, master_bracket_id: s
         }
 
     record = {
-        "season_id": CURRENT_SEASON_ID,   # 👈 ensure season tagged
+        "season_id": current_season().id,  # 👈 ensure season tagged
         "bracket_id": bracket_id,
         "master_bracket_id": master_bracket_id,
         "total_points": total_points + bonus_finalists + bonus_champion,
@@ -671,14 +631,8 @@ def _compute_score_for_bracket(master_matches_by_key: dict, master_bracket_id: s
 
 
 def with_current_season(q, col_name: str = "season_id"):
-    """
-    Apply current-season filter to a Supabase query builder.
-    If CURRENT_SEASON_ID is None (legacy data), we filter for NULL season_id.
-    """
-    if CURRENT_SEASON_ID is None:
-        return q.is_(col_name, None)
-    else:
-        return q.eq(col_name, CURRENT_SEASON_ID)
+    """Filter by the validated canonical season; never select legacy NULL rows."""
+    return q.eq(col_name, current_season().id)
 
 
 def competitive_bracket_eligible(bracket, *, season_id=...):
@@ -688,7 +642,7 @@ def competitive_bracket_eligible(bracket, *, season_id=...):
     not an independent flag: a timestamp cannot make is_done=False eligible.
     Explicit season_id supports past-season live stats, never snapshot reads.
     """
-    target = CURRENT_SEASON_ID if season_id is ... else season_id
+    target = current_season().id if season_id is ... else season_id
     return (
         bracket.get("is_done") is True
         and bracket.get("deleted_at") is None
@@ -704,18 +658,25 @@ def invalidate_bracket_submission(bracket_id):
 
 
 def ensure_season_globals():
-    """
-    Resolve season globals at request time if they weren't set at import time
-    (e.g., Supabase not ready during boot).
-    """
-    global CURRENT_SEASON_ID
-    if CURRENT_SEASON_ID is None:
-        _resolve_season_globals()
+    return current_season()
 
 
 @app.before_request
 def _season_bootstrap():
-    ensure_season_globals()
+    try:
+        ensure_season_globals()
+    except SeasonConfigurationError:
+        return (
+            jsonify(
+                {"error": "Canonical season configuration is unavailable or invalid"}
+            ),
+            503,
+        )
+
+
+@app.route("/season", methods=["GET"])
+def season_status():
+    return jsonify(current_season().status(now_utc()))
 
 
 # --------------------------------------------------------
@@ -784,7 +745,7 @@ def active_current_master_exists():
     seasons = (
         supabase.table("seasons")
         .select("master_bracket_id")
-        .eq("id", CURRENT_SEASON_ID)
+        .eq("id", current_season().id)
         .limit(1)
         .execute()
         .data
@@ -794,7 +755,7 @@ def active_current_master_exists():
     rows = (
         supabase.table("brackets")
         .select("id, is_master")
-        .eq("season_id", CURRENT_SEASON_ID)
+        .eq("season_id", current_season().id)
         .is_("deleted_at", None)
         .execute()
         .data
@@ -1055,9 +1016,9 @@ def admin_season_rollover():
         "playoffs_start_utc": "2026-04-18T07:00:00Z"        // optional
       }
 
-    This endpoint does NOT change env vars. After it succeeds you must update
-    CURRENT_SEASON_CODE / REGULAR_SEASON_END_UTC / PLAYOFFS_START_UTC in your
-    deployment config and redeploy the backend.
+    This endpoint does NOT advance canonical state. Future controlled activation
+    must designate the new season in application_season; environment values do not
+    select the active season.
     """
     guard_runtime_job("season-rollover")
     user_info = request.user or {}
@@ -1145,7 +1106,7 @@ def fetch_and_sync_standings_from_nba():
     """
     guard_runtime_job("standings-refresh")
     API_BASE = "https://api.balldontlie.io/v1"
-    
+
     # Build headers for Balldontlie (requires API key)
     if not provider_uses_fixtures() and not BALLDONTLIE_API_KEY:
         raise APIError("BALLDONTLIE_API_KEY is not configured", 500)
@@ -1154,42 +1115,26 @@ def fetch_and_sync_standings_from_nba():
         "Authorization": BALLDONTLIE_API_KEY  # per Balldontlie docs: Authorization: YOUR_API_KEY
     }
 
-    # We'll infer the numeric season from CURRENT_SEASON_CODE, e.g. "2024-25" -> 2024
-    global CURRENT_SEASON_CODE, CURRENT_SEASON_ID, supabase
+    # Provider start-year representation derives only from canonical season code.
     import re as _re
     import requests as _requests
 
-    season_code = str(CURRENT_SEASON_CODE or "")
-    m = _re.search(r"(20\d{2})", season_code)
-    if m:
-        season_year = int(m.group(1))
-    else:
-        # Fallback: current calendar year
-        season_year = datetime.utcnow().year
+    season_year = season_start_year(current_season().code)
 
     # 1) Load teams from DB so we know code + conference
-    teams_rows = (
-        supabase.table("teams")
-        .select("code, name, conference")
-        .execute()
-        .data
-    )
+    teams_rows = supabase.table("teams").select("code, name, conference").execute().data
     if not teams_rows:
         raise APIError("No teams found in DB; cannot build standings", 500)
 
     # Map team code -> metadata (we assume codes match balldontlie abbreviations)
-    team_meta_by_code = {
-        row["code"]: row
-        for row in teams_rows
-        if row.get("code")
-    }
+    team_meta_by_code = {row["code"]: row for row in teams_rows if row.get("code")}
 
     # 2) Aggregate wins/losses from all regular-season games for that season
     wins = defaultdict(int)
     losses = defaultdict(int)
 
     cursor = None
-    max_pages = 100          # safety limit
+    max_pages = 100  # safety limit
     pages_fetched = 0
 
     while True:
@@ -1202,14 +1147,17 @@ def fetch_and_sync_standings_from_nba():
 
         try:
             safe_print(f"🔵 Calling Balldontlie: {API_BASE}/games with params={params}")
-            resp = provider_get(_requests.get,
+            resp = provider_get(
+                _requests.get,
                 f"{API_BASE}/games",
                 params=params,
-                headers=headers,   # <- keep this if you added Authorization earlier
+                headers=headers,  # <- keep this if you added Authorization earlier
                 timeout=10,
             )
         except Exception as e:
-            raise APIError(f"balldontlie request failed (class: {type(e).__name__})", 502)
+            raise APIError(
+                f"balldontlie request failed (class: {type(e).__name__})", 502
+            )
 
         if resp.status_code != 200:
             raise APIError(
@@ -1275,13 +1223,15 @@ def fetch_and_sync_standings_from_nba():
         if conf not in ("east", "west"):
             continue
 
-        base_rows.append({
-            "code": code,
-            "name": meta.get("name"),
-            "conference": conf,
-            "wins": wins.get(code, 0),
-            "losses": losses.get(code, 0),
-        })
+        base_rows.append(
+            {
+                "code": code,
+                "name": meta.get("name"),
+                "conference": conf,
+                "wins": wins.get(code, 0),
+                "losses": losses.get(code, 0),
+            }
+        )
 
     # 4) Sort within each conference and assign seeds
     east_sorted = sorted(
@@ -1298,17 +1248,21 @@ def fetch_and_sync_standings_from_nba():
 
     rows_to_upsert = []
     for i, row in enumerate(east_sorted, start=1):
-        rows_to_upsert.append({
-            **row,
-            "seed": i,
-            "updated_at": now_ts,
-        })
+        rows_to_upsert.append(
+            {
+                **row,
+                "seed": i,
+                "updated_at": now_ts,
+            }
+        )
     for i, row in enumerate(west_sorted, start=1):
-        rows_to_upsert.append({
-            **row,
-            "seed": i,
-            "updated_at": now_ts,
-        })
+        rows_to_upsert.append(
+            {
+                **row,
+                "seed": i,
+                "updated_at": now_ts,
+            }
+        )
 
     if not rows_to_upsert:
         raise APIError("Computed 0 standings rows; nothing to insert", 500)
@@ -1316,16 +1270,10 @@ def fetch_and_sync_standings_from_nba():
     # 5) Replace existing standings for this season (simple delete + insert)
     try:
         # Delete old rows for this season
-        supabase.table("standings") \
-            .delete() \
-            .execute()
+        supabase.table("standings").delete().execute()
 
         # Insert fresh snapshot
-        insert_res = (
-            supabase.table("standings")
-            .insert(rows_to_upsert)
-            .execute()
-        )
+        insert_res = supabase.table("standings").insert(rows_to_upsert).execute()
         inserted_count = len(insert_res.data or [])
     except Exception as e:
         safe_print("🔴 Failed to replace standings rows:", type(e).__name__, repr(e))
@@ -1420,10 +1368,7 @@ def internal_overwrite_standings():
     guard_runtime_job("standings-overwrite")
 
     # --- Auth with the same secret token you already use for cron ---
-    token_supplied = (
-        request.headers.get("X-Cron-Token")
-        or request.args.get("token")
-    )
+    token_supplied = request.headers.get("X-Cron-Token") or request.args.get("token")
     if not STANDINGS_CRON_TOKEN or token_supplied != STANDINGS_CRON_TOKEN:
         return jsonify({"error": "Forbidden"}), 403
 
@@ -1432,25 +1377,23 @@ def internal_overwrite_standings():
     if not isinstance(payload, list):
         return jsonify({"error": "Expected a JSON array of rows"}), 400
 
-    if not CURRENT_SEASON_ID:
+    if not current_season().id:
         return jsonify({"error": "CURRENT_SEASON_ID is not configured"}), 500
 
     # --- Load valid team codes from DB to satisfy FK: standings.code -> teams.code ---
     try:
         team_rows = (
-            supabase.table("teams")
-            .select("code, name, conference")
-            .execute()
+            supabase.table("teams").select("code, name, conference").execute()
         ).data or []
     except Exception as e:
-        safe_print("🔴 Error fetching teams in /internal/standings/overwrite:", type(e).__name__, repr(e))
+        safe_print(
+            "🔴 Error fetching teams in /internal/standings/overwrite:",
+            type(e).__name__,
+            repr(e),
+        )
         return jsonify({"error": "Failed to load teams"}), 500
 
-    valid_codes = {
-        (t.get("code") or "").upper()
-        for t in team_rows
-        if t.get("code")
-    }
+    valid_codes = {(t.get("code") or "").upper() for t in team_rows if t.get("code")}
 
     now_ts = now_utc().replace(microsecond=0).isoformat()
 
@@ -1495,52 +1438,48 @@ def internal_overwrite_standings():
                 "wins": wins,
                 "losses": losses,
                 "seed": seed,
-                "season_id": CURRENT_SEASON_ID,
+                "season_id": current_season().id,
                 "updated_at": now_ts,
             }
         )
 
     if not rows_to_insert:
-        safe_print("⚠️ No valid standings rows to insert (all skipped). Skipped:", skipped)
+        safe_print(
+            "⚠️ No valid standings rows to insert (all skipped). Skipped:", skipped
+        )
         return jsonify({"error": "No valid standings rows to insert"}), 400
 
     # --- Replace standings for this season ---
     inserted_count = 0
     try:
         # Delete old rows for this season
-        supabase.table("standings") \
-            .delete() \
-            .eq("season_id", CURRENT_SEASON_ID) \
-            .execute()
+        supabase.table("standings").delete().eq(
+            "season_id", current_season().id
+        ).execute()
 
         # Insert new snapshot
-        ins_res = (
-            supabase.table("standings")
-            .insert(rows_to_insert)
-            .execute()
-        )
+        ins_res = supabase.table("standings").insert(rows_to_insert).execute()
         inserted_count = len(ins_res.data or [])
     except Exception as e:
-        safe_print(
-            "🔴 Failed to write standings rows:",
-            type(e).__name__,
-            repr(e)
-        )
+        safe_print("🔴 Failed to write standings rows:", type(e).__name__, repr(e))
         # IMPORTANT: make this message more informative while debugging
         return jsonify({"error": "Failed to write standings"}), 500
 
     safe_print(
-        f"✅ Overwrote standings for season {CURRENT_SEASON_CODE} "
-        f"({CURRENT_SEASON_ID}). Inserted: {inserted_count}, skipped: {len(skipped)}"
+        f"✅ Overwrote standings for season {current_season().code} "
+        f"({current_season().id}). Inserted: {inserted_count}, skipped: {len(skipped)}"
     )
 
-    return jsonify(
-        {
-            "ok": True,
-            "inserted": inserted_count,
-            "skipped": skipped,
-        }
-    ), 200
+    return (
+        jsonify(
+            {
+                "ok": True,
+                "inserted": inserted_count,
+                "skipped": skipped,
+            }
+        ),
+        200,
+    )
 
 
 @app.route("/admin/insert_test_teams", methods=["POST"])
@@ -1585,28 +1524,28 @@ def admin_insert_test_teams():
 
     # --- Test teams (unchanged shape vs your prior helper) ---
     east = [
-        {"id": "T1E",  "name": "TestEast1",  "conference": "east"},
-        {"id": "T2E",  "name": "TestEast2",  "conference": "east"},
-        {"id": "T3E",  "name": "TestEast3",  "conference": "east"},
-        {"id": "T4E",  "name": "TestEast4",  "conference": "east"},
-        {"id": "T5E",  "name": "TestEast5",  "conference": "east"},
-        {"id": "T6E",  "name": "TestEast6",  "conference": "east"},
-        {"id": "T7E",  "name": "TestEast7",  "conference": "east"},
-        {"id": "T8E",  "name": "TestEast8",  "conference": "east"},
-        {"id": "T9E",  "name": "TestEast9",  "conference": "east"},
+        {"id": "T1E", "name": "TestEast1", "conference": "east"},
+        {"id": "T2E", "name": "TestEast2", "conference": "east"},
+        {"id": "T3E", "name": "TestEast3", "conference": "east"},
+        {"id": "T4E", "name": "TestEast4", "conference": "east"},
+        {"id": "T5E", "name": "TestEast5", "conference": "east"},
+        {"id": "T6E", "name": "TestEast6", "conference": "east"},
+        {"id": "T7E", "name": "TestEast7", "conference": "east"},
+        {"id": "T8E", "name": "TestEast8", "conference": "east"},
+        {"id": "T9E", "name": "TestEast9", "conference": "east"},
         {"id": "T10E", "name": "TestEast10", "conference": "east"},
     ]
     west = [
-        {"id": "LAL",  "name": "Los Angeles Lakers", "conference": "west"},
-        {"id": "T2W",  "name": "TestWest2",         "conference": "west"},
-        {"id": "T3W",  "name": "TestWest3",         "conference": "west"},
-        {"id": "T4W",  "name": "TestWest4",         "conference": "west"},
-        {"id": "T5W",  "name": "TestWest5",         "conference": "west"},
-        {"id": "T6W",  "name": "TestWest6",         "conference": "west"},
-        {"id": "T7W",  "name": "TestWest7",         "conference": "west"},
-        {"id": "T8W",  "name": "TestWest8",         "conference": "west"},
-        {"id": "T9W",  "name": "TestWest9",         "conference": "west"},
-        {"id": "T10W", "name": "TestWest10",        "conference": "west"},
+        {"id": "LAL", "name": "Los Angeles Lakers", "conference": "west"},
+        {"id": "T2W", "name": "TestWest2", "conference": "west"},
+        {"id": "T3W", "name": "TestWest3", "conference": "west"},
+        {"id": "T4W", "name": "TestWest4", "conference": "west"},
+        {"id": "T5W", "name": "TestWest5", "conference": "west"},
+        {"id": "T6W", "name": "TestWest6", "conference": "west"},
+        {"id": "T7W", "name": "TestWest7", "conference": "west"},
+        {"id": "T8W", "name": "TestWest8", "conference": "west"},
+        {"id": "T9W", "name": "TestWest9", "conference": "west"},
+        {"id": "T10W", "name": "TestWest10", "conference": "west"},
     ]
     teams_to_upsert = east + west
 
@@ -1626,7 +1565,7 @@ def admin_insert_test_teams():
                 _ = (
                     supabase.table("standings")
                     .select("id")
-                    .eq("season_id", CURRENT_SEASON_ID)
+                    .eq("season_id", current_season().id)
                     .limit(1)
                     .execute()
                 )
@@ -1658,7 +1597,9 @@ def admin_insert_test_teams():
             if missing_code_ids:
                 try:
                     # Build patch objects where code := id (simple/safe fallback)
-                    patches = [{"id": tid, "code": tid} for tid in missing_code_ids if tid]
+                    patches = [
+                        {"id": tid, "code": tid} for tid in missing_code_ids if tid
+                    ]
                     if patches:
                         supabase.table("teams").upsert(patches).execute()
                         # Refresh rows to pick up code
@@ -1688,7 +1629,9 @@ def admin_insert_test_teams():
                     if not code:
                         continue  # skip if we still don't have code
                     row = {
-                        "name": next((t["name"] for t in teams_to_upsert if t["id"] == tid), tid),
+                        "name": next(
+                            (t["name"] for t in teams_to_upsert if t["id"] == tid), tid
+                        ),
                         "code": code,
                         "conference": conf_name,
                         "wins": 0,
@@ -1697,7 +1640,7 @@ def admin_insert_test_teams():
                         "updated_at": datetime.utcnow().isoformat(),
                     }
                     if has_season_id:
-                        row["season_id"] = CURRENT_SEASON_ID
+                        row["season_id"] = current_season().id
                     standings_rows.append(row)
 
             add_conf("east", east_order)
@@ -1716,13 +1659,18 @@ def admin_insert_test_teams():
             safe_print("⚠️ standings seeding skipped (class):", type(e).__name__)
             standings_mode = "error"
 
-    return jsonify({
-        "message": "Test teams inserted/updated",
-        "seed_standings_requested": seed_standings,
-        "standings_seeded_rows": seeded_standings,
-        "standings_mode": standings_mode,
-        "season_id": CURRENT_SEASON_ID,
-    }), 200
+    return (
+        jsonify(
+            {
+                "message": "Test teams inserted/updated",
+                "seed_standings_requested": seed_standings,
+                "standings_seeded_rows": seeded_standings,
+                "standings_mode": standings_mode,
+                "season_id": current_season().id,
+            }
+        ),
+        200,
+    )
 
 
 # small health endpoint
@@ -1792,7 +1740,7 @@ def recompute_scores(master_bracket_id):
     if not is_uuid(master_bracket_id):
         return jsonify({"error": "Invalid master bracket id"}), 400
 
-    if not CURRENT_SEASON_ID:
+    if not current_season().id:
         return jsonify({"error": "CURRENT_SEASON not resolved on server"}), 500
 
     # Ensure the master bracket exists, is active, and is in the CURRENT season
@@ -1807,7 +1755,7 @@ def recompute_scores(master_bracket_id):
     )
     if not br_res:
         return jsonify({"error": "Master bracket not found"}), 404
-    if br_res[0].get("season_id") != CURRENT_SEASON_ID:
+    if br_res[0].get("season_id") != current_season().id:
         return jsonify({"error": "Master bracket is not in the current season"}), 400
 
     # Load master matches once (will validate season internally)
@@ -1821,7 +1769,7 @@ def recompute_scores(master_bracket_id):
         .select("id, is_done, deleted_at, season_id")
         .is_("deleted_at", None)
         .eq("is_done", True)
-        .eq("season_id", CURRENT_SEASON_ID)   # 👈 season scope
+        .eq("season_id", current_season().id)  # 👈 season scope
         .execute()
         .data
     )
@@ -1833,12 +1781,17 @@ def recompute_scores(master_bracket_id):
         if rec:
             updated_count += 1
 
-    return jsonify({
-        "message": "Scores recomputed",
-        "master_bracket_id": master_bracket_id,
-        "season_id": CURRENT_SEASON_ID,
-        "updated_brackets": updated_count,
-    }), 200
+    return (
+        jsonify(
+            {
+                "message": "Scores recomputed",
+                "master_bracket_id": master_bracket_id,
+                "season_id": current_season().id,
+                "updated_brackets": updated_count,
+            }
+        ),
+        200,
+    )
 
 
 def _build_leaderboard_rows_for_current_season():
@@ -1965,7 +1918,7 @@ def _snapshot_leaderboard_for_current_season():
     # Make sure season globals are resolved
     ensure_season_globals()
 
-    if CURRENT_SEASON_ID is None:
+    if current_season().id is None:
         return {
             "error": "CURRENT_SEASON_ID is not set; cannot snapshot leaderboard.",
             "status": 400,
@@ -1975,7 +1928,7 @@ def _snapshot_leaderboard_for_current_season():
     existing = (
         supabase.table("leaderboard_history")
         .select("id")
-        .eq("season_id", CURRENT_SEASON_ID)
+        .eq("season_id", current_season().id)
         .limit(1)
         .execute()
     ).data
@@ -2011,8 +1964,8 @@ def _snapshot_leaderboard_for_current_season():
     for idx, r in enumerate(rows_sorted, start=1):
         records.append(
             {
-                "season_id": CURRENT_SEASON_ID,
-                "season_code": CURRENT_SEASON_CODE,
+                "season_id": current_season().id,
+                "season_code": current_season().code,
                 "snapshot_at": snapshot_time,
                 "rank": idx,
                 "bracket_name": r["bracket_name"],
@@ -2127,8 +2080,8 @@ def _snapshot_leaderboard_for_current_season():
             created_by_user_id = None
 
         snapshot_payload: Dict[str, Any] = {
-            "season_id": CURRENT_SEASON_ID,
-            "season_code": CURRENT_SEASON_CODE,
+            "season_id": current_season().id,
+            "season_code": current_season().code,
             "snapshot_at": snapshot_time,
             "columns": columns_json,
         }
@@ -2188,7 +2141,9 @@ def _snapshot_leaderboard_for_current_season():
                     .insert(history_rows)
                     .execute()
                 )
-                history_rows_count = len(getattr(rows_res, "data", None) or history_rows)
+                history_rows_count = len(
+                    getattr(rows_res, "data", None) or history_rows
+                )
 
     except Exception as e:
         # Don't fail the whole snapshot if the Past Seasons insert fails.
@@ -2202,8 +2157,8 @@ def _snapshot_leaderboard_for_current_season():
 
     return {
         "ok": True,
-        "season_id": str(CURRENT_SEASON_ID),
-        "season_code": CURRENT_SEASON_CODE,
+        "season_id": str(current_season().id),
+        "season_code": current_season().code,
         "rows_snapshot": len(records),
         "history_snapshot_id": history_snapshot_id,
         "history_rows_count": history_rows_count,
@@ -2226,8 +2181,7 @@ def _rollover_current_season(
       4) Soft-delete all brackets for the current season.
       5) Insert the new season row in seasons.
 
-    This does NOT change any env vars (CURRENT_SEASON_CODE, REGULAR_SEASON_END_UTC,
-    PLAYOFFS_START_UTC). You must update those in your Render/.env config after
+    This does NOT advance application_season. NC-02C3 owns explicit switching after
     this completes successfully.
 
     Returns a dict with:
@@ -2236,7 +2190,7 @@ def _rollover_current_season(
       - steps: list of step results (each with step, ok, message, optional details)
       - current_season: {id, code}
       - new_season: {id, code, regular_season_end_utc, playoffs_start_utc} on success
-      - env_next_actions: suggested env values to set for the new season
+      - env_next_actions: compatibility metadata describing the requested target; not an environment selector
     """
     guard_runtime_job("season-rollover")
     # Make sure CURRENT_SEASON_ID / gates are resolved
@@ -2244,7 +2198,7 @@ def _rollover_current_season(
 
     steps = []
 
-    if not CURRENT_SEASON_CODE:
+    if not current_season().code:
         return {
             "ok": False,
             "status": 400,
@@ -2252,7 +2206,7 @@ def _rollover_current_season(
             "steps": steps,
         }
 
-    if CURRENT_SEASON_ID is None:
+    if current_season().id is None:
         return {
             "ok": False,
             "status": 400,
@@ -2269,7 +2223,7 @@ def _rollover_current_season(
             "steps": steps,
         }
 
-    if new_code == CURRENT_SEASON_CODE:
+    if new_code == current_season().code:
         return {
             "ok": False,
             "status": 400,
@@ -2314,7 +2268,7 @@ def _rollover_current_season(
             {
                 "step": "snapshot",
                 "ok": True,
-                "message": f"Snapshot already existed for season {CURRENT_SEASON_CODE}; reusing existing snapshot.",
+                "message": f"Snapshot already existed for season {current_season().code}; reusing existing snapshot.",
                 "details": snapshot_result,
             }
         )
@@ -2324,7 +2278,7 @@ def _rollover_current_season(
             {
                 "step": "snapshot",
                 "ok": True,
-                "message": f"Snapshot created for season {CURRENT_SEASON_CODE} with {rows_snapshot} rows.",
+                "message": f"Snapshot created for season {current_season().code} with {rows_snapshot} rows.",
                 "details": snapshot_result,
             }
         )
@@ -2350,12 +2304,14 @@ def _rollover_current_season(
         bs_res = (
             supabase.table("bracket_scores")
             .delete()
-            .eq("season_id", CURRENT_SEASON_ID)
+            .eq("season_id", current_season().id)
             .execute()
         )
         deleted_scores = len(getattr(bs_res, "data", None) or [])
     except Exception as e:
-        safe_print("🔴 Error deleting bracket_scores in rollover:", type(e).__name__, repr(e))
+        safe_print(
+            "🔴 Error deleting bracket_scores in rollover:", type(e).__name__, repr(e)
+        )
         steps.append(
             {
                 "step": "delete_bracket_scores",
@@ -2374,7 +2330,7 @@ def _rollover_current_season(
         {
             "step": "delete_bracket_scores",
             "ok": True,
-            "message": f"Deleted {deleted_scores} bracket_scores rows for season {CURRENT_SEASON_CODE}.",
+            "message": f"Deleted {deleted_scores} bracket_scores rows for season {current_season().code}.",
         }
     )
 
@@ -2383,7 +2339,7 @@ def _rollover_current_season(
         m_res = (
             supabase.table("matches")
             .delete()
-            .eq("season_id", CURRENT_SEASON_ID)
+            .eq("season_id", current_season().id)
             .execute()
         )
         deleted_matches = len(getattr(m_res, "data", None) or [])
@@ -2407,7 +2363,7 @@ def _rollover_current_season(
         {
             "step": "delete_matches",
             "ok": True,
-            "message": f"Deleted {deleted_matches} matches rows for season {CURRENT_SEASON_CODE}.",
+            "message": f"Deleted {deleted_matches} matches rows for season {current_season().code}.",
         }
     )
 
@@ -2420,13 +2376,15 @@ def _rollover_current_season(
         br_res = (
             supabase.table("brackets")
             .update(update_payload)
-            .eq("season_id", CURRENT_SEASON_ID)
+            .eq("season_id", current_season().id)
             .is_("deleted_at", None)
             .execute()
         )
         soft_deleted = len(getattr(br_res, "data", None) or [])
     except Exception as e:
-        safe_print("🔴 Error soft-deleting brackets in rollover:", type(e).__name__, repr(e))
+        safe_print(
+            "🔴 Error soft-deleting brackets in rollover:", type(e).__name__, repr(e)
+        )
         steps.append(
             {
                 "step": "soft_delete_brackets",
@@ -2445,7 +2403,7 @@ def _rollover_current_season(
         {
             "step": "soft_delete_brackets",
             "ok": True,
-            "message": f"Soft-deleted {soft_deleted} brackets for season {CURRENT_SEASON_CODE}.",
+            "message": f"Soft-deleted {soft_deleted} brackets for season {current_season().code}.",
         }
     )
 
@@ -2461,7 +2419,9 @@ def _rollover_current_season(
         new_rows = getattr(insert_res, "data", None) or []
         new_season = new_rows[0] if new_rows else None
     except Exception as e:
-        safe_print("🔴 Error inserting new season in rollover:", type(e).__name__, repr(e))
+        safe_print(
+            "🔴 Error inserting new season in rollover:", type(e).__name__, repr(e)
+        )
         return {
             "ok": False,
             "status": 500,
@@ -2495,8 +2455,8 @@ def _rollover_current_season(
         "ok": True,
         "status": 200,
         "current_season": {
-            "id": str(CURRENT_SEASON_ID),
-            "code": CURRENT_SEASON_CODE,
+            "id": str(current_season().id),
+            "code": current_season().code,
         },
         "new_season": {
             "id": new_season.get("id"),
@@ -2506,10 +2466,14 @@ def _rollover_current_season(
         },
         "steps": steps,
         "env_next_actions": {
-            "message": "Update these env vars in your Render/.env config before starting the new season.",
+            "message": "Current season remains unchanged. A controlled activation is required after rollover; these values describe the requested target.",
             "CURRENT_SEASON_CODE": new_code,
-            "REGULAR_SEASON_END_UTC": regular_season_end_utc.isoformat() if regular_season_end_utc else None,
-            "PLAYOFFS_START_UTC": playoffs_start_utc.isoformat() if playoffs_start_utc else None,
+            "REGULAR_SEASON_END_UTC": (
+                regular_season_end_utc.isoformat() if regular_season_end_utc else None
+            ),
+            "PLAYOFFS_START_UTC": (
+                playoffs_start_utc.isoformat() if playoffs_start_utc else None
+            ),
         },
     }
 
@@ -2946,7 +2910,10 @@ def create_bracket_for_user():
     if not is_admin:
         if playoffs_locked():
             return bracket_final_lock_error()
-        if REGULAR_SEASON_END_UTC and now_utc() < REGULAR_SEASON_END_UTC:
+        if (
+            current_season().bracket_creation_opens_at
+            and now_utc() < current_season().bracket_creation_opens_at
+        ):
             return (
                 jsonify(
                     {"error": "Bracket creation opens after the regular season ends."}
@@ -2959,7 +2926,7 @@ def create_bracket_for_user():
             supabase.table("brackets")
             .select("id")
             .eq("user_id", user_id)
-            .eq("season_id", CURRENT_SEASON_ID)
+            .eq("season_id", current_season().id)
             .is_("deleted_at", None)
             .execute()
             .data
@@ -3174,7 +3141,7 @@ def create_bracket_for_user():
                     "create_master_bracket_atomic",
                     {
                         "p_user_id": user_id,
-                        "p_season_id": CURRENT_SEASON_ID,
+                        "p_season_id": current_season().id,
                         "p_replace": replace,
                         "p_matches": all_matches,
                     },
@@ -3185,7 +3152,7 @@ def create_bracket_for_user():
         else:
             bracket = (
                 supabase.table("brackets")
-                .insert({"user_id": user_id, "season_id": CURRENT_SEASON_ID})
+                .insert({"user_id": user_id, "season_id": current_season().id})
                 .execute()
                 .data[0]
             )
@@ -3241,7 +3208,7 @@ def save_bracket(bracket_id):
             return jsonify({"error": "Bracket not found"}), 404
 
         bracket = bracket_res[0]
-        if bracket.get("season_id") != CURRENT_SEASON_ID:
+        if bracket.get("season_id") != current_season().id:
             return jsonify({"error": "Bracket is not in the current season"}), 400
 
         access_error = bracket_content_mutation_error(bracket, user_id)
@@ -3318,13 +3285,13 @@ def get_my_bracket():
                         "playoffs_locked": locked,
                         "bracket_creation_open": creation_open,
                         "regular_season_end_utc": (
-                            REGULAR_SEASON_END_UTC.isoformat()
-                            if REGULAR_SEASON_END_UTC
+                            current_season().bracket_creation_opens_at.isoformat()
+                            if current_season().bracket_creation_opens_at
                             else None
                         ),
                         "playoffs_deadline_utc": (
-                            PLAYOFFS_START_UTC.isoformat()
-                            if PLAYOFFS_START_UTC
+                            current_season().playoff_lock_at.isoformat()
+                            if current_season().playoff_lock_at
                             else None
                         ),
                     }
@@ -3360,12 +3327,14 @@ def get_my_bracket():
                     "playoffs_locked": locked,
                     "bracket_creation_open": creation_open,
                     "regular_season_end_utc": (
-                        REGULAR_SEASON_END_UTC.isoformat()
-                        if REGULAR_SEASON_END_UTC
+                        current_season().bracket_creation_opens_at.isoformat()
+                        if current_season().bracket_creation_opens_at
                         else None
                     ),
                     "playoffs_deadline_utc": (
-                        PLAYOFFS_START_UTC.isoformat() if PLAYOFFS_START_UTC else None
+                        current_season().playoff_lock_at.isoformat()
+                        if current_season().playoff_lock_at
+                        else None
                     ),
                 }
             ),
@@ -3405,7 +3374,7 @@ def get_bracket_by_id(bracket_id):
     bracket = br_rows[0]
 
     historical = request.path.startswith("/history/bracket/")
-    if not historical and bracket.get("season_id") != CURRENT_SEASON_ID:
+    if not historical and bracket.get("season_id") != current_season().id:
         return jsonify({"error": "Bracket is not in the current season"}), 404
 
     # 🔎 Derive true master flag from season.master_bracket_id OR brackets.is_master
@@ -3424,9 +3393,9 @@ def get_bracket_by_id(bracket_id):
     if historical:
         code = (season_row or {}).get("code", "")
         if (
-            bracket.get("season_id") == CURRENT_SEASON_ID
+            bracket.get("season_id") == current_season().id
             or not re.fullmatch(r"[0-9]{4}-[0-9]{2}", code)
-            or code >= CURRENT_SEASON_CODE
+            or code >= current_season().code
         ):
             return jsonify({"error": "Historical bracket not found"}), 404
 
@@ -3439,7 +3408,7 @@ def get_bracket_by_id(bracket_id):
     is_owner = str(viewer_id) == str(owner_id)
 
     if not is_owner and not competitive_bracket_eligible(
-        bracket, season_id=bracket["season_id"] if historical else CURRENT_SEASON_ID
+        bracket, season_id=bracket["season_id"] if historical else current_season().id
     ):
         return jsonify({"error": "Bracket not yet saved or not accessible"}), 403
 
@@ -3629,12 +3598,16 @@ def list_all_brackets():
                     # convenience flags for the UI
                     "playoffs_locked": locked,
                     "bracket_creation_open": creation_open,
-                    "regular_season_end_utc": REGULAR_SEASON_END_UTC.isoformat()
-                    if REGULAR_SEASON_END_UTC
-                    else None,
-                    "playoffs_deadline_utc": PLAYOFFS_START_UTC.isoformat()
-                    if PLAYOFFS_START_UTC
-                    else None,
+                    "regular_season_end_utc": (
+                        current_season().bracket_creation_opens_at.isoformat()
+                        if current_season().bracket_creation_opens_at
+                        else None
+                    ),
+                    "playoffs_deadline_utc": (
+                        current_season().playoff_lock_at.isoformat()
+                        if current_season().playoff_lock_at
+                        else None
+                    ),
                 }
             )
 
@@ -3676,7 +3649,7 @@ def delete_bracket(bracket_id):
     bracket = bracket_res[0]
 
     # Season guard
-    if bracket.get("season_id") != CURRENT_SEASON_ID:
+    if bracket.get("season_id") != current_season().id:
         return jsonify({"error": "Bracket is not in the current season"}), 403
 
     if current_master_bracket(bracket):
@@ -3780,7 +3753,7 @@ def update_match(bracket_id, match_id):
     if not bracket_check:
         return jsonify({"error": "Bracket not found"}), 404
 
-    if bracket_check[0].get("season_id") != CURRENT_SEASON_ID:
+    if bracket_check[0].get("season_id") != current_season().id:
         return jsonify({"error": "Bracket is not in the current season"}), 403
 
     access_error = bracket_content_mutation_error(bracket_check[0], user_id)
@@ -3875,7 +3848,7 @@ def set_match_games(match_id):
         return jsonify({"error": "forbidden"}), 403
 
     # 🔒 Season guard
-    if br[0].get("season_id") != CURRENT_SEASON_ID:
+    if br[0].get("season_id") != current_season().id:
         return jsonify({"error": "Bracket is not in the current season"}), 403
 
     access_error = bracket_content_mutation_error(br[0], user_id)
@@ -3913,44 +3886,53 @@ def leaderboard():
                 supabase.table("league_members")
                 .select("user_id")
                 .eq("league_id", league_id)
-                .execute().data or []
+                .execute()
+                .data
+                or []
             )
             league_user_ids = {m["user_id"] for m in members if m.get("user_id")}
 
         # -------- 1) Scores for current season --------
-        scores_q = (
-            supabase.table("bracket_scores")
-            .select(
-                "season_id, bracket_id, master_bracket_id, total_points, full_hits, "
-                "partial_hits, misses, bonus_finalists, bonus_champion, "
-                "points_by_match, updated_at"
-            )
+        scores_q = supabase.table("bracket_scores").select(
+            "season_id, bracket_id, master_bracket_id, total_points, full_hits, "
+            "partial_hits, misses, bonus_finalists, bonus_champion, "
+            "points_by_match, updated_at"
         )
-        if CURRENT_SEASON_ID is None:
+        if current_season().id is None:
             scores_q = scores_q.is_("season_id", None)
         else:
-            scores_q = scores_q.eq("season_id", CURRENT_SEASON_ID)
+            scores_q = scores_q.eq("season_id", current_season().id)
 
         scores = (scores_q.execute().data) or []
         if not scores:
-            return jsonify({
-                "rows": [],
-                "master_bracket_id": None,
-                "master_updated_at": None,
-                "master_matchups": {},
-            }), 200
+            return (
+                jsonify(
+                    {
+                        "rows": [],
+                        "master_bracket_id": None,
+                        "master_updated_at": None,
+                        "master_matchups": {},
+                    }
+                ),
+                200,
+            )
 
         master_bracket_id = None
 
         # -------- 3) Brackets & owners (current season, not deleted) --------
         bracket_ids = list({s["bracket_id"] for s in scores if s.get("bracket_id")})
         if not bracket_ids:
-            return jsonify({
-                "rows": [],
-                "master_bracket_id": master_bracket_id,
-                "master_updated_at": None,
-                "master_matchups": {},
-            }), 200
+            return (
+                jsonify(
+                    {
+                        "rows": [],
+                        "master_bracket_id": master_bracket_id,
+                        "master_updated_at": None,
+                        "master_matchups": {},
+                    }
+                ),
+                200,
+            )
 
         br_q = (
             supabase.table("brackets")
@@ -3958,10 +3940,10 @@ def leaderboard():
             .in_("id", bracket_ids)
             .is_("deleted_at", None)
         )
-        if CURRENT_SEASON_ID is None:
+        if current_season().id is None:
             br_q = br_q.is_("season_id", None)
         else:
-            br_q = br_q.eq("season_id", CURRENT_SEASON_ID)
+            br_q = br_q.eq("season_id", current_season().id)
 
         br_rows = [
             b for b in (br_q.execute().data or []) if competitive_bracket_eligible(b)
@@ -3970,10 +3952,17 @@ def leaderboard():
         # Stale/draft rows cannot influence even the live score-derived metadata.
         scores = [score for score in scores if score.get("bracket_id") in br_by_id]
         if not scores:
-            return jsonify({
-                "rows": [], "master_bracket_id": None,
-                "master_updated_at": None, "master_matchups": {},
-            }), 200
+            return (
+                jsonify(
+                    {
+                        "rows": [],
+                        "master_bracket_id": None,
+                        "master_updated_at": None,
+                        "master_matchups": {},
+                    }
+                ),
+                200,
+            )
 
         # -------- 2) Determine master_bracket_id robustly --------
         freq = {}
@@ -4003,21 +3992,23 @@ def leaderboard():
             if league_user_ids is not None and b.get("user_id") not in league_user_ids:
                 continue
             u = users_by_id.get(b["user_id"], {})
-            rows_out.append({
-                "bracket_id": bid,
-                "bracket_name": b.get("name"),
-                "user_id": b["user_id"],
-                "username": u.get("username", "unknown"),
-                "total_points": s.get("total_points", 0),
-                "full_hits": s.get("full_hits", 0),
-                "partial_hits": s.get("partial_hits", 0),
-                "misses": s.get("misses", 0),
-                "bonus_finalists": s.get("bonus_finalists", 0),
-                "bonus_champion": s.get("bonus_champion", 0),
-                "updated_at": s.get("updated_at"),
-                "saved_at": b.get("saved_at"),
-                "points_by_match": s.get("points_by_match") or {},
-            })
+            rows_out.append(
+                {
+                    "bracket_id": bid,
+                    "bracket_name": b.get("name"),
+                    "user_id": b["user_id"],
+                    "username": u.get("username", "unknown"),
+                    "total_points": s.get("total_points", 0),
+                    "full_hits": s.get("full_hits", 0),
+                    "partial_hits": s.get("partial_hits", 0),
+                    "misses": s.get("misses", 0),
+                    "bonus_finalists": s.get("bonus_finalists", 0),
+                    "bonus_champion": s.get("bonus_champion", 0),
+                    "updated_at": s.get("updated_at"),
+                    "saved_at": b.get("saved_at"),
+                    "points_by_match": s.get("points_by_match") or {},
+                }
+            )
 
         def _parse_ts(val):
             """
@@ -4062,11 +4053,26 @@ def leaderboard():
         if master_bracket_id:
             # (a) Canonical key set the UI expects
             ALL_KEYS = [
-                "east-0-1","west-0-1","east-0-2","west-0-2","east-0-3","west-0-3",
-                "east-1-4","east-1-5","east-1-6","east-1-7",
-                "west-1-4","west-1-5","west-1-6","west-1-7",
-                "east-2-8","east-2-9","west-2-8","west-2-9",
-                "east-3-10","west-3-10",
+                "east-0-1",
+                "west-0-1",
+                "east-0-2",
+                "west-0-2",
+                "east-0-3",
+                "west-0-3",
+                "east-1-4",
+                "east-1-5",
+                "east-1-6",
+                "east-1-7",
+                "west-1-4",
+                "west-1-5",
+                "west-1-6",
+                "west-1-7",
+                "east-2-8",
+                "east-2-9",
+                "west-2-8",
+                "west-2-9",
+                "east-3-10",
+                "west-3-10",
                 "nba-4-11",
             ]
             # Pre-fill with TBDs so every column has a value
@@ -4092,8 +4098,10 @@ def leaderboard():
             # Collect unique team IDs
             team_ids = set()
             for m in matches:
-                if m.get("team_a"): team_ids.add(m["team_a"])
-                if m.get("team_b"): team_ids.add(m["team_b"])
+                if m.get("team_a"):
+                    team_ids.add(m["team_a"])
+                if m.get("team_b"):
+                    team_ids.add(m["team_b"])
 
             teams_by_id = {}
             if team_ids:
@@ -4133,17 +4141,23 @@ def leaderboard():
             master_updates = [
                 s.get("updated_at")
                 for s in scores
-                if s.get("master_bracket_id") == master_bracket_id and s.get("updated_at")
+                if s.get("master_bracket_id") == master_bracket_id
+                and s.get("updated_at")
             ]
             if master_updates:
                 master_updated_at = max(master_updates)
 
-        return jsonify({
-            "rows": rows_out,
-            "master_bracket_id": master_bracket_id,
-            "master_updated_at": master_updated_at,
-            "master_matchups": master_matchups,
-        }), 200
+        return (
+            jsonify(
+                {
+                    "rows": rows_out,
+                    "master_bracket_id": master_bracket_id,
+                    "master_updated_at": master_updated_at,
+                    "master_matchups": master_matchups,
+                }
+            ),
+            200,
+        )
 
     except Exception as e:
         if ENABLE_DEBUG_LOGS:
@@ -4157,14 +4171,17 @@ def leaderboard():
                 pass
 
         # Fail-open: same shape as the "no scores" path
-        return jsonify(
-            {
-                "rows": [],
-                "master_bracket_id": None,
-                "master_updated_at": None,
-                "master_matchups": {},
-            }
-        ), 200
+        return (
+            jsonify(
+                {
+                    "rows": [],
+                    "master_bracket_id": None,
+                    "master_updated_at": None,
+                    "master_matchups": {},
+                }
+            ),
+            200,
+        )
 
 
 @app.route("/stats/champion-picks", methods=["GET"])
@@ -4189,7 +4206,6 @@ def champion_pick_stats():
     league_id = request.args.get("league_id") or None
     scope = "global"
     season_code = request.args.get("season_code") or None
-
 
     try:
         league_user_ids = None
@@ -4221,15 +4237,18 @@ def champion_pick_stats():
             league_user_ids = {m["user_id"] for m in mem_rows if m.get("user_id")}
 
             if not league_user_ids:
-                return jsonify(
-                    {
-                        "scope": scope,
-                        "league_id": league_id,
-                        "total_brackets": 0,
-                        "rows": [],
-                    }
-                ), 200
-        
+                return (
+                    jsonify(
+                        {
+                            "scope": scope,
+                            "league_id": league_id,
+                            "total_brackets": 0,
+                            "rows": [],
+                        }
+                    ),
+                    200,
+                )
+
         target_season_id = None
 
         if season_code:
@@ -4244,7 +4263,7 @@ def champion_pick_stats():
             if not season_rows:
                 return jsonify({"error": "Season not found"}), 404
             target_season_id = season_rows[0]["id"]
-        
+
         # --- Load brackets for current season, done, not deleted ---
         base_brackets = (
             supabase.table("brackets")
@@ -4265,32 +4284,39 @@ def champion_pick_stats():
 
         br_res = brackets_q.execute()
         br_rows = [
-            b for b in (br_res.data or [])
+            b
+            for b in (br_res.data or [])
             if competitive_bracket_eligible(
-                b, season_id=target_season_id if season_code else CURRENT_SEASON_ID
+                b, season_id=target_season_id if season_code else current_season().id
             )
         ]
 
         if not br_rows:
-            return jsonify(
-                {
-                    "scope": scope,
-                    "league_id": league_id,
-                    "total_brackets": 0,
-                    "rows": [],
-                }
-            ), 200
+            return (
+                jsonify(
+                    {
+                        "scope": scope,
+                        "league_id": league_id,
+                        "total_brackets": 0,
+                        "rows": [],
+                    }
+                ),
+                200,
+            )
 
         bracket_ids = [b["id"] for b in br_rows if b.get("id")]
         if not bracket_ids:
-            return jsonify(
-                {
-                    "scope": scope,
-                    "league_id": league_id,
-                    "total_brackets": 0,
-                    "rows": [],
-                }
-            ), 200
+            return (
+                jsonify(
+                    {
+                        "scope": scope,
+                        "league_id": league_id,
+                        "total_brackets": 0,
+                        "rows": [],
+                    }
+                ),
+                200,
+            )
 
         # --- Aggregate per-match points across these brackets to find least/most predicted matchups ---
         scores_res = (
@@ -4419,7 +4445,7 @@ def champion_pick_stats():
 
             least_matchup = build_match_dict(least_key, least_agg)
             most_matchup = build_match_dict(most_key, most_agg)
-        
+
         # --- Fetch NBA Finals champion picks for these brackets ---
         matches_res = (
             supabase.table("matches")
@@ -4433,6 +4459,7 @@ def champion_pick_stats():
         matches_rows = matches_res.data or []
 
         from collections import defaultdict
+
         counts = defaultdict(int)
         for row in matches_rows:
             team_id = row.get("predicted_winner")
@@ -4442,14 +4469,17 @@ def champion_pick_stats():
         total_picks = sum(counts.values())
         if total_picks == 0:
             # No champion picks yet for these brackets
-            return jsonify(
-                {
-                    "scope": scope,
-                    "league_id": league_id,
-                    "total_brackets": len(br_rows),
-                    "rows": [],
-                }
-            ), 200
+            return (
+                jsonify(
+                    {
+                        "scope": scope,
+                        "league_id": league_id,
+                        "total_brackets": len(br_rows),
+                        "rows": [],
+                    }
+                ),
+                200,
+            )
 
         team_ids = list(counts.keys())
 
@@ -4485,16 +4515,19 @@ def champion_pick_stats():
         # Sort: most-picked first, then by team name
         rows_out.sort(key=lambda r: (-r["brackets"], r["team_name"] or ""))
 
-        return jsonify(
-            {
-                "scope": scope,
-                "league_id": league_id,
-                "total_brackets": total_picks,
-                "rows": rows_out,
-                "least_predicted_matchup": least_matchup,
-                "most_predicted_matchup": most_matchup,
-            }
-        ), 200
+        return (
+            jsonify(
+                {
+                    "scope": scope,
+                    "league_id": league_id,
+                    "total_brackets": total_picks,
+                    "rows": rows_out,
+                    "least_predicted_matchup": least_matchup,
+                    "most_predicted_matchup": most_matchup,
+                }
+            ),
+            200,
+        )
 
     except Exception as e:
         if ENABLE_DEBUG_LOGS:

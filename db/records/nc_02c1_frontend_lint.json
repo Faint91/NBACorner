@@ -1,0 +1,27 @@
+{
+  "src/pages/AdminPage.tsx": {
+    "before": 6,
+    "after": 6,
+    "new_findings": []
+  },
+  "src/pages/PastSeasonsPage.tsx": {
+    "before": 6,
+    "after": 6,
+    "new_findings": []
+  },
+  "src/season/currentSeason.ts": {
+    "before": 0,
+    "after": 0,
+    "new_findings": []
+  },
+  "src/season/useCurrentSeason.ts": {
+    "before": 0,
+    "after": 0,
+    "new_findings": []
+  },
+  "scripts/test-canonical-season.cjs": {
+    "before": 0,
+    "after": 0,
+    "new_findings": []
+  }
+}

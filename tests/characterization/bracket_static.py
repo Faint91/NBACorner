@@ -91,7 +91,7 @@ class CurrentStaticBracketBehavior(unittest.TestCase):
 
     @behavior(
         "frontend behavior",
-        "Frontend allows owner editing and admin-master editing; game options are 4–7, play-in one; pending games local until winner; edits reload backend state.",
+        "Frontend allows owner editing and admin-master editing; game options are 4Ã¢â‚¬â€œ7, play-in one; pending games local until winner; edits reload backend state.",
         question="Approve UI count range, optimistic state and admin-owner overlap?",
     )
     def current_behavior__bracket__frontend_controls(self):
@@ -192,9 +192,14 @@ class CurrentStaticBracketBehavior(unittest.TestCase):
         question="Approve date defaults, refresh and timezone contract?",
     )
     def current_behavior__bracket__timing(self):
-        self.assertIn("now_utc() >= PLAYOFFS_START_UTC", self.fn("playoffs_locked"))
-        self.assertIn("now < REGULAR_SEASON_END_UTC", self.fn("bracket_creation_open"))
-        self.assertIn("datetime(2099, 1, 1", self.fn("_resolve_season_globals"))
+        self.assertIn(
+            "now_utc() >= current_season().playoff_lock_at", self.fn("playoffs_locked")
+        )
+        self.assertIn(
+            "now < current_season().bracket_creation_opens_at",
+            self.fn("bracket_creation_open"),
+        )
+        self.assertNotIn("datetime(2099, 1, 1", self.app)
         self.assertNotIn("playoffs_locked", self.fn("_season_bootstrap"))
         self.assertIn("bracket_content_mutation_error", self.fn("update_match"))
         self.assertIn("bracket_content_mutation_error", self.fn("set_match_games"))
@@ -223,7 +228,7 @@ class CurrentStaticBracketBehavior(unittest.TestCase):
             "leaderboard_history_snapshots", self.fn("leaderboard_history_index")
         )
         self.assertIn("leaderboard_history_rows", self.fn("leaderboard_history_season"))
-        self.assertIn("CURRENT_SEASON_ID", self.fn("get_bracket_by_id"))
+        self.assertIn("current_season().id", self.fn("get_bracket_by_id"))
 
 
 from scripts.nc02b1_acceptance_metadata import mark_acceptance as mark_nc02b1

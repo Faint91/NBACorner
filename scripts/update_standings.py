@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 from supabase import create_client, Client
 from environment_safety import prepare_runtime_environment
 from provider_transport import provider_get
+from canonical_season import get_current_season, espn_season_year
 from job_safety import guard_runtime_job
 
 guard_runtime_job("standings-script")
@@ -35,8 +36,7 @@ ESPN_STANDINGS_URL_TEMPLATE = (
     "&sort=winpercent%3Adesc%2Cwins%3Adesc%2Cgamesbehind%3Aasc&season={season}"
 )
 
-# Optional override: if set, we use this as the NBA season year (e.g. 2025 for 2025-26)
-NBA_STANDINGS_SEASON_OVERRIDE = os.getenv("NBA_STANDINGS_SEASON")
+# Legacy provider/environment season overrides have no authority.
 
 # Static mapping from abbreviation (your teams.code) -> conference
 EAST_WEST_BY_CODE = {
@@ -85,26 +85,6 @@ ESPN_TO_DB_CODE = {
 }
 
 
-def _current_nba_season_year(today=None):
-    """Return the ESPN 'season' year (the END year of the season).
-
-    Examples with ESPN:
-      - 2024-25 season  -> season=2025
-      - 2025-26 season  -> season=2026
-    """
-    if today is None:
-        today = datetime.now(timezone.utc).date()
-
-    # From August onward, we're in the season that ENDS next calendar year.
-    #   e.g. 2025-10 (2025-26 season) -> 2026
-    # Before August, we're in the season that ENDS this calendar year.
-    #   e.g. 2026-03 (2025-26 season) -> 2026
-    if today.month >= 8:
-        return today.year + 1
-    return today.year
-
-
-
 def _safe_int(val, default=None):
     try:
         if val is None or val == "":
@@ -125,17 +105,7 @@ def _safe_float(val, default=0.0):
 
 def update_standings_from_json():
     guard_runtime_job("standings-script")
-    # Determine which season to ask ESPN for
-    if NBA_STANDINGS_SEASON_OVERRIDE:
-        try:
-            season_year = int(NBA_STANDINGS_SEASON_OVERRIDE)
-        except ValueError:
-            raise RuntimeError(
-                "Invalid NBA_STANDINGS_SEASON override: %r"
-                % (NBA_STANDINGS_SEASON_OVERRIDE,)
-            )
-    else:
-        season_year = _current_nba_season_year()
+    season_year = espn_season_year(get_current_season(supabase).code)
 
     standings_url = ESPN_STANDINGS_URL_TEMPLATE.format(season=season_year)
 
@@ -153,7 +123,9 @@ def update_standings_from_json():
             ),
             "Accept": "application/json, text/plain, */*",
         }
-        response = provider_get(requests.get, standings_url, timeout=30, headers=headers)
+        response = provider_get(
+            requests.get, standings_url, timeout=30, headers=headers
+        )
 
         if DEBUG_STANDINGS:
             print("---- DEBUG: NBA standings HTTP response ----")
@@ -219,7 +191,10 @@ def update_standings_from_json():
                     if not key:
                         continue
                     val = s.get("value")
-                    if (val is None or val == "") and s.get("summary") not in (None, ""):
+                    if (val is None or val == "") and s.get("summary") not in (
+                        None,
+                        "",
+                    ):
                         val = s.get("summary")
                     stats_map[str(key)] = val
 
@@ -234,7 +209,9 @@ def update_standings_from_json():
             seed = _safe_int(stats_map.get("playoffseed"), None)
 
             if not code or not name:
-                print("⚠️ Skipping invalid team entry (missing name/code): %r" % (team,))
+                print(
+                    "⚠️ Skipping invalid team entry (missing name/code): %r" % (team,)
+                )
                 continue
 
             conference = EAST_WEST_BY_CODE.get(code)
@@ -258,7 +235,9 @@ def update_standings_from_json():
             }
 
             # Check if a row for this code already exists
-            existing = supabase.table("standings").select("id").eq("code", code).execute()
+            existing = (
+                supabase.table("standings").select("id").eq("code", code).execute()
+            )
             existing_rows = existing.data or []
 
             if existing_rows:

@@ -1,0 +1,639 @@
+{
+  "phase": "NC-02C1",
+  "pre_change_inventory": [
+    {
+      "file": "app.py",
+      "function": "<module>",
+      "sources": [
+        "CURRENT_SEASON_ID",
+        "CURRENT_SEASON_CODE",
+        "REGULAR_SEASON_END_UTC",
+        "PLAYOFFS_START_UTC"
+      ],
+      "environment": "production",
+      "source_type": "environment/database-derived globals",
+      "authority": "authoritative",
+      "current_consumer": "<module>",
+      "source_roles": {
+        "CURRENT_SEASON_ID": "Derived process-global DB ID selected using environment season code",
+        "CURRENT_SEASON_CODE": "Independent environment selector at startup; downstream process-global derived use",
+        "REGULAR_SEASON_END_UTC": "DB timestamp; environment fallback; missing opening skipped",
+        "PLAYOFFS_START_UTC": "DB timestamp; environment fallback; missing final lock defaulted to 2099"
+      }
+    },
+    {
+      "file": "app.py",
+      "function": "_resolve_season_globals",
+      "sources": [
+        "CURRENT_SEASON_ID",
+        "CURRENT_SEASON_CODE",
+        "REGULAR_SEASON_END_UTC",
+        "PLAYOFFS_START_UTC"
+      ],
+      "environment": "production",
+      "source_type": "environment/database-derived globals",
+      "authority": "authoritative",
+      "current_consumer": "_resolve_season_globals",
+      "source_roles": {
+        "CURRENT_SEASON_ID": "Derived process-global DB ID selected using environment season code",
+        "CURRENT_SEASON_CODE": "Independent environment selector at startup; downstream process-global derived use",
+        "REGULAR_SEASON_END_UTC": "DB timestamp; environment fallback; missing opening skipped",
+        "PLAYOFFS_START_UTC": "DB timestamp; environment fallback; missing final lock defaulted to 2099"
+      }
+    },
+    {
+      "file": "app.py",
+      "function": "playoffs_locked",
+      "sources": [
+        "PLAYOFFS_START_UTC"
+      ],
+      "environment": "production",
+      "source_type": "environment/database-derived globals",
+      "authority": "authoritative",
+      "current_consumer": "playoffs_locked",
+      "source_roles": {
+        "PLAYOFFS_START_UTC": "DB timestamp; environment fallback; missing final lock defaulted to 2099"
+      }
+    },
+    {
+      "file": "app.py",
+      "function": "current_master_bracket",
+      "sources": [
+        "CURRENT_SEASON_ID"
+      ],
+      "environment": "production",
+      "source_type": "environment/database-derived globals",
+      "authority": "authoritative",
+      "current_consumer": "current_master_bracket",
+      "source_roles": {
+        "CURRENT_SEASON_ID": "Derived process-global DB ID selected using environment season code"
+      }
+    },
+    {
+      "file": "app.py",
+      "function": "bracket_creation_open",
+      "sources": [
+        "REGULAR_SEASON_END_UTC",
+        "PLAYOFFS_START_UTC"
+      ],
+      "environment": "production",
+      "source_type": "environment/database-derived globals",
+      "authority": "authoritative",
+      "current_consumer": "bracket_creation_open",
+      "source_roles": {
+        "REGULAR_SEASON_END_UTC": "DB timestamp; environment fallback; missing opening skipped",
+        "PLAYOFFS_START_UTC": "DB timestamp; environment fallback; missing final lock defaulted to 2099"
+      }
+    },
+    {
+      "file": "app.py",
+      "function": "_fetch_matches_for_bracket",
+      "sources": [
+        "CURRENT_SEASON_ID"
+      ],
+      "environment": "production",
+      "source_type": "environment/database-derived globals",
+      "authority": "authoritative",
+      "current_consumer": "_fetch_matches_for_bracket",
+      "source_roles": {
+        "CURRENT_SEASON_ID": "Derived process-global DB ID selected using environment season code"
+      }
+    },
+    {
+      "file": "app.py",
+      "function": "_compute_score_for_bracket",
+      "sources": [
+        "CURRENT_SEASON_ID"
+      ],
+      "environment": "production",
+      "source_type": "environment/database-derived globals",
+      "authority": "authoritative",
+      "current_consumer": "_compute_score_for_bracket",
+      "source_roles": {
+        "CURRENT_SEASON_ID": "Derived process-global DB ID selected using environment season code"
+      }
+    },
+    {
+      "file": "app.py",
+      "function": "with_current_season",
+      "sources": [
+        "CURRENT_SEASON_ID"
+      ],
+      "environment": "production",
+      "source_type": "environment/database-derived globals",
+      "authority": "authoritative",
+      "current_consumer": "with_current_season",
+      "source_roles": {
+        "CURRENT_SEASON_ID": "Derived process-global DB ID selected using environment season code"
+      }
+    },
+    {
+      "file": "app.py",
+      "function": "competitive_bracket_eligible",
+      "sources": [
+        "CURRENT_SEASON_ID"
+      ],
+      "environment": "production",
+      "source_type": "environment/database-derived globals",
+      "authority": "authoritative",
+      "current_consumer": "competitive_bracket_eligible",
+      "source_roles": {
+        "CURRENT_SEASON_ID": "Derived process-global DB ID selected using environment season code"
+      }
+    },
+    {
+      "file": "app.py",
+      "function": "ensure_season_globals",
+      "sources": [
+        "CURRENT_SEASON_ID"
+      ],
+      "environment": "production",
+      "source_type": "environment/database-derived globals",
+      "authority": "authoritative",
+      "current_consumer": "ensure_season_globals",
+      "source_roles": {
+        "CURRENT_SEASON_ID": "Derived process-global DB ID selected using environment season code"
+      }
+    },
+    {
+      "file": "app.py",
+      "function": "active_current_master_exists",
+      "sources": [
+        "CURRENT_SEASON_ID"
+      ],
+      "environment": "production",
+      "source_type": "environment/database-derived globals",
+      "authority": "authoritative",
+      "current_consumer": "active_current_master_exists",
+      "source_roles": {
+        "CURRENT_SEASON_ID": "Derived process-global DB ID selected using environment season code"
+      }
+    },
+    {
+      "file": "app.py",
+      "function": "admin_snapshot_leaderboard",
+      "sources": [
+        "CURRENT_SEASON_ID"
+      ],
+      "environment": "production",
+      "source_type": "environment/database-derived globals",
+      "authority": "authoritative",
+      "current_consumer": "admin_snapshot_leaderboard",
+      "source_roles": {
+        "CURRENT_SEASON_ID": "Derived process-global DB ID selected using environment season code"
+      }
+    },
+    {
+      "file": "app.py",
+      "function": "admin_season_rollover",
+      "sources": [
+        "CURRENT_SEASON_CODE",
+        "REGULAR_SEASON_END_UTC",
+        "PLAYOFFS_START_UTC"
+      ],
+      "environment": "production",
+      "source_type": "environment/database-derived globals",
+      "authority": "authoritative",
+      "current_consumer": "admin_season_rollover",
+      "source_roles": {
+        "CURRENT_SEASON_CODE": "Independent environment selector at startup; downstream process-global derived use",
+        "REGULAR_SEASON_END_UTC": "DB timestamp; environment fallback; missing opening skipped",
+        "PLAYOFFS_START_UTC": "DB timestamp; environment fallback; missing final lock defaulted to 2099"
+      }
+    },
+    {
+      "file": "app.py",
+      "function": "fetch_and_sync_standings_from_nba",
+      "sources": [
+        "CURRENT_SEASON_ID",
+        "CURRENT_SEASON_CODE"
+      ],
+      "environment": "production",
+      "source_type": "environment/database-derived globals",
+      "authority": "authoritative",
+      "current_consumer": "fetch_and_sync_standings_from_nba",
+      "source_roles": {
+        "CURRENT_SEASON_ID": "Derived process-global DB ID selected using environment season code",
+        "CURRENT_SEASON_CODE": "Independent environment selector at startup; downstream process-global derived use"
+      }
+    },
+    {
+      "file": "app.py",
+      "function": "internal_overwrite_standings",
+      "sources": [
+        "CURRENT_SEASON_ID",
+        "CURRENT_SEASON_CODE"
+      ],
+      "environment": "production",
+      "source_type": "environment/database-derived globals",
+      "authority": "authoritative",
+      "current_consumer": "internal_overwrite_standings",
+      "source_roles": {
+        "CURRENT_SEASON_ID": "Derived process-global DB ID selected using environment season code",
+        "CURRENT_SEASON_CODE": "Independent environment selector at startup; downstream process-global derived use"
+      }
+    },
+    {
+      "file": "app.py",
+      "function": "admin_insert_test_teams",
+      "sources": [
+        "CURRENT_SEASON_ID"
+      ],
+      "environment": "production",
+      "source_type": "environment/database-derived globals",
+      "authority": "authoritative",
+      "current_consumer": "admin_insert_test_teams",
+      "source_roles": {
+        "CURRENT_SEASON_ID": "Derived process-global DB ID selected using environment season code"
+      }
+    },
+    {
+      "file": "app.py",
+      "function": "recompute_scores",
+      "sources": [
+        "CURRENT_SEASON_ID"
+      ],
+      "environment": "production",
+      "source_type": "environment/database-derived globals",
+      "authority": "authoritative",
+      "current_consumer": "recompute_scores",
+      "source_roles": {
+        "CURRENT_SEASON_ID": "Derived process-global DB ID selected using environment season code"
+      }
+    },
+    {
+      "file": "app.py",
+      "function": "_snapshot_leaderboard_for_current_season",
+      "sources": [
+        "CURRENT_SEASON_ID",
+        "CURRENT_SEASON_CODE"
+      ],
+      "environment": "production",
+      "source_type": "environment/database-derived globals",
+      "authority": "authoritative",
+      "current_consumer": "_snapshot_leaderboard_for_current_season",
+      "source_roles": {
+        "CURRENT_SEASON_ID": "Derived process-global DB ID selected using environment season code",
+        "CURRENT_SEASON_CODE": "Independent environment selector at startup; downstream process-global derived use"
+      }
+    },
+    {
+      "file": "app.py",
+      "function": "_rollover_current_season",
+      "sources": [
+        "CURRENT_SEASON_ID",
+        "CURRENT_SEASON_CODE",
+        "REGULAR_SEASON_END_UTC",
+        "PLAYOFFS_START_UTC"
+      ],
+      "environment": "production",
+      "source_type": "environment/database-derived globals",
+      "authority": "authoritative",
+      "current_consumer": "_rollover_current_season",
+      "source_roles": {
+        "CURRENT_SEASON_ID": "Derived process-global DB ID selected using environment season code",
+        "CURRENT_SEASON_CODE": "Independent environment selector at startup; downstream process-global derived use",
+        "REGULAR_SEASON_END_UTC": "DB timestamp; environment fallback; missing opening skipped",
+        "PLAYOFFS_START_UTC": "DB timestamp; environment fallback; missing final lock defaulted to 2099"
+      }
+    },
+    {
+      "file": "app.py",
+      "function": "create_bracket_for_user",
+      "sources": [
+        "CURRENT_SEASON_ID",
+        "REGULAR_SEASON_END_UTC"
+      ],
+      "environment": "production",
+      "source_type": "environment/database-derived globals",
+      "authority": "authoritative",
+      "current_consumer": "create_bracket_for_user",
+      "source_roles": {
+        "CURRENT_SEASON_ID": "Derived process-global DB ID selected using environment season code",
+        "REGULAR_SEASON_END_UTC": "DB timestamp; environment fallback; missing opening skipped"
+      }
+    },
+    {
+      "file": "app.py",
+      "function": "save_bracket",
+      "sources": [
+        "CURRENT_SEASON_ID"
+      ],
+      "environment": "production",
+      "source_type": "environment/database-derived globals",
+      "authority": "authoritative",
+      "current_consumer": "save_bracket",
+      "source_roles": {
+        "CURRENT_SEASON_ID": "Derived process-global DB ID selected using environment season code"
+      }
+    },
+    {
+      "file": "app.py",
+      "function": "get_my_bracket",
+      "sources": [
+        "REGULAR_SEASON_END_UTC",
+        "PLAYOFFS_START_UTC"
+      ],
+      "environment": "production",
+      "source_type": "environment/database-derived globals",
+      "authority": "authoritative",
+      "current_consumer": "get_my_bracket",
+      "source_roles": {
+        "REGULAR_SEASON_END_UTC": "DB timestamp; environment fallback; missing opening skipped",
+        "PLAYOFFS_START_UTC": "DB timestamp; environment fallback; missing final lock defaulted to 2099"
+      }
+    },
+    {
+      "file": "app.py",
+      "function": "get_bracket_by_id",
+      "sources": [
+        "CURRENT_SEASON_ID",
+        "CURRENT_SEASON_CODE"
+      ],
+      "environment": "production",
+      "source_type": "environment/database-derived globals",
+      "authority": "authoritative",
+      "current_consumer": "get_bracket_by_id",
+      "source_roles": {
+        "CURRENT_SEASON_ID": "Derived process-global DB ID selected using environment season code",
+        "CURRENT_SEASON_CODE": "Independent environment selector at startup; downstream process-global derived use"
+      }
+    },
+    {
+      "file": "app.py",
+      "function": "list_all_brackets",
+      "sources": [
+        "REGULAR_SEASON_END_UTC",
+        "PLAYOFFS_START_UTC"
+      ],
+      "environment": "production",
+      "source_type": "environment/database-derived globals",
+      "authority": "authoritative",
+      "current_consumer": "list_all_brackets",
+      "source_roles": {
+        "REGULAR_SEASON_END_UTC": "DB timestamp; environment fallback; missing opening skipped",
+        "PLAYOFFS_START_UTC": "DB timestamp; environment fallback; missing final lock defaulted to 2099"
+      }
+    },
+    {
+      "file": "app.py",
+      "function": "delete_bracket",
+      "sources": [
+        "CURRENT_SEASON_ID"
+      ],
+      "environment": "production",
+      "source_type": "environment/database-derived globals",
+      "authority": "authoritative",
+      "current_consumer": "delete_bracket",
+      "source_roles": {
+        "CURRENT_SEASON_ID": "Derived process-global DB ID selected using environment season code"
+      }
+    },
+    {
+      "file": "app.py",
+      "function": "update_match",
+      "sources": [
+        "CURRENT_SEASON_ID"
+      ],
+      "environment": "production",
+      "source_type": "environment/database-derived globals",
+      "authority": "authoritative",
+      "current_consumer": "update_match",
+      "source_roles": {
+        "CURRENT_SEASON_ID": "Derived process-global DB ID selected using environment season code"
+      }
+    },
+    {
+      "file": "app.py",
+      "function": "set_match_games",
+      "sources": [
+        "CURRENT_SEASON_ID"
+      ],
+      "environment": "production",
+      "source_type": "environment/database-derived globals",
+      "authority": "authoritative",
+      "current_consumer": "set_match_games",
+      "source_roles": {
+        "CURRENT_SEASON_ID": "Derived process-global DB ID selected using environment season code"
+      }
+    },
+    {
+      "file": "app.py",
+      "function": "leaderboard",
+      "sources": [
+        "CURRENT_SEASON_ID"
+      ],
+      "environment": "production",
+      "source_type": "environment/database-derived globals",
+      "authority": "authoritative",
+      "current_consumer": "leaderboard",
+      "source_roles": {
+        "CURRENT_SEASON_ID": "Derived process-global DB ID selected using environment season code"
+      }
+    },
+    {
+      "file": "app.py",
+      "function": "champion_pick_stats",
+      "sources": [
+        "CURRENT_SEASON_ID"
+      ],
+      "environment": "production",
+      "source_type": "environment/database-derived globals",
+      "authority": "authoritative",
+      "current_consumer": "champion_pick_stats",
+      "source_roles": {
+        "CURRENT_SEASON_ID": "Derived process-global DB ID selected using environment season code"
+      }
+    },
+    {
+      "file": "app.py",
+      "function": "add_conf",
+      "sources": [
+        "CURRENT_SEASON_ID"
+      ],
+      "environment": "production",
+      "source_type": "environment/database-derived globals",
+      "authority": "authoritative",
+      "current_consumer": "add_conf",
+      "source_roles": {
+        "CURRENT_SEASON_ID": "Derived process-global DB ID selected using environment season code"
+      }
+    },
+    {
+      "file": "scripts/update_standings.py",
+      "function": "<module>",
+      "sources": [
+        "NBA_STANDINGS_SEASON"
+      ],
+      "environment": "production",
+      "source_type": "environment/calendar",
+      "authority": "authoritative",
+      "current_consumer": "<module>",
+      "source_roles": {
+        "NBA_STANDINGS_SEASON": "Independent provider override or UTC calendar-derived ending year"
+      }
+    },
+    {
+      "file": "scripts/update_standings.py",
+      "function": "_current_nba_season_year",
+      "sources": [
+        "_current_nba_season_year"
+      ],
+      "environment": "production",
+      "source_type": "environment/calendar",
+      "authority": "authoritative",
+      "current_consumer": "_current_nba_season_year",
+      "source_roles": {
+        "_current_nba_season_year": "Independent provider override or UTC calendar-derived ending year"
+      }
+    },
+    {
+      "file": "scripts/update_standings.py",
+      "function": "update_standings_from_json",
+      "sources": [
+        "NBA_STANDINGS_SEASON",
+        "_current_nba_season_year"
+      ],
+      "environment": "production",
+      "source_type": "environment/calendar",
+      "authority": "authoritative",
+      "current_consumer": "update_standings_from_json",
+      "source_roles": {
+        "NBA_STANDINGS_SEASON": "Independent provider override or UTC calendar-derived ending year",
+        "_current_nba_season_year": "Independent provider override or UTC calendar-derived ending year"
+      }
+    },
+    {
+      "file": "integration_harness.py",
+      "function": "__init__",
+      "sources": [
+        "CURRENT_SEASON_CODE"
+      ],
+      "environment": "guarded-test-only",
+      "source_type": "isolated fixture/runtime allowlist",
+      "authority": "authoritative",
+      "current_consumer": "__init__",
+      "source_roles": {
+        "CURRENT_SEASON_CODE": "Guarded test-only synthetic fixture/config allowlist, not production selection"
+      }
+    },
+    {
+      "file": "integration_harness.py",
+      "function": "bracket_deadline_boundary",
+      "sources": [
+        "PLAYOFFS_START_UTC"
+      ],
+      "environment": "guarded-test-only",
+      "source_type": "isolated fixture/runtime allowlist",
+      "authority": "authoritative",
+      "current_consumer": "bracket_deadline_boundary",
+      "source_roles": {
+        "PLAYOFFS_START_UTC": "Guarded test-only synthetic fixture/config allowlist, not production selection"
+      }
+    },
+    {
+      "file": "environment_safety.py",
+      "function": "<module>",
+      "sources": [
+        "CURRENT_SEASON_CODE",
+        "REGULAR_SEASON_END_UTC",
+        "PLAYOFFS_START_UTC",
+        "NBA_STANDINGS_SEASON"
+      ],
+      "environment": "guarded-test-only",
+      "source_type": "isolated fixture/runtime allowlist",
+      "authority": "allowlist only",
+      "current_consumer": "<module>",
+      "source_roles": {
+        "CURRENT_SEASON_CODE": "Guarded test-only synthetic fixture/config allowlist, not production selection",
+        "REGULAR_SEASON_END_UTC": "Guarded test-only synthetic fixture/config allowlist, not production selection",
+        "PLAYOFFS_START_UTC": "Guarded test-only synthetic fixture/config allowlist, not production selection",
+        "NBA_STANDINGS_SEASON": "Guarded test-only synthetic fixture/config allowlist, not production selection"
+      }
+    },
+    {
+      "file": ".github/workflows/standings-cron.yml",
+      "function": "standings job",
+      "sources": [
+        "NBA_SEASON_YEAR=2025"
+      ],
+      "environment": "production",
+      "source_type": "workflow env",
+      "authority": "unused legacy variable",
+      "current_consumer": "standings job",
+      "source_roles": {
+        "NBA_SEASON_YEAR=2025": "Unused legacy value, not consumed by updater"
+      }
+    },
+    {
+      "file": "../frontend/src/pages/AdminPage.tsx",
+      "function": "AdminPage",
+      "sources": [
+        "VITE_CURRENT_SEASON_CODE",
+        "VITE_CURRENT_SEASON"
+      ],
+      "environment": "production",
+      "source_type": "build-time env",
+      "authority": "confirmation/display",
+      "current_consumer": "AdminPage",
+      "source_roles": {
+        "VITE_CURRENT_SEASON_CODE": "Independent build-time confirmation and display authority",
+        "VITE_CURRENT_SEASON": "Independent build-time confirmation and display authority"
+      }
+    },
+    {
+      "file": "../frontend/src/pages/PastSeasonsPage.tsx",
+      "function": "PastSeasonsPage",
+      "sources": [
+        "VITE_CURRENT_SEASON_CODE",
+        "VITE_CURRENT_SEASON"
+      ],
+      "environment": "production",
+      "source_type": "build-time env",
+      "authority": "history exclusion filter",
+      "current_consumer": "PastSeasonsPage",
+      "source_roles": {
+        "VITE_CURRENT_SEASON_CODE": "Independent build-time current-history exclusion authority",
+        "VITE_CURRENT_SEASON": "Independent build-time current-history exclusion authority"
+      }
+    },
+    {
+      "file": "../frontend/src/pages/PastSeasonsPage.tsx",
+      "function": "canShowStatsLink",
+      "sources": [
+        "year >= 2025"
+      ],
+      "environment": "production",
+      "source_type": "historical feature availability",
+      "authority": "presentation only; retained",
+      "current_consumer": "canShowStatsLink",
+      "source_roles": {
+        "year >= 2025": "Presentation-only historical capability"
+      }
+    },
+    {
+      "file": "tests/characterization/*",
+      "function": "offline environments / fixed fixtures",
+      "sources": [
+        "synthetic current=2025-26",
+        "explicit test clock"
+      ],
+      "environment": "test-only",
+      "source_type": "in-memory test doubles",
+      "authority": "test fixtures only",
+      "current_consumer": "offline environments / fixed fixtures",
+      "source_roles": {
+        "synthetic current=2025-26": "Guarded test-only synthetic fixture/config allowlist, not production selection",
+        "explicit test clock": "Guarded test-only synthetic fixture/config allowlist, not production selection"
+      }
+    }
+  ],
+  "completed_before_implementation": true,
+  "notes": [
+    "app environment selects season code -> DB id/dates -> environment timing fallbacks -> 2099 lock default",
+    "standings Balldontlie derives start year from app code with UTC year fallback; ESPN script override/calendar chooses end year independently",
+    "rollover takes current app globals plus explicit requested next code; does not change runtime authority",
+    "snapshot/history codes are record-specific historical identities, not current-season authority",
+    "no other production season source found in tracked Python/frontend/workflows"
+  ]
+}

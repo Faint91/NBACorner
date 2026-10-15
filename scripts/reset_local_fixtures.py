@@ -27,9 +27,16 @@ from scripts.local_supabase_environment import (
     container_identity,
     child_environment,
 )
-from synthetic_fixtures import TABLES, SEQUENCES, VERSION, foundation, validate_state
+from synthetic_fixtures import (
+    TABLES,
+    SEQUENCES,
+    VERSION,
+    foundation,
+    validate_state,
+    identity,
+)
 
-VERIFIER_SHA = "7ff200f3d75b5697c68587942a78f30d36b357c4f086ac5792e973dbec91606e"
+VERIFIER_SHA = "d4135d3da53bcf81acb2cee8c378296faf6e5b01477049112c5458ce979c1c5b"
 
 
 def validate_inventory(tables, sequences, external_dependencies=()):
@@ -133,7 +140,7 @@ DO $identity$ BEGIN
    RAISE EXCEPTION 'Local marker changed before reset'; END IF;
  IF EXISTS (SELECT 1 FROM pg_constraint WHERE contype='f'
    AND confrelid IN ({','.join("'public."+t+"'::regclass" for t in TABLES)})
-   AND conrelid NOT IN ({','.join("'public."+t+"'::regclass" for t in TABLES)})) THEN
+   AND conrelid NOT IN ({','.join("'public."+t+"'::regclass" for t in (*TABLES, "application_season"))})) THEN
    RAISE EXCEPTION 'Unexpected inbound reset dependency'; END IF;
 END $identity$;
 """
@@ -148,13 +155,14 @@ END $identity$;
     sql += marker_verify + "\n"
     sql += (
         "TRUNCATE TABLE "
-        + ",".join("public." + t for t in TABLES)
+        + ",".join("public." + t for t in ("application_season", *TABLES))
         + " RESTART IDENTITY RESTRICT;\n"
     )
     sql += "UPDATE nba_corner_test_control.test_environment_identity SET fixture_state='UNSEEDED',fixture_version=NULL,fixture_checksum=NULL WHERE singleton;\n"
     for table in TABLES:
         if data[table]:
             sql += f"INSERT INTO public.{table} SELECT * FROM jsonb_populate_recordset(NULL::public.{table},{literal(data[table])});\n"
+    sql += f"INSERT INTO public.application_season(singleton,season_id) VALUES(true,'{identity('current')}');\n"
     sql += "SELECT setval('public.standings_id_seq',30,true);\n"
     # Both other owned sequences remain freshly restarted at (1,false).
     actual, expected = state_sql(), state_sql(data)
@@ -359,7 +367,7 @@ def verify_fixture_readiness(settings):
     check_configuration()
     container_identity()
     actual, expected = state_sql(), state_sql(foundation())
-    sql = f"BEGIN READ ONLY; SET LOCAL timezone='UTC'; SET LOCAL datestyle='ISO, YMD'; SET LOCAL extra_float_digits=3; SELECT jsonb_build_object('matches',({actual})=({expected}),'checksum',{digest_sql(actual)}); COMMIT;"
+    sql = f"BEGIN READ ONLY; SET LOCAL timezone='UTC'; SET LOCAL datestyle='ISO, YMD'; SET LOCAL extra_float_digits=3; SELECT jsonb_build_object('matches',({actual})=({expected}),'canonical',(SELECT count(*)=1 AND bool_and(singleton AND season_id='{identity('current')}'::uuid) FROM public.application_season),'checksum',{digest_sql(actual)}); COMMIT;"
     result = subprocess.run(
         [
             "docker",
@@ -389,7 +397,11 @@ def verify_fixture_readiness(settings):
             line for line in result.stdout.decode().splitlines() if line.startswith("{")
         )
     )
-    if not proof["matches"] or proof["checksum"] != marker["fixture_checksum"]:
+    if (
+        not proof["matches"]
+        or not proof["canonical"]
+        or proof["checksum"] != marker["fixture_checksum"]
+    ):
         raise SafetyError("Persisted fixture state has drifted.")
     return {
         "identity": "PASS",

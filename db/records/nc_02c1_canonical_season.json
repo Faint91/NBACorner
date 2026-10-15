@@ -1,0 +1,198 @@
+{
+  "phase": "NC-02C1",
+  "status": "COMPLETED",
+  "requirements": [
+    "S1",
+    "S2",
+    "S12",
+    "S14"
+  ],
+  "starting_repositories": {
+    "backend": {
+      "branch": "main",
+      "head": "3546d175ef9c21ca160e8d0d64e7a3cec5f8f14b",
+      "clean": true
+    },
+    "frontend": {
+      "branch": "main",
+      "head": "0ad01528808bfdd19f2778f74a0c0042f334f2e6",
+      "clean": true
+    }
+  },
+  "inventory": "db/records/nc_02c1_season_source_inventory.json",
+  "architecture": {
+    "storage": "public.application_season singleton true primary key with required FK to public.seasons",
+    "invariant": "Configured state exactly one; database at-most-one and FK, missing state rejected by runtime",
+    "initial_designation": "Not guessed/inserted by migration; future reviewed explicit designation required",
+    "helper": "canonical_season.py:get_current_season",
+    "request_snapshot": "app.py:current_season uses Flask g; no process globals",
+    "endpoint": "GET /season",
+    "timings": "bracket_creation_opens_at=regular_season_end_utc; playoff_lock_at=playoffs_start_utc; distinct inclusive boundaries",
+    "missing_invalid": "Sanitized HTTP 503 before request work; standalone script raises before fetch/write",
+    "env_authority": "No current-season or date/provider override is read by product selection"
+  },
+  "migration": {
+    "path": "db/post-baseline/0002_nc_02c1_canonical_season.sql",
+    "production_applied": false,
+    "local_applied": true,
+    "new_table": "application_season",
+    "security": "postgres owner; RLS/no policies; no PUBLIC/anon/authenticated access; trusted postgres/service_role only; no RPC",
+    "existing_security": "Full previous semantic checks retained; new relation inventory and strict table checks added",
+    "baseline_unchanged": true,
+    "frozen_previous_verifier": "db/post-baseline/verify_nc_02b3_schema.sql"
+  },
+  "consumers": [
+    "brackets/current master/history boundary",
+    "scoring/current leaderboard/statistics/snapshot season filters",
+    "admin current season operations",
+    "existing Balldontlie start-year derivation",
+    "ESPN script end-year derivation",
+    "rollover source only",
+    "frontend AdminPage confirmations/labels",
+    "frontend PastSeasons current exclusion",
+    "existing backend-driven Dashboard/BracketPage timing"
+  ],
+  "retired": [
+    "CURRENT_SEASON_CODE environment authority",
+    "REGULAR_SEASON_END_UTC and PLAYOFFS_START_UTC environment fallback",
+    "2099 fail-open default",
+    "NBA_STANDINGS_SEASON override",
+    "UTC August-boundary inference",
+    "unused workflow NBA_SEASON_YEAR assignment",
+    "VITE_CURRENT_SEASON_CODE/VITE_CURRENT_SEASON frontend authority"
+  ],
+  "rollover": {
+    "advance_canonical": false,
+    "standings_clear": false,
+    "future_integration": "NC-02C3 controlled successful transition must explicitly update singleton FK coordinated atomically with required history/retirement/target initialization",
+    "legacy_response_keys": "env_next_actions retained only as target metadata with corrected guidance"
+  },
+  "validation": {
+    "canonical_unit_tests": 10,
+    "focused_canonical_http": 3,
+    "offline_safety_tests": 254,
+    "static_in_memory_regressions": 70,
+    "frontend_tests": 19,
+    "frontend_typecheck_build": "PASS",
+    "frontend_lint_comparison": "db/records/nc_02c1_frontend_lint.json",
+    "fresh_migration_proof": "db/records/nc_02c1_fresh_migration_proof.json",
+    "full_regression": {
+      "passed": true,
+      "tests_run": 204,
+      "failures": 0,
+      "errors": 0
+    },
+    "initial_full_run": {
+      "tests_run": 204,
+      "failures": 1,
+      "errors": 0,
+      "reason": "Only source-formatting assertion expected one-line standings filter; product filter correct, whitespace-safe assertion fixed and all 70 source/in-memory tests passed; complete rerun required",
+      "canonical_cleanup_passed": true
+    },
+    "final_audit": {
+      "secrets_privacy_syntax_size": "PASS",
+      "historical_files_unchanged": 63,
+      "unrelated_product_algorithm_changes": 0,
+      "formatting_whitespace": "PASS",
+      "new_lint_findings": 0,
+      "existing_affected_frontend_lint_findings": 12
+    }
+  },
+  "fixture": {
+    "version": "nc-fixtures-v1",
+    "checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+    "original_rows_sequences_unchanged": true,
+    "canonical_pointer": "Fixed current synthetic season, independent mandatory readiness check",
+    "jobs_enabled": false
+  },
+  "production": {
+    "queried": false,
+    "modified": false,
+    "deployed": false,
+    "readiness": "Review-ready conditional on separate authorization, backup/catalog/data preflight, explicit valid season designation, coordinated code/script/frontend rollout",
+    "rollback": "Retain/record canonical designation; separately coordinate old-code config and schema rollback; never guess/delete config implicitly"
+  },
+  "preservation": {
+    "scoring_formulas_bonuses_ties": "Unchanged",
+    "provider_selection_and_refresh_atomicity": "Unchanged",
+    "standings_freeze_enforcement": "Not implemented",
+    "rollover_transition_recovery": "Not implemented",
+    "canonical_reference_ast_audit": "All other prior product functions identical after reversing season-reference substitutions; only resolver/filter/bootstrap/provider-year and rollover guidance differ"
+  },
+  "deferred": [
+    "S3-S11/S13 ESPN-only refresh/authority",
+    "30-team validation",
+    "atomic/stale-row replacement",
+    "standings freeze/admin enforcement",
+    "rollover standings reset/canonical advancement/recovery",
+    "champion/finalist bonuses and snapshot tie ordering"
+  ],
+  "repair_document": "docs/repairs/nc-02c1-canonical-season.md",
+  "recommended_next_phase": "NC-02C2 \u2014 ESPN standings authority, freeze and atomic refresh",
+  "next_phase_started": false,
+  "verified_at_utc": "2026-10-15T16:11:04.510471+00:00",
+  "canonical_cleanup": {
+    "canonical_count": 1,
+    "fixture_lease_released": true,
+    "canonical_fixture_correct": true,
+    "disposable_database_absent": true,
+    "flask_stopped": true,
+    "fixture_readiness": {
+      "identity": "PASS",
+      "marker": "PASS",
+      "email": "PASS",
+      "providers": "PASS",
+      "jobs": "PASS",
+      "fixture_reset": "PASS",
+      "harness": "UNMET",
+      "fixture_version": "nc-fixtures-v1",
+      "fixture_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "mutation_permitted": false
+    },
+    "email_capture_empty": true,
+    "app_import_removed": true,
+    "jobs_enabled": false
+  },
+  "files_changed": {
+    "backend": [
+      "canonical_season.py",
+      "db/post-baseline/0002_nc_02c1_canonical_season.sql",
+      "db/post-baseline/verify_nc_02b3_schema.sql",
+      "db/records/nc_02c1_canonical_season.json",
+      "db/records/nc_02c1_fresh_migration_proof.json",
+      "db/records/nc_02c1_frontend_lint.json",
+      "db/records/nc_02c1_lifecycle_validation.json",
+      "db/records/nc_02c1_season_source_inventory.json",
+      "db/records/nc_02c1_static_validation.json",
+      "db/records/nc_02c1_validation.json",
+      "docs/repairs/nc-02c1-canonical-season.md",
+      "scripts/nc02c1_acceptance_metadata.py",
+      "scripts/prove_canonical_season_migration.py",
+      "scripts/run_canonical_season_acceptance.py",
+      "tests/characterization/canonical_source.py",
+      "tests/offline/test_canonical_season.py",
+      ".github/workflows/standings-cron.yml",
+      "app.py",
+      "db/post-baseline/README.md",
+      "db/post-baseline/verify_current_schema.sql",
+      "integration_harness.py",
+      "scripts/local_supabase_environment.py",
+      "scripts/reset_local_fixtures.py",
+      "scripts/update_standings.py",
+      "tests/characterization/bracket_static.py",
+      "tests/characterization/competitive_offline.py",
+      "tests/characterization/operations_offline.py",
+      "tests/characterization/operations_static.py",
+      "tests/characterization/scoring_offline.py",
+      "tests/offline/test_bracket_lifecycle_migration.py",
+      "tests/offline/test_provider_job_safety.py"
+    ],
+    "frontend": [
+      "src/pages/AdminPage.tsx",
+      "src/pages/PastSeasonsPage.tsx",
+      "src/season/currentSeason.ts",
+      "src/season/useCurrentSeason.ts",
+      "scripts/test-canonical-season.cjs"
+    ]
+  }
+}

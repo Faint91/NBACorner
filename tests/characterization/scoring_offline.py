@@ -138,6 +138,9 @@ def environment():
         safe_print=lambda *a: None,
         APIError=RuntimeError,
     )
+    ns["current_season"] = lambda: SimpleNamespace(
+        id=ns["CURRENT_SEASON_ID"], code=ns["CURRENT_SEASON_CODE"]
+    )
     source = (ROOT / "app.py").read_text(encoding="utf-8")
     tree = ast.parse(source)
     names = {
@@ -188,7 +191,7 @@ class CurrentOfflineScoring(unittest.TestCase):
 
     @behavior(
         "base points",
-        "Play-in full hit awards 1; rounds 1–4 full winner/participants/count hit awards 3 each; wrong winner zero; no round escalation.",
+        "Play-in full hit awards 1; rounds 1â€“4 full winner/participants/count hit awards 3 each; wrong winner zero; no round escalation.",
         question="Approve round base values?",
     )
     def current_behavior__scoring__base_points(self):
@@ -240,7 +243,7 @@ class CurrentOfflineScoring(unittest.TestCase):
 
     @behavior(
         "game-count scoring",
-        "Rounds 1–4 exact count earns full 3 with matching participants; incorrect/null/zero/negative/large user count yields partial 1. Play-in count ignored; NULL actual count is pending.",
+        "Rounds 1â€“4 exact count earns full 3 with matching participants; incorrect/null/zero/negative/large user count yields partial 1. Play-in count ignored; NULL actual count is pending.",
         question="Approve partial/count and historical availability rules?",
     )
     def current_behavior__scoring__counts(self):

@@ -107,6 +107,7 @@ class CurrentOfflineOperations(unittest.TestCase):
             defaultdict=defaultdict,
             provider_uses_fixtures=lambda: True,
             BALLDONTLIE_API_KEY=None,
+            season_start_year=__import__("canonical_season").season_start_year,
         )
         load_functions(
             ROOT / "app.py",
@@ -160,7 +161,8 @@ class CurrentOfflineOperations(unittest.TestCase):
             requests=requests,
             guard_runtime_job=lambda j: None,
             DEBUG_STANDINGS=False,
-            NBA_STANDINGS_SEASON_OVERRIDE="2026",
+            get_current_season=lambda client: SimpleNamespace(code="2025-26"),
+            espn_season_year=__import__("canonical_season").espn_season_year,
             print=lambda *a, **kw: None,
         )
         for n in tree.body:
@@ -195,7 +197,6 @@ class CurrentOfflineOperations(unittest.TestCase):
         load_functions(
             path,
             {
-                "_current_nba_season_year",
                 "_safe_int",
                 "_safe_float",
                 "update_standings_from_json",
@@ -260,8 +261,8 @@ class CurrentOfflineOperations(unittest.TestCase):
     )
     def current_behavior__standings__year(self):
         ns = self.espn()
-        self.assertEqual(ns["_current_nba_season_year"](date(2026, 7, 31)), 2026)
-        self.assertEqual(ns["_current_nba_season_year"](date(2026, 8, 1)), 2027)
+        self.assertEqual(ns["espn_season_year"]("2025-26"), 2026)
+        self.assertEqual(ns["espn_season_year"]("2026-27"), 2027)
         self.facts = {
             "july_2026_end_year": 2026,
             "august_2026_end_year": 2027,
@@ -280,6 +281,9 @@ class CurrentOfflineOperations(unittest.TestCase):
         ns["update_standings_from_json"]()
         self.assertEqual(self.db.rows.get("standings", []), [])
         ns["NBA_STANDINGS_SEASON_OVERRIDE"] = "invalid"
+        ns["get_current_season"] = lambda client: (_ for _ in ()).throw(
+            RuntimeError("Missing canonical state")
+        )
         with self.assertRaises(RuntimeError):
             ns["update_standings_from_json"]()
 

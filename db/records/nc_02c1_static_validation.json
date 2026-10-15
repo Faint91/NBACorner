@@ -1,0 +1,276 @@
+{
+  "phase": "NC-02C1",
+  "passed": true,
+  "tests_run": 10,
+  "failures": 0,
+  "errors": 0,
+  "findings": [
+    {
+      "scenario": "current_behavior__bracket__frontend_controls",
+      "phase": "NC-02B1",
+      "classification": "APPROVED REQUIREMENT",
+      "requirements": [
+        "B1",
+        "B2",
+        "B3",
+        "B4",
+        "B5",
+        "B16"
+      ],
+      "source_finding_id": "NC-01B:current_behavior__bracket__frontend_controls",
+      "gap_ids": [
+        "GAP-LOCK-FRONTEND-001"
+      ],
+      "previous_metadata": {
+        "scenario": "current_behavior__bracket__frontend_controls",
+        "group": "frontend behavior",
+        "current_behavior": "Frontend allows owner editing and admin-master editing; game options are 4\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u20ac\u01537, play-in one; pending games local until winner; edits reload backend state.",
+        "approved_requirement": null,
+        "classification": "REQUIREMENT NOT YET REVIEWED",
+        "future_business_question": "Approve UI count range, optimistic state and admin-owner overlap?",
+        "evidence_source": "STATIC source inspection; no browser/runtime claim"
+      },
+      "current_behavior": "Content lock/owner/master authorization acceptance; deletion and lifecycle remain deferred."
+    },
+    {
+      "scenario": "current_behavior__bracket__frontend_creation",
+      "phase": "NC-02B3",
+      "classification": "APPROVED REQUIREMENT",
+      "requirements": [
+        "B10",
+        "B11",
+        "B12",
+        "B13",
+        "B14",
+        "B15"
+      ],
+      "source_finding_id": "NC-01B:current_behavior__bracket__frontend_creation",
+      "previous_metadata": {
+        "scenario": "current_behavior__bracket__frontend_creation",
+        "phase": "NC-02B1",
+        "classification": "APPROVED REQUIREMENT",
+        "requirements": [
+          "B1",
+          "B2",
+          "B3",
+          "B4",
+          "B5",
+          "B16"
+        ],
+        "source_finding_id": "NC-01B:current_behavior__bracket__frontend_creation",
+        "gap_ids": [
+          "GAP-LOCK-FRONTEND-001"
+        ],
+        "previous_metadata": {
+          "scenario": "current_behavior__bracket__frontend_creation",
+          "group": "frontend behavior",
+          "current_behavior": "Dashboard uses brackets/me and saved list, creates/deletes via backend; actual createDisabled lets admins bypass creation timing despite stale comment.",
+          "approved_requirement": "Admin bracket creation may bypass the normal creation window.",
+          "classification": "MATCHES REQUIREMENT",
+          "future_business_question": null,
+          "evidence_source": "STATIC source inspection; no browser/runtime claim"
+        },
+        "current_behavior": "Content lock/owner/master authorization acceptance; deletion and lifecycle remain deferred."
+      },
+      "current_behavior": "Approved lifecycle/season/master/history acceptance; earlier observations retained as provenance."
+    },
+    {
+      "scenario": "current_behavior__bracket__frontend_lock",
+      "phase": "NC-02B1",
+      "classification": "APPROVED REQUIREMENT",
+      "requirements": [
+        "B1",
+        "B2",
+        "B3",
+        "B4",
+        "B5",
+        "B16"
+      ],
+      "source_finding_id": "NC-01B:current_behavior__bracket__frontend_lock",
+      "gap_ids": [
+        "GAP-LOCK-FRONTEND-001"
+      ],
+      "previous_metadata": {
+        "scenario": "current_behavior__bracket__frontend_lock",
+        "group": "frontend behavior",
+        "current_behavior": "Winner and game controls check ownership/admin-master and readiness, but not playoff lock; save alone checks savingLockedForUser.",
+        "approved_requirement": "At playoff start ordinary users may not select/change winners, undo, change series counts or save/resubmit.",
+        "classification": "KNOWN GAP",
+        "future_business_question": null,
+        "evidence_source": "STATIC source inspection; no browser/runtime claim"
+      },
+      "current_behavior": "Content lock/owner/master authorization acceptance; deletion and lifecycle remain deferred."
+    },
+    {
+      "scenario": "current_behavior__bracket__frontend_undo",
+      "phase": "NC-02B1",
+      "classification": "APPROVED REQUIREMENT",
+      "requirements": [
+        "B1",
+        "B2",
+        "B3",
+        "B4",
+        "B5",
+        "B16"
+      ],
+      "source_finding_id": "NC-01B:current_behavior__bracket__frontend_undo",
+      "gap_ids": [
+        "GAP-UNDO-FRONTEND-001"
+      ],
+      "previous_metadata": {
+        "scenario": "current_behavior__bracket__frontend_undo",
+        "group": "frontend behavior",
+        "current_behavior": "Ordinary owner undo is suppressed by admin+master-only UI handler, although backend accepts pre-lock owner undo.",
+        "approved_requirement": "Ordinary bracket owners may undo predictions before lock.",
+        "classification": "KNOWN GAP",
+        "future_business_question": null,
+        "evidence_source": "STATIC source inspection; no browser/runtime claim"
+      },
+      "current_behavior": "Content lock/owner/master authorization acceptance; deletion and lifecycle remain deferred."
+    },
+    {
+      "scenario": "current_behavior__bracket__history_source",
+      "group": "historical brackets",
+      "current_behavior": "No archive/public bracket-display endpoint; current bracket routes filter current season; PastSeasonsPage reads leaderboard snapshot routes, not raw historical brackets.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve public history and historical bracket access scope?",
+      "evidence_source": "STATIC source inspection; no browser/runtime claim"
+    },
+    {
+      "scenario": "current_behavior__bracket__save_completeness_static",
+      "phase": "NC-02B2",
+      "classification": "APPROVED REQUIREMENT",
+      "requirements": [
+        "B6",
+        "B7",
+        "B8",
+        "B9"
+      ],
+      "source_finding_id": "NC-01B:current_behavior__bracket__save_completeness_static",
+      "previous_metadata": {
+        "scenario": "current_behavior__bracket__save_completeness_static",
+        "group": "save/resubmit",
+        "current_behavior": "Save requires name and predictions/counts only for matches with both teams; empty or missing-pair matches skipped. No exact 21-match completion requirement.",
+        "approved_requirement": null,
+        "classification": "REQUIREMENT NOT YET REVIEWED",
+        "future_business_question": "Approve completion validation for absent/unpopulated matches?",
+        "evidence_source": "STATIC source inspection; no browser/runtime claim"
+      },
+      "current_behavior": "Approved validity and dependency acceptance; prior NC-01 observations preserved as provenance."
+    },
+    {
+      "scenario": "current_behavior__bracket__schema_constraints",
+      "phase": "NC-02B3",
+      "classification": "APPROVED REQUIREMENT",
+      "requirements": [
+        "B10",
+        "B11",
+        "B12",
+        "B13",
+        "B14",
+        "B15"
+      ],
+      "source_finding_id": "NC-01B:current_behavior__bracket__schema_constraints",
+      "previous_metadata": {
+        "scenario": "current_behavior__bracket__schema_constraints",
+        "group": "schema/timing quirks",
+        "current_behavior": "Two active-user unique indexes include a global user predicate; two master indexes differ on deleted_at; season/master foreign keys form cyclic linkage. No fixes.",
+        "approved_requirement": null,
+        "classification": "REQUIREMENT NOT YET REVIEWED",
+        "future_business_question": "Approve cross-season uniqueness and soft-deleted master constraints?",
+        "evidence_source": "STATIC source inspection; no browser/runtime claim"
+      },
+      "current_behavior": "Approved lifecycle/season/master/history acceptance; earlier observations retained as provenance."
+    },
+    {
+      "scenario": "current_behavior__bracket__state_model",
+      "group": "state/lifecycle",
+      "current_behavior": "is_done/saved_at encode submission; deleted_at/deleted_by encode soft deletion; is_master plus season pointer derive master. Historical/locked are contextual, not enum states.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve formal state transitions and derived-master precedence?",
+      "evidence_source": "STATIC source inspection; no browser/runtime claim"
+    },
+    {
+      "scenario": "current_behavior__bracket__timing",
+      "phase": "NC-02C1",
+      "classification": "APPROVED REQUIREMENT",
+      "requirements": [
+        "S1",
+        "S2",
+        "S12",
+        "S14"
+      ],
+      "previous_metadata": {
+        "scenario": "current_behavior__bracket__timing",
+        "phase": "NC-02B3",
+        "classification": "APPROVED REQUIREMENT",
+        "requirements": [
+          "B10",
+          "B11",
+          "B12",
+          "B13",
+          "B14",
+          "B15"
+        ],
+        "source_finding_id": "NC-01B:current_behavior__bracket__timing",
+        "previous_metadata": {
+          "scenario": "current_behavior__bracket__timing",
+          "phase": "NC-02B1",
+          "classification": "APPROVED REQUIREMENT",
+          "requirements": [
+            "B1",
+            "B2",
+            "B3",
+            "B4",
+            "B5",
+            "B16"
+          ],
+          "source_finding_id": "NC-01B:current_behavior__bracket__timing",
+          "gap_ids": [
+            "GAP-LOCK-BACKEND-001"
+          ],
+          "previous_metadata": {
+            "scenario": "current_behavior__bracket__timing",
+            "group": "schema/timing quirks",
+            "current_behavior": "DB season timestamps resolve UTC globals at startup; env fallbacks, missing lock defaults 2099; lock is now>=start, creation requires end<=now<start. No shared blanket request lock.",
+            "approved_requirement": null,
+            "classification": "REQUIREMENT NOT YET REVIEWED",
+            "future_business_question": "Approve date defaults, refresh and timezone contract?",
+            "evidence_source": "STATIC source inspection; no browser/runtime claim"
+          },
+          "current_behavior": "Content lock/owner/master authorization acceptance; deletion and lifecycle remain deferred."
+        },
+        "current_behavior": "Approved lifecycle/season/master/history acceptance; earlier observations retained as provenance."
+      },
+      "current_behavior": "Canonical database season, no independent environment/calendar selection; distinct opening/final-lock timing. Standings freeze enforcement remains deferred."
+    },
+    {
+      "scenario": "current_behavior__bracket__triggers_rpc",
+      "phase": "NC-02B3",
+      "classification": "APPROVED REQUIREMENT",
+      "requirements": [
+        "B10",
+        "B11",
+        "B12",
+        "B13",
+        "B14",
+        "B15"
+      ],
+      "source_finding_id": "NC-01B:current_behavior__bracket__triggers_rpc",
+      "previous_metadata": {
+        "scenario": "current_behavior__bracket__triggers_rpc",
+        "group": "schema/timing quirks",
+        "current_behavior": "Match season IDs copied from bracket by trigger; soft-delete trigger demotes master and clears pointer. Flask graph updates are individual requests, not atomic RPC calls.",
+        "approved_requirement": null,
+        "classification": "REQUIREMENT NOT YET REVIEWED",
+        "future_business_question": "Approve partial-write/transaction contract and trigger behavior?",
+        "evidence_source": "STATIC source inspection; no browser/runtime claim"
+      },
+      "current_behavior": "Approved lifecycle/season/master/history acceptance; earlier observations retained as provenance."
+    }
+  ],
+  "read_only_static": true,
+  "production_contact": false
+}

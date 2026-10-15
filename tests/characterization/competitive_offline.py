@@ -53,9 +53,14 @@ class CompetitiveEligibilityOffline(unittest.TestCase):
             self.assertFalse(check({**saved, **changed}))
         self.assertTrue(check({**saved, "season_id": "past"}, season_id="past"))
         self.assertFalse(check(saved, season_id="past"))
-        self.ns["CURRENT_SEASON_ID"] = None
-        self.assertTrue(check({**saved, "season_id": None}))
-        self.assertFalse(check(saved))
+        from canonical_season import SeasonConfigurationError
+
+        def missing():
+            raise SeasonConfigurationError()
+
+        self.ns["current_season"] = missing
+        with self.assertRaises(SeasonConfigurationError):
+            check({**saved, "season_id": None})
 
     @acceptance
     def test_new_snapshot_uses_saved_only_old_history_unchanged(self):

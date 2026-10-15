@@ -85,10 +85,8 @@ class CurrentStaticOperations(unittest.TestCase):
     def current_behavior__standings__season_sources(self):
         self.assertIn("NBA_SEASON_YEAR", self.workflow)
         self.assertNotIn("NBA_SEASON_YEAR", self.script)
-        self.assertIn("NBA_STANDINGS_SEASON", self.script)
-        self.assertIn(
-            '.eq("code", CURRENT_SEASON_CODE)', self.fn("_resolve_season_globals")
-        )
+        self.assertNotIn('os.getenv("NBA_STANDINGS_SEASON")', self.script)
+        self.assertIn("return current_season()", self.fn("_resolve_season_globals"))
 
     @behavior(
         "cron operations",
@@ -145,9 +143,9 @@ class CurrentStaticOperations(unittest.TestCase):
         start = schema.index('CREATE TABLE "public"."standings"')
         end = schema.index('ALTER TABLE "public"."standings"', start)
         self.assertNotIn("season_id", schema[start:end])
-        self.assertIn(
-            '.eq("season_id", CURRENT_SEASON_ID)',
+        self.assertRegex(
             self.fn("internal_overwrite_standings"),
+            r'.eq\(\s*"season_id",\s*current_season\(\)\.id\s*\)',
         )
 
     @behavior(
@@ -177,5 +175,5 @@ class CurrentStaticOperations(unittest.TestCase):
     def current_behavior__admin_ops__creation_bypass(self):
         f = self.fn("create_bracket_for_user")
         self.assertIn("if not is_admin:", f)
-        self.assertIn("REGULAR_SEASON_END_UTC", f)
+        self.assertIn("current_season().bracket_creation_opens_at", f)
         self.assertIn("playoffs_locked()", f)
