@@ -380,6 +380,53 @@ def playoffs_locked() -> bool:
     return bool(PLAYOFFS_START_UTC and now_utc() >= PLAYOFFS_START_UTC)
 
 
+def bracket_final_lock_error():
+    return jsonify({"error": "Bracket content is locked once the playoffs start."}), 403
+
+
+def bracket_content_mutation_error(bracket, user_id):
+    """Only ordinary owners before lock, or DB admins on the current master.
+
+    Reuse the existing current-season master flag OR season-pointer semantics.
+    This is content authorization only: deletion/lifecycle and other actions stay separate.
+    """
+    users = (
+        supabase.table("users")
+        .select("id, is_admin")
+        .eq("id", user_id)
+        .limit(1)
+        .execute()
+        .data
+        or []
+    )
+    if not users:
+        return jsonify({"error": "User not found"}), 404
+    is_admin = bool(users[0].get("is_admin"))
+    is_master = bool(bracket.get("is_master"))
+    if not is_master:
+        seasons = (
+            supabase.table("seasons")
+            .select("master_bracket_id")
+            .eq("id", CURRENT_SEASON_ID)
+            .limit(1)
+            .execute()
+            .data
+            or []
+        )
+        is_master = bool(
+            seasons and str(seasons[0].get("master_bracket_id")) == str(bracket["id"])
+        )
+    if is_master:
+        if is_admin:
+            return None
+    elif not is_admin and bracket.get("user_id") == user_id:
+        return bracket_final_lock_error() if playoffs_locked() else None
+    return (
+        jsonify({"error": "Unauthorized: You are not allowed to modify this bracket"}),
+        403,
+    )
+
+
 def bracket_creation_open() -> bool:
     """
     Creation is allowed only after regular season has ended AND before playoffs start.
@@ -2824,14 +2871,12 @@ def create_bracket_for_user():
     user_id = user_info["user_id"]
     is_admin = user_info.get("is_admin", False)
 
-    # ⛔ Window check (admins bypass playoffs, but still blocked before regular season ends)
+    # Admin master creation keeps its existing window bypass/lifecycle.
     if not is_admin:
-        # Too early (regular season not finished)
+        if playoffs_locked():
+            return bracket_final_lock_error()
         if REGULAR_SEASON_END_UTC and now_utc() < REGULAR_SEASON_END_UTC:
             return jsonify({"error": "Bracket creation opens after the regular season ends."}), 403
-        # Too late (playoffs started)
-        if playoffs_locked():
-            return jsonify({"error": "Bracket creation is closed once the playoffs start."}), 403
 
     # ✅ Check if the user already has a bracket for the CURRENT season
     existing = (
@@ -3116,7 +3161,7 @@ def save_bracket(bracket_id):
         # Bracket must exist, be active, and be in CURRENT season
         bracket_res = (
             supabase.table("brackets")
-            .select("id, user_id, deleted_at, season_id")
+            .select("id, user_id, deleted_at, season_id, is_master")
             .eq("id", bracket_id)
             .is_("deleted_at", None)
             .limit(1)
@@ -3130,26 +3175,9 @@ def save_bracket(bracket_id):
         if bracket.get("season_id") != CURRENT_SEASON_ID:
             return jsonify({"error": "Bracket is not in the current season"}), 400
 
-        # Ownership or admin
-        user_res = (
-            supabase.table("users")
-            .select("id, is_admin")
-            .eq("id", user_id)
-            .limit(1)
-            .execute()
-            .data
-        )
-        if not user_res:
-            return jsonify({"error": "User not found"}), 404
-
-        is_admin = user_res[0].get("is_admin", False)
-
-        if bracket["user_id"] != user_id and not is_admin:
-            return jsonify({"error": "Unauthorized"}), 403
-
-        # Once playoffs are locked, only admins can save
-        if playoffs_locked() and not is_admin:
-            return jsonify({"error": "Bracket saving is closed once the playoffs start."}), 403
+        access_error = bracket_content_mutation_error(bracket, user_id)
+        if access_error:
+            return access_error
 
         # Validate fully predicted
         matches = (
@@ -3557,9 +3585,6 @@ def update_match(bracket_id, match_id):
     data = request.get_json() or {}
     action = data.get("action")
 
-    # Ownership/admin: use is_admin directly from the authenticated user payload
-    is_admin = bool(request.user.get("is_admin", False))
-
     # ------------------------------------------------------------------
     # Preload all matches for this bracket so we can:
     #  - find the current match from this set, and
@@ -3601,7 +3626,7 @@ def update_match(bracket_id, match_id):
     # Ownership/admin and SEASON guard
     bracket_check = (
         supabase.table("brackets")
-        .select("user_id, season_id")
+        .select("id, user_id, season_id, is_master")
         .eq("id", match["bracket_id"])
         .is_("deleted_at", None)
         .limit(1)
@@ -3614,13 +3639,9 @@ def update_match(bracket_id, match_id):
     if bracket_check[0].get("season_id") != CURRENT_SEASON_ID:
         return jsonify({"error": "Bracket is not in the current season"}), 403
 
-    bracket_owner_id = bracket_check[0]["user_id"]
-    if bracket_owner_id != user_id and not is_admin:
-        return jsonify(
-            {
-                "error": "Unauthorized: You are not allowed to modify this bracket"
-            }
-        ), 403
+    access_error = bracket_content_mutation_error(bracket_check[0], user_id)
+    if access_error:
+        return access_error
 
     # Make sure the current match is present in the cache (it already should be)
     if match["id"] not in matches_by_id:
@@ -3898,19 +3919,23 @@ def set_match_games(match_id):
 
     br = (
         supabase.table("brackets")
-        .select("id, user_id, season_id")
+        .select("id, user_id, season_id, is_master")
         .eq("id", match["bracket_id"])
         .is_("deleted_at", None)
         .limit(1)
         .execute()
         .data
     )
-    if not br or br[0]["user_id"] != user_id:
+    if not br:
         return jsonify({"error":"forbidden"}), 403
 
     # 🔒 Season guard
     if br[0].get("season_id") != CURRENT_SEASON_ID:
         return jsonify({"error": "Bracket is not in the current season"}), 403
+
+    access_error = bracket_content_mutation_error(br[0], user_id)
+    if access_error:
+        return access_error
 
     supabase.table("matches").update({
         "predicted_winner_games": games,

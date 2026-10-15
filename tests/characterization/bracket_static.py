@@ -61,7 +61,12 @@ class CurrentStaticBracketBehavior(unittest.TestCase):
         "Ordinary bracket owners may undo predictions before lock.",
     )
     def current_behavior__bracket__frontend_undo(self):
-        self.assertIn("if (!(isAdmin && isMaster)) return;", self.front)
+        self.assertNotIn("if (!(isAdmin && isMaster)) return;", self.front)
+        self.assertIn("if (!(canEdit && hasPick)) return null;", self.front)
+        undo = self.front.split("const handleUndo", 1)[1].split(
+            "const handleSelectGames", 1
+        )[0]
+        self.assertIn("!canEdit", undo)
         self.assertIn('action: "undo"', self.front)
 
     @behavior(
@@ -78,7 +83,7 @@ class CurrentStaticBracketBehavior(unittest.TestCase):
             begin = self.front.index(start)
             stop = self.front.find(end, begin + 1)
             part = self.front[begin : stop if stop != -1 else begin + 1800]
-            self.assertNotIn("savingLockedForUser", part)
+            self.assertIn("!canEdit", part)
         self.assertIn(
             "canEdit && allDecided && !!trimmedName && !saving && !savingLockedForUser",
             self.front,
@@ -91,7 +96,7 @@ class CurrentStaticBracketBehavior(unittest.TestCase):
     )
     def current_behavior__bracket__frontend_controls(self):
         for value in [
-            "const canEdit = isOwner || (isAdmin && isMaster);",
+            "bracketContentAccess({",
             "[4, 5, 6, 7]",
             "setPendingGames",
             'action: "set_winner"',
@@ -111,7 +116,9 @@ class CurrentStaticBracketBehavior(unittest.TestCase):
             'get("/brackets/me")',
             'post("/bracket/create", {})',
             "del(`/bracket/${deleteTargetId}`)",
-            "(!isAdmin && (!creationOpen || playoffsLocked))",
+            "bracketCreationDisabled({",
+            "locked: playoffsLocked, ready: flagsReady",
+            "if (createDisabled) return;",
         ]:
             self.assertIn(value, source)
 
@@ -178,8 +185,8 @@ class CurrentStaticBracketBehavior(unittest.TestCase):
         self.assertIn("now < REGULAR_SEASON_END_UTC", self.fn("bracket_creation_open"))
         self.assertIn("datetime(2099, 1, 1", self.fn("_resolve_season_globals"))
         self.assertNotIn("playoffs_locked", self.fn("_season_bootstrap"))
-        self.assertNotIn("playoffs_locked", self.fn("update_match"))
-        self.assertNotIn("playoffs_locked", self.fn("set_match_games"))
+        self.assertIn("bracket_content_mutation_error", self.fn("update_match"))
+        self.assertIn("bracket_content_mutation_error", self.fn("set_match_games"))
         self.assertNotIn("playoffs_locked", self.fn("delete_bracket"))
 
     @behavior(
@@ -205,3 +212,8 @@ class CurrentStaticBracketBehavior(unittest.TestCase):
         )
         self.assertIn("leaderboard_history_rows", self.fn("leaderboard_history_season"))
         self.assertIn("CURRENT_SEASON_ID", self.fn("get_bracket_by_id"))
+
+
+from scripts.nc02b1_acceptance_metadata import mark_acceptance as mark_nc02b1
+
+mark_nc02b1(CurrentStaticBracketBehavior)

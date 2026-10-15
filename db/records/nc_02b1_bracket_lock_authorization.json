@@ -1,0 +1,216 @@
+{
+  "phase": "NC-02B1",
+  "status": "COMPLETED",
+  "starting_repositories": {
+    "backend": {
+      "branch": "main",
+      "head": "17e5a20a66d5de5e2f6511f512ccdc987ab202a9",
+      "clean": true
+    },
+    "frontend": {
+      "branch": "main",
+      "head": "ce54143006f0409265937f5d548286d0b100d454",
+      "clean": true
+    }
+  },
+  "requirements": {
+    "B1": "Ordinary creation/content/save denied at and after configured final deadline.",
+    "B2": "DB admin may mutate only current active master; arbitrary/admin-owned ordinary brackets denied.",
+    "B3": "Ordinary owner undo enabled before lock in frontend and backend.",
+    "B4": "NC-02A2 invalidation and explicit resubmission lifecycle preserved.",
+    "B5": "Existing regular-season opening rule retained; hard final lock precedes it; existing admin master bypass retained.",
+    "B16": "Unsaved draft frozen, owner-readable and ineligible; no auto-submit or delete."
+  },
+  "policy": {
+    "content_helper": "app.py:bracket_content_mutation_error",
+    "error_helper": "app.py:bracket_final_lock_error",
+    "clock": "existing now_utc() >= PLAYOFFS_START_UTC from existing season configuration",
+    "master_identity": "existing current-season is_master OR seasons.master_bracket_id; callers require active/current parent",
+    "global_guard_added": false,
+    "new_clock_source": false
+  },
+  "routes": [
+    {
+      "method": "POST",
+      "path": "/bracket/create",
+      "function": "create_bracket_for_user",
+      "change": "hard lock before ordinary opening check; existing admin master creation preserved"
+    },
+    {
+      "method": "PATCH",
+      "path": "/bracket/<id>/match/<match_id>",
+      "function": "update_match",
+      "actions": [
+        "set_winner",
+        "same-winner game count",
+        "undo"
+      ],
+      "change": "shared content guard before writes; invalidation/graph unchanged"
+    },
+    {
+      "method": "PATCH",
+      "path": "/bracket/match/<match_id>/games",
+      "function": "set_match_games",
+      "change": "shared content guard; accepted edit invalidation unchanged"
+    },
+    {
+      "method": "PATCH",
+      "path": "/bracket/<id>/save",
+      "function": "save_bracket",
+      "change": "shared content guard; name/completeness and persistence unchanged"
+    },
+    {
+      "method": "DELETE",
+      "path": "/bracket/<id>",
+      "function": "delete_bracket",
+      "change": "NONE; owner/admin and post-lock deletion preserved"
+    }
+  ],
+  "frontend": {
+    "files": [
+      "src/lib/bracketAccess.ts",
+      "src/pages/BracketPage.tsx",
+      "src/pages/DashboardPage.tsx",
+      "scripts/test-bracket-access.cjs"
+    ],
+    "ordinary_owner_undo": "available for existing picks before deadline in all three bracket sections",
+    "lock": "server flags plus existing server deadline observed in open tab; loading ordinary controls fail closed",
+    "backend_authoritative": true,
+    "deletion_unchanged": true,
+    "league_account_ui_unchanged": true
+  },
+  "gap_status": {
+    "GAP-LOCK-BACKEND-001": "FIXED",
+    "GAP-LOCK-FRONTEND-001": "FIXED",
+    "GAP-UNDO-FRONTEND-001": "FIXED",
+    "GAP-ADMIN-MUTATE-001": "FIXED content scope only; deletion deferred",
+    "GAP-RESAVE-001": "PRESERVED / ALREADY FIXED NC-02A2"
+  },
+  "converted_tests": {
+    "NC-01B": [
+      "admin_arbitrary_mutations",
+      "postlock_content",
+      "frontend_undo",
+      "frontend_lock",
+      "frontend_controls",
+      "frontend_creation",
+      "timing"
+    ],
+    "NC-02A2": [
+      "test_postlock_edits_still_allowed_but_all_invalidate",
+      "test_admin_mutation_authorization_unchanged_invalidation_shared"
+    ],
+    "metadata": "scripts/nc02b1_acceptance_metadata.py",
+    "historical_reports_preserved": true
+  },
+  "new_tests": {
+    "guarded_live": 8,
+    "offline_scope_safety": 3,
+    "frontend_node": 4,
+    "boundary": "one microsecond before, equality, one microsecond after existing configured fixture deadline"
+  },
+  "validation": {
+    "focused_live": {
+      "passed": true,
+      "tests": 8
+    },
+    "offline_safety": {
+      "passed": true,
+      "tests": 223
+    },
+    "frontend_policy": {
+      "passed": true,
+      "tests": 4
+    },
+    "typescript_vite_build": "PASS",
+    "frontend_full_lint": "Existing baseline failure: 95 errors / 3 warnings; no added findings.",
+    "lint_comparison": {
+      "BracketPage.tsx": {
+        "before_errors": 29,
+        "after_errors": 28,
+        "new_findings": 0
+      },
+      "DashboardPage.tsx": {
+        "before_errors": 8,
+        "after_errors": 8,
+        "new_findings": 0
+      },
+      "new_files": {
+        "errors": 0,
+        "warnings": 0
+      }
+    },
+    "syntax": "PASS 9 changed/new Python files",
+    "product_ast_scope": "Exactly four intended route functions changed; two helpers added; other functions unchanged.",
+    "historical_evidence": "PASS 37 tracked schema/baseline/evidence/repair files byte-for-byte unchanged",
+    "consolidated_baseline": "PASS 155 rows, 19 requirements, 19 canonical gaps; original provenance intact",
+    "full_relevant_backend": {
+      "passed": true,
+      "tests": 179,
+      "failures": 0,
+      "errors": 0,
+      "includes": [
+        "NC-02B1 live acceptance",
+        "NC-02A1 privacy",
+        "NC-02A2 eligibility and all three edit/resave lifecycles",
+        "auth/bracket/league/scoring/history/operations regressions"
+      ]
+    },
+    "semantic_schema_verifier": "PASS",
+    "fixture_marker_v2_verifier": "PASS",
+    "format_whitespace": "PASS: Black on changed Python test/tooling and new application helpers; Git whitespace checks; frontend diff style review",
+    "secret_privacy_scan": "PASS: changed source/evidence scanned; only sanitized response shapes and synthetic facts retained"
+  },
+  "error_contract": {
+    "locked_status": 403,
+    "locked_message": "Bracket content is locked once the playoffs start.",
+    "unauthorized_status": 403,
+    "unauthorized_message": "Unauthorized: You are not allowed to modify this bracket",
+    "existing_validation_precedence_preserved": true
+  },
+  "deferred": {
+    "B6": "submission completeness",
+    "B7": "count range/play-in validation",
+    "B8": "both participants required",
+    "B9": "exact downstream clearing",
+    "B10/B11": "deletion lifecycle",
+    "B12": "uniqueness",
+    "B13/B14": "master replacement/deletion",
+    "B15": "historical access"
+  },
+  "schema_changes": false,
+  "baseline_changed": false,
+  "production": {
+    "contacted": false,
+    "modified": false,
+    "deployed": false
+  },
+  "next_phase": "NC-02B2 — Bracket validity and propagation",
+  "next_phase_started": false,
+  "verified_at_utc": "2026-10-15T04:29:00.099986+00:00",
+  "canonical_cleanup": {
+    "state": "SEEDED",
+    "version": "nc-fixtures-v1",
+    "checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+    "lease_released": true,
+    "flask_stopped": true,
+    "email_capture_empty": true,
+    "app_import_removed": true,
+    "jobs_disabled": true,
+    "readiness": {
+      "identity_verified": true,
+      "database_marker": "PASS",
+      "email": "PASS",
+      "providers": "PASS",
+      "external_credentials": "PASS",
+      "jobs": "PASS",
+      "jobs_enabled": false,
+      "fixture_state": "SEEDED",
+      "fixtures_reset": "PASS",
+      "integration_harness": "PASS",
+      "mutation_permitted": false,
+      "harness_state": "AVAILABLE_GUARDED",
+      "harness_scoped_mutation_permitted": false
+    }
+  }
+}

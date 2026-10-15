@@ -345,8 +345,9 @@ class CurrentBracketBehavior(unittest.TestCase):
     def current_behavior__bracket__admin_arbitrary_mutations(self):
         bid = self.setup_bracket()
         self.context.login("admin")
-        self.pick(bid, 6, role="admin")
-        self.undo(bid, 6, role="admin")
+        before = self.state(bid)
+        self.pick(bid, 6, role="admin", status=403)
+        self.undo(bid, 6, role="admin", status=403)
         m = self.at(bid, 6)
         self.call(
             "PATCH",
@@ -355,8 +356,9 @@ class CurrentBracketBehavior(unittest.TestCase):
             role="admin",
             payload={"games": 4},
         )
-        self.fill(bid, role="admin")
-        self.save(bid, role="admin")
+        self.save(bid, role="admin", status=403)
+        self.assertEqual(before, self.state(bid))
+        # B10/B11 deletion is explicitly deferred and unchanged.
         self.call("DELETE", f"/bracket/{bid}", 200, role="admin")
         self.assertIsNotNone(self.state(bid)[0]["deleted_at"])
 
@@ -524,21 +526,22 @@ class CurrentBracketBehavior(unittest.TestCase):
     )
     def current_behavior__bracket__postlock_content(self):
         bid = self.setup_bracket(timing="locked")
-        self.pick(bid, 6)
-        self.pick(bid, 6, games=6)
-        self.undo(bid, 6)
+        before = self.state(bid)
+        self.pick(bid, 6, status=403)
+        self.pick(bid, 6, games=6, status=403)
+        self.undo(bid, 6, status=403)
         m = self.at(bid, 6)
         self.call(
             "PATCH",
             f"/bracket/match/{m['id']}/games",
-            200,
+            403,
             role="user-a",
             payload={"games": 7},
         )
-        self.assertEqual(self.at(bid, 6)["predicted_winner_games"], 7)
+        self.assertEqual(before, self.state(bid))
         self.facts = {
             "playoffs_locked": True,
-            "winner_and_undo_and_counts_mutate": True,
+            "all_content_refused_without_writes": True,
         }
 
     @behavior(
@@ -700,3 +703,7 @@ mark_acceptance(CurrentBracketBehavior)
 from scripts.nc02a2_acceptance_metadata import mark_acceptance as mark_nc02a2_acceptance
 
 mark_nc02a2_acceptance(CurrentBracketBehavior)
+
+from scripts.nc02b1_acceptance_metadata import mark_acceptance as mark_nc02b1
+
+mark_nc02b1(CurrentBracketBehavior)

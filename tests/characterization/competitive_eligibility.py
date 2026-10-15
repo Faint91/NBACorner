@@ -247,41 +247,39 @@ class CompetitiveEligibilityAcceptance(unittest.TestCase):
             draft_score_physically_retained=True, draft_score_visible=False
         )
 
+    def refused_content(self, role):
+        m = self.at(11, "nba")
+        before = self.state()
+        for path, payload in [
+            (f"/bracket/match/{m['id']}/games", {"games": 7}),
+            (
+                f"/bracket/{self.ids['a']}/match/{m['id']}",
+                {"action": "set_winner", "team": m["team_b"], "games": 5},
+            ),
+            (f"/bracket/{self.ids['a']}/match/{m['id']}", {"action": "undo"}),
+            (f"/bracket/{self.ids['a']}/save", {"name": "Denied change"}),
+        ]:
+            self.call("PATCH", path, 403, role=role, payload=payload)
+        self.assertEqual(before, self.state())
+        self.assert_surfaces(True)
+        self.unchanged_internal()
+
     @acceptance
     def test_postlock_edits_still_allowed_but_all_invalidate(self):
+        # NC-02B1 converts this NC-02A2 deferred gap; retained name is provenance.
         self.setup_competition()
         self.c.bracket_timing("locked")
-        m = self.at(11, "nba")
-        self.call(
-            "PATCH",
-            f"/bracket/match/{m['id']}/games",
-            role="user-a",
-            payload={"games": 7},
-        )
-        self.assert_surfaces(False)
-        self.pick(11, "nba", games=5)
-        self.call(
-            "PATCH",
-            f"/bracket/{self.ids['a']}/match/{m['id']}",
-            role="user-a",
-            payload={"action": "undo"},
-        )
-        self.assert_surfaces(False)
-        self.save(status=403)
-        self.unchanged_internal()
-        self.facts.update(
-            postlock_mutations_unchanged=True, postlock_resave_still_denied=True
-        )
+        self.refused_content("user-a")
+        self.facts.update(postlock_all_content_denied=True, submission_preserved=True)
 
     @acceptance
     def test_admin_mutation_authorization_unchanged_invalidation_shared(self):
+        # NC-02B1 explicitly supersedes the previously deferred admin mutation gap.
         self.setup_competition()
-        self.pick(11, "nba", role="admin", games=5)
-        self.assert_surfaces(False)
-        self.call("GET", f"/bracket/{self.ids['a']}", 403, role="admin")
-        self.save()
-        self.assert_surfaces(True)
-        self.unchanged_internal()
-        self.facts.update(
-            admin_mutation_gap_retained=True, no_admin_draft_read_bypass=True
-        )
+        self.refused_content("admin")
+        self.facts.update(admin_content_denied=True, submission_preserved=True)
+
+
+from scripts.nc02b1_acceptance_metadata import mark_acceptance as mark_nc02b1
+
+mark_nc02b1(CompetitiveEligibilityAcceptance)
