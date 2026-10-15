@@ -1,4 +1,5 @@
-from canonical_season import get_current_season, SeasonConfigurationError, season_start_year
+from standings_service import refresh_current_standings, StandingsRefreshError, log_result
+from canonical_season import get_current_season, SeasonConfigurationError
 from bracket_rules import game_count_error, apply_prediction, submission_error
 # app.py
 from functools import wraps
@@ -8,7 +9,6 @@ from flask_cors import CORS
 from supabase import create_client
 from environment_safety import prepare_runtime_environment
 from email_transport import deliver_email, build_reset_link
-from provider_transport import provider_get, provider_uses_fixtures
 from job_safety import guard_runtime_job
 from collections import defaultdict
 import time
@@ -1099,198 +1099,22 @@ def admin_season_rollover():
 # --------------------------------------------------------
 
 def fetch_and_sync_standings_from_nba():
-    """
-    Fetch regular-season games from the free balldontlie API and recompute
-    standings (wins/losses + seeds) for the CURRENT_SEASON_ID, then upsert
-    into public.standings.
-    """
+    """Compatibility name; the sole standings provider is now ESPN."""
     guard_runtime_job("standings-refresh")
-    API_BASE = "https://api.balldontlie.io/v1"
-
-    # Build headers for Balldontlie (requires API key)
-    if not provider_uses_fixtures() and not BALLDONTLIE_API_KEY:
-        raise APIError("BALLDONTLIE_API_KEY is not configured", 500)
-
-    headers = {
-        "Authorization": BALLDONTLIE_API_KEY  # per Balldontlie docs: Authorization: YOUR_API_KEY
-    }
-
-    # Provider start-year representation derives only from canonical season code.
-    import re as _re
-    import requests as _requests
-
-    season_year = season_start_year(current_season().code)
-
-    # 1) Load teams from DB so we know code + conference
-    teams_rows = supabase.table("teams").select("code, name, conference").execute().data
-    if not teams_rows:
-        raise APIError("No teams found in DB; cannot build standings", 500)
-
-    # Map team code -> metadata (we assume codes match balldontlie abbreviations)
-    team_meta_by_code = {row["code"]: row for row in teams_rows if row.get("code")}
-
-    # 2) Aggregate wins/losses from all regular-season games for that season
-    wins = defaultdict(int)
-    losses = defaultdict(int)
-
-    cursor = None
-    max_pages = 100  # safety limit
-    pages_fetched = 0
-
-    while True:
-        params = {
-            "seasons[]": season_year,  # e.g. 2024
-            "per_page": 100,
-        }
-        if cursor is not None:
-            params["cursor"] = cursor
-
-        try:
-            safe_print(f"🔵 Calling Balldontlie: {API_BASE}/games with params={params}")
-            resp = provider_get(
-                _requests.get,
-                f"{API_BASE}/games",
-                params=params,
-                headers=headers,  # <- keep this if you added Authorization earlier
-                timeout=10,
-            )
-        except Exception as e:
-            raise APIError(
-                f"balldontlie request failed (class: {type(e).__name__})", 502
-            )
-
-        if resp.status_code != 200:
-            raise APIError(
-                f"balldontlie returned {resp.status_code}: {resp.text[:200]}",
-                502,
-            )
-
-        payload = resp.json()
-        games = payload.get("data") or []
-
-        # No more games → done
-        if not games:
-            break
-
-        # ---- Process this page of games ----
-        for g in games:
-            # Skip playoffs; we only want regular season
-            if g.get("postseason"):
-                continue
-
-            home = g.get("home_team") or {}
-            away = g.get("visitor_team") or {}
-            home_code = home.get("abbreviation")
-            away_code = away.get("abbreviation")
-
-            home_score = g.get("home_team_score") or 0
-            away_score = g.get("visitor_team_score") or 0
-
-            # Skip games not yet played
-            if home_score == 0 and away_score == 0:
-                continue
-
-            # Skip teams not in our DB
-            if home_code not in team_meta_by_code or away_code not in team_meta_by_code:
-                continue
-
-            if home_score > away_score:
-                wins[home_code] += 1
-                losses[away_code] += 1
-            elif away_score > home_score:
-                wins[away_code] += 1
-                losses[home_code] += 1
-            # ties ignored
-
-        meta = payload.get("meta") or {}
-        cursor = meta.get("next_cursor")
-        pages_fetched += 1
-
-        # Stop if no more pages or if safety cap reached
-        if not cursor or pages_fetched >= max_pages:
-            break
-
-    if not wins and not losses:
-        raise APIError(
-            "No completed regular-season games found; standings not updated",
-            500,
-        )
-
-    # 3) Build base rows with wins/losses per team, grouped by conference
-    base_rows = []
-    for code, meta in team_meta_by_code.items():
-        conf = (meta.get("conference") or "").lower()
-        if conf not in ("east", "west"):
-            continue
-
-        base_rows.append(
-            {
-                "code": code,
-                "name": meta.get("name"),
-                "conference": conf,
-                "wins": wins.get(code, 0),
-                "losses": losses.get(code, 0),
-            }
-        )
-
-    # 4) Sort within each conference and assign seeds
-    east_sorted = sorted(
-        [r for r in base_rows if r["conference"] == "east"],
-        key=lambda r: (-r["wins"], r["losses"], r["code"]),
-    )
-    west_sorted = sorted(
-        [r for r in base_rows if r["conference"] == "west"],
-        key=lambda r: (-r["wins"], r["losses"], r["code"]),
-    )
-
-    # Use your existing helper so timestamps are UTC-aware
-    now_ts = now_utc().replace(microsecond=0).isoformat()
-
-    rows_to_upsert = []
-    for i, row in enumerate(east_sorted, start=1):
-        rows_to_upsert.append(
-            {
-                **row,
-                "seed": i,
-                "updated_at": now_ts,
-            }
-        )
-    for i, row in enumerate(west_sorted, start=1):
-        rows_to_upsert.append(
-            {
-                **row,
-                "seed": i,
-                "updated_at": now_ts,
-            }
-        )
-
-    if not rows_to_upsert:
-        raise APIError("Computed 0 standings rows; nothing to insert", 500)
-
-    # 5) Replace existing standings for this season (simple delete + insert)
     try:
-        # Delete old rows for this season
-        supabase.table("standings").delete().execute()
-
-        # Insert fresh snapshot
-        insert_res = supabase.table("standings").insert(rows_to_upsert).execute()
-        inserted_count = len(insert_res.data or [])
-    except Exception as e:
-        safe_print("🔴 Failed to replace standings rows:", type(e).__name__, repr(e))
-        raise APIError("Failed to write standings into database", status_code=500)
-
-    return {
-        "updated": inserted_count,
-        "season_year": season_year,
-        "pages_fetched": pages_fetched,
-    }
+        result = refresh_current_standings(supabase, now=now_utc)
+        log_result(result)
+        return result
+    except StandingsRefreshError as error:
+        log_result({"state": error.stage})
+        raise APIError(str(error), 502) from None
 
 
 @app.route("/admin/standings/refresh", methods=["POST"])
 @require_auth
 def admin_refresh_standings():
     """
-    Admin-only: fetch real NBA standings from stats.nba.com and sync the
+    Admin-only: fetch authoritative ESPN standings and atomically publish the
     'standings' table for the CURRENT season.
 
     Usage:
@@ -1351,134 +1175,18 @@ def internal_cron_refresh_standings():
 
 @app.route("/internal/standings/overwrite", methods=["POST"])
 def internal_overwrite_standings():
-    """
-    Internal endpoint: overwrite the standings table for the CURRENT_SEASON_ID.
-
-    Expected JSON body: a list of rows with at least:
-      - code       (team abbreviation, e.g. "LAL")
-      - name       (team name, "Los Angeles Lakers")
-      - conference ("east" / "west")
-      - wins       (int)
-      - losses     (int)
-      - seed       (int, optional)
-
-    The script calling this endpoint does NOT need to send season_id or updated_at;
-    those are filled in here using CURRENT_SEASON_ID and now_utc().
-    """
+    """Retired caller-supplied overwrite; use authenticated ESPN refresh."""
     guard_runtime_job("standings-overwrite")
-
-    # --- Auth with the same secret token you already use for cron ---
     token_supplied = request.headers.get("X-Cron-Token") or request.args.get("token")
     if not STANDINGS_CRON_TOKEN or token_supplied != STANDINGS_CRON_TOKEN:
         return jsonify({"error": "Forbidden"}), 403
-
-    # --- Parse body ---
-    payload = request.get_json(silent=True)
-    if not isinstance(payload, list):
-        return jsonify({"error": "Expected a JSON array of rows"}), 400
-
-    if not current_season().id:
-        return jsonify({"error": "CURRENT_SEASON_ID is not configured"}), 500
-
-    # --- Load valid team codes from DB to satisfy FK: standings.code -> teams.code ---
-    try:
-        team_rows = (
-            supabase.table("teams").select("code, name, conference").execute()
-        ).data or []
-    except Exception as e:
-        safe_print(
-            "🔴 Error fetching teams in /internal/standings/overwrite:",
-            type(e).__name__,
-            repr(e),
-        )
-        return jsonify({"error": "Failed to load teams"}), 500
-
-    valid_codes = {(t.get("code") or "").upper() for t in team_rows if t.get("code")}
-
-    now_ts = now_utc().replace(microsecond=0).isoformat()
-
-    # --- Build rows to insert, skipping anything with unknown team code ---
-    rows_to_insert = []
-    skipped = []
-
-    for row in payload:
-        if not isinstance(row, dict):
-            continue
-
-        raw_code = row.get("code") or row.get("team_code")
-        code = (raw_code or "").upper()
-        if not code or code not in valid_codes:
-            skipped.append({"code": raw_code})
-            continue
-
-        name = row.get("name") or code
-        conf = (row.get("conference") or "").lower()
-
-        try:
-            wins = int(row.get("wins") or 0)
-        except Exception:
-            wins = 0
-
-        try:
-            losses = int(row.get("losses") or 0)
-        except Exception:
-            losses = 0
-
-        seed_val = row.get("seed")
-        try:
-            seed = int(seed_val) if seed_val is not None else None
-        except Exception:
-            seed = None
-
-        rows_to_insert.append(
-            {
-                "name": name,
-                "code": code,
-                "conference": conf,
-                "wins": wins,
-                "losses": losses,
-                "seed": seed,
-                "season_id": current_season().id,
-                "updated_at": now_ts,
-            }
-        )
-
-    if not rows_to_insert:
-        safe_print(
-            "⚠️ No valid standings rows to insert (all skipped). Skipped:", skipped
-        )
-        return jsonify({"error": "No valid standings rows to insert"}), 400
-
-    # --- Replace standings for this season ---
-    inserted_count = 0
-    try:
-        # Delete old rows for this season
-        supabase.table("standings").delete().eq(
-            "season_id", current_season().id
-        ).execute()
-
-        # Insert new snapshot
-        ins_res = supabase.table("standings").insert(rows_to_insert).execute()
-        inserted_count = len(ins_res.data or [])
-    except Exception as e:
-        safe_print("🔴 Failed to write standings rows:", type(e).__name__, repr(e))
-        # IMPORTANT: make this message more informative while debugging
-        return jsonify({"error": "Failed to write standings"}), 500
-
-    safe_print(
-        f"✅ Overwrote standings for season {current_season().code} "
-        f"({current_season().id}). Inserted: {inserted_count}, skipped: {len(skipped)}"
-    )
-
     return (
         jsonify(
             {
-                "ok": True,
-                "inserted": inserted_count,
-                "skipped": skipped,
+                "error": "Caller-supplied standings overwrite is retired; use /internal/standings/refresh"
             }
         ),
-        200,
+        410,
     )
 
 
@@ -1489,11 +1197,7 @@ def admin_insert_test_teams():
     Admin helper to (re)insert the 10 test teams for both conferences.
     Idempotent via upsert.
 
-    NEW: Optional seasonized seeding for standings.
-    - Request body can include: {"seed_standings": true}
-    - If the 'standings' table has a 'season_id' column, rows are tied to CURRENT_SEASON_ID.
-      If not, it falls back to inserting without season_id (or skips if constraints prevent it).
-    - If team codes are missing (required by standings FK), standings seeding is skipped for those teams.
+    Standings seeding is retired; ESPN refresh owns all normal standings writes.
     """
     guard_runtime_job("team-insert")
     user_info = request.user or {}
@@ -1521,6 +1225,16 @@ def admin_insert_test_teams():
     # Parse body flag
     body = request.get_json(silent=True) or {}
     seed_standings = bool(body.get("seed_standings"))
+
+    if seed_standings:
+        return (
+            jsonify(
+                {
+                    "error": "Synthetic standings seeding is disabled; use ESPN standings refresh"
+                }
+            ),
+            409,
+        )
 
     # --- Test teams (unchanged shape vs your prior helper) ---
     east = [
@@ -1555,109 +1269,6 @@ def admin_insert_test_teams():
 
     seeded_standings = 0
     standings_mode = "skipped"
-
-    if seed_standings:
-        # We will try to seed standings for CURRENT season if schema allows.
-        try:
-            # 1) Detect whether standings has season_id (by attempting a filtered select).
-            has_season_id = True
-            try:
-                _ = (
-                    supabase.table("standings")
-                    .select("id")
-                    .eq("season_id", current_season().id)
-                    .limit(1)
-                    .execute()
-                )
-            except Exception:
-                has_season_id = False
-
-            # 2) Fetch codes for inserted teams (needed for standings FK on code).
-            #    If codes are missing in your test rows, we’ll try to re-use the 'id' as 'code' if possible.
-            #    First, get any existing codes:
-            ids = [t["id"] for t in teams_to_upsert]
-            team_rows = (
-                supabase.table("teams")
-                .select("id, name, conference, code")
-                .in_("id", ids)
-                .execute()
-            ).data or []
-
-            rows_with_codes = []
-            missing_code_ids = []
-
-            for tr in team_rows:
-                code = tr.get("code")
-                if code and isinstance(code, str) and code.strip():
-                    rows_with_codes.append(tr)
-                else:
-                    missing_code_ids.append(tr.get("id"))
-
-            # Optional: Try to set code = id for those missing (best-effort, safe to skip if schema disallows)
-            if missing_code_ids:
-                try:
-                    # Build patch objects where code := id (simple/safe fallback)
-                    patches = [
-                        {"id": tid, "code": tid} for tid in missing_code_ids if tid
-                    ]
-                    if patches:
-                        supabase.table("teams").upsert(patches).execute()
-                        # Refresh rows to pick up code
-                        team_rows = (
-                            supabase.table("teams")
-                            .select("id, name, conference, code")
-                            .in_("id", ids)
-                            .execute()
-                        ).data or []
-                        rows_with_codes = [tr for tr in team_rows if tr.get("code")]
-                except Exception:
-                    # If this fails (e.g., unique constraint), we just proceed with those that have codes
-                    pass
-
-            # 3) Build standings rows for available rows_with_codes
-            #    Seeds 1..10 for each conference in listing order of our test arrays.
-            #    If has_season_id, include season_id; else omit.
-            code_by_id = {r["id"]: r.get("code") for r in team_rows if r.get("code")}
-            east_order = [t["id"] for t in east]
-            west_order = [t["id"] for t in west]
-
-            standings_rows = []
-
-            def add_conf(conf_name: str, ordered_ids: list[str]):
-                for idx, tid in enumerate(ordered_ids, start=1):
-                    code = code_by_id.get(tid)
-                    if not code:
-                        continue  # skip if we still don't have code
-                    row = {
-                        "name": next(
-                            (t["name"] for t in teams_to_upsert if t["id"] == tid), tid
-                        ),
-                        "code": code,
-                        "conference": conf_name,
-                        "wins": 0,
-                        "losses": 0,
-                        "seed": idx,
-                        "updated_at": datetime.utcnow().isoformat(),
-                    }
-                    if has_season_id:
-                        row["season_id"] = current_season().id
-                    standings_rows.append(row)
-
-            add_conf("east", east_order)
-            add_conf("west", west_order)
-
-            if standings_rows:
-                # Upsert standings (by (code, season_id) or (code) uniqueness depending on schema)
-                # If your table lacks a proper composite unique constraint, this may insert duplicates on repeated calls.
-                supabase.table("standings").upsert(standings_rows).execute()
-                seeded_standings = len(standings_rows)
-                standings_mode = "season_id" if has_season_id else "no_season_id"
-            else:
-                standings_mode = "no_codes"
-
-        except Exception as e:
-            safe_print("⚠️ standings seeding skipped (class):", type(e).__name__)
-            standings_mode = "error"
 
     return (
         jsonify(

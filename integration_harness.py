@@ -120,6 +120,7 @@ class GuardedHarness:
             "NC-02B2",
             "NC-02B3",
             "NC-02C1",
+            "NC-02C2",
         }:
             raise safety.SafetyError("Unreviewed characterization scope.")
         self.characterization_scope = characterization_scope
@@ -139,6 +140,8 @@ class GuardedHarness:
         self._closed = False
         self._admission = secrets.token_urlsafe(32)
         self._tokens = {}
+        self._standings_jobs = frozenset()
+        self._standings_token_mode = "missing"
         self._brackets = set()
         self._matches = set()
         self._owns_app = False
@@ -235,6 +238,7 @@ class GuardedHarness:
                                 "NC-02B2",
                                 "NC-02B3",
                                 "NC-02C1",
+                                "NC-02C2",
                             }
                             else request.path
                         ),
@@ -345,12 +349,25 @@ class GuardedHarness:
         self.stack.enter_context(patch.object(requests.Session, "send", requests_send))
 
     def _check_path(self, method, path, *, identity_bootstrap=False):
+        if (
+            getattr(self, "characterization_scope", None) == "NC-02C2"
+            and method == "POST"
+            and path
+            in {
+                "/admin/standings/refresh",
+                "/internal/standings/refresh",
+                "/internal/standings/overwrite",
+                "/admin/insert_test_teams",
+            }
+        ):
+            return
         if getattr(self, "characterization_scope", None) in {
             "NC-02A2",
             "NC-02B1",
             "NC-02B2",
             "NC-02B3",
             "NC-02C1",
+            "NC-02C2",
         }:
             lids = getattr(self, "_leagues", set())
             reads = {
@@ -383,7 +400,7 @@ class GuardedHarness:
                 return
             if (
                 self.characterization_scope
-                in {"NC-02B1", "NC-02B2", "NC-02B3", "NC-02C1"}
+                in {"NC-02B1", "NC-02B2", "NC-02B3", "NC-02C1", "NC-02C2"}
                 and method == "POST"
                 and path == "/bracket/create"
             ):
@@ -554,6 +571,14 @@ class GuardedHarness:
             if role not in self._tokens:
                 raise safety.SafetyError("Synthetic login session required.")
             headers["Authorization"] = "Bearer " + self._tokens[role]
+        if self.characterization_scope == "NC-02C2" and path in {
+            "/internal/standings/refresh",
+            "/internal/standings/overwrite",
+        }:
+            if self._standings_token_mode == "valid":
+                headers["X-Cron-Token"] = self.module.STANDINGS_CRON_TOKEN
+            elif self._standings_token_mode == "invalid":
+                headers["X-Cron-Token"] = "invalid-synthetic-only"
         origin = urlsplit(self.target.backend_origin)
         connection = http.client.HTTPConnection("127.0.0.1", origin.port, timeout=15)
         try:
@@ -637,6 +662,7 @@ class GuardedHarness:
                 "NC-02B2",
                 "NC-02B3",
                 "NC-02C1",
+                "NC-02C2",
             }
             or threading.get_ident() != self._owner
         ):
@@ -663,6 +689,66 @@ class GuardedHarness:
             self._brackets.add(body["bracket"]["id"])
             self.bracket_snapshot()
         return status, body
+
+    def standings_request(self, kind, *, role=None, token="valid", payload=None):
+        self._require_bracket_scope()
+        if (
+            self.characterization_scope != "NC-02C2"
+            or kind not in {"scheduled", "admin", "cron", "overwrite", "seed"}
+            or token not in {"valid", "invalid", "missing"}
+        ):
+            raise safety.SafetyError("Fixed C2 standings request required")
+        if kind == "seed" and payload != {"seed_standings": True}:
+            raise safety.SafetyError("Only fixed seed-refusal proof is admitted")
+        jobs = (
+            {"standings-refresh"}
+            if kind in {"admin", "cron", "scheduled"}
+            else {"standings-overwrite"} if kind == "overwrite" else {"team-insert"}
+        )
+        if kind == "scheduled":
+            jobs.add("standings-script")
+        self._standings_jobs = frozenset(jobs)
+        self._standings_token_mode = token
+        if not self.module.STANDINGS_CRON_TOKEN:
+            self.module.STANDINGS_CRON_TOKEN = secrets.token_urlsafe(32)
+        try:
+            if kind == "scheduled":
+                import ast
+                from pathlib import Path
+
+                source = Path(__file__).parent / "scripts/update_standings.py"
+                node = next(
+                    n
+                    for n in ast.parse(source.read_text(encoding="utf-8")).body
+                    if isinstance(n, ast.FunctionDef)
+                    and n.name == "update_standings_from_json"
+                )
+                import standings_service
+
+                ns = {
+                    "supabase": self.module.supabase,
+                    "guard_runtime_job": __import__("job_safety").guard_runtime_job,
+                    "refresh_current_standings": standings_service.refresh_current_standings,
+                    "StandingsRefreshError": standings_service.StandingsRefreshError,
+                    "log_result": standings_service.log_result,
+                }
+                exec(
+                    compile(
+                        ast.Module(body=[node], type_ignores=[]), str(source), "exec"
+                    ),
+                    ns,
+                )
+                return 200, ns["update_standings_from_json"]()
+            route = {
+                "admin": "/admin/standings/refresh",
+                "cron": "/internal/standings/refresh",
+                "overwrite": "/internal/standings/overwrite",
+                "seed": "/admin/insert_test_teams",
+            }[kind]
+            return self._exchange("POST", route, payload or {}, role)
+        finally:
+            self._standings_jobs = frozenset()
+            self._standings_token_mode = "missing"
 
     def canonical_fixture_season(self, mode):
         self._require_bracket_scope()
@@ -711,6 +797,7 @@ class GuardedHarness:
             "NC-02B2",
             "NC-02B3",
             "NC-02C1",
+            "NC-02C2",
         } or relative not in {
             "before",
             "at",
@@ -854,7 +941,15 @@ class GuardedHarness:
         } or role not in (
             {"user-a", "user-b", "admin", "owner"}
             if self.characterization_scope
-            in {"NC-01C", "NC-02A2", "NC-02B1", "NC-02B2", "NC-02B3", "NC-02C1"}
+            in {
+                "NC-01C",
+                "NC-02A2",
+                "NC-02B1",
+                "NC-02B2",
+                "NC-02B3",
+                "NC-02C1",
+                "NC-02C2",
+            }
             else {"user-a", "user-b", "admin"}
         ):
             raise safety.SafetyError("Unreviewed synthetic bracket scenario.")
@@ -907,7 +1002,15 @@ class GuardedHarness:
         if (
             not self._ready
             or self.characterization_scope
-            not in {"NC-01C", "NC-02A2", "NC-02B1", "NC-02B2", "NC-02B3", "NC-02C1"}
+            not in {
+                "NC-01C",
+                "NC-02A2",
+                "NC-02B1",
+                "NC-02B2",
+                "NC-02B3",
+                "NC-02C1",
+                "NC-02C2",
+            }
             or threading.get_ident() != self._owner
         ):
             raise safety.SafetyError("Explicit verified NC-01C context required.")
@@ -1011,7 +1114,7 @@ class GuardedHarness:
         self._require_league_scope()
         if (
             self.characterization_scope
-            not in {"NC-02A2", "NC-02B1", "NC-02B2", "NC-02B3", "NC-02C1"}
+            not in {"NC-02A2", "NC-02B1", "NC-02B2", "NC-02B3", "NC-02C1", "NC-02C2"}
             or self._brackets
         ):
             raise safety.SafetyError("Fresh verified NC-02A2 context required.")
@@ -1084,6 +1187,7 @@ class GuardedHarness:
             "NC-02B2",
             "NC-02B3",
             "NC-02C1",
+            "NC-02C2",
         }:
             raise safety.SafetyError("Verified NC-02A2 context required.")
         result = self.bracket_snapshot()
@@ -1332,7 +1436,15 @@ class GuardedHarness:
         if not self._ready or role not in (
             {"user-a", "user-b", "admin", "owner"}
             if self.characterization_scope
-            in {"NC-01C", "NC-02A2", "NC-02B1", "NC-02B2", "NC-02B3", "NC-02C1"}
+            in {
+                "NC-01C",
+                "NC-02A2",
+                "NC-02B1",
+                "NC-02B2",
+                "NC-02B3",
+                "NC-02C1",
+                "NC-02C2",
+            }
             else {"user-a", "user-b", "admin"}
         ):
             raise safety.SafetyError("Seeded smoke login required.")
@@ -1410,3 +1522,39 @@ def readiness_report(settings):
         mutation_permitted=False,
     )
     return result
+
+
+def authorize_standings_test_job(job):
+    permit = _ACTIVE
+    if (
+        type(permit) is not GuardedHarness
+        or permit.characterization_scope != "NC-02C2"
+        or not permit._ready
+        or job not in permit._standings_jobs
+    ):
+        return False
+    permit._require_lease()
+    from flask import has_request_context, request
+
+    if has_request_context():
+        if job == "team-insert" and request.get_json(silent=True) != {
+            "seed_standings": True
+        }:
+            return False
+        return (
+            request.method == "POST"
+            and request.path
+            in {
+                "/admin/standings/refresh",
+                "/internal/standings/refresh",
+                "/internal/standings/overwrite",
+                "/admin/insert_test_teams",
+            }
+            and hmac.compare_digest(
+                request.headers.get("X-NBA-Test-Context", ""), permit._admission
+            )
+        )
+    return (
+        job in {"standings-refresh", "standings-script"}
+        and threading.get_ident() == permit._owner
+    )

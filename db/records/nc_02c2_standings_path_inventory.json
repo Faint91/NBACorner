@@ -1,0 +1,104 @@
+{
+  "phase": "NC-02C2",
+  "completed_before_implementation": true,
+  "paths": [
+    {
+      "kind": "workflow",
+      "path": ".github/workflows/standings-cron.yml",
+      "provider": "ESPN script",
+      "season_source": "canonical FK -> ESPN end year",
+      "freeze": "none",
+      "caller": "09:00 UTC daily/weekends + dispatch",
+      "authorization": "GitHub trusted secrets",
+      "validation_write_transaction": "per-code updates; no transaction"
+    },
+    {
+      "kind": "scheduled",
+      "path": "scripts/update_standings.py:update_standings_from_json",
+      "provider": "ESPN",
+      "season_source": "canonical",
+      "freeze": "none",
+      "caller": "workflow/manual CLI",
+      "authorization": "service role + job guard",
+      "validation_write_transaction": "per-code update/insert; skips malformed/unknown/stale"
+    },
+    {
+      "kind": "admin",
+      "path": "app.py:admin_refresh_standings",
+      "provider": "Balldontlie shared helper",
+      "season_source": "canonical start year",
+      "freeze": "none",
+      "caller": "manual POST",
+      "authorization": "JWT + DB admin + job guard",
+      "validation_write_transaction": "delete all then unrelated insert"
+    },
+    {
+      "kind": "cron",
+      "path": "app.py:internal_cron_refresh_standings",
+      "provider": "Balldontlie shared helper",
+      "season_source": "canonical start year",
+      "freeze": "none",
+      "caller": "token POST",
+      "authorization": "unchanged header/query token + job guard",
+      "validation_write_transaction": "delete all then unrelated insert"
+    },
+    {
+      "kind": "helper",
+      "path": "app.py:fetch_and_sync_standings_from_nba",
+      "provider": "Balldontlie game aggregation",
+      "season_source": "canonical start year",
+      "freeze": "none",
+      "caller": "admin/cron",
+      "authorization": "caller auth + job guard",
+      "validation_write_transaction": "delete/insert not atomic"
+    },
+    {
+      "kind": "overwrite",
+      "path": "app.py:internal_overwrite_standings",
+      "provider": "caller supplied rows",
+      "season_source": "canonical; references nonexistent standings.season_id",
+      "freeze": "none",
+      "caller": "token POST",
+      "authorization": "header/query token + job guard",
+      "validation_write_transaction": "partial validation/delete/insert; schema mismatch"
+    },
+    {
+      "kind": "maintenance",
+      "path": "app.py:admin_insert_test_teams seed_standings option",
+      "provider": "synthetic requested data",
+      "season_source": "canonical, optional season-column fallback",
+      "freeze": "none",
+      "caller": "manual admin POST",
+      "authorization": "JWT + DB admin + job guard",
+      "validation_write_transaction": "20-team partial upsert"
+    },
+    {
+      "kind": "test seam",
+      "path": "provider_transport.py:provider_get",
+      "provider": "fixed ESPN/Balldontlie fixtures",
+      "season_source": "explicit supported synthetic years",
+      "freeze": "not applicable",
+      "caller": "NC-ENV guarded tests",
+      "authorization": "test identity/provider/egress guards",
+      "validation_write_transaction": "no provider network; existing ESPN fixture only two teams"
+    },
+    {
+      "kind": "fixture reset",
+      "path": "scripts/reset_local_fixtures.py",
+      "provider": "canonical synthetic foundation",
+      "season_source": "fixed identity current",
+      "freeze": "test-only",
+      "caller": "guarded reset/harness",
+      "authorization": "positive local identity + exclusive lease",
+      "validation_write_transaction": "single transaction reset; preserve original checksum"
+    }
+  ],
+  "design": {
+    "normal_refresh": "One shared ESPN service; validate full30 then trusted atomic RPC",
+    "freeze": "Canonical opening boundary in Python before fetch; DB recheck before publish",
+    "legacy_overwrite": "Retire caller-supplied write capability; authorized 410 directs shared refresh",
+    "maintenance_seed": "Reject requested standings seed before team writes; preserve unrelated no-seed maintenance",
+    "frontend": "No refresh action found; no frontend changes needed",
+    "production_contact": false
+  }
+}

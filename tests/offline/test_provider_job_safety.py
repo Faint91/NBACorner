@@ -146,74 +146,19 @@ class ProviderJobTests(unittest.TestCase):
         b = self.read()
         self.assertEqual(a.text, b.text)
         a.json()["standings"]["entries"].clear()
-        self.assertEqual(len(b.json()["standings"]["entries"]), 2)
+        self.assertEqual(len(b.json()["standings"]["entries"]), 30)
         self.assertEqual(a.status_code, 200)
         a.raise_for_status()
         self.live.assert_not_called()
 
     def test_espn_actual_parser_statements(self):
-        # Extract ONLY parser statements, stopping before the DB payload/writer.
-        fn = function("scripts/update_standings.py", "update_standings_from_json")
-        start = next(i for i, n in enumerate(fn.body) if isinstance(n, ast.Try))
-        body = copy.deepcopy(fn.body[start].body)
-        first = next(
-            i
-            for i, n in enumerate(body)
-            if isinstance(n, ast.Assign)
-            and isinstance(n.targets[0], ast.Name)
-            and n.targets[0].id == "raw_standings"
-        )
-        loop = next(n for n in body[first:] if isinstance(n, ast.For))
-        stop = next(
-            i
-            for i, n in enumerate(loop.body)
-            if isinstance(n, ast.Assign)
-            and isinstance(n.targets[0], ast.Name)
-            and n.targets[0].id == "payload"
-        )
-        loop.body = (
-            loop.body[:stop]
-            + ast.parse(
-                "rows.append((code, wins, losses, win_pct, seed, conference))"
-            ).body
-        )
-        parser = ast.FunctionDef(
-            name="parse",
-            args=ast.arguments(
-                posonlyargs=[],
-                args=[ast.arg(arg="data")],
-                kwonlyargs=[],
-                kw_defaults=[],
-                defaults=[],
-            ),
-            body=ast.parse("rows = []").body
-            + body[first : body.index(loop)]
-            + [loop]
-            + ast.parse("return rows").body,
-            decorator_list=[],
-        )
-        # Helpers are pure; execute no script globals/startup and no DB operations.
-        module = ast.Module(
-            body=[
-                function("scripts/update_standings.py", "_safe_int"),
-                function("scripts/update_standings.py", "_safe_float"),
-                parser,
-            ],
-            type_ignores=[],
-        )
-        namespace = {
-            "print": lambda *a: None,
-            "ESPN_TO_DB_CODE": {"NY": "NYK"},
-            "EAST_WEST_BY_CODE": {"NYK": "East", "LAL": "West"},
-        }
-        exec(
-            compile(ast.fix_missing_locations(module), "offline-parser", "exec"),
-            namespace,
-        )
-        self.assertEqual(
-            namespace["parse"](self.read().json()),
-            [("NYK", 12, 8, 0.6, 2, "East"), ("LAL", 0, 11, 0.0, 4, "West")],
-        )
+        from standings_service import parse_espn
+        from synthetic_fixtures import foundation
+
+        rows = parse_espn(self.read().json(), foundation()["teams"])
+        self.assertEqual(len(rows), 30)
+        self.assertEqual(len({r["code"] for r in rows}), 30)
+        self.live.assert_not_called()
 
     def test_balldontlie_pagination(self):
         a = self.read(BDL, params={"seasons[]": 2025, "per_page": 100})
@@ -229,34 +174,12 @@ class ProviderJobTests(unittest.TestCase):
         self.assertEqual(len(a.json()["data"]), 3)
         self.assertEqual(len(b.json()["data"]), 3)
 
-    def test_balldontlie_actual_aggregation_statements(self):
+    def test_balldontlie_is_no_longer_standings_authority(self):
         fn = function("app.py", "fetch_and_sync_standings_from_nba")
-        loop = copy.deepcopy(next(n for n in fn.body if isinstance(n, ast.While)))
-        namespace = {
-            "API_BASE": "https://api.balldontlie.io/v1",
-            "season_year": 2025,
-            "cursor": None,
-            "max_pages": 100,
-            "pages_fetched": 0,
-            "headers": {},
-            "safe_print": lambda *a: None,
-            "_requests": Mock(),
-            "provider_get": lambda callback, url, **kw: self.read(url, **kw),
-            "wins": defaultdict(int),
-            "losses": defaultdict(int),
-            "team_meta_by_code": {"NYK": {}, "LAL": {}},
-        }
-        exec(
-            compile(
-                ast.fix_missing_locations(ast.Module(body=[loop], type_ignores=[])),
-                "offline-aggregation",
-                "exec",
-            ),
-            namespace,
-        )
-        self.assertEqual(dict(namespace["wins"]), {"NYK": 1, "LAL": 1})
-        self.assertEqual(dict(namespace["losses"]), {"LAL": 1, "NYK": 1})
-        self.assertEqual(namespace["pages_fetched"], 2)
+        text = ast.unparse(fn)
+        self.assertIn("refresh_current_standings", text)
+        self.assertNotIn("balldontlie", text.lower())
+        self.assertNotIn("provider_get", text)
 
     def test_unexpected_destinations_refused(self):
         for url in (
@@ -392,6 +315,10 @@ class ProviderJobTests(unittest.TestCase):
             hashlib.sha256(
                 (ROOT / ".github/workflows/standings-cron.yml")
                 .read_bytes()
+                .replace(
+                    b"        env:\n",
+                    b"        env:\n          BALLDONTLIE_API_KEY: ${{ secrets.BALLDONTLIE_API_KEY }}\n          BACKEND_BASE_URL: ${{ secrets.BACKEND_BASE_URL }}\n          STANDINGS_CRON_TOKEN: ${{ secrets.STANDINGS_CRON_TOKEN }}\n",
+                )
                 .replace(
                     b"# Season selection comes from application_season; legacy NBA_SEASON_YEAR removed.",
                     b'NBA_SEASON_YEAR: "2025"  # adjust if needed',

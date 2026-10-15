@@ -64,7 +64,7 @@ BEGIN
   IF (SELECT string_agg(c.relname, ',' ORDER BY c.relname COLLATE "C") FROM pg_class c WHERE c.relnamespace='public'::regnamespace AND c.relkind IN ('r','p','v','m','S','f') AND NOT EXISTS (SELECT 1 FROM pg_depend d WHERE d.classid='pg_class'::regclass AND d.objid=c.oid AND d.deptype='e')) IS DISTINCT FROM 'application_season,bracket_scores,bracket_view,brackets,leaderboard_history,leaderboard_history_id_seq,leaderboard_history_rows,leaderboard_history_snapshots,league_members,leagues,matches,password_resets,password_resets_id_seq,seasons,standings,standings_id_seq,teams,users' THEN
     RAISE EXCEPTION 'Baseline mismatch: application relation inventory';
   END IF;
-  IF (SELECT string_agg(p.proname, ',' ORDER BY p.proname COLLATE "C") FROM pg_proc p WHERE p.pronamespace='public'::regnamespace AND NOT EXISTS (SELECT 1 FROM pg_depend d WHERE d.classid='pg_proc'::regclass AND d.objid=p.oid AND d.deptype='e')) IS DISTINCT FROM '_set_bracket_scores_season_id,_set_matches_season_id,atomic_update_match,create_master_bracket_atomic,fix_season_master_on_bracket_soft_delete,set_master_bracket,set_winner_atomic,undo_prediction_atomic' THEN
+  IF (SELECT string_agg(p.proname, ',' ORDER BY p.proname COLLATE "C") FROM pg_proc p WHERE p.pronamespace='public'::regnamespace AND NOT EXISTS (SELECT 1 FROM pg_depend d WHERE d.classid='pg_proc'::regclass AND d.objid=p.oid AND d.deptype='e')) IS DISTINCT FROM '_set_bracket_scores_season_id,_set_matches_season_id,atomic_update_match,create_master_bracket_atomic,fix_season_master_on_bracket_soft_delete,publish_current_standings,set_master_bracket,set_winner_atomic,undo_prediction_atomic' THEN
     RAISE EXCEPTION 'Baseline mismatch: application function inventory';
   END IF;
   IF (SELECT relkind::text FROM pg_class WHERE oid='public.bracket_scores'::regclass) IS DISTINCT FROM 'r' THEN
@@ -4471,4 +4471,48 @@ DECLARE privileges text; BEGIN
  SELECT string_agg(CASE WHEN x.grantee=0 THEN 'PUBLIC' ELSE pg_get_userbyid(x.grantee) END||':'||x.privilege_type||':'||x.is_grantable::text||':'||pg_get_userbyid(x.grantor),',' ORDER BY (CASE WHEN x.grantee=0 THEN 'PUBLIC' ELSE pg_get_userbyid(x.grantee) END) COLLATE "C",x.privilege_type COLLATE "C") INTO privileges FROM pg_class c CROSS JOIN LATERAL aclexplode(c.relacl) x WHERE c.oid='public.application_season'::regclass;
  IF privileges IS DISTINCT FROM 'postgres:DELETE:false:postgres,postgres:INSERT:false:postgres,postgres:MAINTAIN:false:postgres,postgres:REFERENCES:false:postgres,postgres:SELECT:false:postgres,postgres:TRIGGER:false:postgres,postgres:TRUNCATE:false:postgres,postgres:UPDATE:false:postgres,service_role:DELETE:false:postgres,service_role:INSERT:false:postgres,service_role:MAINTAIN:false:postgres,service_role:REFERENCES:false:postgres,service_role:SELECT:false:postgres,service_role:TRIGGER:false:postgres,service_role:TRUNCATE:false:postgres,service_role:UPDATE:false:postgres' THEN RAISE EXCEPTION 'Canonical ACL mismatch'; END IF;
 END $canonical_verify$;
+DO $standings_verify$
+DECLARE f oid := to_regprocedure('public.publish_current_standings(uuid,jsonb)'); BEGIN
+ IF f IS NULL THEN RAISE EXCEPTION 'Standings publish function missing'; END IF;
+ IF (SELECT p.proowner='postgres'::regrole AND l.lanname='plpgsql' AND NOT p.prosecdef AND p.prorettype='jsonb'::regtype AND p.proconfig=ARRAY['search_path=pg_catalog, public']::text[] AND NOT p.proretset FROM pg_proc p JOIN pg_language l ON l.oid=p.prolang WHERE p.oid=f) IS DISTINCT FROM true THEN RAISE EXCEPTION 'Standings function definition mismatch'; END IF;
+ IF (SELECT p.prosrc FROM pg_proc p WHERE p.oid=f) IS DISTINCT FROM '
+DECLARE selected_id uuid; season_row public.seasons%ROWTYPE; stamp timestamp; BEGIN
+ SELECT season_id INTO STRICT selected_id FROM public.application_season WHERE singleton FOR UPDATE;
+ IF selected_id IS DISTINCT FROM p_season_id THEN RAISE EXCEPTION ''Canonical season changed'' USING ERRCODE=''40001''; END IF;
+ SELECT * INTO STRICT season_row FROM public.seasons WHERE id=selected_id FOR SHARE;
+ IF season_row.regular_season_end_utc IS NULL THEN RAISE EXCEPTION ''Canonical freeze is unconfigured''; END IF;
+ IF clock_timestamp() >= season_row.regular_season_end_utc THEN
+  RETURN jsonb_build_object(''state'',''frozen'',''refreshed'',false,''season_code'',season_row.code,''team_count'',0);
+ END IF;
+ IF jsonb_typeof(p_rows) IS DISTINCT FROM ''array'' OR jsonb_array_length(p_rows)<>30 THEN RAISE EXCEPTION ''Expected 30 standings rows''; END IF;
+ IF EXISTS(SELECT 1 FROM jsonb_array_elements(p_rows) r WHERE jsonb_typeof(r) IS DISTINCT FROM ''object'') THEN RAISE EXCEPTION ''Invalid standings row''; END IF;
+ IF EXISTS(SELECT 1 FROM jsonb_array_elements(p_rows) r WHERE
+  (SELECT array_agg(k ORDER BY k) FROM jsonb_object_keys(r) k) IS DISTINCT FROM ARRAY[''code'',''conference'',''losses'',''name'',''seed'',''win_pct'',''wins'']::text[]
+  OR jsonb_typeof(r->''code'') IS DISTINCT FROM ''string'' OR jsonb_typeof(r->''name'') IS DISTINCT FROM ''string''
+  OR jsonb_typeof(r->''conference'') IS DISTINCT FROM ''string'' OR length(btrim(r->>''name''))=0
+  OR jsonb_typeof(r->''seed'') IS DISTINCT FROM ''number'' OR jsonb_typeof(r->''wins'') IS DISTINCT FROM ''number''
+  OR jsonb_typeof(r->''losses'') IS DISTINCT FROM ''number'' OR jsonb_typeof(r->''win_pct'') IS DISTINCT FROM ''number'') THEN RAISE EXCEPTION ''Invalid standings fields''; END IF;
+ IF (SELECT count(DISTINCT r->>''code'') FROM jsonb_array_elements(p_rows) r)<>30
+ OR EXISTS(SELECT 1 FROM jsonb_array_elements(p_rows) r LEFT JOIN public.teams t ON t.code=r->>''code'' WHERE t.id IS NULL OR lower(t.conference) IS DISTINCT FROM r->>''conference''
+ OR r->>''code'' NOT IN (''ATL'',''BOS'',''BKN'',''CHA'',''CHI'',''CLE'',''DET'',''IND'',''MIA'',''MIL'',''NYK'',''ORL'',''PHI'',''TOR'',''WAS'',''DAL'',''DEN'',''GSW'',''HOU'',''LAC'',''LAL'',''MEM'',''MIN'',''NOP'',''OKC'',''PHX'',''POR'',''SAC'',''SAS'',''UTA'')) THEN RAISE EXCEPTION ''Invalid or duplicate canonical team''; END IF;
+ IF EXISTS(SELECT 1 FROM jsonb_array_elements(p_rows) r WHERE
+  (r->>''seed'')::numeric NOT BETWEEN 1 AND 15 OR (r->>''seed'')::numeric<>trunc((r->>''seed'')::numeric)
+  OR (r->>''wins'')::numeric<0 OR (r->>''wins'')::numeric<>trunc((r->>''wins'')::numeric)
+  OR (r->>''losses'')::numeric<0 OR (r->>''losses'')::numeric<>trunc((r->>''losses'')::numeric)
+  OR (r->>''win_pct'')::numeric NOT BETWEEN 0 AND 1)
+ OR (SELECT count(*) FROM jsonb_array_elements(p_rows) r WHERE r->>''conference''=''east'')<>15
+ OR (SELECT count(*) FROM jsonb_array_elements(p_rows) r WHERE r->>''conference''=''west'')<>15
+ OR EXISTS(SELECT 1 FROM jsonb_array_elements(p_rows) r GROUP BY r->>''conference'',(r->>''seed'')::numeric HAVING count(*)<>1) THEN RAISE EXCEPTION ''Invalid standings ranks or results''; END IF;
+ -- Defensive validation completed. DELETE and INSERT are one transaction.
+ stamp := timezone(''UTC'',clock_timestamp());
+ DELETE FROM public.standings WHERE id IS NOT NULL;
+ INSERT INTO public.standings(code,name,conference,seed,wins,losses,win_pct,updated_at)
+ SELECT x.code,x.name,x.conference,x.seed,x.wins,x.losses,x.win_pct,stamp
+ FROM jsonb_to_recordset(p_rows) AS x(code text,name text,conference text,seed integer,wins integer,losses integer,win_pct double precision);
+ RETURN jsonb_build_object(''state'',''refreshed'',''refreshed'',true,''season_code'',season_row.code,''team_count'',30,''updated_at'',stamp);
+END;
+' THEN RAISE EXCEPTION 'Standings function body mismatch'; END IF;
+ IF has_function_privilege('anon',f,'EXECUTE') OR has_function_privilege('authenticated',f,'EXECUTE') OR NOT has_function_privilege('service_role',f,'EXECUTE') THEN RAISE EXCEPTION 'Standings function ACL mismatch'; END IF;
+ IF (SELECT count(*) FROM pg_proc p,LATERAL aclexplode(p.proacl) a WHERE p.oid=f AND (a.grantee NOT IN ('postgres'::regrole,'service_role'::regrole) OR a.privilege_type<>'EXECUTE' OR a.is_grantable))<>0 THEN RAISE EXCEPTION 'Unexpected standings execute grants'; END IF;
+END $standings_verify$;
 COMMIT;

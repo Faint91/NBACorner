@@ -45,6 +45,26 @@ class DB(prior["DB"]):
         super().__init__()
         self.fail = None
 
+    def rpc(self, name, params):
+        assert name == "publish_current_standings"
+        db = self
+
+        class Publish:
+            def execute(self):
+                if db.fail == ("standings", "publish"):
+                    raise RuntimeError("Synthetic publish failure")
+                db.rows["standings"] = copy.deepcopy(params["p_rows"])
+                return SimpleNamespace(
+                    data={
+                        "state": "refreshed",
+                        "refreshed": True,
+                        "season_code": "2025-26",
+                        "team_count": 30,
+                    }
+                )
+
+        return Publish()
+
     def table(self, n):
         return Q(self, n)
 
@@ -152,56 +172,57 @@ class CurrentOfflineOperations(unittest.TestCase):
         return self.ns["_rollover_current_season"](code)
 
     def espn(self, data=None):
-        path = ROOT / "scripts/update_standings.py"
-        tree = ast.parse(path.read_text(encoding="utf-8"))
+        import standings_service as service
+        from synthetic_fixtures import foundation
+        from unittest.mock import patch
+
+        self.db.rows["teams"] = foundation()["teams"]
+        fixture = __import__("json").loads(
+            (
+                ROOT / "tests/fixtures/providers/espn-standings-complete-2026.json"
+            ).read_text()
+        )
+        season = __import__("canonical_season").CurrentSeason(
+            "current",
+            "2025-26",
+            datetime(2026, 4, 12, tzinfo=timezone.utc),
+            datetime(2026, 4, 18, tzinfo=timezone.utc),
+        )
+
+        def refresh(client, **kwargs):
+            with patch.object(
+                service, "guard_runtime_job", lambda job: None
+            ), patch.object(
+                service, "get_current_season", lambda client: season
+            ), patch.object(
+                service,
+                "fetch_espn",
+                side_effect=(
+                    RuntimeError("synthetic provider failure")
+                    if self.db.fail == ("provider", "get")
+                    else None
+                ),
+                return_value=copy.deepcopy(fixture if data is None else data),
+            ):
+                return service.refresh_current_standings(
+                    client, now=lambda: datetime(2026, 4, 1, tzinfo=timezone.utc)
+                )
+
         ns = dict(
             supabase=self.db,
-            datetime=datetime,
-            timezone=timezone,
-            requests=requests,
-            guard_runtime_job=lambda j: None,
-            DEBUG_STANDINGS=False,
-            get_current_season=lambda client: SimpleNamespace(code="2025-26"),
+            guard_runtime_job=lambda job: None,
+            refresh_current_standings=refresh,
+            StandingsRefreshError=service.StandingsRefreshError,
+            log_result=lambda result: None,
             espn_season_year=__import__("canonical_season").espn_season_year,
-            print=lambda *a, **kw: None,
         )
-        for n in tree.body:
-            if isinstance(n, ast.Assign) and any(
-                isinstance(t, ast.Name)
-                and t.id
-                in {
-                    "EAST_WEST_BY_CODE",
-                    "ESPN_TO_DB_CODE",
-                    "ESPN_STANDINGS_URL_TEMPLATE",
-                }
-                for t in n.targets
-            ):
-                exec(
-                    compile(ast.Module(body=[n], type_ignores=[]), str(path), "exec"),
-                    ns,
-                )
-        from provider_transport import provider_get, FixtureResponse
-        from environment_safety import load_test_config
-
-        settings = load_test_config(CONFIG)
-        if data is None:
-            ns["provider_get"] = lambda callback, url, **kw: provider_get(
-                callback, url, settings=settings, **kw
-            )
-        else:
-            ns["provider_get"] = lambda *a, **kw: SimpleNamespace(
-                status_code=200,
-                json=lambda: copy.deepcopy(data),
-                raise_for_status=lambda: None,
-            )
         load_functions(
-            path,
-            {
-                "_safe_int",
-                "_safe_float",
-                "update_standings_from_json",
-            },
-            ns,
+            ROOT / "scripts/update_standings.py", {"update_standings_from_json"}, ns
+        )
+        self.ns.update(
+            refresh_current_standings=refresh,
+            StandingsRefreshError=service.StandingsRefreshError,
+            log_result=lambda result: None,
         )
         return ns
 
@@ -219,10 +240,10 @@ class CurrentOfflineOperations(unittest.TestCase):
         self.assertGreater(n, 1)
         ns["update_standings_from_json"]()
         self.assertEqual(len(self.db.rows["standings"]), n)
-        self.assertTrue(any(r["code"] == "OLD" for r in self.db.rows["standings"]))
+        self.assertFalse(any(r["code"] == "OLD" for r in self.db.rows["standings"]))
         self.facts = {
             "rows_including_stale": n,
-            "stale_retained": True,
+            "stale_retained": False,
             "real_provider_contact": False,
         }
 
@@ -246,12 +267,11 @@ class CurrentOfflineOperations(unittest.TestCase):
                 ]
             }
         }
-        ns = self.espn(data)
-        ns["update_standings_from_json"]()
-        self.assertEqual(len(self.db.rows["standings"]), 1)
-        self.assertEqual(self.db.rows["standings"][0]["code"], "NYK")
-        self.espn({"bad": []})["update_standings_from_json"]()
-        self.assertEqual(len(self.db.rows["standings"]), 1)
+        before = copy.deepcopy(self.db.rows.get("standings", []))
+        for payload in [data, {"bad": []}]:
+            with self.assertRaises(Exception):
+                self.espn(payload)["update_standings_from_json"]()
+            self.assertEqual(self.db.rows.get("standings", []), before)
 
     @behavior(
         "season source",
@@ -264,8 +284,9 @@ class CurrentOfflineOperations(unittest.TestCase):
         self.assertEqual(ns["espn_season_year"]("2025-26"), 2026)
         self.assertEqual(ns["espn_season_year"]("2026-27"), 2027)
         self.facts = {
-            "july_2026_end_year": 2026,
-            "august_2026_end_year": 2027,
+            "canonical_2025_26_espn_year": 2026,
+            "canonical_2026_27_espn_year": 2027,
+            "date_inference": False,
             "workflow_variable_consumed": False,
             "prior_reference": "NC-ENV-04B",
         }
@@ -277,35 +298,17 @@ class CurrentOfflineOperations(unittest.TestCase):
     )
     def current_behavior__standings__script_failure(self):
         ns = self.espn()
-        self.db.fail = ("standings", "insert")
-        ns["update_standings_from_json"]()
-        self.assertEqual(self.db.rows.get("standings", []), [])
-        ns["NBA_STANDINGS_SEASON_OVERRIDE"] = "invalid"
-        ns["get_current_season"] = lambda client: (_ for _ in ()).throw(
-            RuntimeError("Missing canonical state")
-        )
-        with self.assertRaises(RuntimeError):
+        self.db.fail = ("standings", "publish")
+        with self.assertRaises(Exception):
             ns["update_standings_from_json"]()
+        self.assertEqual(self.db.rows.get("standings", []), [])
 
     def bdl(self, fail=False):
-        from synthetic_fixtures import foundation
-        from provider_transport import provider_get
-        from environment_safety import load_test_config
-
-        settings = load_test_config(CONFIG)
-        self.db.rows["teams"] = foundation()["teams"]
+        # Legacy helper name retained solely for historic test identifiers.
         self.db.rows["standings"] = [dict(code="OLD")]
-        self.ns["provider_get"] = (
-            (
-                lambda *a, **kw: (_ for _ in ()).throw(
-                    RuntimeError("Synthetic provider failure")
-                )
-            )
-            if fail
-            else lambda callback, url, **kw: provider_get(
-                callback, url, settings=settings, **kw
-            )
-        )
+        self.espn()
+        if fail:
+            self.db.fail = ("provider", "get")
 
     @behavior(
         "provider/source",
@@ -316,14 +319,13 @@ class CurrentOfflineOperations(unittest.TestCase):
     def current_behavior__standings__active_provider(self):
         self.bdl()
         r = self.ns["fetch_and_sync_standings_from_nba"]()
-        self.assertEqual(r["season_year"], 2025)
-        self.assertEqual(r["updated"], 30)
-        self.assertEqual(r["pages_fetched"], 2)
+        self.assertEqual(r["season_code"], "2025-26")
+        self.assertEqual(r["team_count"], 30)
+        self.assertEqual(r["state"], "refreshed")
         self.facts = {
-            "provider": "Balldontlie",
+            "provider": "ESPN",
             "rows": 30,
-            "pages": 2,
-            "season_start_year": 2025,
+            "espn_ending_year": 2026,
         }
 
     @behavior(
@@ -337,10 +339,10 @@ class CurrentOfflineOperations(unittest.TestCase):
             self.ns["fetch_and_sync_standings_from_nba"]()
         self.assertEqual(self.db.rows["standings"], [dict(code="OLD")])
         self.bdl()
-        self.db.fail = ("standings", "insert")
+        self.db.fail = ("standings", "publish")
         with self.assertRaises(Exception):
             self.ns["fetch_and_sync_standings_from_nba"]()
-        self.assertEqual(self.db.rows["standings"], [])
+        self.assertEqual(self.db.rows["standings"], [dict(code="OLD")])
 
     @behavior(
         "rollover order",

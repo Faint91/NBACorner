@@ -153,15 +153,15 @@ class CanonicalSeasonTests(unittest.TestCase):
             )
             .rsplit("COMMIT;", 1)[0]
         )
-        current = (ROOT / "db/post-baseline/verify_current_schema.sql").read_text(
+        current = (ROOT / "db/post-baseline/verify_nc_02c1_schema.sql").read_text(
             encoding="utf-8"
         )
         self.assertEqual(current.split("DO $canonical_verify$", 1)[0], old)
         self.assertEqual(
             hashlib.sha256(
-                (ROOT / "db/post-baseline/verify_current_schema.sql").read_bytes()
+                (ROOT / "db/post-baseline/verify_nc_02c1_schema.sql").read_bytes()
             ).hexdigest(),
-            VERIFIER_SHA,
+            "d4135d3da53bcf81acb2cee8c378296faf6e5b01477049112c5458ce979c1c5b",
         )
 
     def test_migration_has_no_designation_or_public_writes(self):

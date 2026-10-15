@@ -213,6 +213,7 @@ def main():
             sql_file(ROOT / "db/baseline/verify_current_schema.sql")
             sql_file(ROOT / "db/post-baseline/0001_nc_02b3_bracket_lifecycle.sql")
             sql_file(ROOT / "db/post-baseline/0002_nc_02c1_canonical_season.sql")
+            sql_file(ROOT / "db/post-baseline/0003_nc_02c2_atomic_standings.sql")
             sql_file(ROOT / "db/post-baseline/verify_current_schema.sql")
             sql_file(WORK / "identity-marker.sql")
             sql_file(WORK / "fixture-marker-v2.sql")

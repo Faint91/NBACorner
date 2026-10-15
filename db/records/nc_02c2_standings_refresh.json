@@ -1,0 +1,219 @@
+{
+  "phase": "NC-02C2",
+  "status": "COMPLETED",
+  "starting_repositories": {
+    "backend": {
+      "branch": "main",
+      "head": "6f05efbf13a77101d752666cc5193107d2edff7c",
+      "clean": true
+    },
+    "frontend": {
+      "branch": "main",
+      "head": "947a785ed2abf38d0098f588d2edb0910169e6d7",
+      "clean": true
+    }
+  },
+  "requirements": [
+    "S3",
+    "S4",
+    "S5",
+    "S6",
+    "S7",
+    "S8",
+    "S9",
+    "S13"
+  ],
+  "inventory": "db/records/nc_02c2_standings_path_inventory.json",
+  "service": "standings_service.py:refresh_current_standings",
+  "provider": "ESPN only; existing transport seam; no fallback",
+  "freeze": {
+    "boundary": "canonical bracket_creation_opens_at/regular_season_end_utc",
+    "comparison": "now >= opening -> frozen",
+    "paths": [
+      "scheduled",
+      "admin",
+      "cron"
+    ],
+    "frozen": "200/successful no-op, no fetch/write; no admin/force bypass",
+    "db_recheck": "Canonical pointer row lock, current-ID fence and native timestamp freeze recheck before publication"
+  },
+  "normalized_fields": [
+    "code",
+    "name",
+    "conference",
+    "seed",
+    "wins",
+    "losses",
+    "win_pct"
+  ],
+  "validation": {
+    "focused_tests": 5,
+    "focused_passed": true,
+    "offline_safety_tests": 263,
+    "static_in_memory_regressions": 70,
+    "fresh_migration_proof": "db/records/nc_02c2_fresh_migration_proof.json",
+    "lint_comparison": "db/records/nc_02c2_lint_comparison.json",
+    "full_suite": {
+      "passed": true,
+      "tests_run": 209,
+      "failures": 0,
+      "errors": 0
+    },
+    "AST_product_scope": "Only fetch helper and retired overwrite/seed behaviors; all bracket/scoring/history/rollover/auth algorithms unchanged",
+    "file_audit": {
+      "historical_files_unchanged": 71,
+      "secret_privacy_syntax_size": "PASS",
+      "direct_writer_scan": "PASS",
+      "log_scan": "PASS",
+      "prior_migrations_unchanged": true
+    },
+    "first_full_run": {
+      "passed": true,
+      "tests_run": 209,
+      "failures": 0,
+      "errors": 0,
+      "final_guard_rerun": "PASSED"
+    },
+    "canonical_unit_tests": 10,
+    "C2_unit_tests": 9,
+    "historical_files_unchanged": 71,
+    "final_audit": "PASS secrets/privacy/syntax/size/whitespace; lint comparison limited as documented"
+  },
+  "atomic_rpc": {
+    "migration": "db/post-baseline/0003_nc_02c2_atomic_standings.sql",
+    "function": "public.publish_current_standings(uuid,jsonb)",
+    "owner": "postgres",
+    "language": "plpgsql",
+    "security": "INVOKER",
+    "search_path": "pg_catalog, public",
+    "execute": [
+      "postgres",
+      "service_role"
+    ],
+    "denied": [
+      "PUBLIC",
+      "anon",
+      "authenticated"
+    ],
+    "existing_table_security_changed": false,
+    "safe_update_predicate": "WHERE id IS NOT NULL",
+    "publish": "One complete current-state transaction, no stale/mixed rows/history",
+    "failure": "Old rows/IDs/timestamps preserved; sequence increments are nontransactional"
+  },
+  "retired_bypasses": {
+    "overwrite": "Authorized HTTP410; no supplied standings accepted",
+    "maintenance_seed": "HTTP409 before any writes when seed_standings requested"
+  },
+  "workflow": {
+    "cadence": "0 9 * * *",
+    "weekends": true,
+    "manual_dispatch": true,
+    "secrets_retained": [
+      "supabase_url",
+      "supabase_key"
+    ],
+    "unused_wiring_removed": [
+      "BALLDONTLIE_API_KEY",
+      "BACKEND_BASE_URL",
+      "STANDINGS_CRON_TOKEN"
+    ],
+    "no_season_authority": true
+  },
+  "logging": "Safe state/season-code/team-count allowlist, no raw payload/header/env/exception dumps",
+  "frontend": {
+    "changed": false,
+    "reason": "No standings refresh action exists; existing canonical status endpoint unchanged",
+    "tests_build_rerun": false
+  },
+  "recovery_notes": [
+    "New runner metadata import corrected before tests ran",
+    "Focused publish uncovered safe-update WHERE requirement; explicit primary-key predicate added without disabling protections; complete focused rerun passed",
+    "Final guard review restricted team-insert admission to the fixed seed=true rejection proof; added exact safety test and expanded live malformed-dataset preservation cases before final full rerun."
+  ],
+  "fixture": {
+    "version": "nc-fixtures-v1",
+    "checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+    "foundation_rows_unchanged": true,
+    "complete_provider_fixture": "tests/fixtures/providers/espn-standings-complete-2026.json",
+    "old_two_team_fixture_retained": true
+  },
+  "production": {
+    "queried": false,
+    "modified": false,
+    "deployed": false,
+    "readiness": "Conditional review-ready; explicit target/schema/data/backup/canonical-team/timing preflight and coordinated release required",
+    "network": "Fixed ESPN HTTPS endpoint and Supabase reachable; no ESPN key",
+    "secrets": "Existing GitHub supabase_url/supabase_key server-role prerequisites; no values read/changed",
+    "first_refresh": "Before freeze valid ESPN replaces30 atomically; frozen skips; errors preserve last good",
+    "rollback": "Pause callers, preserve last-good table, coordinate reviewed code/forward fix before removing RPC; do not reenable legacy writers automatically"
+  },
+  "deferred": [
+    "Canonical-season advancement during rollover",
+    "Standings clearing during rollover",
+    "Rollover atomicity/recovery",
+    "Legacy snapshot success ambiguity",
+    "Scoring bonuses and snapshot tie ordering",
+    "League lifecycle/unrelated auth"
+  ],
+  "recommended_next_phase": "NC-02C3 \u2014 Canonical season transition and standings reset integration",
+  "next_phase_started": false,
+  "verified_at_utc": "2026-10-15T17:14:12.165282+00:00",
+  "canonical_cleanup": {
+    "lease_released": true,
+    "standings_rows": 30,
+    "disposable_database_absent": true,
+    "canonical_designation_unchanged": true,
+    "flask_stopped": true,
+    "fixture_readiness": {
+      "identity": "PASS",
+      "marker": "PASS",
+      "email": "PASS",
+      "providers": "PASS",
+      "jobs": "PASS",
+      "fixture_reset": "PASS",
+      "harness": "UNMET",
+      "fixture_version": "nc-fixtures-v1",
+      "fixture_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "mutation_permitted": false
+    },
+    "email_capture_empty": true,
+    "app_import_removed": true,
+    "jobs_enabled": false
+  },
+  "migration_sha256": "e359e09771af5b6a4fdf94542138a6655b8e273a8b064dbfb9a54c3973968d29",
+  "files_changed": {
+    "backend": [
+      "db/post-baseline/0003_nc_02c2_atomic_standings.sql",
+      "db/post-baseline/verify_nc_02c1_schema.sql",
+      "db/records/nc_02c2_fresh_migration_proof.json",
+      "db/records/nc_02c2_lifecycle_validation.json",
+      "db/records/nc_02c2_lint_comparison.json",
+      "db/records/nc_02c2_standings_path_inventory.json",
+      "db/records/nc_02c2_standings_refresh.json",
+      "db/records/nc_02c2_validation.json",
+      "docs/repairs/nc-02c2-standings-refresh.md",
+      "scripts/nc02c2_acceptance_metadata.py",
+      "scripts/prove_standings_migration.py",
+      "scripts/run_standings_acceptance.py",
+      "standings_service.py",
+      "tests/characterization/standings_refresh.py",
+      "tests/fixtures/providers/espn-standings-complete-2026.json",
+      "tests/offline/test_standings_service.py",
+      ".github/workflows/standings-cron.yml",
+      "app.py",
+      "db/post-baseline/README.md",
+      "db/post-baseline/verify_current_schema.sql",
+      "integration_harness.py",
+      "job_safety.py",
+      "provider_transport.py",
+      "scripts/local_supabase_environment.py",
+      "scripts/reset_local_fixtures.py",
+      "scripts/update_standings.py",
+      "tests/characterization/operations_offline.py",
+      "tests/characterization/operations_static.py",
+      "tests/offline/test_canonical_season.py",
+      "tests/offline/test_provider_job_safety.py"
+    ],
+    "frontend": []
+  }
+}

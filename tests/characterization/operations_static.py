@@ -143,10 +143,8 @@ class CurrentStaticOperations(unittest.TestCase):
         start = schema.index('CREATE TABLE "public"."standings"')
         end = schema.index('ALTER TABLE "public"."standings"', start)
         self.assertNotIn("season_id", schema[start:end])
-        self.assertRegex(
-            self.fn("internal_overwrite_standings"),
-            r'.eq\(\s*"season_id",\s*current_season\(\)\.id\s*\)',
-        )
+        self.assertIn("410", self.fn("internal_overwrite_standings"))
+        self.assertNotIn('.table("standings")', self.fn("internal_overwrite_standings"))
 
     @behavior(
         "frontend",

@@ -1,0 +1,789 @@
+{
+  "league": {
+    "slug": "nba"
+  },
+  "standings": {
+    "entries": [
+      {
+        "team": {
+          "id": "1",
+          "abbreviation": "ATL",
+          "displayName": "Fixture ATL",
+          "conference": "east"
+        },
+        "stats": [
+          {
+            "type": "wins",
+            "value": 30
+          },
+          {
+            "type": "losses",
+            "value": 1
+          },
+          {
+            "type": "winpercent",
+            "value": 0.967741935483871
+          },
+          {
+            "type": "playoffseed",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "team": {
+          "id": "2",
+          "abbreviation": "BOS",
+          "displayName": "Fixture BOS",
+          "conference": "east"
+        },
+        "stats": [
+          {
+            "type": "wins",
+            "value": 29
+          },
+          {
+            "type": "losses",
+            "value": 2
+          },
+          {
+            "type": "winpercent",
+            "value": 0.9354838709677419
+          },
+          {
+            "type": "playoffseed",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "team": {
+          "id": "17",
+          "abbreviation": "BKN",
+          "displayName": "Fixture BKN",
+          "conference": "east"
+        },
+        "stats": [
+          {
+            "type": "wins",
+            "value": 28
+          },
+          {
+            "type": "losses",
+            "value": 3
+          },
+          {
+            "type": "winpercent",
+            "value": 0.9032258064516129
+          },
+          {
+            "type": "playoffseed",
+            "value": 3
+          }
+        ]
+      },
+      {
+        "team": {
+          "id": "30",
+          "abbreviation": "CHA",
+          "displayName": "Fixture CHA",
+          "conference": "east"
+        },
+        "stats": [
+          {
+            "type": "wins",
+            "value": 27
+          },
+          {
+            "type": "losses",
+            "value": 4
+          },
+          {
+            "type": "winpercent",
+            "value": 0.8709677419354839
+          },
+          {
+            "type": "playoffseed",
+            "value": 4
+          }
+        ]
+      },
+      {
+        "team": {
+          "id": "4",
+          "abbreviation": "CHI",
+          "displayName": "Fixture CHI",
+          "conference": "east"
+        },
+        "stats": [
+          {
+            "type": "wins",
+            "value": 26
+          },
+          {
+            "type": "losses",
+            "value": 5
+          },
+          {
+            "type": "winpercent",
+            "value": 0.8387096774193549
+          },
+          {
+            "type": "playoffseed",
+            "value": 5
+          }
+        ]
+      },
+      {
+        "team": {
+          "id": "5",
+          "abbreviation": "CLE",
+          "displayName": "Fixture CLE",
+          "conference": "east"
+        },
+        "stats": [
+          {
+            "type": "wins",
+            "value": 25
+          },
+          {
+            "type": "losses",
+            "value": 6
+          },
+          {
+            "type": "winpercent",
+            "value": 0.8064516129032258
+          },
+          {
+            "type": "playoffseed",
+            "value": 6
+          }
+        ]
+      },
+      {
+        "team": {
+          "id": "8",
+          "abbreviation": "DET",
+          "displayName": "Fixture DET",
+          "conference": "east"
+        },
+        "stats": [
+          {
+            "type": "wins",
+            "value": 24
+          },
+          {
+            "type": "losses",
+            "value": 7
+          },
+          {
+            "type": "winpercent",
+            "value": 0.7741935483870968
+          },
+          {
+            "type": "playoffseed",
+            "value": 7
+          }
+        ]
+      },
+      {
+        "team": {
+          "id": "11",
+          "abbreviation": "IND",
+          "displayName": "Fixture IND",
+          "conference": "east"
+        },
+        "stats": [
+          {
+            "type": "wins",
+            "value": 23
+          },
+          {
+            "type": "losses",
+            "value": 8
+          },
+          {
+            "type": "winpercent",
+            "value": 0.7419354838709677
+          },
+          {
+            "type": "playoffseed",
+            "value": 8
+          }
+        ]
+      },
+      {
+        "team": {
+          "id": "14",
+          "abbreviation": "MIA",
+          "displayName": "Fixture MIA",
+          "conference": "east"
+        },
+        "stats": [
+          {
+            "type": "wins",
+            "value": 22
+          },
+          {
+            "type": "losses",
+            "value": 9
+          },
+          {
+            "type": "winpercent",
+            "value": 0.7096774193548387
+          },
+          {
+            "type": "playoffseed",
+            "value": 9
+          }
+        ]
+      },
+      {
+        "team": {
+          "id": "15",
+          "abbreviation": "MIL",
+          "displayName": "Fixture MIL",
+          "conference": "east"
+        },
+        "stats": [
+          {
+            "type": "wins",
+            "value": 21
+          },
+          {
+            "type": "losses",
+            "value": 10
+          },
+          {
+            "type": "winpercent",
+            "value": 0.6774193548387096
+          },
+          {
+            "type": "playoffseed",
+            "value": 10
+          }
+        ]
+      },
+      {
+        "team": {
+          "id": "18",
+          "abbreviation": "NY",
+          "displayName": "Fixture NYK",
+          "conference": "east"
+        },
+        "stats": [
+          {
+            "type": "wins",
+            "value": 20
+          },
+          {
+            "type": "losses",
+            "value": 11
+          },
+          {
+            "type": "winpercent",
+            "value": 0.6451612903225806
+          },
+          {
+            "type": "playoffseed",
+            "value": 11
+          }
+        ]
+      },
+      {
+        "team": {
+          "id": "19",
+          "abbreviation": "ORL",
+          "displayName": "Fixture ORL",
+          "conference": "east"
+        },
+        "stats": [
+          {
+            "type": "wins",
+            "value": 19
+          },
+          {
+            "type": "losses",
+            "value": 12
+          },
+          {
+            "type": "winpercent",
+            "value": 0.6129032258064516
+          },
+          {
+            "type": "playoffseed",
+            "value": 12
+          }
+        ]
+      },
+      {
+        "team": {
+          "id": "20",
+          "abbreviation": "PHI",
+          "displayName": "Fixture PHI",
+          "conference": "east"
+        },
+        "stats": [
+          {
+            "type": "wins",
+            "value": 18
+          },
+          {
+            "type": "losses",
+            "value": 13
+          },
+          {
+            "type": "winpercent",
+            "value": 0.5806451612903226
+          },
+          {
+            "type": "playoffseed",
+            "value": 13
+          }
+        ]
+      },
+      {
+        "team": {
+          "id": "28",
+          "abbreviation": "TOR",
+          "displayName": "Fixture TOR",
+          "conference": "east"
+        },
+        "stats": [
+          {
+            "type": "wins",
+            "value": 17
+          },
+          {
+            "type": "losses",
+            "value": 14
+          },
+          {
+            "type": "winpercent",
+            "value": 0.5483870967741935
+          },
+          {
+            "type": "playoffseed",
+            "value": 14
+          }
+        ]
+      },
+      {
+        "team": {
+          "id": "27",
+          "abbreviation": "WSH",
+          "displayName": "Fixture WAS",
+          "conference": "east"
+        },
+        "stats": [
+          {
+            "type": "wins",
+            "value": 16
+          },
+          {
+            "type": "losses",
+            "value": 15
+          },
+          {
+            "type": "winpercent",
+            "value": 0.5161290322580645
+          },
+          {
+            "type": "playoffseed",
+            "value": 15
+          }
+        ]
+      },
+      {
+        "team": {
+          "id": "6",
+          "abbreviation": "DAL",
+          "displayName": "Fixture DAL",
+          "conference": "west"
+        },
+        "stats": [
+          {
+            "type": "wins",
+            "value": 30
+          },
+          {
+            "type": "losses",
+            "value": 1
+          },
+          {
+            "type": "winpercent",
+            "value": 0.967741935483871
+          },
+          {
+            "type": "playoffseed",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "team": {
+          "id": "7",
+          "abbreviation": "DEN",
+          "displayName": "Fixture DEN",
+          "conference": "west"
+        },
+        "stats": [
+          {
+            "type": "wins",
+            "value": 29
+          },
+          {
+            "type": "losses",
+            "value": 2
+          },
+          {
+            "type": "winpercent",
+            "value": 0.9354838709677419
+          },
+          {
+            "type": "playoffseed",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "team": {
+          "id": "9",
+          "abbreviation": "GS",
+          "displayName": "Fixture GSW",
+          "conference": "west"
+        },
+        "stats": [
+          {
+            "type": "wins",
+            "value": 28
+          },
+          {
+            "type": "losses",
+            "value": 3
+          },
+          {
+            "type": "winpercent",
+            "value": 0.9032258064516129
+          },
+          {
+            "type": "playoffseed",
+            "value": 3
+          }
+        ]
+      },
+      {
+        "team": {
+          "id": "10",
+          "abbreviation": "HOU",
+          "displayName": "Fixture HOU",
+          "conference": "west"
+        },
+        "stats": [
+          {
+            "type": "wins",
+            "value": 27
+          },
+          {
+            "type": "losses",
+            "value": 4
+          },
+          {
+            "type": "winpercent",
+            "value": 0.8709677419354839
+          },
+          {
+            "type": "playoffseed",
+            "value": 4
+          }
+        ]
+      },
+      {
+        "team": {
+          "id": "12",
+          "abbreviation": "LAC",
+          "displayName": "Fixture LAC",
+          "conference": "west"
+        },
+        "stats": [
+          {
+            "type": "wins",
+            "value": 26
+          },
+          {
+            "type": "losses",
+            "value": 5
+          },
+          {
+            "type": "winpercent",
+            "value": 0.8387096774193549
+          },
+          {
+            "type": "playoffseed",
+            "value": 5
+          }
+        ]
+      },
+      {
+        "team": {
+          "id": "13",
+          "abbreviation": "LAL",
+          "displayName": "Fixture LAL",
+          "conference": "west"
+        },
+        "stats": [
+          {
+            "type": "wins",
+            "value": 25
+          },
+          {
+            "type": "losses",
+            "value": 6
+          },
+          {
+            "type": "winpercent",
+            "value": 0.8064516129032258
+          },
+          {
+            "type": "playoffseed",
+            "value": 6
+          }
+        ]
+      },
+      {
+        "team": {
+          "id": "29",
+          "abbreviation": "MEM",
+          "displayName": "Fixture MEM",
+          "conference": "west"
+        },
+        "stats": [
+          {
+            "type": "wins",
+            "value": 24
+          },
+          {
+            "type": "losses",
+            "value": 7
+          },
+          {
+            "type": "winpercent",
+            "value": 0.7741935483870968
+          },
+          {
+            "type": "playoffseed",
+            "value": 7
+          }
+        ]
+      },
+      {
+        "team": {
+          "id": "16",
+          "abbreviation": "MIN",
+          "displayName": "Fixture MIN",
+          "conference": "west"
+        },
+        "stats": [
+          {
+            "type": "wins",
+            "value": 23
+          },
+          {
+            "type": "losses",
+            "value": 8
+          },
+          {
+            "type": "winpercent",
+            "value": 0.7419354838709677
+          },
+          {
+            "type": "playoffseed",
+            "value": 8
+          }
+        ]
+      },
+      {
+        "team": {
+          "id": "3",
+          "abbreviation": "NO",
+          "displayName": "Fixture NOP",
+          "conference": "west"
+        },
+        "stats": [
+          {
+            "type": "wins",
+            "value": 22
+          },
+          {
+            "type": "losses",
+            "value": 9
+          },
+          {
+            "type": "winpercent",
+            "value": 0.7096774193548387
+          },
+          {
+            "type": "playoffseed",
+            "value": 9
+          }
+        ]
+      },
+      {
+        "team": {
+          "id": "25",
+          "abbreviation": "OKC",
+          "displayName": "Fixture OKC",
+          "conference": "west"
+        },
+        "stats": [
+          {
+            "type": "wins",
+            "value": 21
+          },
+          {
+            "type": "losses",
+            "value": 10
+          },
+          {
+            "type": "winpercent",
+            "value": 0.6774193548387096
+          },
+          {
+            "type": "playoffseed",
+            "value": 10
+          }
+        ]
+      },
+      {
+        "team": {
+          "id": "21",
+          "abbreviation": "PHX",
+          "displayName": "Fixture PHX",
+          "conference": "west"
+        },
+        "stats": [
+          {
+            "type": "wins",
+            "value": 20
+          },
+          {
+            "type": "losses",
+            "value": 11
+          },
+          {
+            "type": "winpercent",
+            "value": 0.6451612903225806
+          },
+          {
+            "type": "playoffseed",
+            "value": 11
+          }
+        ]
+      },
+      {
+        "team": {
+          "id": "22",
+          "abbreviation": "POR",
+          "displayName": "Fixture POR",
+          "conference": "west"
+        },
+        "stats": [
+          {
+            "type": "wins",
+            "value": 19
+          },
+          {
+            "type": "losses",
+            "value": 12
+          },
+          {
+            "type": "winpercent",
+            "value": 0.6129032258064516
+          },
+          {
+            "type": "playoffseed",
+            "value": 12
+          }
+        ]
+      },
+      {
+        "team": {
+          "id": "23",
+          "abbreviation": "SAC",
+          "displayName": "Fixture SAC",
+          "conference": "west"
+        },
+        "stats": [
+          {
+            "type": "wins",
+            "value": 18
+          },
+          {
+            "type": "losses",
+            "value": 13
+          },
+          {
+            "type": "winpercent",
+            "value": 0.5806451612903226
+          },
+          {
+            "type": "playoffseed",
+            "value": 13
+          }
+        ]
+      },
+      {
+        "team": {
+          "id": "24",
+          "abbreviation": "SA",
+          "displayName": "Fixture SAS",
+          "conference": "west"
+        },
+        "stats": [
+          {
+            "type": "wins",
+            "value": 17
+          },
+          {
+            "type": "losses",
+            "value": 14
+          },
+          {
+            "type": "winpercent",
+            "value": 0.5483870967741935
+          },
+          {
+            "type": "playoffseed",
+            "value": 14
+          }
+        ]
+      },
+      {
+        "team": {
+          "id": "26",
+          "abbreviation": "UTAH",
+          "displayName": "Fixture UTA",
+          "conference": "west"
+        },
+        "stats": [
+          {
+            "type": "wins",
+            "value": 16
+          },
+          {
+            "type": "losses",
+            "value": 15
+          },
+          {
+            "type": "winpercent",
+            "value": 0.5161290322580645
+          },
+          {
+            "type": "playoffseed",
+            "value": 15
+          }
+        ]
+      }
+    ]
+  }
+}

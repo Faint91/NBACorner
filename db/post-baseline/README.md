@@ -120,3 +120,15 @@ added. Existing B3/baseline security assertions remain intact except the explici
 new relation inventory entry. New strict verifier assertions cover columns, types,
 defaults, owner, PK/check/FK, ACL, RLS, policy/trigger/index inventory. See the C1
 repair record for preflight, controlled rollout and configuration-preserving rollback.
+
+
+## NC-02C2 standings publication
+
+Apply 0003 after 0001/0002. No existing table/security/migration data is changed.
+New publish_current_standings(uuid,jsonb) is postgres-owned PL/pgSQL SECURITY INVOKER,
+search_path pg_catalog,public, trusted postgres/service_role execute only. It fences
+canonical ID/freeze, validates complete input, and atomically replaces current rows.
+No history, season column, rollover reset or advancement. Explicit primary-key
+DELETE predicate honors safe-update enforcement. Full verifier adds only function
+inventory and strict new function assertions; earlier checks remain unchanged.
+See nc-02c2 repair/evidence for fresh-chain, real rollback, preflight and rollback.

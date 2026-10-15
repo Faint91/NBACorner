@@ -36,7 +36,7 @@ from synthetic_fixtures import (
     identity,
 )
 
-VERIFIER_SHA = "d4135d3da53bcf81acb2cee8c378296faf6e5b01477049112c5458ce979c1c5b"
+VERIFIER_SHA = "640bcb901709f310fa27018e83fdf62de7be4aec427415781f346ada5ee812d4"
 
 
 def validate_inventory(tables, sequences, external_dependencies=()):

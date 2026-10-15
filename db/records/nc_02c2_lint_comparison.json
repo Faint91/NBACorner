@@ -1,0 +1,36 @@
+{
+  "method": "AST imported-name usage comparison, compilation and Black; no configured Python lint runner; Ruff/Pyflakes unavailable, no packages installed",
+  "files": {
+    "app.py": {
+      "before_unused_imports": [],
+      "after_unused_imports": [],
+      "new_unused_imports": []
+    },
+    "scripts/update_standings.py": {
+      "before_unused_imports": [],
+      "after_unused_imports": [],
+      "new_unused_imports": []
+    },
+    "standings_service.py": {
+      "before_unused_imports": [],
+      "after_unused_imports": [],
+      "new_unused_imports": []
+    },
+    "job_safety.py": {
+      "before_unused_imports": [],
+      "after_unused_imports": [],
+      "new_unused_imports": []
+    },
+    "provider_transport.py": {
+      "before_unused_imports": [],
+      "after_unused_imports": [],
+      "new_unused_imports": []
+    },
+    "integration_harness.py": {
+      "before_unused_imports": [],
+      "after_unused_imports": [],
+      "new_unused_imports": []
+    }
+  },
+  "new_unused_imports": 0
+}
