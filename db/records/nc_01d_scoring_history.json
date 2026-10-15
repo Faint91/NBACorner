@@ -1,0 +1,696 @@
+{
+  "phase": "NC-01D",
+  "passed": true,
+  "tests_run": 25,
+  "failures": 0,
+  "errors": 0,
+  "findings": [
+    {
+      "scenario": "current_behavior__history__reads",
+      "group": "historical reads",
+      "current_behavior": "History index/detail require JWT; read structured snapshots/rows, retain ranks/display/numeric points, omit email/security/bracket-user IDs.",
+      "approved_requirement": "Email addresses must never be exposed.",
+      "classification": "MATCHES REQUIREMENT",
+      "future_business_question": null,
+      "evidence_source": "LIVE guarded local fixture reads/job refusal; canonical reset per case",
+      "evidence": [
+        {
+          "method": "GET",
+          "path": "/leaderboard/history",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leaderboard/history/2024-25",
+          "status": 200,
+          "shape": [
+            "columns",
+            "rows",
+            "season_code",
+            "snapshot_at"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leaderboard/history",
+          "status": 200,
+          "shape": [
+            "seasons"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leaderboard/history/invalid",
+          "status": 404,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leaderboard/history/2025-26",
+          "status": 404,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "facts": {
+        "row_fields": [
+          "bonus_champion",
+          "bonus_finalists",
+          "display_name",
+          "full_hits",
+          "id",
+          "misses",
+          "partial_hits",
+          "per_match_points",
+          "rank",
+          "total_points"
+        ],
+        "rows": 2,
+        "anonymous_denied": true
+      },
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__scoring__deleted",
+      "group": "eligibility",
+      "current_behavior": "Soft-deleted current bracket omitted despite retained stored score; historical snapshot rows remain readable.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve deleted-object retention/visibility?",
+      "evidence_source": "LIVE guarded local fixture reads/job refusal; canonical reset per case",
+      "evidence": [
+        {
+          "method": "GET",
+          "path": "/leaderboard",
+          "status": 200,
+          "shape": [
+            "master_bracket_id",
+            "master_matchups",
+            "master_updated_at",
+            "rows"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leaderboard/history/2024-25",
+          "status": 200,
+          "shape": [
+            "columns",
+            "rows",
+            "season_code",
+            "snapshot_at"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__scoring__draft",
+      "group": "eligibility",
+      "current_behavior": "Stored unsaved score row appears in anonymous leaderboard; same draft-score surface established in NC-01C.",
+      "approved_requirement": "Another user's bracket may be visible only if saved.",
+      "classification": "KNOWN GAP",
+      "future_business_question": null,
+      "evidence_source": "LIVE guarded local fixture reads/job refusal; canonical reset per case",
+      "evidence": [
+        {
+          "method": "GET",
+          "path": "/leaderboard",
+          "status": 200,
+          "shape": [
+            "master_bracket_id",
+            "master_matchups",
+            "master_updated_at",
+            "rows"
+          ]
+        }
+      ],
+      "facts": {
+        "prior_reference": "NC-01C draft_scored_leaderboard"
+      },
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "prior_reference": "NC-01C draft_scored_leaderboard; same existing surface"
+    },
+    {
+      "scenario": "current_behavior__scoring__empty",
+      "group": "edge behavior",
+      "current_behavior": "No stored scores returns empty rows/master map; historical missing snapshots return 404 authenticated.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve empty/missing response contract?",
+      "evidence_source": "LIVE guarded local fixture reads/job refusal; canonical reset per case",
+      "evidence": [
+        {
+          "method": "GET",
+          "path": "/leaderboard",
+          "status": 200,
+          "shape": [
+            "master_bracket_id",
+            "master_matchups",
+            "master_updated_at",
+            "rows"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leaderboard/history/2024-25",
+          "status": 404,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__scoring__global",
+      "group": "global leaderboard",
+      "current_behavior": "Anonymous leaderboard reads stored current score rows; no rank field/pagination; malformed unrelated query ignored.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve accessibility/pagination and score presentation?",
+      "evidence_source": "LIVE guarded local fixture reads/job refusal; canonical reset per case",
+      "evidence": [
+        {
+          "method": "GET",
+          "path": "/leaderboard",
+          "status": 200,
+          "shape": [
+            "master_bracket_id",
+            "master_matchups",
+            "master_updated_at",
+            "rows"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leaderboard?malformed=synthetic",
+          "status": 200,
+          "shape": [
+            "master_bracket_id",
+            "master_matchups",
+            "master_updated_at",
+            "rows"
+          ]
+        }
+      ],
+      "facts": {
+        "row_fields": [
+          "bonus_champion",
+          "bonus_finalists",
+          "bracket_id",
+          "bracket_name",
+          "full_hits",
+          "misses",
+          "partial_hits",
+          "points_by_match",
+          "saved_at",
+          "total_points",
+          "updated_at",
+          "user_id",
+          "username"
+        ],
+        "rows": 2
+      },
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__scoring__hits_priority",
+      "group": "ranking/sorting",
+      "current_behavior": "Equal points with unequal full_hits rank more full hits ahead of saved time; full equality has no explicit further tiebreak.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve full-hit priority and equal-time tie policy?",
+      "evidence_source": "LIVE guarded local fixture reads/job refusal; canonical reset per case",
+      "evidence": [
+        {
+          "method": "GET",
+          "path": "/leaderboard",
+          "status": 200,
+          "shape": [
+            "master_bracket_id",
+            "master_matchups",
+            "master_updated_at",
+            "rows"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__scoring__job_refusal",
+      "group": "recomputation",
+      "current_behavior": "Existing test job guard refuses recompute/snapshot HTTP execution (500) even admin; score/history records remain unchanged. Preserved characterization limitation.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "A separately approved scoped-job extension would be needed for live maintenance execution.",
+      "evidence_source": "LIVE guarded local fixture reads/job refusal; canonical reset per case",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leaderboard",
+          "status": 200,
+          "shape": [
+            "master_bracket_id",
+            "master_matchups",
+            "master_updated_at",
+            "rows"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/admin/score/master/<id>/recompute",
+          "status": 500,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/admin/leaderboard/snapshot",
+          "status": 500,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leaderboard",
+          "status": 200,
+          "shape": [
+            "master_bracket_id",
+            "master_matchups",
+            "master_updated_at",
+            "rows"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__scoring__tie",
+      "group": "tie ordering",
+      "current_behavior": "Exact equal score/full-hit tie ranks earlier saved_at first on global backend.",
+      "approved_requirement": "Exact leaderboard ties are ranked by earlier bracket saved_at.",
+      "classification": "MATCHES REQUIREMENT",
+      "future_business_question": null,
+      "evidence_source": "LIVE guarded local fixture reads/job refusal; canonical reset per case",
+      "evidence": [
+        {
+          "method": "GET",
+          "path": "/leaderboard",
+          "status": 200,
+          "shape": [
+            "master_bracket_id",
+            "master_matchups",
+            "master_updated_at",
+            "rows"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__history__frontend",
+      "group": "frontend",
+      "current_behavior": "Global frontend sorts points/full hits/earlier saved time, ranks displayed by array position; history uses stored rank or index fallback, dynamic numeric points and snapshot columns; no archived bracket links.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve rank style, snapshot display and historical navigation?",
+      "evidence_source": "STATIC source/schema/frontend; no browser or live job claim"
+    },
+    {
+      "scenario": "current_behavior__history__retention",
+      "group": "privacy",
+      "current_behavior": "Structured history rows have no live user FK; legacy user/bracket references and schema deletion behavior differ; no account deletion performed.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve deleted-user/bracket retention?",
+      "evidence_source": "STATIC source/schema/frontend; no browser or live job claim"
+    },
+    {
+      "scenario": "current_behavior__history__snapshot_source",
+      "group": "snapshot creation",
+      "current_behavior": "Legacy write precedes structured snapshot; structured failure is nonfatal; duplicate guard only checks legacy rows. Rollover calls snapshot but is not executed here.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve atomicity/recovery/snapshot scheduling?",
+      "evidence_source": "STATIC source/schema/frontend; no browser or live job claim"
+    },
+    {
+      "scenario": "current_behavior__history__sorting",
+      "group": "edge behavior",
+      "current_behavior": "History read sorts total_points/full_hits without explicit rank or saved-time order; saved_at not stored. Equal score/time secondary order and historical retention remain unreviewed.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve rank/order consistency and retention?",
+      "evidence_source": "STATIC source/schema/frontend; no browser or live job claim"
+    },
+    {
+      "scenario": "current_behavior__history__storage",
+      "group": "historical reads",
+      "current_behavior": "Three history tables: legacy denormalized internal bracket/user references; structured season snapshots and snapshot rows power current API. Reads latest snapshot per season, no live user join.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve history retention/legacy purpose and duplicate selection?",
+      "evidence_source": "STATIC source/schema/frontend; no browser or live job claim"
+    },
+    {
+      "scenario": "current_behavior__scoring__league_surface",
+      "group": "league leaderboard",
+      "current_behavior": "No backend league filter; frontend filters global rows using member IDs. Existing NC-01C private-score exposure, not a newly counted surface.",
+      "approved_requirement": "Private-league bracket information requires membership.",
+      "classification": "KNOWN GAP",
+      "future_business_question": null,
+      "evidence_source": "STATIC source/schema/frontend; no browser or live job claim",
+      "prior_reference": "NC-01C leaderboard_private_surface; static cross-reference, no repeated live access audit"
+    },
+    {
+      "scenario": "current_behavior__scoring__master_source",
+      "group": "scoring architecture",
+      "current_behavior": "Master predicted_winner/games keyed conference-round-slot are actual results; caller-supplied master ID need not match season pointer or is_master. Same master/user ID skips score.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve ground-truth identity and missing/replaced master policy?",
+      "evidence_source": "STATIC source/schema/frontend; no browser or live job claim"
+    },
+    {
+      "scenario": "current_behavior__scoring__recompute_source",
+      "group": "recomputation",
+      "current_behavior": "Admin trigger selects saved/current/nondeleted brackets, upserts each separately; no automatic scoring on prediction/save; no independent scoring cron/script found.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve recalculation timing and transaction/failure behavior?",
+      "evidence_source": "STATIC source/schema/frontend; no browser or live job claim"
+    },
+    {
+      "scenario": "current_behavior__history__snapshot_empty",
+      "group": "snapshot creation",
+      "current_behavior": "Missing score rows refuses snapshot; existing structured snapshot alone does not trigger duplicate legacy guard.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve cross-model duplicate/failure policy?",
+      "evidence_source": "OFFLINE unchanged AST-extracted source helper with in-memory DB double; not live job execution",
+      "facts": {}
+    },
+    {
+      "scenario": "current_behavior__history__snapshot_repeat",
+      "group": "snapshot creation",
+      "current_behavior": "Snapshot writes legacy rows plus structured snapshot/rows; repeat rejected by legacy season row; sequential ranks and numeric per-match flattening persisted, not one transaction.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve snapshot frequency/atomicity/rank format?",
+      "evidence_source": "OFFLINE unchanged AST-extracted source helper with in-memory DB double; not live job execution",
+      "facts": {}
+    },
+    {
+      "scenario": "current_behavior__history__snapshot_tie",
+      "group": "tie ordering",
+      "current_behavior": "Snapshot exact score/hit ties sort username instead of earlier saved_at; builder omits saved_at. Later-saved Alpha ranks ahead of earlier-saved Zulu.",
+      "approved_requirement": "Exact leaderboard ties are ranked by earlier bracket saved_at.",
+      "classification": "KNOWN GAP",
+      "future_business_question": null,
+      "evidence_source": "OFFLINE unchanged AST-extracted source helper with in-memory DB double; not live job execution",
+      "facts": {
+        "earlier_saved_rank": 2,
+        "later_saved_rank": 1,
+        "sort_uses_username": true
+      }
+    },
+    {
+      "scenario": "current_behavior__scoring__base_points",
+      "group": "base points",
+      "current_behavior": "Play-in full hit awards 1; rounds 1\u20134 full winner/participants/count hit awards 3 each; wrong winner zero; no round escalation.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve round base values?",
+      "evidence_source": "OFFLINE unchanged AST-extracted source helper with in-memory DB double; not live job execution",
+      "facts": {
+        "round_full_points": {
+          "0": 1,
+          "1": 3,
+          "2": 3,
+          "3": 3,
+          "4": 3
+        }
+      }
+    },
+    {
+      "scenario": "current_behavior__scoring__champion_bonus",
+      "group": "champion bonus",
+      "current_behavior": "Correct Finals champion earns base Finals 3 only; explicit bonus_champion remains 0 rather than approved +3.",
+      "approved_requirement": "Correct NBA champion bonus: +3 points.",
+      "classification": "KNOWN GAP",
+      "future_business_question": null,
+      "evidence_source": "OFFLINE unchanged AST-extracted source helper with in-memory DB double; not live job execution",
+      "facts": {
+        "finals_base": 3,
+        "explicit_champion_bonus": 0,
+        "approved_bonus": 3
+      }
+    },
+    {
+      "scenario": "current_behavior__scoring__counts",
+      "group": "game-count scoring",
+      "current_behavior": "Rounds 1\u20134 exact count earns full 3 with matching participants; incorrect/null/zero/negative/large user count yields partial 1. Play-in count ignored; NULL actual count is pending.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve partial/count and historical availability rules?",
+      "evidence_source": "OFFLINE unchanged AST-extracted source helper with in-memory DB double; not live job execution",
+      "facts": {}
+    },
+    {
+      "scenario": "current_behavior__scoring__edges",
+      "group": "edge behavior",
+      "current_behavior": "Missing user match/no pick are misses; incomplete actual winner/count is pending; no user matches skips persistence; deleted/historical/same-ID master skips helper.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve missing/incomplete/error contract?",
+      "evidence_source": "OFFLINE unchanged AST-extracted source helper with in-memory DB double; not live job execution",
+      "facts": {}
+    },
+    {
+      "scenario": "current_behavior__scoring__finalist_bonus",
+      "group": "finalist bonus",
+      "current_behavior": "Both/one/neither/swapped finalists and champion-correct different set all have bonus_finalists=0; approved both-finalists +1 absent.",
+      "approved_requirement": "Correctly predicting both NBA Finals participants: +1 point.",
+      "classification": "KNOWN GAP",
+      "future_business_question": null,
+      "evidence_source": "OFFLINE unchanged AST-extracted source helper with in-memory DB double; not live job execution",
+      "facts": {
+        "explicit_finalist_bonus_each_case": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "base_points_cases": [
+          3,
+          1,
+          0,
+          3
+        ],
+        "approved_both_bonus": 1
+      }
+    },
+    {
+      "scenario": "current_behavior__scoring__upsert",
+      "group": "recomputation",
+      "current_behavior": "Per-bracket upsert overwrites score rather than increments; same inputs repeat same numeric result, updated_at changes. Helper does not check submission flag; source job entry remains blocked live.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve recalculation timing/eligibility/atomicity?",
+      "evidence_source": "OFFLINE unchanged AST-extracted source helper with in-memory DB double; not live job execution",
+      "facts": {}
+    }
+  ],
+  "readiness": {
+    "identity_verified": true,
+    "database_marker": "PASS",
+    "email": "PASS",
+    "providers": "PASS",
+    "external_credentials": "PASS",
+    "jobs": "PASS",
+    "jobs_enabled": false,
+    "fixture_state": "SEEDED",
+    "fixtures_reset": "PASS",
+    "integration_harness": "PASS",
+    "mutation_permitted": false,
+    "harness_state": "AVAILABLE_GUARDED",
+    "harness_scoped_mutation_permitted": false
+  },
+  "business_behavior_changed": false,
+  "production": {
+    "contact": false,
+    "mutation": false,
+    "secrets_used": false,
+    "deployment": false
+  },
+  "classification_counts": {
+    "MATCHES REQUIREMENT": 2,
+    "KNOWN GAP": 5,
+    "REQUIREMENT NOT YET REVIEWED": 18,
+    "UNCLEAR / NEEDS BUSINESS CHECKPOINT": 0
+  },
+  "live_tests": 8,
+  "offline_source_tests": 9,
+  "static_tests": 8,
+  "offline_safety_tests": 214,
+  "starting_heads": {
+    "frontend": "ce54143006f0409265937f5d548286d0b100d454",
+    "backend": "d2ec3cba6601a4dafaf56c8be6db4c44b1964a54"
+  },
+  "starting_branches": "main; clean",
+  "verified_at_utc": "2026-10-15T00:22:59.430390+00:00",
+  "canonical_cleanup": {
+    "fixture_version": "nc-fixtures-v1",
+    "fixture_state": "SEEDED",
+    "marker_version": 2,
+    "checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+    "flask_stopped": true,
+    "lease_released": true,
+    "email_capture_clear": true,
+    "jobs_disabled": true,
+    "semantic_verifier": "PASS",
+    "marker_acl_verifier": "PASS"
+  },
+  "live_job_execution": false,
+  "job_limitation": "Existing guard_runtime_job refuses seeded test score/snapshot jobs. Guard unchanged; offline source-helper results are not live DB job proof.",
+  "next_phase": "NC-01E \u2014 Standings / admin operations / season rollover characterization baseline; not started",
+  "route_inventory": [
+    {
+      "method": "POST",
+      "path": "/admin/leaderboard/snapshot",
+      "auth": "JWT",
+      "effect": "Write/job",
+      "function": "admin_snapshot_leaderboard",
+      "source_line": 799,
+      "evidence": "Live read/refusal"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/season/rollover",
+      "auth": "JWT",
+      "effect": "Write/job",
+      "function": "admin_season_rollover",
+      "source_line": 855,
+      "evidence": "Static inventory only"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/score/master/<master_bracket_id>/recompute",
+      "auth": "JWT",
+      "effect": "Write/job",
+      "function": "recompute_scores",
+      "source_line": 1586,
+      "evidence": "Live read/refusal"
+    },
+    {
+      "method": "GET",
+      "path": "/leaderboard",
+      "auth": "None",
+      "effect": "Read",
+      "function": "leaderboard",
+      "source_line": 3866,
+      "evidence": "Live read/refusal"
+    },
+    {
+      "method": "GET",
+      "path": "/stats/champion-picks",
+      "auth": "JWT",
+      "effect": "Read",
+      "function": "champion_pick_stats",
+      "source_line": 4111,
+      "evidence": "Static inventory only"
+    },
+    {
+      "method": "GET",
+      "path": "/leaderboard/history",
+      "auth": "JWT",
+      "effect": "Read",
+      "function": "leaderboard_history_index",
+      "source_line": 4467,
+      "evidence": "Live read/refusal"
+    },
+    {
+      "method": "GET",
+      "path": "/leaderboard/history/<season_code>",
+      "auth": "JWT",
+      "effect": "Read",
+      "function": "leaderboard_history_season",
+      "source_line": 4505,
+      "evidence": "Live read/refusal"
+    },
+    {
+      "method": "GET",
+      "path": "/__debug/master-status",
+      "auth": "None",
+      "effect": "Read",
+      "function": "debug_master_status",
+      "source_line": 4599,
+      "evidence": "Static inventory only"
+    }
+  ],
+  "helper_inventory": [
+    "_fetch_matches_for_bracket",
+    "_compute_score_for_bracket",
+    "_build_leaderboard_rows_for_current_season",
+    "_snapshot_leaderboard_for_current_season",
+    "_rollover_current_season (dependency inventory only; not invoked)"
+  ]
+}

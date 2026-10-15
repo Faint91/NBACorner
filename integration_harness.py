@@ -108,7 +108,7 @@ class GuardedHarness:
     def __init__(
         self, config, *, allow_local_mutations=False, characterization_scope=None
     ):
-        if characterization_scope not in {None, "NC-01A", "NC-01B", "NC-01C"}:
+        if characterization_scope not in {None, "NC-01A", "NC-01B", "NC-01C", "NC-01D"}:
             raise safety.SafetyError("Unreviewed characterization scope.")
         self.characterization_scope = characterization_scope
         self._auth_subjects = {
@@ -325,6 +325,27 @@ class GuardedHarness:
         self.stack.enter_context(patch.object(requests.Session, "send", requests_send))
 
     def _check_path(self, method, path, *, identity_bootstrap=False):
+        if getattr(self, "characterization_scope", None) == "NC-01D":
+            if method == "GET" and path in {
+                "/leaderboard",
+                "/leaderboard?malformed=synthetic",
+                "/leaderboard/history",
+                "/leaderboard/history/2024-25",
+                "/leaderboard/history/2025-26",
+                "/leaderboard/history/invalid",
+            }:
+                return
+            if method == "GET" and path == "/__test__/identity" and identity_bootstrap:
+                return
+            if method == "POST" and path == "/auth/login":
+                return
+            if method == "POST" and (
+                path == "/admin/leaderboard/snapshot"
+                or path
+                in {f"/admin/score/master/{bid}/recompute" for bid in self._brackets}
+            ):
+                return  # Existing job guard is deliberately retained and must refuse writes.
+            raise safety.SafetyError("Outside NC-01D route scope.")
         if getattr(self, "characterization_scope", None) == "NC-01C":
             lids = getattr(self, "_leagues", set()) | {
                 identity("missing-league"),
@@ -728,6 +749,77 @@ class GuardedHarness:
         self._brackets.update(b["id"] for b in data["brackets"])
         self._matches.update((m["bracket_id"], m["id"]) for m in matches)
         return {role: identity("score-" + role) for role in ("user-a", "user-b")}
+
+    def _require_scoring_scope(self):
+        self._require_lease()
+        if (
+            not self._ready
+            or self.characterization_scope != "NC-01D"
+            or threading.get_ident() != self._owner
+        ):
+            raise safety.SafetyError("Explicit verified NC-01D context required.")
+
+    def scoring_request(self, method, path, *, role=None):
+        self._require_scoring_scope()
+        if path == "/auth/login":
+            raise safety.SafetyError("Use synthetic login method.")
+        status, body = self._exchange(
+            method, path, {} if method == "POST" else None, role
+        )
+        self.summary.append(
+            {
+                "method": method,
+                "path": re.sub(r"[0-9a-f]{8}-[0-9a-f-]{27}", "<id>", path),
+                "status": status,
+                "shape": sorted(body) if isinstance(body, dict) else "list",
+            }
+        )
+        return status, body
+
+    def install_scoring_read_state(self, mode="saved"):
+        self._require_scoring_scope()
+        if self._brackets or mode not in {
+            "saved",
+            "draft",
+            "deleted",
+            "tie",
+            "unequal_hits",
+        }:
+            raise safety.SafetyError("Single reviewed scoring read-state only.")
+        from synthetic_fixtures import score_history_scenario
+
+        data = score_history_scenario()
+        for row in data["brackets"]:
+            if row["id"] == identity("score-user-a"):
+                if mode == "draft":
+                    row.update(is_done=False, saved_at=None)
+                if mode == "deleted":
+                    row["deleted_at"] = "2026-01-01T00:00:00+00:00"
+                if mode in {"tie", "unequal_hits"}:
+                    row["saved_at"] = "2026-01-02T00:00:00+00:00"
+            if row["id"] == identity("score-user-b") and mode in {
+                "tie",
+                "unequal_hits",
+            }:
+                row["saved_at"] = "2026-01-01T00:00:00+00:00"
+        if mode == "unequal_hits":
+            data["bracket_scores"][0]["full_hits"] = 2
+        self.module.supabase.table("brackets").insert(data["brackets"]).execute()
+        self.module.supabase.table("bracket_scores").insert(
+            data["bracket_scores"]
+        ).execute()
+        for table in (
+            "leaderboard_history_snapshots",
+            "leaderboard_history_rows",
+            "leaderboard_history",
+        ):
+            self.module.supabase.table(table).insert(data[table]).execute()
+        self._brackets.update(b["id"] for b in data["brackets"])
+        return {
+            "master": identity("bracket-master"),
+            "a": identity("score-user-a"),
+            "b": identity("score-user-b"),
+        }
 
     def _require_auth_scope(self):
         self._require_lease()

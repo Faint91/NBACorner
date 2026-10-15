@@ -56,5 +56,5 @@ class LeagueScopeSafetyTests(unittest.TestCase):
         with patch("environment_safety.load_test_config") as load, self.assertRaises(
             SafetyError
         ):
-            GuardedHarness("unread", characterization_scope="NC-01D")
+            GuardedHarness("unread", characterization_scope="NC-UNAPPROVED")
         load.assert_not_called()
