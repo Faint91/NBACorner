@@ -83,7 +83,7 @@ class CurrentBracketBehavior(unittest.TestCase):
         )
 
     def pick(
-        self, bid, slot, role="user-a", games=4, team=None, status=200, conf="east"
+        self, bid, slot, role="user-a", games=None, team=None, status=200, conf="east"
     ):
         m = self.at(bid, slot, conf)
         return self.call(
@@ -94,7 +94,7 @@ class CurrentBracketBehavior(unittest.TestCase):
             payload={
                 "action": "set_winner",
                 "team": team or m["team_a"],
-                "games": games,
+                "games": (1 if m["round"] == 0 else 4) if games is None else games,
             },
         )
 
@@ -233,7 +233,8 @@ class CurrentBracketBehavior(unittest.TestCase):
     )
     def current_behavior__bracket__prediction_validation(self):
         bid = self.setup_bracket()
-        self.pick(bid, 1, games=99)
+        self.pick(bid, 1, games=99, status=400)
+        self.pick(bid, 1)
         self.assertEqual(self.at(bid, 1)["predicted_winner_games"], 1)
         self.assertEqual(self.at(bid, 3)["team_a"], self.at(bid, 1)["team_a"])
         self.pick(bid, 6, team="BOS", status=400)
@@ -245,11 +246,11 @@ class CurrentBracketBehavior(unittest.TestCase):
             role="user-a",
             payload={"action": "unsupported"},
         )
-        self.pick(bid, 4)
-        self.assertIsNotNone(self.at(bid, 4)["predicted_winner"])
+        self.pick(bid, 4, status=400)
+        self.assertIsNone(self.at(bid, 4)["predicted_winner"])
         self.facts = {
             "match_count_remains": len(self.state(bid)[1]),
-            "one_sided_match_accepted": True,
+            "one_sided_match_rejected": True,
         }
 
     @behavior(
@@ -391,7 +392,7 @@ class CurrentBracketBehavior(unittest.TestCase):
     def current_behavior__bracket__game_count_values(self):
         bid = self.setup_bracket("saved")
         m = self.at(bid, 6)
-        for value in (4, 0, -1, 99):
+        for value in (4, 5, 6, 7):
             self.call(
                 "PATCH",
                 f"/bracket/match/{m['id']}/games",
@@ -401,6 +402,16 @@ class CurrentBracketBehavior(unittest.TestCase):
             )
             self.assertEqual(self.at(bid, 6)["predicted_winner_games"], value)
             self.assertFalse(self.state(bid)[0]["is_done"])
+        before = self.state(bid)
+        for invalid in (0, -1, 1, 2, 3, 8, 99, 4.0, True, "4", "bad", [4]):
+            self.call(
+                "PATCH",
+                f"/bracket/match/{m['id']}/games",
+                400,
+                role="user-a",
+                payload={"games": invalid},
+            )
+        self.assertEqual(before, self.state(bid))
         self.call(
             "PATCH", f"/bracket/match/{m['id']}/games", 400, role="user-a", payload={}
         )
@@ -707,3 +718,7 @@ mark_nc02a2_acceptance(CurrentBracketBehavior)
 from scripts.nc02b1_acceptance_metadata import mark_acceptance as mark_nc02b1
 
 mark_nc02b1(CurrentBracketBehavior)
+
+from scripts.nc02b2_acceptance_metadata import mark_acceptance as mark_nc02b2
+
+mark_nc02b2(CurrentBracketBehavior)

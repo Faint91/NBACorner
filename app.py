@@ -1,3 +1,4 @@
+from bracket_rules import game_count_error, apply_prediction, submission_error
 # app.py
 from functools import wraps
 from datetime import datetime, timedelta, timezone
@@ -384,6 +385,24 @@ def bracket_final_lock_error():
     return jsonify({"error": "Bracket content is locked once the playoffs start."}), 403
 
 
+def current_master_bracket(bracket):
+    is_master = bool(bracket.get("is_master"))
+    if not is_master:
+        seasons = (
+            supabase.table("seasons")
+            .select("master_bracket_id")
+            .eq("id", CURRENT_SEASON_ID)
+            .limit(1)
+            .execute()
+            .data
+            or []
+        )
+        is_master = bool(
+            seasons and str(seasons[0].get("master_bracket_id")) == str(bracket["id"])
+        )
+    return is_master
+
+
 def bracket_content_mutation_error(bracket, user_id):
     """Only ordinary owners before lock, or DB admins on the current master.
 
@@ -402,20 +421,7 @@ def bracket_content_mutation_error(bracket, user_id):
     if not users:
         return jsonify({"error": "User not found"}), 404
     is_admin = bool(users[0].get("is_admin"))
-    is_master = bool(bracket.get("is_master"))
-    if not is_master:
-        seasons = (
-            supabase.table("seasons")
-            .select("master_bracket_id")
-            .eq("id", CURRENT_SEASON_ID)
-            .limit(1)
-            .execute()
-            .data
-            or []
-        )
-        is_master = bool(
-            seasons and str(seasons[0].get("master_bracket_id")) == str(bracket["id"])
-        )
+    is_master = current_master_bracket(bracket)
     if is_master:
         if is_admin:
             return None
@@ -3182,19 +3188,19 @@ def save_bracket(bracket_id):
         # Validate fully predicted
         matches = (
             supabase.table("matches")
-            .select("id, round, team_a, team_b, predicted_winner, predicted_winner_games")
+            .select(
+                "id, round, slot, conference, team_a, team_b, predicted_winner, predicted_winner_games, next_match_id, next_slot"
+            )
             .eq("bracket_id", bracket_id)
             .execute()
             .data
         )
 
-        for m in matches:
-            if not m.get("team_a") or not m.get("team_b"):
-                continue
-            if not m.get("predicted_winner"):
-                return jsonify({"error": "Bracket is not fully predicted"}), 400
-            if m["round"] > 0 and m.get("predicted_winner_games") is None:
-                return jsonify({"error": "Bracket is not fully predicted"}), 400
+        validity_error = submission_error(
+            matches, master=current_master_bracket(bracket)
+        )
+        if validity_error:
+            return jsonify({"error": validity_error}), 400
 
         now = datetime.utcnow().isoformat()
         supabase.table("brackets").update(
@@ -3619,9 +3625,7 @@ def update_match(bracket_id, match_id):
         )
         if not res_any:
             return jsonify({"error": "Match not found"}), 404
-        return jsonify(
-            {"error": "Match does not belong to the specified bracket"}
-        ), 400
+        return jsonify({"error": "Match does not belong to the specified bracket"}), 400
 
     # Ownership/admin and SEASON guard
     bracket_check = (
@@ -3643,258 +3647,59 @@ def update_match(bracket_id, match_id):
     if access_error:
         return access_error
 
-    # Make sure the current match is present in the cache (it already should be)
-    if match["id"] not in matches_by_id:
-        matches_by_id[match["id"]] = match
-
-    touched_match_ids = set()
-
-    def _mark_touched(m_row):
-        """Record that this match needs to be written back."""
-        if m_row and m_row.get("id"):
-            touched_match_ids.add(m_row["id"])
-
-    # --- helper functions: same logic, but now in-memory ----------------
-    def clear_dest(dest_id):
-        if not dest_id:
-            return
-        dest = matches_by_id.get(dest_id)
-        if not dest:
-            return
-        dest["predicted_winner"] = None
-        dest["predicted_winner_games"] = None
-        _mark_touched(dest)
-
-    def set_in_dest(dest_id, slot_letter, team_id):
-        if not dest_id or not slot_letter:
-            return
-        dest = matches_by_id.get(dest_id)
-        if not dest:
-            return
-        field = f"team_{slot_letter}"
-        dest[field] = team_id
-        dest["predicted_winner"] = None
-        dest["predicted_winner_games"] = None
-        _mark_touched(dest)
-
-    def clear_in_dest_slot(dest_id, slot_letter, team_id=None):
-        if not dest_id or not slot_letter:
-            return
-        dest = matches_by_id.get(dest_id)
-        if not dest:
-            return
-        field = f"team_{slot_letter}"
-        current_val = dest.get(field)
-        if team_id is None or current_val == team_id:
-            dest[field] = None
-            dest["predicted_winner"] = None
-            dest["predicted_winner_games"] = None
-            _mark_touched(dest)
-
-    def get_match(conference, round_num, slot_num):
-        for m in matches_by_id.values():
-            if (
-                m.get("conference") == conference
-                and m.get("round") == round_num
-                and m.get("slot") == slot_num
-            ):
-                return m
-        return None
-
-    def cleanup_future_matches(losing_team_id):
-        if not match.get("next_match_id"):
-            return
-        to_check = [match["next_match_id"]]
-        visited = set()
-        while to_check:
-            current_id = to_check.pop()
-            if current_id in visited:
-                continue
-            visited.add(current_id)
-            next_match = matches_by_id.get(current_id)
-            if not next_match:
-                continue
-            updated = False
-            if next_match.get("team_a") == losing_team_id:
-                next_match["team_a"] = None
-                updated = True
-            if next_match.get("team_b") == losing_team_id:
-                next_match["team_b"] = None
-                updated = True
-            if updated:
-                next_match["predicted_winner"] = None
-                next_match["predicted_winner_games"] = None
-                _mark_touched(next_match)
-            if next_match.get("next_match_id"):
-                to_check.append(next_match["next_match_id"])
-
-    def flush_touched_matches():
-        """Write back all matches that were modified in-memory."""
-        if not touched_match_ids:
-            return
-        now_iso = datetime.utcnow().isoformat()
-        for mid in touched_match_ids:
-            m = matches_by_id.get(mid)
-            if not m:
-                continue
-            # We only update the fields your original helpers touched
-            supabase.table("matches").update(
-                {
-                    "team_a": m.get("team_a"),
-                    "team_b": m.get("team_b"),
-                    "predicted_winner": m.get("predicted_winner"),
-                    "predicted_winner_games": m.get("predicted_winner_games"),
-                    "updated_at": now_iso,
-                }
-            ).eq("id", mid).execute()
-
-    # --- only clean future matches when current round < highest predicted round
-    highest_round_with_prediction = None
-    for m in all_matches:
-        if m.get("predicted_winner") is not None:
-            r = m.get("round")
-            if r is not None and (
-                highest_round_with_prediction is None
-                or r > highest_round_with_prediction
-            ):
-                highest_round_with_prediction = r
-
-    def should_cleanup_future():
-        """
-        Only run the deep future-match cleanup if this match's round is
-        strictly lower than the highest round that already has a prediction
-        in this bracket. This skips useless work while the bracket is being
-        filled for the first time.
-        """
-        return (
-            highest_round_with_prediction is not None
-            and match.get("round") is not None
-            and match["round"] < highest_round_with_prediction
-        )
-
-    # ------------------ ACTIONS ------------------
     if action == "set_winner":
         team = data.get("team")
-        games = data.get("games")
-        if not team:
-            return jsonify({"error": "Missing team"}), 400
-
-        # ✅ Force best-of-one for play-in round
-        if match["round"] == 0:
-            games = 1
-
-        if team not in (match["team_a"], match["team_b"]):
+        if (
+            not match.get("team_a")
+            or not match.get("team_b")
+            or match["team_a"] == match["team_b"]
+        ):
             return (
                 jsonify(
-                    {"error": "Winner must be team_a or team_b for this match"}
+                    {
+                        "error": "Both participants must be established before prediction."
+                    }
                 ),
                 400,
             )
-
-        old_winner = match.get("predicted_winner")
-        old_games = match.get("predicted_winner_games")
-        loser = match["team_b"] if match["team_a"] == team else match["team_a"]
-
-        if old_winner and old_winner != team:
-            if match.get("next_match_id") and match.get("next_slot"):
-                clear_in_dest_slot(
-                    match["next_match_id"], match["next_slot"], old_winner
-                )
-                clear_dest(match["next_match_id"])
-
-            # Only clean *future* matches when current round < highest edited round
-            if should_cleanup_future():
-                cleanup_future_matches(old_winner)
-
-            if match["round"] == 0 and match["slot"] == 2:
-                m3 = get_match(match["conference"], 0, 3)
-                if m3:
-                    # Clear the 7–8 loser in play-in game 3
-                    m3["team_b"] = None
-                    m3["predicted_winner"] = None
-                    m3["predicted_winner_games"] = None
-                    _mark_touched(m3)
-
-        if old_winner == team:
-            if games != old_games:
-                supabase.table("matches").update(
-                    {
-                        "predicted_winner_games": games,
-                        "updated_at": datetime.utcnow().isoformat(),
-                    }
-                ).eq("id", match_id).execute()
-
-            if match["round"] == 0 and match["slot"] == 2:
-                m3 = get_match(match["conference"], 0, 3)
-                if m3 and m3.get("team_b") != loser:
-                    set_in_dest(m3["id"], "b", loser)
-
-            # ✅ Mark bracket as not saved
-            invalidate_bracket_submission(match["bracket_id"])
-
-            flush_touched_matches()
-            return jsonify({"message": "Winner updated"}), 200
-
-        # New winner being set
-        supabase.table("matches").update(
-            {
-                "predicted_winner": team,
-                "predicted_winner_games": games,
-                "updated_at": datetime.utcnow().isoformat(),
-            }
-        ).eq("id", match_id).execute()
-
-        if match.get("next_match_id") and match.get("next_slot"):
-            set_in_dest(match["next_match_id"], match["next_slot"], team)
-
-        if match["round"] == 0 and match["slot"] == 2:
-            m3 = get_match(match["conference"], 0, 3)
-            if m3:
-                set_in_dest(m3["id"], "b", loser)
-
-        # ✅ Mark bracket as not saved
-        invalidate_bracket_submission(match["bracket_id"])
-
-        flush_touched_matches()
-        return jsonify({"message": "Winner set"}), 200
-
-    elif action == "undo":
-        old_winner = match.get("predicted_winner")
-
-        supabase.table("matches").update(
-            {
-                "predicted_winner": None,
-                "predicted_winner_games": None,
-                "updated_at": datetime.utcnow().isoformat(),
-            }
-        ).eq("id", match_id).execute()
-
-        if old_winner and match.get("next_match_id") and match.get("next_slot"):
-            clear_in_dest_slot(
-                match["next_match_id"], match["next_slot"], old_winner
+        if team not in (match["team_a"], match["team_b"]):
+            return (
+                jsonify({"error": "Winner must be team_a or team_b for this match"}),
+                400,
             )
-            clear_dest(match["next_match_id"])
-
-            # Only deep-clean future matches when there's actually a later round with predictions
-            if should_cleanup_future():
-                cleanup_future_matches(old_winner)
-
-        if match["round"] == 0 and match["slot"] == 2:
-            m3 = get_match(match["conference"], 0, 3)
-            if m3:
-                m3["team_b"] = None
-                m3["predicted_winner"] = None
-                m3["predicted_winner_games"] = None
-                _mark_touched(m3)
-
-        # ✅ Mark bracket as not saved
-        invalidate_bracket_submission(match["bracket_id"])
-
-        flush_touched_matches()
-        return jsonify({"message": "Prediction undone"}), 200
-
+        games = data.get("games")
+        if match["round"] == 0 and "games" not in data:
+            games = 1
+        count_error = game_count_error(match, games, allow_missing=True)
+        if count_error:
+            return jsonify({"error": count_error}), 400
+    elif action == "undo":
+        team, games = None, None
     else:
         return jsonify({"error": "Invalid or unsupported action"}), 400
+
+    try:
+        changed = apply_prediction(all_matches, match_id, team, games)
+    except (ValueError, KeyError, TypeError):
+        return jsonify({"error": "Bracket dependencies are invalid."}), 400
+    now_iso = datetime.utcnow().isoformat()
+    for row in changed:
+        supabase.table("matches").update(
+            {
+                "team_a": row.get("team_a"),
+                "team_b": row.get("team_b"),
+                "predicted_winner": row.get("predicted_winner"),
+                "predicted_winner_games": row.get("predicted_winner_games"),
+                "updated_at": now_iso,
+            }
+        ).eq("id", row["id"]).execute()
+    invalidate_bracket_submission(match["bracket_id"])
+    return (
+        jsonify(
+            {"message": "Prediction undone" if action == "undo" else "Winner updated"}
+        ),
+        200,
+    )
 
 
 # Lightweight endpoint: set only predicted_winner_games for a match (already covered by set_games above)
@@ -3914,7 +3719,7 @@ def set_match_games(match_id):
 
     m_resp = supabase.table("matches").select("*").eq("id", match_id).limit(1).execute()
     if not m_resp.data:
-        return jsonify({"error":"match not found"}), 404
+        return jsonify({"error": "match not found"}), 404
     match = m_resp.data[0]
 
     br = (
@@ -3927,7 +3732,7 @@ def set_match_games(match_id):
         .data
     )
     if not br:
-        return jsonify({"error":"forbidden"}), 403
+        return jsonify({"error": "forbidden"}), 403
 
     # 🔒 Season guard
     if br[0].get("season_id") != CURRENT_SEASON_ID:
@@ -3937,10 +3742,13 @@ def set_match_games(match_id):
     if access_error:
         return access_error
 
-    supabase.table("matches").update({
-        "predicted_winner_games": games,
-        "updated_at": datetime.utcnow().isoformat()
-    }).eq("id", match_id).execute()
+    count_error = game_count_error(match, games, count_edit=True)
+    if count_error:
+        return jsonify({"error": count_error}), 400
+
+    supabase.table("matches").update(
+        {"predicted_winner_games": games, "updated_at": datetime.utcnow().isoformat()}
+    ).eq("id", match_id).execute()
     invalidate_bracket_submission(match["bracket_id"])
     return jsonify({"ok": True}), 200
 

@@ -85,7 +85,7 @@ class CurrentStaticBracketBehavior(unittest.TestCase):
             part = self.front[begin : stop if stop != -1 else begin + 1800]
             self.assertIn("!canEdit", part)
         self.assertIn(
-            "canEdit && allDecided && !!trimmedName && !saving && !savingLockedForUser",
+            "canEdit && (allDecided || (isAdmin && isMaster)) && !!trimmedName && !saving && !savingLockedForUser",
             self.front,
         )
 
@@ -196,7 +196,8 @@ class CurrentStaticBracketBehavior(unittest.TestCase):
     )
     def current_behavior__bracket__save_completeness_static(self):
         f = self.fn("save_bracket")
-        self.assertIn('if not m.get("team_a") or not m.get("team_b"):', f)
+        self.assertIn("submission_error(", f)
+        self.assertIn("matches, master=current_master_bracket(bracket)", f)
         self.assertNotIn("len(matches)", f)
 
     @behavior(
@@ -217,3 +218,7 @@ class CurrentStaticBracketBehavior(unittest.TestCase):
 from scripts.nc02b1_acceptance_metadata import mark_acceptance as mark_nc02b1
 
 mark_nc02b1(CurrentStaticBracketBehavior)
+
+from scripts.nc02b2_acceptance_metadata import mark_acceptance as mark_nc02b2
+
+mark_nc02b2(CurrentStaticBracketBehavior)

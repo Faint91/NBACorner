@@ -117,6 +117,7 @@ class GuardedHarness:
             "NC-01E",
             "NC-02A2",
             "NC-02B1",
+            "NC-02B2",
         }:
             raise safety.SafetyError("Unreviewed characterization scope.")
         self.characterization_scope = characterization_scope
@@ -225,7 +226,7 @@ class GuardedHarness:
                         (
                             request.full_path.removesuffix("?")
                             if self.characterization_scope
-                            in {"NC-01C", "NC-02A2", "NC-02B1"}
+                            in {"NC-01C", "NC-02A2", "NC-02B1", "NC-02B2"}
                             else request.path
                         ),
                         identity_bootstrap=True,
@@ -335,7 +336,11 @@ class GuardedHarness:
         self.stack.enter_context(patch.object(requests.Session, "send", requests_send))
 
     def _check_path(self, method, path, *, identity_bootstrap=False):
-        if getattr(self, "characterization_scope", None) in {"NC-02A2", "NC-02B1"}:
+        if getattr(self, "characterization_scope", None) in {
+            "NC-02A2",
+            "NC-02B1",
+            "NC-02B2",
+        }:
             lids = getattr(self, "_leagues", set())
             reads = {
                 "/leaderboard",
@@ -359,7 +364,7 @@ class GuardedHarness:
             if method == "POST" and path == "/auth/login":
                 return
             if (
-                self.characterization_scope == "NC-02B1"
+                self.characterization_scope in {"NC-02B1", "NC-02B2"}
                 and method == "POST"
                 and path == "/bracket/create"
             ):
@@ -605,7 +610,7 @@ class GuardedHarness:
         if (
             not self._ready
             or self.characterization_scope
-            not in {"NC-01B", "NC-01C", "NC-02A2", "NC-02B1"}
+            not in {"NC-01B", "NC-01C", "NC-02A2", "NC-02B1", "NC-02B2"}
             or threading.get_ident() != self._owner
         ):
             raise safety.SafetyError("Explicit verified NC-01B context required.")
@@ -658,7 +663,10 @@ class GuardedHarness:
         self._require_bracket_scope()
         from datetime import timedelta
 
-        if self.characterization_scope != "NC-02B1" or relative not in {
+        if self.characterization_scope not in {
+            "NC-02B1",
+            "NC-02B2",
+        } or relative not in {
             "before",
             "at",
             "after",
@@ -673,6 +681,59 @@ class GuardedHarness:
             "creation_open": self.module.bracket_creation_open(),
         }
 
+    @contextlib.contextmanager
+    def bracket_validity_fault(self, kind):
+        """Fixed synthetic Finals faults only, restored before leaving this context."""
+        self._require_bracket_scope()
+        if self.characterization_scope != "NC-02B2":
+            raise safety.SafetyError("Explicit verified NC-02B2 scope required.")
+        faults = {
+            "missing_winner",
+            "missing_count",
+            "count_3",
+            "count_8",
+            "count_negative",
+            "count_zero",
+            "one_sided",
+            "wrong_winner",
+            "stale_participant",
+        }
+        if kind not in faults:
+            raise safety.SafetyError("Unreviewed bracket validity fault.")
+        snapshot = self.bracket_snapshot()
+        bid = identity("bracket-draft")
+        candidates = [
+            m for m in snapshot["matches"] if m["bracket_id"] == bid and m["round"] == 4
+        ]
+        if len(candidates) != 1:
+            raise safety.SafetyError("Fixed synthetic draft required.")
+        row = candidates[0]
+        other = next(
+            m["team_a"]
+            for m in snapshot["matches"]
+            if m.get("team_a") and m["team_a"] not in (row["team_a"], row["team_b"])
+        )
+        changes = {
+            "missing_winner": {"predicted_winner": None},
+            "missing_count": {"predicted_winner_games": None},
+            "count_3": {"predicted_winner_games": 3},
+            "count_8": {"predicted_winner_games": 8},
+            "count_negative": {"predicted_winner_games": -1},
+            "count_zero": {"predicted_winner_games": 0},
+            "one_sided": {"team_a": None},
+            "wrong_winner": {"predicted_winner": other},
+            "stale_participant": {"team_a": other},
+        }[kind]
+        try:
+            self.module.supabase.table("matches").update(changes).eq(
+                "id", row["id"]
+            ).execute()
+            yield
+        finally:
+            self.module.supabase.table("matches").update(
+                {key: row[key] for key in changes}
+            ).eq("id", row["id"]).execute()
+
     def install_bracket_scenario(self, kind, *, role="user-a"):
         self._require_bracket_scope()
         from synthetic_fixtures import bracket_scenario
@@ -685,7 +746,8 @@ class GuardedHarness:
             "historical",
         } or role not in (
             {"user-a", "user-b", "admin", "owner"}
-            if self.characterization_scope in {"NC-01C", "NC-02A2", "NC-02B1"}
+            if self.characterization_scope
+            in {"NC-01C", "NC-02A2", "NC-02B1", "NC-02B2"}
             else {"user-a", "user-b", "admin"}
         ):
             raise safety.SafetyError("Unreviewed synthetic bracket scenario.")
@@ -737,7 +799,8 @@ class GuardedHarness:
         self._require_lease()
         if (
             not self._ready
-            or self.characterization_scope not in {"NC-01C", "NC-02A2", "NC-02B1"}
+            or self.characterization_scope
+            not in {"NC-01C", "NC-02A2", "NC-02B1", "NC-02B2"}
             or threading.get_ident() != self._owner
         ):
             raise safety.SafetyError("Explicit verified NC-01C context required.")
@@ -839,7 +902,10 @@ class GuardedHarness:
     def install_competitive_scenario(self):
         """Fixed NC-02A2 graph + stored scores/history; existing lease/reset gates apply."""
         self._require_league_scope()
-        if self.characterization_scope not in {"NC-02A2", "NC-02B1"} or self._brackets:
+        if (
+            self.characterization_scope not in {"NC-02A2", "NC-02B1", "NC-02B2"}
+            or self._brackets
+        ):
             raise safety.SafetyError("Fresh verified NC-02A2 context required.")
         from synthetic_fixtures import (
             score_history_scenario,
@@ -904,7 +970,7 @@ class GuardedHarness:
 
     def competitive_snapshot(self):
         self._require_league_scope()
-        if self.characterization_scope not in {"NC-02A2", "NC-02B1"}:
+        if self.characterization_scope not in {"NC-02A2", "NC-02B1", "NC-02B2"}:
             raise safety.SafetyError("Verified NC-02A2 context required.")
         result = self.bracket_snapshot()
         for table in (
@@ -1151,7 +1217,8 @@ class GuardedHarness:
         self._require_lease()
         if not self._ready or role not in (
             {"user-a", "user-b", "admin", "owner"}
-            if self.characterization_scope in {"NC-01C", "NC-02A2", "NC-02B1"}
+            if self.characterization_scope
+            in {"NC-01C", "NC-02A2", "NC-02B1", "NC-02B2"}
             else {"user-a", "user-b", "admin"}
         ):
             raise safety.SafetyError("Seeded smoke login required.")

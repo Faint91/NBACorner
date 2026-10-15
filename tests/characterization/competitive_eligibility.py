@@ -95,7 +95,11 @@ class CompetitiveEligibilityAcceptance(unittest.TestCase):
             "PATCH",
             f"/bracket/{self.ids['a']}/match/{m['id']}",
             role=role,
-            payload={"action": "set_winner", "team": m["team_a"], "games": games},
+            payload={
+                "action": "set_winner",
+                "team": m["team_a"],
+                "games": 1 if m["round"] == 0 else games,
+            },
         )
 
     def fill(self):

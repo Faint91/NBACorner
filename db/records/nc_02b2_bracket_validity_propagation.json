@@ -1,0 +1,274 @@
+{
+  "phase": "NC-02B2",
+  "status": "COMPLETED",
+  "starting_repositories": {
+    "backend": {
+      "branch": "main",
+      "head": "652d4096097fe2cb6660b9b16d1048cd2d4cb843",
+      "clean": true
+    },
+    "frontend": {
+      "branch": "main",
+      "head": "d62dd948b864086d0240f27bfbdefa2e9f46acc6",
+      "clean": true
+    }
+  },
+  "requirements": {
+    "B6": "Full valid ordinary graph required at explicit submission, not draft edit.",
+    "B7": "Strict integer 4/5/6/7; play-in canonical integer 1 and not directly editable.",
+    "B8": "Two distinct populated participants before prediction; selected winner must belong to them, including admin/master.",
+    "B9": "Recursive changed-input clearing through stored graph plus derived play-in loser edge, preserving unrelated branches."
+  },
+  "match_model": {
+    "conferences": [
+      "east",
+      "west",
+      "nba"
+    ],
+    "rounds": {
+      "0": "play-in",
+      "1": "first round",
+      "2": "semifinals",
+      "3": "conference final",
+      "4": "NBA Finals"
+    },
+    "required_shape": {
+      "east": [
+        3,
+        4,
+        2,
+        1
+      ],
+      "west": [
+        3,
+        4,
+        2,
+        1
+      ],
+      "nba": [
+        1
+      ]
+    },
+    "required_total": 21,
+    "winner_edges": [
+      "next_match_id",
+      "next_slot"
+    ],
+    "loser_edge": "Derived from existing same-conference play-in topology, not fixed IDs or slot numbers."
+  },
+  "helpers": {
+    "bracket_rules.py": [
+      "game_count_error",
+      "dependency_edges",
+      "output_team",
+      "apply_prediction",
+      "submission_error"
+    ],
+    "app.py": [
+      "current_master_bracket (identical B1 master identity extraction)"
+    ]
+  },
+  "routes_changed": [
+    "PATCH /bracket/<id>/match/<match_id>",
+    "PATCH /bracket/match/<match_id>/games",
+    "PATCH /bracket/<id>/save"
+  ],
+  "policy_preservation": {
+    "B1_guard_before_new_validation": true,
+    "deadline_equality_unchanged": true,
+    "admin_ordinary_content_denied": true,
+    "ordinary_owner_prelock_undo": true,
+    "master_postlock_mutation": true,
+    "B4_invalidation_unchanged": true,
+    "explicit_resubmit_required": true
+  },
+  "ordinary_submission_checks": [
+    "required round/conference graph shape",
+    "unique match IDs/coordinates",
+    "existing target IDs and valid slots",
+    "acyclic graph",
+    "valid round/conference edges",
+    "unique incoming slots",
+    "required feeder structure",
+    "upstream output/participant consistency",
+    "both participants present and distinct",
+    "winner belongs to participants",
+    "canonical required counts"
+  ],
+  "master_exception": {
+    "whole_graph_completion_required": false,
+    "incremental_incomplete_save_allowed": true,
+    "existing_predictions_must_have_valid_participants": true,
+    "present_counts_validated": true,
+    "playin_winner_count_is_1": true,
+    "normal_unfinished_count_may_be_null": true,
+    "dependencies_validated": true,
+    "authorization_unchanged": true
+  },
+  "count_semantics": {
+    "playin_omitted_on_selection": "automatic 1",
+    "playin_explicit_invalid_or_null": "400",
+    "playin_direct_edit_even_1": "400",
+    "normal_invalid_type_or_value": "400",
+    "normal_missing_draft_count": "NULL",
+    "winner_change_no_supplied_count": "clear prior count; remain unfinished",
+    "winner_change_valid_supplied_count": "store new winner/count pair",
+    "same_winner_count_change": "retain unchanged descendants; invalidate submission"
+  },
+  "propagation": {
+    "change_and_undo_same_traversal": true,
+    "changed_input_clears_winner_and_count": true,
+    "recursive_outputs_removed": true,
+    "opponent_dependency_covered": true,
+    "playin_winner_and_loser_feeds_covered": true,
+    "other_conference_untouched": true,
+    "unrelated_same_conference_branch_untouched": true,
+    "no_blanket_later_round_clear": true,
+    "existing_individual_write_architecture_preserved": true
+  },
+  "frontend": {
+    "files": [
+      "src/pages/BracketPage.tsx",
+      "src/lib/bracketValidity.ts",
+      "scripts/test-bracket-validity.cjs"
+    ],
+    "controls": "Existing 4/5/6/7, noneditable play-in, hasTeams guard and TBD conventions retained; handler domain validation added.",
+    "ordinary_readiness": "Required round/conference shape, identity uniqueness, participants, winner membership, count domain and winner edges. Backend is authoritative for full graph validity.",
+    "master_readiness": "Explicit admin-master incomplete-save exception.",
+    "graph": "Reload server graph and metadata after edits; remove stale pending counts only for changed participant pairs/edited source.",
+    "B1_access": "Preserved shared policy and deadline hook."
+  },
+  "converted_source_findings": [
+    "NC-01B:current_behavior__bracket__prediction_validation",
+    "NC-01B:current_behavior__bracket__game_count_values",
+    "NC-01B:current_behavior__bracket__winner_change_graph",
+    "NC-01B:current_behavior__bracket__undo_graph",
+    "NC-01B:current_behavior__bracket__partial_graph_save",
+    "NC-01B:current_behavior__bracket__save_completeness_static"
+  ],
+  "gap_status": {
+    "invalid_game_counts": "FIXED (NC-01B source finding; no separate canonical catalog gap ID)",
+    "one_sided_prediction": "FIXED (ordinary and master)",
+    "incomplete_submission": "FIXED under approved B6; no separately cataloged canonical gap",
+    "downstream_propagation": "FIXED recursive opponent dependencies; unaffected-branch preservation CONFIRMED",
+    "B1_lock_authorization": "PRESERVED",
+    "GAP-RESAVE-001": "PRESERVED / ALREADY FIXED NC-02A2"
+  },
+  "validation": {
+    "focused_guarded_live": {
+      "passed": true,
+      "tests": 10
+    },
+    "offline": {
+      "passed": true,
+      "tests": 238,
+      "new_rule_tests": 12,
+      "new_scope_tests": 3
+    },
+    "frontend": {
+      "passed": true,
+      "tests": 7,
+      "new_tests": 3
+    },
+    "typescript_vite_build": "PASS",
+    "lint_comparison": {
+      "baseline_page_errors": 28,
+      "current_page_errors": 16,
+      "added_findings": 0,
+      "new_files_errors": 0,
+      "new_files_warnings": 0
+    },
+    "syntax": "PASS 11 Python sources",
+    "formatting": "PASS Black for 10 rule/harness/test/tooling files and five changed app functions",
+    "historical_evidence": "PASS 41 schema/baseline/characterization/repair files byte-for-byte unchanged",
+    "consolidated_baseline": "PASS 155 source rows, 19 requirements, 19 canonical gaps; source provenance preserved",
+    "source_assertion_correction": "Canonical save-call check made whitespace-insensitive; all 10 affected static checks pass without application changes.",
+    "all_current_checks_passed": true,
+    "full_relevant_backend": {
+      "tests_run": 189,
+      "initial_passed": 188,
+      "initial_failures": 1,
+      "initial_errors": 0,
+      "only_initial_failure": "current_behavior__bracket__save_completeness_static",
+      "cause": "Source-only assertion expected an unwrapped call; formatter wrapped the call. Full run loaded old assertion before it was corrected.",
+      "correction": "Assertion checks canonical call and master argument independently of line wrapping.",
+      "affected_static_rerun": {
+        "passed": true,
+        "tests_run": 10,
+        "failures": 0,
+        "errors": 0,
+        "evidence": "db/records/nc_02b2_static_validation.json"
+      },
+      "remaining_failures": 0,
+      "application_changes_for_correction": false,
+      "raw_full_run_evidence_preserved": "db/records/nc_02b2_validation.json",
+      "includes": [
+        "10 B2 guarded live tests",
+        "8 B1 lock tests",
+        "7 A1 privacy tests",
+        "6 A2 live + 3 A2 offline acceptance",
+        "auth/bracket/league/scoring/history/operations regressions"
+      ]
+    },
+    "semantic_schema": "PASS",
+    "fixture_marker_v2": "PASS",
+    "secret_privacy_whitespace_audit": "PASS final manifest, secret/privacy patterns, JSON syntax, file sizes and whitespace; historical 41 evidence/schema files unchanged."
+  },
+  "test_environment": {
+    "only_enrolled_local_target": true,
+    "production_contact": false,
+    "fault_helper": "Fixed reviewed synthetic draft Finals faults only; lease, scope, owner-thread and reset guards retained; fields restored in context finally.",
+    "malformed_stored_count": "Cannot store malformed text in PostgreSQL integer column; covered through direct API and pure submission tests."
+  },
+  "schema_changes": false,
+  "nc_env_baseline_changed": false,
+  "deferred": {
+    "B10/B11": "bracket deletion lifecycle",
+    "B12": "season uniqueness",
+    "B13/B14": "master replacement/deletion/retirement",
+    "B15": "historical submitted/draft access"
+  },
+  "unchanged": [
+    "champion +3",
+    "finalist +1",
+    "snapshot tie ordering",
+    "standings provider",
+    "standings freeze",
+    "canonical season source",
+    "league lifecycle",
+    "account behavior"
+  ],
+  "production": {
+    "contacted": false,
+    "modified": false,
+    "deployed": false
+  },
+  "next_phase": "NC-02B3 — Bracket lifecycle, season uniqueness, master management and historical access",
+  "next_phase_started": false,
+  "verified_at_utc": "2026-10-15T05:40:15.120256+00:00",
+  "canonical_cleanup": {
+    "state": "SEEDED",
+    "version": "nc-fixtures-v1",
+    "checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+    "flask_stopped": true,
+    "lease_released": true,
+    "email_capture_empty": true,
+    "app_import_removed": true,
+    "jobs_disabled": true,
+    "readiness": {
+      "identity_verified": true,
+      "database_marker": "PASS",
+      "email": "PASS",
+      "providers": "PASS",
+      "external_credentials": "PASS",
+      "jobs": "PASS",
+      "jobs_enabled": false,
+      "fixture_state": "SEEDED",
+      "fixtures_reset": "PASS",
+      "integration_harness": "PASS",
+      "mutation_permitted": false,
+      "harness_state": "AVAILABLE_GUARDED",
+      "harness_scoped_mutation_permitted": false
+    }
+  }
+}
