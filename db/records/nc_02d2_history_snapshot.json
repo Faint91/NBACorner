@@ -1,0 +1,311 @@
+{
+  "phase": "NC-02D2",
+  "status": "COMPLETED",
+  "requirements": [
+    "SC5",
+    "SC10",
+    "SC11",
+    "SC12",
+    "SC13",
+    "SC14",
+    "SC15",
+    "SC16",
+    "SC17"
+  ],
+  "starting_state": {
+    "backend": {
+      "branch": "main",
+      "head": "4f61f0964a8e534b0b5ab9fe5cbcbdd6293c182e",
+      "clean": true
+    },
+    "frontend": {
+      "branch": "main",
+      "head": "1a23c571439068e2747e723c6756f6a1331858c8",
+      "clean": true
+    }
+  },
+  "canonical_orchestrator": {
+    "path": "history_service.py",
+    "function": "create_final_leaderboard_snapshot",
+    "callers": [
+      "admin snapshot route",
+      "rollover pre-cleanup wrapper"
+    ],
+    "master_authority": "D1 canonical season and active master only",
+    "fresh_scoring": "Successful D1 complete recompute required; exact observed inputs/computed score set retained internally",
+    "publication_source_fence": "D1 publisher recheck inside snapshot transaction must be unchanged/no-write; changed sources or scores are refused",
+    "no_stale_score_fallback": true
+  },
+  "ranking": {
+    "implementation": "scoring_engine.rank_live_rows (unchanged D1)",
+    "keys": [
+      "total_points DESC",
+      "full_hits DESC",
+      "saved_at UTC ASC"
+    ],
+    "ties": "competition ranking; identical keys share rank",
+    "display_tiebreak_only": [
+      "username",
+      "user_id",
+      "bracket_id"
+    ],
+    "stored_order": "rank then display_order then immutable row ID",
+    "username_competitive_tiebreak": false
+  },
+  "frozen_fields": [
+    "season",
+    "safe display_name",
+    "saved_at",
+    "rank",
+    "display_order",
+    "total_points",
+    "base_points",
+    "points_by_round",
+    "bonus_finalists",
+    "bonus_champion",
+    "full_hits",
+    "partial_hits",
+    "misses",
+    "per_match_points"
+  ],
+  "publisher": {
+    "migration": "db/post-baseline/0006_nc_02d2_final_snapshots.sql",
+    "function": "public.publish_leaderboard_snapshot(uuid,uuid,jsonb,jsonb,jsonb,jsonb,uuid)",
+    "owner": "postgres",
+    "security": "INVOKER",
+    "search_path": "pg_catalog,public",
+    "execute_roles": [
+      "postgres",
+      "service_role"
+    ],
+    "PUBLIC_anon_authenticated_execute": false,
+    "table_acl_rls_changes": false,
+    "atomicity": "New header + all rows + final marker commit together; no orphan or partial new snapshot",
+    "uniqueness": "One final snapshot per season; display_order unique inside snapshot",
+    "verification": [
+      "snapshot identity",
+      "canonical season",
+      "complete eligible IDs and scoring values",
+      "saved timestamps and competitive ranks/order",
+      "expected and actual row count",
+      "final marker"
+    ]
+  },
+  "immutability": {
+    "guard": "public.protect_final_leaderboard_history() triggers",
+    "completed_new_header": "no update/delete",
+    "completed_new_rows": "no insert/update/delete",
+    "application_truncate": "refused",
+    "owner_administration": "Existing database-owner capability retained for guarded fixture reset; no application bypass",
+    "repeat": "Existing verified final returned unchanged; no duplicate or overwrite",
+    "legacy_untagged": "Existing values unchanged/readable; no automatic final backfill or promotion; existing trusted insertion compatibility retained, no normal application writer appends"
+  },
+  "legacy_history": {
+    "retained": true,
+    "dependency": "Existing legacy-first read/write dependency retained for nonempty first publication; failures block attempt",
+    "authoritative_success": false,
+    "structured_failure_after_legacy_success": "Failure; legacy may remain, cleanup cannot begin",
+    "zero_participation": "No fabricated legacy row; verified complete structured header is sufficient",
+    "old_values_rewritten": false
+  },
+  "rollover": {
+    "pre_cleanup": "Validate canonical source/target/timing, successful canonical recompute, confirmed complete/final structured snapshot, then existing cleanup",
+    "failure_gate": "No rollover score/match deletion, bracket retirement, target creation or transition finalization when preservation fails",
+    "legitimate_D1_refresh": "May update scores/remove stale ineligible rows before snapshot; not destructive rollover cleanup",
+    "later_failure": "Immutable snapshot retained; no rollback/retry/resume added",
+    "post_gate_code_ast_unchanged": true,
+    "full_rollover_atomicity_claimed": false,
+    "C3_finalization": "Existing atomic canonical activation/standings clear preserved"
+  },
+  "SC17": {
+    "business_decision": "Approved by user: complete immutable zero-row final snapshot permits cleanup after all checks",
+    "requirements": [
+      "valid canonical season",
+      "valid active canonical master/graph",
+      "successful full recomputation/eligibility evaluation",
+      "explicit eligible competitor count zero",
+      "one structured final header",
+      "expected_rows=0",
+      "actual_rows=0",
+      "matching season and confirmed identity",
+      "immutable repeat behavior"
+    ],
+    "failure_is_never_empty": true,
+    "unresolved_question": false
+  },
+  "historical_API": {
+    "routes": [
+      "GET /leaderboard/history",
+      "GET /leaderboard/history/<season_code>"
+    ],
+    "safe_anonymous_read": true,
+    "new_nonfinal_records_hidden": true,
+    "stored_rank_order_authoritative": true,
+    "safe_allowlists": true,
+    "sensitive_fields_excluded": [
+      "email",
+      "password/hash",
+      "reset material",
+      "auth/security flags",
+      "private drafts",
+      "private-league-only data",
+      "live user/bracket IDs"
+    ],
+    "live_joins_for_ranking": false,
+    "old_stored_ranks_preserved": true
+  },
+  "frontend": {
+    "path": "src/pages/PastSeasonsPage.tsx",
+    "stored_ties_preserved": true,
+    "missing_rank": "unknown mark; no fabricated index rank",
+    "competitive_resort": false,
+    "UI_redesign": false
+  },
+  "evidence": {
+    "inventory": "db/records/nc_02d2_snapshot_path_inventory.json",
+    "focused": "db/records/nc_02d2_lifecycle_validation.json",
+    "complete_regression": "db/records/nc_02d2_validation.json",
+    "fresh_chain": "db/records/nc_02d2_fresh_migration_proof.json",
+    "frontend": "db/records/nc_02d2_frontend_validation.json",
+    "lint": "db/records/nc_02d2_lint_comparison.json",
+    "file_audit": "db/records/nc_02d2_file_audit.json"
+  },
+  "validation": {
+    "offline_tests": {
+      "passed": 293,
+      "failed": 0
+    },
+    "affected_offline_characterization": {
+      "passed": 33,
+      "failed": 0
+    },
+    "focused_live_tests": {
+      "passed": 8,
+      "failed": 0
+    },
+    "frontend_tests": {
+      "passed": 31,
+      "failed": 0
+    },
+    "typescript_vite_build": "PASS",
+    "frontend_lint": "Existing 83 errors/1 warning; changed file 6 errors/0 warnings, no new diagnostics",
+    "python_lint": "No configured/installed lint engine; AST import comparison, compile and Black used",
+    "prior_protected_files_unchanged": 100,
+    "complete_backend_regressions": {
+      "passed": 231,
+      "failed": 0,
+      "errors": 0
+    },
+    "final_focused_live_tests": {
+      "passed": 8,
+      "failed": 0
+    },
+    "fresh_chain_and_actual_failure_proof": "PASS",
+    "older_complete_snapshot_preserved": "PASS",
+    "null_display_order_refusal": "PASS",
+    "semantic_security_verifier": "PASS",
+    "new_unused_imports": 0,
+    "black_modules": 19,
+    "scoped_app_formatting": "PASS",
+    "whitespace": "PASS",
+    "secret_syntax_json_size_audit": "PASS"
+  },
+  "fixture_identity": {
+    "state": "SEEDED",
+    "version": "nc-fixtures-v1",
+    "checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+    "identity_changed": false,
+    "canonical_history_score_tables_empty": true
+  },
+  "production": {
+    "contact": false,
+    "history_query": false,
+    "migration": false,
+    "deployment": false,
+    "old_history_data_migration": "None; nullable schema additions preserve original stored ranks/values",
+    "future_rollover": "Fresh canonical evaluation plus complete structured final preservation required, including verified zero participation",
+    "preflight": [
+      "secured schema through 0005",
+      "canonical season/master/graph and saved metadata",
+      "history/current competition backup",
+      "review any existing unverified current-season structured headers",
+      "coordinated 0006/backend/frontend release"
+    ],
+    "rollback": "Pause callers, inspect committed state, preserve immutable records/metadata/backups and prefer a reviewed forward fix; no automatic restoration of prior cleanup"
+  },
+  "deferred": [
+    "full rollover global atomicity",
+    "partial cleanup recovery",
+    "retry/resume policy",
+    "exact trigger timing",
+    "master-completion business prerequisites",
+    "broader retention",
+    "league lifecycle",
+    "unrelated authentication"
+  ],
+  "repair_record": "docs/repairs/nc-02d2-history-snapshot.md",
+  "final_NC_02D_status": "D1 and D2 including SC17 completed locally; production unchanged; broader rollover recovery remains deferred",
+  "recommended_next_checkpoint": "Review NC-02D completion and explicitly select/authorize the next domain; broader rollover recovery requires a separate business checkpoint",
+  "next_domain_started": false,
+  "verified_at": "2026-10-15T22:58:21.957161+00:00",
+  "cleanup": {
+    "score_rows": 0,
+    "history_rows": 0,
+    "lease_released": true,
+    "standings_rows": 30,
+    "history_headers": 0,
+    "legacy_history_rows": 0,
+    "scratch_database_absent": true,
+    "canonical_designation_restored": true,
+    "flask_stopped": true,
+    "fixture_state": "SEEDED",
+    "fixture_version": "nc-fixtures-v1",
+    "fixture_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+    "jobs_disabled": true,
+    "email_capture_empty": true,
+    "app_import_removed": true,
+    "mutation_permitted": false
+  },
+  "frontend_commit": "66c9573ce4ad0878e69f72fddab2d40cf288d11f",
+  "files_changed": {
+    "backend": [
+      "app.py",
+      "db/post-baseline/0006_nc_02d2_final_snapshots.sql",
+      "db/post-baseline/README.md",
+      "db/post-baseline/verify_current_schema.sql",
+      "db/post-baseline/verify_nc_02d1_schema.sql",
+      "db/records/nc_02d2_file_audit.json",
+      "db/records/nc_02d2_fresh_migration_proof.json",
+      "db/records/nc_02d2_frontend_validation.json",
+      "db/records/nc_02d2_history_snapshot.json",
+      "db/records/nc_02d2_lifecycle_validation.json",
+      "db/records/nc_02d2_lint_comparison.json",
+      "db/records/nc_02d2_snapshot_path_inventory.json",
+      "db/records/nc_02d2_validation.json",
+      "docs/repairs/nc-02d2-history-snapshot.md",
+      "history_service.py",
+      "integration_harness.py",
+      "scoring_service.py",
+      "scripts/local_supabase_environment.py",
+      "scripts/nc02d2_acceptance_metadata.py",
+      "scripts/prove_history_migration.py",
+      "scripts/prove_scoring_migration.py",
+      "scripts/reset_local_fixtures.py",
+      "scripts/run_history_acceptance.py",
+      "tests/characterization/bracket_access.py",
+      "tests/characterization/competitive_offline.py",
+      "tests/characterization/history_snapshot.py",
+      "tests/characterization/operations_offline.py",
+      "tests/characterization/scoring_live.py",
+      "tests/characterization/scoring_offline.py",
+      "tests/characterization/scoring_static.py",
+      "tests/characterization/season_transition.py",
+      "tests/offline/test_history_service.py",
+      "tests/offline/test_scoring_service.py"
+    ],
+    "frontend": [
+      "src/pages/PastSeasonsPage.tsx",
+      "scripts/test-history-ranking.cjs"
+    ]
+  }
+}

@@ -64,7 +64,7 @@ BEGIN
   IF (SELECT string_agg(c.relname, ',' ORDER BY c.relname COLLATE "C") FROM pg_class c WHERE c.relnamespace='public'::regnamespace AND c.relkind IN ('r','p','v','m','S','f') AND NOT EXISTS (SELECT 1 FROM pg_depend d WHERE d.classid='pg_class'::regclass AND d.objid=c.oid AND d.deptype='e')) IS DISTINCT FROM 'application_season,bracket_scores,bracket_view,brackets,leaderboard_history,leaderboard_history_id_seq,leaderboard_history_rows,leaderboard_history_snapshots,league_members,leagues,matches,password_resets,password_resets_id_seq,seasons,standings,standings_id_seq,teams,users' THEN
     RAISE EXCEPTION 'Baseline mismatch: application relation inventory';
   END IF;
-  IF (SELECT string_agg(p.proname, ',' ORDER BY p.proname COLLATE "C") FROM pg_proc p WHERE p.pronamespace='public'::regnamespace AND NOT EXISTS (SELECT 1 FROM pg_depend d WHERE d.classid='pg_proc'::regclass AND d.objid=p.oid AND d.deptype='e')) IS DISTINCT FROM '_set_bracket_scores_season_id,_set_matches_season_id,atomic_update_match,create_master_bracket_atomic,finalize_season_transition,fix_season_master_on_bracket_soft_delete,publish_current_bracket_scores,publish_current_standings,set_master_bracket,set_winner_atomic,undo_prediction_atomic' THEN
+  IF (SELECT string_agg(p.proname, ',' ORDER BY p.proname COLLATE "C") FROM pg_proc p WHERE p.pronamespace='public'::regnamespace AND NOT EXISTS (SELECT 1 FROM pg_depend d WHERE d.classid='pg_proc'::regclass AND d.objid=p.oid AND d.deptype='e')) IS DISTINCT FROM '_set_bracket_scores_season_id,_set_matches_season_id,atomic_update_match,create_master_bracket_atomic,finalize_season_transition,fix_season_master_on_bracket_soft_delete,protect_final_leaderboard_history,publish_current_bracket_scores,publish_current_standings,publish_leaderboard_snapshot,set_master_bracket,set_winner_atomic,undo_prediction_atomic' THEN
     RAISE EXCEPTION 'Baseline mismatch: application function inventory';
   END IF;
   IF (SELECT relkind::text FROM pg_class WHERE oid='public.bracket_scores'::regclass) IS DISTINCT FROM 'r' THEN
@@ -826,7 +826,7 @@ BEGIN
   IF (SELECT relkind::text FROM pg_class WHERE oid='public.leaderboard_history_rows'::regclass) IS DISTINCT FROM 'r' THEN
     RAISE EXCEPTION 'Baseline mismatch: leaderboard_history_rows kind';
   END IF;
-  IF (SELECT string_agg(attname, ',' ORDER BY attnum) FROM pg_attribute WHERE attrelid='public.leaderboard_history_rows'::regclass AND attnum>0 AND NOT attisdropped) IS DISTINCT FROM 'id,snapshot_id,rank,display_name,total_points,bonus_finalists,bonus_champion,full_hits,partial_hits,misses,per_match_points,created_at' THEN
+  IF (SELECT string_agg(attname, ',' ORDER BY attnum) FROM pg_attribute WHERE attrelid='public.leaderboard_history_rows'::regclass AND attnum>0 AND NOT attisdropped) IS DISTINCT FROM 'id,snapshot_id,rank,display_name,total_points,bonus_finalists,bonus_champion,full_hits,partial_hits,misses,per_match_points,created_at,saved_at,display_order,base_points,points_by_round' THEN
     RAISE EXCEPTION 'Baseline mismatch: leaderboard_history_rows columns/order';
   END IF;
   IF (SELECT format_type(a.atttypid,a.atttypmod) FROM pg_attribute a WHERE a.attrelid='public.leaderboard_history_rows'::regclass AND a.attname='id' AND a.attnum>0 AND NOT a.attisdropped) IS DISTINCT FROM 'uuid' THEN
@@ -985,16 +985,16 @@ BEGIN
   IF (SELECT COALESCE(string_agg(polname, ',' ORDER BY polname COLLATE "C"),'') FROM pg_policy WHERE polrelid='public.leaderboard_history_rows'::regclass) IS DISTINCT FROM '' THEN
     RAISE EXCEPTION 'Baseline mismatch: leaderboard_history_rows pg_policy inventory';
   END IF;
-  IF (SELECT COALESCE(string_agg(tgname, ',' ORDER BY tgname COLLATE "C"),'') FROM pg_trigger WHERE tgrelid='public.leaderboard_history_rows'::regclass AND NOT tgisinternal) IS DISTINCT FROM '' THEN
+  IF (SELECT COALESCE(string_agg(tgname, ',' ORDER BY tgname COLLATE "C"),'') FROM pg_trigger WHERE tgrelid='public.leaderboard_history_rows'::regclass AND NOT tgisinternal) IS DISTINCT FROM 'nc_d2_immutable_rows,nc_d2_no_app_truncate' THEN
     RAISE EXCEPTION 'Baseline mismatch: leaderboard_history_rows pg_trigger inventory';
   END IF;
-  IF (SELECT string_agg(c.relname, ',' ORDER BY c.relname COLLATE "C") FROM pg_index i JOIN pg_class c ON c.oid=i.indexrelid WHERE i.indrelid='public.leaderboard_history_rows'::regclass) IS DISTINCT FROM 'idx_leaderboard_history_rows_snapshot,leaderboard_history_rows_pkey' THEN
+  IF (SELECT string_agg(c.relname, ',' ORDER BY c.relname COLLATE "C") FROM pg_index i JOIN pg_class c ON c.oid=i.indexrelid WHERE i.indrelid='public.leaderboard_history_rows'::regclass) IS DISTINCT FROM 'idx_leaderboard_history_rows_snapshot,leaderboard_history_rows_pkey,nc_d2_snapshot_display_order' THEN
     RAISE EXCEPTION 'Baseline mismatch: leaderboard_history_rows index inventory';
   END IF;
   IF (SELECT relkind::text FROM pg_class WHERE oid='public.leaderboard_history_snapshots'::regclass) IS DISTINCT FROM 'r' THEN
     RAISE EXCEPTION 'Baseline mismatch: leaderboard_history_snapshots kind';
   END IF;
-  IF (SELECT string_agg(attname, ',' ORDER BY attnum) FROM pg_attribute WHERE attrelid='public.leaderboard_history_snapshots'::regclass AND attnum>0 AND NOT attisdropped) IS DISTINCT FROM 'id,season_id,season_code,snapshot_at,columns,note,created_by,created_at' THEN
+  IF (SELECT string_agg(attname, ',' ORDER BY attnum) FROM pg_attribute WHERE attrelid='public.leaderboard_history_snapshots'::regclass AND attnum>0 AND NOT attisdropped) IS DISTINCT FROM 'id,season_id,season_code,snapshot_at,columns,note,created_by,created_at,expected_rows,is_final,master_bracket_id' THEN
     RAISE EXCEPTION 'Baseline mismatch: leaderboard_history_snapshots columns/order';
   END IF;
   IF (SELECT format_type(a.atttypid,a.atttypmod) FROM pg_attribute a WHERE a.attrelid='public.leaderboard_history_snapshots'::regclass AND a.attname='id' AND a.attnum>0 AND NOT a.attisdropped) IS DISTINCT FROM 'uuid' THEN
@@ -1105,10 +1105,10 @@ BEGIN
   IF (SELECT COALESCE(string_agg(polname, ',' ORDER BY polname COLLATE "C"),'') FROM pg_policy WHERE polrelid='public.leaderboard_history_snapshots'::regclass) IS DISTINCT FROM '' THEN
     RAISE EXCEPTION 'Baseline mismatch: leaderboard_history_snapshots pg_policy inventory';
   END IF;
-  IF (SELECT COALESCE(string_agg(tgname, ',' ORDER BY tgname COLLATE "C"),'') FROM pg_trigger WHERE tgrelid='public.leaderboard_history_snapshots'::regclass AND NOT tgisinternal) IS DISTINCT FROM '' THEN
+  IF (SELECT COALESCE(string_agg(tgname, ',' ORDER BY tgname COLLATE "C"),'') FROM pg_trigger WHERE tgrelid='public.leaderboard_history_snapshots'::regclass AND NOT tgisinternal) IS DISTINCT FROM 'nc_d2_immutable_header,nc_d2_no_app_truncate' THEN
     RAISE EXCEPTION 'Baseline mismatch: leaderboard_history_snapshots pg_trigger inventory';
   END IF;
-  IF (SELECT string_agg(c.relname, ',' ORDER BY c.relname COLLATE "C") FROM pg_index i JOIN pg_class c ON c.oid=i.indexrelid WHERE i.indrelid='public.leaderboard_history_snapshots'::regclass) IS DISTINCT FROM 'idx_leaderboard_history_snapshots_code,idx_leaderboard_history_snapshots_season,leaderboard_history_snapshots_pkey' THEN
+  IF (SELECT string_agg(c.relname, ',' ORDER BY c.relname COLLATE "C") FROM pg_index i JOIN pg_class c ON c.oid=i.indexrelid WHERE i.indrelid='public.leaderboard_history_snapshots'::regclass) IS DISTINCT FROM 'idx_leaderboard_history_snapshots_code,idx_leaderboard_history_snapshots_season,leaderboard_history_snapshots_pkey,nc_d2_one_final_snapshot' THEN
     RAISE EXCEPTION 'Baseline mismatch: leaderboard_history_snapshots index inventory';
   END IF;
   IF (SELECT relkind::text FROM pg_class WHERE oid='public.league_members'::regclass) IS DISTINCT FROM 'r' THEN
@@ -4585,4 +4585,113 @@ END;
  IF has_function_privilege('anon',f,'EXECUTE') OR has_function_privilege('authenticated',f,'EXECUTE') OR NOT has_function_privilege('service_role',f,'EXECUTE') THEN RAISE EXCEPTION 'Score publisher ACL mismatch'; END IF;
  IF (SELECT count(*) FROM pg_proc p,LATERAL aclexplode(p.proacl) a WHERE p.oid=f AND (a.grantee NOT IN ('postgres'::regrole,'service_role'::regrole) OR a.privilege_type<>'EXECUTE' OR a.is_grantable))<>0 THEN RAISE EXCEPTION 'Unexpected score execute grants'; END IF;
 END $scores_verify$;
+DO $history_verify$
+DECLARE f oid; BEGIN
+ f:=to_regprocedure('public.protect_final_leaderboard_history()');
+ IF f IS NULL THEN RAISE EXCEPTION 'History function missing'; END IF;
+ IF (SELECT p.proowner='postgres'::regrole AND l.lanname='plpgsql' AND NOT p.prosecdef AND p.proconfig=ARRAY['search_path=pg_catalog, public']::text[] AND NOT p.proretset FROM pg_proc p JOIN pg_language l ON l.oid=p.prolang WHERE p.oid=f) IS DISTINCT FROM true THEN RAISE EXCEPTION 'History function configuration mismatch'; END IF;
+ IF (SELECT prosrc FROM pg_proc WHERE oid=f) IS DISTINCT FROM '
+DECLARE frozen boolean; BEGIN
+ IF TG_OP=''TRUNCATE'' THEN
+  -- Owner-only administrative reset is not an application mutation capability.
+  IF current_user<>''postgres'' THEN RAISE EXCEPTION ''Historical snapshots are immutable''; END IF;
+  RETURN NULL;
+ END IF;
+ IF TG_TABLE_NAME=''leaderboard_history_snapshots'' THEN
+  IF TG_OP=''INSERT'' THEN
+   IF NEW.is_final IS TRUE THEN RAISE EXCEPTION ''Final snapshots require atomic publication''; END IF;
+   RETURN NEW;
+  END IF;
+  IF OLD.is_final IS DISTINCT FROM FALSE THEN RAISE EXCEPTION ''Historical snapshots are immutable''; END IF;
+  IF TG_OP=''UPDATE'' AND NEW.is_final IS TRUE THEN
+   IF NEW.expected_rows IS NULL OR NEW.expected_rows<0 OR NEW.master_bracket_id IS NULL
+    OR (SELECT count(*) FROM public.leaderboard_history_rows WHERE snapshot_id=NEW.id)<>NEW.expected_rows
+    THEN RAISE EXCEPTION ''Incomplete structured snapshot''; END IF;
+  END IF;
+ ELSE
+  IF TG_OP<>''INSERT'' THEN
+   SELECT is_final INTO frozen FROM public.leaderboard_history_snapshots WHERE id=OLD.snapshot_id;
+   IF frozen IS DISTINCT FROM FALSE THEN RAISE EXCEPTION ''Historical snapshots are immutable''; END IF;
+  END IF;
+  IF TG_OP<>''DELETE'' THEN
+   SELECT is_final INTO frozen FROM public.leaderboard_history_snapshots WHERE id=NEW.snapshot_id FOR SHARE;
+   IF frozen IS TRUE THEN RAISE EXCEPTION ''Historical snapshots are immutable''; END IF;
+  END IF;
+ END IF;
+ IF TG_OP=''DELETE'' THEN RETURN OLD; END IF;
+ RETURN NEW;
+END;
+' THEN RAISE EXCEPTION 'History function body mismatch'; END IF;
+ IF has_function_privilege('anon',f,'EXECUTE') OR has_function_privilege('authenticated',f,'EXECUTE') OR NOT has_function_privilege('service_role',f,'EXECUTE') THEN RAISE EXCEPTION 'History function ACL mismatch'; END IF;
+ IF (SELECT count(*) FROM pg_proc p,LATERAL aclexplode(p.proacl) a WHERE p.oid=f AND (a.grantee NOT IN ('postgres'::regrole,'service_role'::regrole) OR a.privilege_type<>'EXECUTE' OR a.is_grantable))<>0 THEN RAISE EXCEPTION 'Unexpected history execute grants'; END IF;
+ f:=to_regprocedure('public.publish_leaderboard_snapshot(uuid,uuid,jsonb,jsonb,jsonb,jsonb,uuid)');
+ IF f IS NULL THEN RAISE EXCEPTION 'History function missing'; END IF;
+ IF (SELECT p.proowner='postgres'::regrole AND l.lanname='plpgsql' AND NOT p.prosecdef AND p.proconfig=ARRAY['search_path=pg_catalog, public']::text[] AND NOT p.proretset FROM pg_proc p JOIN pg_language l ON l.oid=p.prolang WHERE p.oid=f) IS DISTINCT FROM true THEN RAISE EXCEPTION 'History function configuration mismatch'; END IF;
+ IF (SELECT prosrc FROM pg_proc WHERE oid=f) IS DISTINCT FROM '
+DECLARE evaluation jsonb; header public.leaderboard_history_snapshots; row_count integer; actual_count integer; source_ids jsonb; payload_ids jsonb; BEGIN
+ -- Reuse D1''s complete eligibility/canonical/source validation and transaction locks.
+ -- Any attempted repair here rolls back; only the successfully recomputed state is accepted.
+ evaluation:=public.publish_current_bracket_scores(p_season_id,p_master_id,p_source,p_scores);
+ IF (evaluation->>''written_rows'')::integer<>0 THEN RAISE EXCEPTION ''Recomputed score state changed'' USING ERRCODE=''40001''; END IF;
+ SELECT * INTO header FROM public.leaderboard_history_snapshots WHERE season_id=p_season_id AND is_final IS TRUE;
+ IF FOUND THEN
+  SELECT count(*) INTO actual_count FROM public.leaderboard_history_rows WHERE snapshot_id=header.id;
+  IF header.expected_rows IS NULL OR actual_count<>header.expected_rows THEN RAISE EXCEPTION ''Existing final snapshot incomplete''; END IF;
+  RETURN jsonb_build_object(''state'',''existing'',''snapshot_id'',header.id,''season_id'',header.season_id,''season_code'',header.season_code,''expected_rows'',header.expected_rows,''actual_rows'',actual_count,''is_final'',true);
+ END IF;
+ IF EXISTS(SELECT 1 FROM public.leaderboard_history_snapshots WHERE season_id=p_season_id) THEN RAISE EXCEPTION ''Existing unverified history requires review''; END IF;
+ IF jsonb_typeof(p_rows) IS DISTINCT FROM ''array'' OR jsonb_typeof(p_columns) IS DISTINCT FROM ''array'' THEN RAISE EXCEPTION ''Invalid structured snapshot payload''; END IF;
+ row_count:=jsonb_array_length(p_scores);
+ IF jsonb_array_length(p_rows)<>row_count THEN RAISE EXCEPTION ''Incomplete snapshot payload''; END IF;
+ SELECT coalesce(jsonb_agg((r->>''bracket_id'')::uuid ORDER BY (r->>''bracket_id'')::uuid),''[]''::jsonb) INTO source_ids FROM jsonb_array_elements(p_scores) r;
+ SELECT coalesce(jsonb_agg((r->>''bracket_id'')::uuid ORDER BY (r->>''bracket_id'')::uuid),''[]''::jsonb) INTO payload_ids FROM jsonb_array_elements(p_rows) r;
+ IF source_ids IS DISTINCT FROM payload_ids THEN RAISE EXCEPTION ''Snapshot competitor mismatch''; END IF;
+ IF EXISTS(SELECT 1 FROM jsonb_array_elements(p_rows) WITH ORDINALITY AS x(r,n) WHERE
+  (SELECT array_agg(k ORDER BY k) FROM jsonb_object_keys(r) k) IS DISTINCT FROM ARRAY[''base_points'',''bonus_champion'',''bonus_finalists'',''bracket_id'',''display_name'',''display_order'',''full_hits'',''misses'',''partial_hits'',''per_match_points'',''points_by_round'',''rank'',''saved_at'',''total_points'']::text[]
+  OR jsonb_typeof(r->''display_name'') IS DISTINCT FROM ''string'' OR (r->>''display_order'')::integer IS DISTINCT FROM n
+  OR jsonb_typeof(r->''per_match_points'') IS DISTINCT FROM ''object''
+  OR EXISTS(SELECT 1 FROM jsonb_each(r->''per_match_points'') q WHERE jsonb_typeof(q.value) IS DISTINCT FROM ''number'')
+ ) THEN RAISE EXCEPTION ''Invalid frozen row''; END IF;
+ IF EXISTS(
+  SELECT 1 FROM jsonb_to_recordset(p_rows) AS r(bracket_id uuid,rank integer,saved_at timestamptz,total_points integer,full_hits integer,partial_hits integer,misses integer,bonus_finalists integer,bonus_champion integer,points_by_round jsonb,base_points integer,per_match_points jsonb)
+  JOIN public.brackets b ON b.id=r.bracket_id JOIN public.bracket_scores s ON s.bracket_id=r.bracket_id
+  WHERE r.saved_at IS DISTINCT FROM b.saved_at OR r.total_points IS DISTINCT FROM s.total_points OR r.full_hits IS DISTINCT FROM s.full_hits
+   OR r.partial_hits IS DISTINCT FROM s.partial_hits OR r.misses IS DISTINCT FROM s.misses OR r.bonus_finalists IS DISTINCT FROM s.bonus_finalists OR r.bonus_champion IS DISTINCT FROM s.bonus_champion
+   OR r.points_by_round IS DISTINCT FROM s.points_by_round
+   OR r.base_points IS DISTINCT FROM coalesce((SELECT sum((v.value::text)::integer) FROM jsonb_each(s.points_by_round) v),0)
+   OR r.per_match_points IS DISTINCT FROM (SELECT coalesce(jsonb_object_agg(k.key,k.value->''points''),''{}''::jsonb) FROM jsonb_each(s.points_by_match) k)
+ ) THEN RAISE EXCEPTION ''Snapshot score/source mismatch''; END IF;
+ IF EXISTS(SELECT 1 FROM (
+  SELECT r.*, rank() OVER(ORDER BY total_points DESC,full_hits DESC,saved_at ASC) AS required_rank
+  FROM jsonb_to_recordset(p_rows) AS r(rank integer,total_points integer,full_hits integer,saved_at timestamptz,display_order integer)
+ ) x WHERE rank IS DISTINCT FROM required_rank) OR EXISTS(
+  SELECT 1 FROM (SELECT (r->>''rank'')::integer AS rank,lag((r->>''rank'')::integer) OVER(ORDER BY n) AS prior FROM jsonb_array_elements(p_rows) WITH ORDINALITY AS a(r,n)) x WHERE prior>rank
+ ) THEN RAISE EXCEPTION ''Invalid competition rank/order''; END IF;
+ INSERT INTO public.leaderboard_history_snapshots(season_id,season_code,columns,created_by,expected_rows,is_final,master_bracket_id)
+ SELECT p_season_id,code,p_columns,p_created_by,row_count,false,p_master_id FROM public.seasons WHERE id=p_season_id RETURNING * INTO STRICT header;
+ INSERT INTO public.leaderboard_history_rows(snapshot_id,rank,display_name,total_points,bonus_finalists,bonus_champion,full_hits,partial_hits,misses,per_match_points,saved_at,display_order,base_points,points_by_round)
+ SELECT header.id,x.rank,x.display_name,x.total_points,x.bonus_finalists,x.bonus_champion,x.full_hits,x.partial_hits,x.misses,x.per_match_points,x.saved_at,x.display_order,x.base_points,x.points_by_round
+ FROM jsonb_to_recordset(p_rows) AS x(rank integer,display_name text,total_points integer,bonus_finalists integer,bonus_champion integer,full_hits integer,partial_hits integer,misses integer,per_match_points jsonb,saved_at timestamptz,display_order integer,base_points integer,points_by_round jsonb);
+ UPDATE public.leaderboard_history_snapshots SET is_final=true WHERE id=header.id;
+ SELECT count(*) INTO actual_count FROM public.leaderboard_history_rows WHERE snapshot_id=header.id;
+ IF actual_count<>row_count THEN RAISE EXCEPTION ''Snapshot row verification failed''; END IF;
+ RETURN jsonb_build_object(''state'',''created'',''snapshot_id'',header.id,''season_id'',header.season_id,''season_code'',header.season_code,''expected_rows'',row_count,''actual_rows'',actual_count,''is_final'',true);
+END;
+' THEN RAISE EXCEPTION 'History function body mismatch'; END IF;
+ IF has_function_privilege('anon',f,'EXECUTE') OR has_function_privilege('authenticated',f,'EXECUTE') OR NOT has_function_privilege('service_role',f,'EXECUTE') THEN RAISE EXCEPTION 'History function ACL mismatch'; END IF;
+ IF (SELECT count(*) FROM pg_proc p,LATERAL aclexplode(p.proacl) a WHERE p.oid=f AND (a.grantee NOT IN ('postgres'::regrole,'service_role'::regrole) OR a.privilege_type<>'EXECUTE' OR a.is_grantable))<>0 THEN RAISE EXCEPTION 'Unexpected history execute grants'; END IF;
+ IF (SELECT format_type(a.atttypid,a.atttypmod)='integer' AND NOT a.attnotnull AND a.attidentity='' AND a.attgenerated='' AND a.attacl IS NULL AND d.oid IS NULL FROM pg_attribute a LEFT JOIN pg_attrdef d ON d.adrelid=a.attrelid AND d.adnum=a.attnum WHERE a.attrelid='public.leaderboard_history_snapshots'::regclass AND a.attname='expected_rows' AND NOT a.attisdropped) IS DISTINCT FROM true THEN RAISE EXCEPTION 'History column mismatch'; END IF;
+ IF (SELECT format_type(a.atttypid,a.atttypmod)='boolean' AND NOT a.attnotnull AND a.attidentity='' AND a.attgenerated='' AND a.attacl IS NULL AND d.oid IS NULL FROM pg_attribute a LEFT JOIN pg_attrdef d ON d.adrelid=a.attrelid AND d.adnum=a.attnum WHERE a.attrelid='public.leaderboard_history_snapshots'::regclass AND a.attname='is_final' AND NOT a.attisdropped) IS DISTINCT FROM true THEN RAISE EXCEPTION 'History column mismatch'; END IF;
+ IF (SELECT format_type(a.atttypid,a.atttypmod)='uuid' AND NOT a.attnotnull AND a.attidentity='' AND a.attgenerated='' AND a.attacl IS NULL AND d.oid IS NULL FROM pg_attribute a LEFT JOIN pg_attrdef d ON d.adrelid=a.attrelid AND d.adnum=a.attnum WHERE a.attrelid='public.leaderboard_history_snapshots'::regclass AND a.attname='master_bracket_id' AND NOT a.attisdropped) IS DISTINCT FROM true THEN RAISE EXCEPTION 'History column mismatch'; END IF;
+ IF (SELECT format_type(a.atttypid,a.atttypmod)='timestamp with time zone' AND NOT a.attnotnull AND a.attidentity='' AND a.attgenerated='' AND a.attacl IS NULL AND d.oid IS NULL FROM pg_attribute a LEFT JOIN pg_attrdef d ON d.adrelid=a.attrelid AND d.adnum=a.attnum WHERE a.attrelid='public.leaderboard_history_rows'::regclass AND a.attname='saved_at' AND NOT a.attisdropped) IS DISTINCT FROM true THEN RAISE EXCEPTION 'History column mismatch'; END IF;
+ IF (SELECT format_type(a.atttypid,a.atttypmod)='integer' AND NOT a.attnotnull AND a.attidentity='' AND a.attgenerated='' AND a.attacl IS NULL AND d.oid IS NULL FROM pg_attribute a LEFT JOIN pg_attrdef d ON d.adrelid=a.attrelid AND d.adnum=a.attnum WHERE a.attrelid='public.leaderboard_history_rows'::regclass AND a.attname='display_order' AND NOT a.attisdropped) IS DISTINCT FROM true THEN RAISE EXCEPTION 'History column mismatch'; END IF;
+ IF (SELECT format_type(a.atttypid,a.atttypmod)='integer' AND NOT a.attnotnull AND a.attidentity='' AND a.attgenerated='' AND a.attacl IS NULL AND d.oid IS NULL FROM pg_attribute a LEFT JOIN pg_attrdef d ON d.adrelid=a.attrelid AND d.adnum=a.attnum WHERE a.attrelid='public.leaderboard_history_rows'::regclass AND a.attname='base_points' AND NOT a.attisdropped) IS DISTINCT FROM true THEN RAISE EXCEPTION 'History column mismatch'; END IF;
+ IF (SELECT format_type(a.atttypid,a.atttypmod)='jsonb' AND NOT a.attnotnull AND a.attidentity='' AND a.attgenerated='' AND a.attacl IS NULL AND d.oid IS NULL FROM pg_attribute a LEFT JOIN pg_attrdef d ON d.adrelid=a.attrelid AND d.adnum=a.attnum WHERE a.attrelid='public.leaderboard_history_rows'::regclass AND a.attname='points_by_round' AND NOT a.attisdropped) IS DISTINCT FROM true THEN RAISE EXCEPTION 'History column mismatch'; END IF;
+ IF (SELECT pg_get_triggerdef(oid,true)='CREATE TRIGGER nc_d2_immutable_rows BEFORE INSERT OR DELETE OR UPDATE ON leaderboard_history_rows FOR EACH ROW EXECUTE FUNCTION protect_final_leaderboard_history()' AND tgenabled='O' FROM pg_trigger WHERE tgrelid='public.leaderboard_history_rows'::regclass AND tgname='nc_d2_immutable_rows') IS DISTINCT FROM true THEN RAISE EXCEPTION 'History trigger mismatch'; END IF;
+ IF (SELECT pg_get_triggerdef(oid,true)='CREATE TRIGGER nc_d2_no_app_truncate BEFORE TRUNCATE ON leaderboard_history_rows FOR EACH STATEMENT EXECUTE FUNCTION protect_final_leaderboard_history()' AND tgenabled='O' FROM pg_trigger WHERE tgrelid='public.leaderboard_history_rows'::regclass AND tgname='nc_d2_no_app_truncate') IS DISTINCT FROM true THEN RAISE EXCEPTION 'History trigger mismatch'; END IF;
+ IF (SELECT pg_get_triggerdef(oid,true)='CREATE TRIGGER nc_d2_no_app_truncate BEFORE TRUNCATE ON leaderboard_history_snapshots FOR EACH STATEMENT EXECUTE FUNCTION protect_final_leaderboard_history()' AND tgenabled='O' FROM pg_trigger WHERE tgrelid='public.leaderboard_history_snapshots'::regclass AND tgname='nc_d2_no_app_truncate') IS DISTINCT FROM true THEN RAISE EXCEPTION 'History trigger mismatch'; END IF;
+ IF (SELECT pg_get_triggerdef(oid,true)='CREATE TRIGGER nc_d2_immutable_header BEFORE INSERT OR DELETE OR UPDATE ON leaderboard_history_snapshots FOR EACH ROW EXECUTE FUNCTION protect_final_leaderboard_history()' AND tgenabled='O' FROM pg_trigger WHERE tgrelid='public.leaderboard_history_snapshots'::regclass AND tgname='nc_d2_immutable_header') IS DISTINCT FROM true THEN RAISE EXCEPTION 'History trigger mismatch'; END IF;
+ IF (SELECT pg_get_indexdef(indexrelid)='CREATE UNIQUE INDEX nc_d2_one_final_snapshot ON public.leaderboard_history_snapshots USING btree (season_id) WHERE (is_final IS TRUE)' AND indisunique AND indisvalid FROM pg_index WHERE indexrelid='public.nc_d2_one_final_snapshot'::regclass) IS DISTINCT FROM true THEN RAISE EXCEPTION 'History unique index mismatch'; END IF;
+ IF (SELECT pg_get_indexdef(indexrelid)='CREATE UNIQUE INDEX nc_d2_snapshot_display_order ON public.leaderboard_history_rows USING btree (snapshot_id, display_order)' AND indisunique AND indisvalid FROM pg_index WHERE indexrelid='public.nc_d2_snapshot_display_order'::regclass) IS DISTINCT FROM true THEN RAISE EXCEPTION 'History unique index mismatch'; END IF;
+END $history_verify$;
 COMMIT;

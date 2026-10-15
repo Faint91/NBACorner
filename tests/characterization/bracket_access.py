@@ -650,7 +650,7 @@ class CurrentBracketBehavior(unittest.TestCase):
             payload={"games": 4},
         )
         self.call("DELETE", f"/bracket/{bid}", 403, role="user-a")
-        self.call("GET", "/leaderboard/history", 401)
+        self.call("GET", "/leaderboard/history", 200)
         self.call("GET", "/leaderboard/history", 200, role="user-a")
         self.call("GET", "/leaderboard/history/2024-25", 404, role="user-a")
 

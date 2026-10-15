@@ -216,6 +216,7 @@ def main():
             sql_file(ROOT / "db/post-baseline/0003_nc_02c2_atomic_standings.sql")
             sql_file(ROOT / "db/post-baseline/0004_nc_02c3_season_transition.sql")
             sql_file(ROOT / "db/post-baseline/0005_nc_02d1_atomic_scores.sql")
+            sql_file(ROOT / "db/post-baseline/0006_nc_02d2_final_snapshots.sql")
             sql_file(ROOT / "db/post-baseline/verify_current_schema.sql")
             sql_file(WORK / "identity-marker.sql")
             sql_file(WORK / "fixture-marker-v2.sql")

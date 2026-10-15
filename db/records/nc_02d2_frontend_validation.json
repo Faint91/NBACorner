@@ -1,0 +1,16 @@
+{
+  "phase": "NC-02D2",
+  "frontend_tests_passed": 31,
+  "typescript_vite_build": "PASS",
+  "lint": {
+    "file": "src/pages/PastSeasonsPage.tsx",
+    "before_errors": 6,
+    "after_errors": 6,
+    "before_warnings": 0,
+    "after_warnings": 0,
+    "new_diagnostics": [],
+    "total_errors": 83,
+    "total_warnings": 1
+  },
+  "production_contact": false
+}

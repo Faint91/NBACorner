@@ -146,6 +146,40 @@ class CurrentOfflineOperations(unittest.TestCase):
         self.ns["get_current_season"] = lambda client: self.ns["current_season"]()
         self.ns["has_request_context"] = lambda: False
         self.facts = {}
+        # Isolate this existing post-gate cleanup double from snapshot internals.
+        # Canonical recompute/atomic DB publication are covered by D2 live/SQL tests.
+        self.ns["_snapshot_leaderboard_for_current_season"] = self.snapshot_boundary
+
+    def snapshot_boundary(self):
+        try:
+            self.db.table("leaderboard_history").insert(
+                [dict(season_id="current")]
+            ).execute()
+            header = (
+                self.db.table("leaderboard_history_snapshots")
+                .insert(dict(season_id="current"))
+                .execute()
+                .data[0]
+            )
+            rows = [
+                dict(snapshot_id=header["id"], rank=i + 1)
+                for i, _ in enumerate(self.db.rows.get("bracket_scores", []))
+            ]
+            if rows:
+                self.db.table("leaderboard_history_rows").insert(rows).execute()
+            return dict(
+                ok=True,
+                structured_complete=True,
+                is_final=True,
+                season_id="current",
+                history_snapshot_id=header["id"],
+                expected_rows=len(rows),
+                actual_rows=len(rows),
+                rows_snapshot=len(rows),
+                history_rows_count=len(rows),
+            )
+        except RuntimeError:
+            return dict(ok=False, error="Synthetic structured failure", status=503)
 
     def tearDown(self):
         r = dict(getattr(self, self._testMethodName).metadata)
@@ -410,11 +444,10 @@ class CurrentOfflineOperations(unittest.TestCase):
         self.rollover_state()
         self.db.fail = ("leaderboard_history_snapshots", "insert")
         r = self.roll()
-        self.assertTrue(r["ok"])
+        self.assertFalse(r["ok"])
         self.assertTrue(self.db.rows["leaderboard_history"])
-        self.assertEqual(
-            self.db.rows["matches"], [dict(id="past", season_id="historical")]
-        )
+        self.assertEqual(len(self.db.rows["matches"]), 2)
+        self.assertFalse(any(op == "delete" for _, op in self.db.calls))
 
     @behavior(
         "season lifecycle",

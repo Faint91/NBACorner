@@ -83,6 +83,22 @@ class CompetitiveEligibilityOffline(unittest.TestCase):
         self.db.rows["leaderboard_history"] = [old.copy()]
         rows = self.ns["_build_leaderboard_rows_for_current_season"]()
         self.assertEqual([r["bracket_id"] for r in rows], ["b"])
+        # The old in-memory source fixture has no canonical master graph. Mock only
+        # the orchestration boundary; D2 real HTTP/DB cases prove preservation.
+        from history_service import SnapshotError
+
+        self.ns["SnapshotError"] = SnapshotError
+
+        def snapshot(client, **kwargs):
+            self.assertEqual(kwargs["expected_season_id"], "current")
+            return dict(
+                ok=True,
+                rows_snapshot=len(
+                    self.ns["_build_leaderboard_rows_for_current_season"]()
+                ),
+            )
+
+        self.ns["create_final_leaderboard_snapshot"] = snapshot
         result = self.ns["_snapshot_leaderboard_for_current_season"]()
         self.assertTrue(result["ok"])
         self.assertEqual(self.db.rows["leaderboard_history"][0], old)

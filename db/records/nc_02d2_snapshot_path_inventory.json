@@ -1,0 +1,59 @@
+{
+  "phase": "NC-02D2",
+  "starting_backend": "4f61f0964a8e534b0b5ab9fe5cbcbdd6293c182e",
+  "starting_frontend": "1a23c571439068e2747e723c6756f6a1331858c8",
+  "branches": "main",
+  "starting_trees_clean": true,
+  "paths": [
+    {
+      "path": "app._build_leaderboard_rows_for_current_season",
+      "source": "stored current scores plus current saved/nondeleted brackets and usernames",
+      "rank_source": "none; omits saved_at",
+      "master_source": "none",
+      "write": "none",
+      "caller": "snapshot helper"
+    },
+    {
+      "path": "app._snapshot_leaderboard_for_current_season",
+      "source": "builder",
+      "season": "canonical request season",
+      "master": "not resolved/recomputed",
+      "ranking": "points DESC, full hits DESC, username ASC; sequential ranks",
+      "write": "legacy bulk insert, structured header insert, structured rows insert in separate transactions",
+      "duplicate": "legacy season rows only",
+      "immutability": "no overwrite method but no DB guard",
+      "privacy": "structured names and numeric competition data; legacy internal user/bracket references",
+      "caller": "admin snapshot and rollover"
+    },
+    {
+      "path": "app._rollover_current_season",
+      "source": "snapshot helper result",
+      "gate": "ok or legacy duplicate error accepted; structured failure can appear successful",
+      "writes": "scores delete, matches delete, bracket retirement, target create, C3 atomic finalization; separately committed",
+      "scope": "D2 changes only pre-cleanup gate"
+    },
+    {
+      "path": "GET /leaderboard/history and /leaderboard/history/<season_code>",
+      "source": "latest structured header and rows; no current joins",
+      "ranking": "points DESC/full hits DESC rather than stored rank",
+      "auth": "JWT",
+      "privacy": "explicit safe fields; columns JSON passed through"
+    },
+    {
+      "path": "frontend/src/pages/PastSeasonsPage.tsx",
+      "source": "structured history API",
+      "ranking": "stored rank or sequential index fallback; no competitive row sort",
+      "write": "none"
+    },
+    {
+      "path": "DB leaderboard_history, leaderboard_history_snapshots, leaderboard_history_rows",
+      "source": "legacy and structured separate representations",
+      "atomicity": "no combined publisher",
+      "immutability": "no final marker or write guard",
+      "uniqueness": "multiple structured headers per season allowed"
+    }
+  ],
+  "SC17": "Approved: successful canonical evaluation with zero eligible competitors creates one complete immutable zero-row snapshot; verified success permits cleanup; failure/unknown is never emptiness",
+  "old_history_policy": "No rewrite/backfill of old ranks or rows; unverified existing structured history cannot satisfy the new final gate",
+  "production_contact": false
+}

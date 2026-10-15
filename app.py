@@ -1,3 +1,9 @@
+from history_service import (
+    create_final_leaderboard_snapshot,
+    SnapshotError,
+    public_snapshot_rows,
+    public_columns,
+)
 from scoring_engine import rank_live_rows
 from scoring_service import (
     recompute_current_scores,
@@ -789,8 +795,8 @@ def admin_snapshot_leaderboard():
     - Fails if:
       * user is not admin
       * CURRENT_SEASON_ID is missing
-      * snapshot already exists for this season
-      * there are no leaderboard rows to snapshot
+      * canonical recomputation or structured publication fails
+    A verified zero-competitor final snapshot is supported (SC17).
     """
     guard_runtime_job("leaderboard-snapshot")
     user_info = request.user or {}
@@ -814,7 +820,10 @@ def admin_snapshot_leaderboard():
         if not user_row or not user_row[0].get("is_admin", False):
             return jsonify({"error": "Forbidden"}), 403
     except Exception as e:
-        safe_print("🔴 DB error verifying admin in /admin/leaderboard/snapshot (class):", type(e).__name__)
+        safe_print(
+            "🔴 DB error verifying admin in /admin/leaderboard/snapshot (class):",
+            type(e).__name__,
+        )
         return jsonify({"error": "Unexpected error"}), 500
 
     # Run the snapshot helper
@@ -822,14 +831,11 @@ def admin_snapshot_leaderboard():
         result = _snapshot_leaderboard_for_current_season()
         if not result.get("ok"):
             # Bubble up helper error & status
-            return jsonify({"error": result.get("error", "Snapshot failed")}), result.get("status", 400)
+            return jsonify(
+                {"error": result.get("error", "Snapshot failed")}
+            ), result.get("status", 400)
 
-        return jsonify({
-            "ok": True,
-            "season_id": result["season_id"],
-            "season_code": result["season_code"],
-            "rows_snapshot": result["rows_snapshot"],
-        }), 200
+        return jsonify(result), 200
 
     except Exception as e:
         safe_print("🔴 Error in /admin/leaderboard/snapshot (class):", type(e).__name__)
@@ -1329,278 +1335,16 @@ def _build_leaderboard_rows_for_current_season():
 
 
 def _snapshot_leaderboard_for_current_season():
-    """
-    Creates a snapshot of the CURRENT season leaderboard.
-
-    This does two things:
-
-      1) Inserts a flat snapshot into `leaderboard_history` (legacy table),
-         one row per bracket with rank and per-match points.
-      2) Creates a structured snapshot for the Past Seasons UI in:
-           - leaderboard_history_snapshots (one row per season snapshot)
-           - leaderboard_history_rows      (one row per bracket within that snapshot)
-
-    Returns either:
-      {
-        "ok": True,
-        "season_id": ...,
-        "season_code": ...,
-        "rows_snapshot": n,
-        "history_snapshot_id": "...",
-        "history_rows_count": m
-      }
-    or:
-      { "error": "...", "status": 400/404/etc }
-    """
+    """Only a confirmed complete structured final snapshot satisfies preservation."""
     guard_runtime_job("leaderboard-snapshot")
-    # Make sure season globals are resolved
-    ensure_season_globals()
-
-    if current_season().id is None:
-        return {
-            "error": "CURRENT_SEASON_ID is not set; cannot snapshot leaderboard.",
-            "status": 400,
-        }
-
-    # 1) Check if a snapshot already exists for this season in the legacy table
-    existing = (
-        supabase.table("leaderboard_history")
-        .select("id")
-        .eq("season_id", current_season().id)
-        .limit(1)
-        .execute()
-    ).data
-
-    if existing:
-        return {
-            "error": "Snapshot already exists for this season.",
-            "status": 400,
-        }
-
-    # 2) Build current leaderboard rows
-    rows = _build_leaderboard_rows_for_current_season()
-    if not rows:
-        return {
-            "error": "No leaderboard rows found for the current season.",
-            "status": 400,
-        }
-
-    # 3) Sort + assign rank (this defines the historic ranking)
-    rows_sorted = sorted(
-        rows,
-        key=lambda r: (
-            -r["total_points"],
-            -r["full_hits"],
-            (r.get("username") or "").lower(),
-        ),
-    )
-
-    snapshot_time = datetime.now(timezone.utc).isoformat()
-
-    # 4) Bulk insert into legacy leaderboard_history (existing behavior)
-    records = []
-    for idx, r in enumerate(rows_sorted, start=1):
-        records.append(
-            {
-                "season_id": current_season().id,
-                "season_code": current_season().code,
-                "snapshot_at": snapshot_time,
-                "rank": idx,
-                "bracket_name": r["bracket_name"],
-                "username": r["username"],
-                "total_points": r["total_points"],
-                "full_hits": r["full_hits"],
-                "partial_hits": r["partial_hits"],
-                "misses": r["misses"],
-                "bonus_finalists": r["bonus_finalists"],
-                "bonus_champion": r["bonus_champion"],
-                "points_by_match": r["points_by_match"],
-                # Optional internal references (not exposed in public history API)
-                "bracket_id": r.get("bracket_id"),
-                "user_id": r.get("user_id"),
-            }
-        )
-
-    supabase.table("leaderboard_history").insert(records).execute()
-
-    # 5) Also create a structured snapshot for the Past Seasons UI
-    history_snapshot_id: Optional[str] = None
-    history_rows_count = 0
-
     try:
-        # 5a) Determine all matchup keys present in points_by_match
-        match_keys_set = set()
-        for r in rows_sorted:
-            pm = r.get("points_by_match") or {}
-            if isinstance(pm, dict):
-                for k in pm.keys():
-                    if k:
-                        match_keys_set.add(str(k))
-
-        def _match_key_sort_tuple(k: str):
-            """
-            Sort matchup keys by (round, conference, slot, key).
-
-            Expected format: "<conference>-<round>-<slot>", e.g. "east-1-4".
-            """
-            try:
-                conf, r_str, slot_str = k.split("-")
-                r = int(r_str)
-                slot = int(slot_str)
-                conf_order = {"east": 0, "west": 1, "nba": 2}.get(conf.lower(), 99)
-                return (r, conf_order, slot, k)
-            except Exception:
-                return (99, 99, 99, k)
-
-        ordered_match_keys = sorted(match_keys_set, key=_match_key_sort_tuple)
-
-        # 5b) Build HistoryColumn definitions for matchup columns
-        match_columns = []
-        for mk in ordered_match_keys:
-            try:
-                conf, r_str, slot_str = mk.split("-")
-                r = int(r_str)
-                slot = int(slot_str)
-            except Exception:
-                conf = "nba"
-                r = 0
-                slot = 0
-
-            conf_lower = conf.lower()
-            if conf_lower == "east":
-                conf_label = "E"
-            elif conf_lower == "west":
-                conf_label = "W"
-            else:
-                conf_label = "NBA"
-
-            if conf_lower == "nba" and r == 4:
-                label = "NBA Finals"
-            else:
-                if r == 0:
-                    label = f"{conf_label} PI-{slot}"
-                elif r == 1:
-                    label = f"{conf_label} R1-{slot}"
-                elif r == 2:
-                    label = f"{conf_label} R2-{slot}"
-                elif r == 3:
-                    label = f"{conf_label} CF-{slot}"
-                else:
-                    label = f"{conf_label} R{r}-{slot}"
-
-            match_columns.append(
-                {
-                    "key": mk,
-                    "label": label,
-                    "type": "matchup",
-                    "round": r,
-                }
-            )
-
-        # 5c) Summary + bonus columns (order matches /leaderboard)
-        summary_and_bonus_columns = [
-            {"key": "bonus_finalists", "label": "Bonus finalist", "type": "bonus"},
-            {"key": "bonus_champion", "label": "Bonus champion", "type": "bonus"},
-            {"key": "full_hits", "label": "Full hits", "type": "summary"},
-            {"key": "partial_hits", "label": "Partial hits", "type": "summary"},
-            {"key": "misses", "label": "Misses", "type": "summary"},
-        ]
-
-        columns_json = match_columns + summary_and_bonus_columns
-
-        # 5d) Try to capture who triggered the snapshot (if called from an authed request)
-        created_by_user_id = None
-        try:
-            user_info = getattr(request, "user", None) or {}
-            if isinstance(user_info, dict):
-                created_by_user_id = user_info.get("user_id")
-        except Exception:
-            created_by_user_id = None
-
-        snapshot_payload: Dict[str, Any] = {
-            "season_id": current_season().id,
-            "season_code": current_season().code,
-            "snapshot_at": snapshot_time,
-            "columns": columns_json,
-        }
-        if created_by_user_id:
-            snapshot_payload["created_by"] = created_by_user_id
-
-        snap_res = (
-            supabase.table("leaderboard_history_snapshots")
-            .insert(snapshot_payload)
-            .execute()
+        return create_final_leaderboard_snapshot(
+            supabase,
+            expected_season_id=current_season().id,
+            created_by=(getattr(request, "user", None) or {}).get("user_id"),
         )
-        snap_rows = getattr(snap_res, "data", None) or []
-        snapshot_row = snap_rows[0] if snap_rows else None
-        if snapshot_row:
-            history_snapshot_id = snapshot_row.get("id")
-        else:
-            safe_print(
-                "⚠️ Snapshot insert returned no row for leaderboard_history_snapshots"
-            )
-
-        # 5e) Insert per-bracket rows into leaderboard_history_rows
-        if history_snapshot_id:
-            history_rows = []
-            for idx, r in enumerate(rows_sorted, start=1):
-                raw_pm = r.get("points_by_match") or {}
-                pm_clean: Dict[str, int] = {}
-
-                if isinstance(raw_pm, dict):
-                    for mk, cell in raw_pm.items():
-                        if isinstance(cell, dict):
-                            pts = cell.get("points")
-                        else:
-                            pts = cell
-                        try:
-                            pm_clean[str(mk)] = int(pts) if pts is not None else 0
-                        except Exception:
-                            pm_clean[str(mk)] = 0
-
-                history_rows.append(
-                    {
-                        "snapshot_id": history_snapshot_id,
-                        "rank": idx,
-                        "display_name": f"{r['bracket_name']} ({r['username']})",
-                        "total_points": int(r.get("total_points") or 0),
-                        "bonus_finalists": int(r.get("bonus_finalists") or 0),
-                        "bonus_champion": int(r.get("bonus_champion") or 0),
-                        "full_hits": int(r.get("full_hits") or 0),
-                        "partial_hits": int(r.get("partial_hits") or 0),
-                        "misses": int(r.get("misses") or 0),
-                        "per_match_points": pm_clean,
-                    }
-                )
-
-            if history_rows:
-                rows_res = (
-                    supabase.table("leaderboard_history_rows")
-                    .insert(history_rows)
-                    .execute()
-                )
-                history_rows_count = len(
-                    getattr(rows_res, "data", None) or history_rows
-                )
-
-    except Exception as e:
-        # Don't fail the whole snapshot if the Past Seasons insert fails.
-        # We still return ok=True so the legacy leaderboard_history snapshot is preserved.
-        safe_print(
-            "⚠️ Failed to create Past Seasons snapshot in "
-            "_snapshot_leaderboard_for_current_season:",
-            type(e).__name__,
-            repr(e),
-        )
-
-    return {
-        "ok": True,
-        "season_id": str(current_season().id),
-        "season_code": current_season().code,
-        "rows_snapshot": len(records),
-        "history_snapshot_id": history_snapshot_id,
-        "history_rows_count": history_rows_count,
-    }
+    except SnapshotError as error:
+        return {"ok": False, "error": str(error), "status": 503}
 
 
 def _rollover_current_season(
@@ -1711,17 +1455,19 @@ def _rollover_current_season(
     snapshot_error = snapshot_result.get("error")
     snapshot_ok = bool(snapshot_result.get("ok"))
 
-    # Special case: allow "Snapshot already exists for this season." as success
-    if snapshot_error == "Snapshot already exists for this season.":
-        steps.append(
-            {
-                "step": "snapshot",
-                "ok": True,
-                "message": f"Snapshot already existed for season {source.code}; reusing existing snapshot.",
-                "details": snapshot_result,
-            }
-        )
-    elif snapshot_ok:
+    # Legacy rows or duplicate text can never satisfy the structured gate.
+    if (
+        snapshot_ok
+        and snapshot_result.get("structured_complete") is True
+        and snapshot_result.get("is_final") is True
+        and snapshot_result.get("season_id") == source.id
+        and snapshot_result.get("history_snapshot_id")
+        and type(snapshot_result.get("expected_rows")) is int
+        and snapshot_result["expected_rows"] >= 0
+        and snapshot_result.get("actual_rows") == snapshot_result["expected_rows"]
+        and snapshot_result.get("history_rows_count")
+        == snapshot_result["expected_rows"]
+    ):
         rows_snapshot = snapshot_result.get("rows_snapshot", 0)
         steps.append(
             {
@@ -4010,7 +3756,6 @@ def champion_pick_stats():
 
 
 @app.route("/leaderboard/history", methods=["GET"])
-@require_auth
 def leaderboard_history_index():
     """
     Returns one entry per season that has a history snapshot.
@@ -4020,6 +3765,7 @@ def leaderboard_history_index():
         res = (
             supabase.table("leaderboard_history_snapshots")
             .select("id, season_id, season_code, snapshot_at")
+            .or_("is_final.is.null,is_final.eq.true")
             .order("snapshot_at", desc=True)
             .execute()
         )
@@ -4032,7 +3778,9 @@ def leaderboard_history_index():
             if not code:
                 continue
             prev = by_code.get(code)
-            if not prev or (prev.get("snapshot_at") or "") < (s.get("snapshot_at") or ""):
+            if not prev or (prev.get("snapshot_at") or "") < (
+                s.get("snapshot_at") or ""
+            ):
                 by_code[code] = {
                     "season_id": s.get("season_id"),
                     "season_code": code,
@@ -4048,7 +3796,6 @@ def leaderboard_history_index():
 
 
 @app.route("/leaderboard/history/<season_code>", methods=["GET"])
-@require_auth
 def leaderboard_history_season(season_code):
     """
     Returns the frozen leaderboard snapshot for a given season code.
@@ -4084,6 +3831,7 @@ def leaderboard_history_season(season_code):
         supabase.table("leaderboard_history_snapshots")
         .select("id, season_code, snapshot_at, columns")
         .eq("season_code", code)
+        .or_("is_final.is.null,is_final.eq.true")
         .order("snapshot_at", desc=True)
         .limit(1)
         .execute()
@@ -4100,11 +3848,12 @@ def leaderboard_history_season(season_code):
         supabase.table("leaderboard_history_rows")
         .select(
             "id, rank, display_name, total_points, bonus_finalists, "
-            "bonus_champion, full_hits, partial_hits, misses, per_match_points"
+            "bonus_champion, full_hits, partial_hits, misses, per_match_points, saved_at, base_points, points_by_round"
         )
         .eq("snapshot_id", snapshot_id)
-        .order("total_points", desc=True)
-        .order("full_hits", desc=True)
+        .order("rank")
+        .order("display_order")
+        .order("id")
         .execute()
     )
     rows = getattr(rows_res, "data", None) or []
@@ -4134,8 +3883,8 @@ def leaderboard_history_season(season_code):
             {
                 "season_code": snap.get("season_code"),
                 "snapshot_at": snap.get("snapshot_at"),
-                "columns": snap.get("columns") or [],
-                "rows": sanitized_rows,
+                "columns": public_columns(snap.get("columns")),
+                "rows": public_snapshot_rows(sanitized_rows),
             }
         ),
         200,

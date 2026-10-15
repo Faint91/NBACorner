@@ -191,7 +191,7 @@ class SeasonTransitionAcceptance(unittest.TestCase):
         before = self.standings()
         old = self.current()
         # Canonical foundation intentionally contains no leaderboard prerequisites.
-        result = self.transition(expected=400)
+        result = self.transition(expected=503)
         self.assertIn("Snapshot step failed", result["error"])
         self.assertEqual(self.standings(), before)
         self.assertEqual(self.current(), old)

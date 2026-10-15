@@ -312,14 +312,36 @@ class CurrentOfflineScoring(unittest.TestCase):
         "tie",
     )
     def current_behavior__history__snapshot_tie(self):
-        self.snapshot_rows()
-        r = self.ns["_snapshot_leaderboard_for_current_season"]()
-        self.assertTrue(r["ok"])
-        self.assertEqual(self.db.rows["leaderboard_history"][0]["user_id"], "a")
+        from history_service import snapshot_rows
+
+        rows = []
+        brackets = []
+        users = []
+        for bid, stamp, name in [
+            ("a", "2026-01-02T00:00:00Z", "Alpha"),
+            ("b", "2026-01-01T00:00:00Z", "Zulu"),
+        ]:
+            rows.append(
+                dict(
+                    bracket_id=bid,
+                    total_points=3,
+                    full_hits=1,
+                    partial_hits=0,
+                    misses=0,
+                    bonus_finalists=0,
+                    bonus_champion=0,
+                    points_by_round={"1": 3},
+                    points_by_match={"east-1-4": {"points": 3}},
+                )
+            )
+            brackets.append(dict(id=bid, user_id=bid, name=bid, saved_at=stamp))
+            users.append(dict(id=bid, username=name))
+        frozen, _ = snapshot_rows(rows, brackets, users)
+        self.assertEqual([r["bracket_id"] for r in frozen], ["b", "a"])
+        self.assertEqual([r["rank"] for r in frozen], [1, 2])
         self.facts = {
-            "earlier_saved_rank": 2,
-            "later_saved_rank": 1,
-            "sort_uses_username": True,
+            "earlier_saved_Zulu_ahead_of_later_Alpha": True,
+            "public_snapshot_source": "history_service.snapshot_rows",
         }
 
     @behavior(
@@ -328,17 +350,23 @@ class CurrentOfflineScoring(unittest.TestCase):
         question="Approve snapshot frequency/atomicity/rank format?",
     )
     def current_behavior__history__snapshot_repeat(self):
-        self.snapshot_rows()
-        r = self.ns["_snapshot_leaderboard_for_current_season"]()
-        self.assertEqual((r["rows_snapshot"], r["history_rows_count"]), (2, 2))
-        self.assertEqual(
-            self.ns["_snapshot_leaderboard_for_current_season"]()["status"], 400
+        from history_service import confirmed_snapshot
+
+        result = dict(
+            state="existing",
+            snapshot_id="final",
+            season_id="current",
+            season_code="2025-26",
+            expected_rows=2,
+            actual_rows=2,
+            is_final=True,
         )
-        self.assertEqual(
-            self.db.rows["leaderboard_history_rows"][0]["per_match_points"],
-            {"east-1-4": 3},
-        )
-        self.assertNotIn("user_id", self.db.rows["leaderboard_history_rows"][0])
+        before = copy.deepcopy(result)
+        self.assertTrue(confirmed_snapshot(result, "current", 2)["structured_complete"])
+        self.assertEqual(result, before)
+        self.facts = {
+            "actual_DB_idempotence_verified_by": "NC-02D2 guarded/fresh SQL acceptance"
+        }
 
     @behavior(
         "snapshot creation",
@@ -346,11 +374,26 @@ class CurrentOfflineScoring(unittest.TestCase):
         question="Approve cross-model duplicate/failure policy?",
     )
     def current_behavior__history__snapshot_empty(self):
-        self.assertEqual(
-            self.ns["_snapshot_leaderboard_for_current_season"]()["status"], 400
+        from history_service import confirmed_snapshot, SnapshotError
+
+        result = dict(
+            state="created",
+            snapshot_id="zero",
+            season_id="current",
+            season_code="2025-26",
+            expected_rows=0,
+            actual_rows=0,
+            is_final=True,
         )
-        self.snapshot_rows()
-        self.db.rows["leaderboard_history_snapshots"] = [
-            dict(id="old", season_code="2025-26")
-        ]
-        self.assertTrue(self.ns["_snapshot_leaderboard_for_current_season"]()["ok"])
+        self.assertTrue(confirmed_snapshot(result, "current", 0)["structured_complete"])
+        for changes in [
+            {"is_final": False},
+            {"actual_rows": 1},
+            {"season_id": "other"},
+            {"snapshot_id": None},
+        ]:
+            with self.assertRaises(SnapshotError):
+                confirmed_snapshot(dict(result, **changes), "current", 0)
+        self.facts = {
+            "SC17": "Verified zero accepted; incomplete or unknown is never empty"
+        }

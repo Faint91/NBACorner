@@ -104,7 +104,8 @@ class CurrentStaticScoring(unittest.TestCase):
     )
     def current_behavior__history__snapshot_source(self):
         self.assertIn(
-            "except Exception", self.fn("_snapshot_leaderboard_for_current_season")
+            "create_final_leaderboard_snapshot",
+            self.fn("_snapshot_leaderboard_for_current_season"),
         )
         self.assertIn(
             "_snapshot_leaderboard_for_current_season",
@@ -136,8 +137,9 @@ class CurrentStaticScoring(unittest.TestCase):
     )
     def current_behavior__history__sorting(self):
         f = self.fn("leaderboard_history_season")
-        self.assertIn('.order("full_hits", desc=True)', f)
-        self.assertNotIn('.order("rank"', f)
+        self.assertIn('.order("rank")', f)
+        self.assertIn('.order("display_order")', f)
+        self.assertNotIn('.order("full_hits", desc=True)', f)
 
     @behavior(
         "privacy",

@@ -164,7 +164,7 @@ def main():
             )
         )
         sql(
-            (ROOT / "db/post-baseline/verify_current_schema.sql").read_text(
+            (ROOT / "db/post-baseline/verify_nc_02d1_schema.sql").read_text(
                 encoding="utf-8"
             )
         )

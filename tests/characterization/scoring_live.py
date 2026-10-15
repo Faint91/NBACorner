@@ -125,7 +125,7 @@ class CurrentLiveScoring(unittest.TestCase):
     )
     def current_behavior__history__reads(self):
         self.c.install_scoring_read_state()
-        self.call("GET", "/leaderboard/history", 401)
+        self.call("GET", "/leaderboard/history", 200)
         self.c.login("user-a")
         b = self.call("GET", "/leaderboard/history/2024-25", 200, "user-a")
         self.assertTrue(
@@ -142,7 +142,7 @@ class CurrentLiveScoring(unittest.TestCase):
         self.facts = {
             "row_fields": sorted(b["rows"][0]),
             "rows": 2,
-            "anonymous_denied": True,
+            "anonymous_public_safe_snapshot": True,
         }
 
     @behavior(

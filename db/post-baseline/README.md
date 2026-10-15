@@ -161,3 +161,13 @@ no-write result, preserving timestamps. Existing table/security/history objects
 and prior migrations are unchanged. See nc-02d1 repair/evidence for actual rollback,
 master mutation integration, preflight and operational recovery limits. No
 production migration or score recomputation has been performed by this phase.
+
+
+NC-02D2 adds `0006_nc_02d2_final_snapshots.sql`: atomic complete/final historical
+snapshots, frozen ranking metadata, immutable write guards and SC17 verified zero
+participation. The D1 verifier is frozen as `verify_nc_02d1_schema.sql`; current
+semantic/security verification includes all additive objects. Prior migrations and
+historical values are unchanged. See `docs/repairs/nc-02d2-history-snapshot.md` and
+`db/records/nc_02d2_history_snapshot.json`. No production rollout is authorized by
+this local repair. Existing unverified structured headers require review before
+being treated as final; they are never silently promoted or overwritten.

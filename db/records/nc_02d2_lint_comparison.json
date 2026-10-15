@@ -1,0 +1,143 @@
+{
+  "phase": "NC-02D2",
+  "python_lint": "No configured/installed lint engine; AST import comparison, compilation and Black used",
+  "files": [
+    {
+      "file": "app.py",
+      "before": [],
+      "after": [],
+      "new": []
+    },
+    {
+      "file": "integration_harness.py",
+      "before": [],
+      "after": [],
+      "new": []
+    },
+    {
+      "file": "scoring_service.py",
+      "before": [],
+      "after": [],
+      "new": []
+    },
+    {
+      "file": "scripts/local_supabase_environment.py",
+      "before": [],
+      "after": [],
+      "new": []
+    },
+    {
+      "file": "scripts/prove_scoring_migration.py",
+      "before": [],
+      "after": [],
+      "new": []
+    },
+    {
+      "file": "scripts/reset_local_fixtures.py",
+      "before": [],
+      "after": [],
+      "new": []
+    },
+    {
+      "file": "tests/characterization/bracket_access.py",
+      "before": [],
+      "after": [],
+      "new": []
+    },
+    {
+      "file": "tests/characterization/competitive_offline.py",
+      "before": [],
+      "after": [],
+      "new": []
+    },
+    {
+      "file": "tests/characterization/operations_offline.py",
+      "before": [
+        "date",
+        "requests"
+      ],
+      "after": [
+        "date",
+        "requests"
+      ],
+      "new": []
+    },
+    {
+      "file": "tests/characterization/scoring_live.py",
+      "before": [],
+      "after": [],
+      "new": []
+    },
+    {
+      "file": "tests/characterization/scoring_offline.py",
+      "before": [],
+      "after": [],
+      "new": []
+    },
+    {
+      "file": "tests/characterization/scoring_static.py",
+      "before": [],
+      "after": [],
+      "new": []
+    },
+    {
+      "file": "tests/characterization/season_transition.py",
+      "before": [],
+      "after": [],
+      "new": []
+    },
+    {
+      "file": "tests/offline/test_scoring_service.py",
+      "before": [],
+      "after": [],
+      "new": []
+    },
+    {
+      "file": "history_service.py",
+      "before": [],
+      "after": [],
+      "new": []
+    },
+    {
+      "file": "scripts/nc02d2_acceptance_metadata.py",
+      "before": [],
+      "after": [],
+      "new": []
+    },
+    {
+      "file": "scripts/prove_history_migration.py",
+      "before": [],
+      "after": [],
+      "new": []
+    },
+    {
+      "file": "scripts/run_history_acceptance.py",
+      "before": [],
+      "after": [],
+      "new": []
+    },
+    {
+      "file": "tests/characterization/history_snapshot.py",
+      "before": [],
+      "after": [],
+      "new": []
+    },
+    {
+      "file": "tests/offline/test_history_service.py",
+      "before": [],
+      "after": [],
+      "new": []
+    }
+  ],
+  "frontend": {
+    "file": "src/pages/PastSeasonsPage.tsx",
+    "before_errors": 6,
+    "after_errors": 6,
+    "before_warnings": 0,
+    "after_warnings": 0,
+    "new_diagnostics": [],
+    "total_errors": 83,
+    "total_warnings": 1
+  },
+  "new_unused_imports": 0
+}

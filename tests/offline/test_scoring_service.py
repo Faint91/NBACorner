@@ -164,10 +164,15 @@ class ScoringServiceTests(unittest.TestCase):
             )
             .rsplit("COMMIT;", 1)[0]
         )
-        current = (ROOT / "db/post-baseline/verify_current_schema.sql").read_text(
+        current = (ROOT / "db/post-baseline/verify_nc_02d1_schema.sql").read_text(
             encoding="utf-8"
         )
         self.assertEqual(current.split("DO $scores_verify$", 1)[0], prefix)
         from scripts.reset_local_fixtures import VERIFIER_SHA
 
-        self.assertEqual(hashlib.sha256(current.encode()).hexdigest(), VERIFIER_SHA)
+        self.assertEqual(
+            hashlib.sha256(
+                (ROOT / "db/post-baseline/verify_current_schema.sql").read_bytes()
+            ).hexdigest(),
+            VERIFIER_SHA,
+        )

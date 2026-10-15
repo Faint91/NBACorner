@@ -92,7 +92,7 @@ def keyed_matches(rows):
 
 
 def recompute_current_scores(
-    client, *, expected_season_id=None, expected_master_id=None
+    client, *, expected_season_id=None, expected_master_id=None, snapshot_context=False
 ):
     guard_runtime_job("score-recompute")
     try:
@@ -183,6 +183,8 @@ def recompute_current_scores(
             "unchanged",
         }:
             raise ValueError()
+        if snapshot_context:
+            return dict(result, scoring_source=source, scoring_rows=rows)
         return result
     except Exception:
         raise ScoringError("publication_failure") from None
