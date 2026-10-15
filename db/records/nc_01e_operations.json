@@ -1,0 +1,619 @@
+{
+  "phase": "NC-01E",
+  "passed": true,
+  "tests_run": 25,
+  "failures": 0,
+  "errors": 0,
+  "findings": [
+    {
+      "scenario": "current_behavior__admin_ops__diagnostics",
+      "group": "admin operations",
+      "current_behavior": "Health read works; env diagnostic anonymous401/ordinary403/admin200 with only masked presence metadata; season flags readable.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Operational job semantics require offline/static evidence while guard is preserved.",
+      "evidence_source": "LIVE guarded local refusal/read; reset per sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "status": 200,
+          "shape": "text"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/env-check",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/admin/env-check",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/admin/env-check",
+          "status": 200,
+          "shape": [
+            "env",
+            "ok"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/brackets/me",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "bracket_creation_open",
+            "playoffs_deadline_utc",
+            "playoffs_locked",
+            "regular_season_end_utc"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__admin_ops__refusals",
+      "group": "authorization",
+      "current_behavior": "JWT routes reject anonymous 401; ordinary/admin operational jobs return existing job-guard 500 before operational authorization. No live maintenance write.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Operational job semantics require offline/static evidence while guard is preserved.",
+      "evidence_source": "LIVE guarded local refusal/read; reset per sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/admin/standings/refresh",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/admin/standings/refresh",
+          "status": 500,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/admin/standings/refresh",
+          "status": 500,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/admin/insert_test_teams",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/admin/insert_test_teams",
+          "status": 500,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/admin/insert_test_teams",
+          "status": 500,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/admin/season/rollover",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/admin/season/rollover",
+          "status": 500,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/admin/season/rollover",
+          "status": 500,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/admin/leaderboard/snapshot",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/admin/leaderboard/snapshot",
+          "status": 500,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/admin/leaderboard/snapshot",
+          "status": 500,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/internal/standings/refresh",
+          "status": 500,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/internal/standings/overwrite",
+          "status": 500,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__admin_ops__creation_bypass",
+      "group": "admin operations",
+      "current_behavior": "Admin bracket creation bypasses ordinary early/locked window checks; prior NC-01B result retained, source gate unchanged.",
+      "approved_requirement": "Admin bracket creation may bypass the ordinary creation window.",
+      "classification": "MATCHES REQUIREMENT",
+      "future_business_question": null,
+      "evidence_source": "STATIC application/script/workflow/schema/frontend"
+    },
+    {
+      "scenario": "current_behavior__admin_ops__cron",
+      "group": "cron operations",
+      "current_behavior": "Internal refresh/overwrite share STANDINGS_CRON_TOKEN header/query equality; admin refresh uses JWT+DB admin; job guard runs first. Token values not inspected.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve cron replay/token transport/diagnostic contract?",
+      "evidence_source": "STATIC application/script/workflow/schema/frontend"
+    },
+    {
+      "scenario": "current_behavior__admin_ops__frontend",
+      "group": "frontend",
+      "current_behavior": "AdminPage cached admin gate, snapshot/rollover confirmation and error/result/env-next-action display; UI completeness gates can differ from helper preconditions.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve UI/backend operational preconditions?",
+      "evidence_source": "STATIC application/script/workflow/schema/frontend"
+    },
+    {
+      "scenario": "current_behavior__admin_ops__lock",
+      "group": "admin operations",
+      "current_behavior": "No shared playoff guard blocks maintenance/rollover/snapshot/team helpers; ordinary creation gate has admin bypass (NC-01B).",
+      "approved_requirement": "Playoff start is not a universal block on unrelated actions.",
+      "classification": "MATCHES REQUIREMENT",
+      "future_business_question": null,
+      "evidence_source": "STATIC application/script/workflow/schema/frontend"
+    },
+    {
+      "scenario": "current_behavior__admin_ops__teams",
+      "group": "team maintenance",
+      "current_behavior": "Admin route attempts 20 team upserts (synthetic IDs plus LAL), omitting required code; optional standings fallback. STATIC only, live job guard unchanged.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve team maintenance/idempotence/schema prerequisite policy?",
+      "evidence_source": "STATIC application/script/workflow/schema/frontend"
+    },
+    {
+      "scenario": "current_behavior__rollover__season_model",
+      "group": "season lifecycle",
+      "current_behavior": "Seasons have unique code/dates/master pointer, no current flag; rollover inserts next row without changing app globals/config, does not initialize standings/teams/master.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve creation/default/current-season transition policy?",
+      "evidence_source": "STATIC application/script/workflow/schema/frontend"
+    },
+    {
+      "scenario": "current_behavior__standings__freeze",
+      "group": "freeze",
+      "current_behavior": "Scheduled script and active admin/cron refresh helper lack regular-season-end/bracket-opening freeze checks; overwrite also lacks freeze.",
+      "approved_requirement": "Standings freeze when the regular season ends / bracket-creation period opens.",
+      "classification": "KNOWN GAP",
+      "future_business_question": null,
+      "evidence_source": "STATIC application/script/workflow/schema/frontend"
+    },
+    {
+      "scenario": "current_behavior__standings__overwrite",
+      "group": "edges",
+      "current_behavior": "Internal overwrite expects standings.season_id though current table lacks it; delete+insert not atomic. No product/schema correction.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve overwrite schema and failure contract?",
+      "evidence_source": "STATIC application/script/workflow/schema/frontend"
+    },
+    {
+      "scenario": "current_behavior__standings__schedule",
+      "group": "automation/schedule",
+      "current_behavior": "Workflow schedules every day 09:00 UTC including weekends, invokes ESPN script and allows manual dispatch. No seasonal scheduler condition.",
+      "approved_requirement": "Standings refresh daily during the regular season.",
+      "classification": "MATCHES REQUIREMENT",
+      "future_business_question": null,
+      "evidence_source": "STATIC application/script/workflow/schema/frontend"
+    },
+    {
+      "scenario": "current_behavior__standings__season_sources",
+      "group": "season source",
+      "current_behavior": "App CURRENT_SEASON_CODE selects DB dates/id; script override/calendar independent; workflow NBA_SEASON_YEAR not consumed. NC-ENV-04B mismatch persists.",
+      "approved_requirement": "Future season selection must derive from canonical application season configuration, not conflicting independent environment variables.",
+      "classification": "KNOWN GAP",
+      "future_business_question": null,
+      "evidence_source": "STATIC application/script/workflow/schema/frontend"
+    },
+    {
+      "scenario": "current_behavior__admin_ops__token",
+      "group": "cron operations",
+      "current_behavior": "Offline internal refresh rejects absent/wrong synthetic token; correct header calls same Balldontlie helper; repeat replaces same 30 rows.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve token transport/replay and admin/cron equivalence?",
+      "evidence_source": "OFFLINE unchanged AST helpers; fixed provider fixture/in-memory DB, no live job or transaction proof",
+      "facts": {
+        "token_values_recorded": false,
+        "correct_token_repeated_rows": 30
+      }
+    },
+    {
+      "scenario": "current_behavior__rollover__failures",
+      "group": "failure/atomicity",
+      "current_behavior": "Failure deleting scores/matches, soft-deleting brackets or inserting season returns error with earlier writes retained; no all-step transaction.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve retry and partial commit recovery?",
+      "evidence_source": "OFFLINE unchanged AST helpers; fixed provider fixture/in-memory DB, no live job or transaction proof",
+      "facts": {}
+    },
+    {
+      "scenario": "current_behavior__rollover__order",
+      "group": "rollover order",
+      "current_behavior": "Rollover snapshots first, deletes current scores/matches, soft-deletes current brackets, inserts next season; standings/teams/past matches remain.",
+      "approved_requirement": "Season rollover may delete active match rows once the historical snapshot has been successfully saved.",
+      "classification": "MATCHES REQUIREMENT",
+      "future_business_question": null,
+      "evidence_source": "OFFLINE unchanged AST helpers; fixed provider fixture/in-memory DB, no live job or transaction proof",
+      "facts": {
+        "steps": [
+          "snapshot",
+          "delete_bracket_scores",
+          "delete_matches",
+          "soft_delete_brackets",
+          "insert_new_season"
+        ],
+        "globals_unchanged": true
+      }
+    },
+    {
+      "scenario": "current_behavior__rollover__partial_snapshot",
+      "group": "snapshot preservation",
+      "current_behavior": "Legacy-only existing snapshot is accepted; structured history failure is nonfatal and rollover still deletes matches. Snapshot-success definition needs checkpoint.",
+      "approved_requirement": "Season rollover may delete active match rows once the historical snapshot has been successfully saved.",
+      "classification": "UNCLEAR / NEEDS BUSINESS CHECKPOINT",
+      "future_business_question": "Does legacy-only persistence satisfy successfully saved snapshot when Past Seasons structured data is absent?",
+      "evidence_source": "OFFLINE unchanged AST helpers; fixed provider fixture/in-memory DB, no live job or transaction proof",
+      "facts": {}
+    },
+    {
+      "scenario": "current_behavior__rollover__preconditions",
+      "group": "season lifecycle",
+      "current_behavior": "Empty/same/existing target season rejected; arbitrary nonempty new code accepted; dates optional; current globals stay old and env_next_actions asks manual config update.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve target code/date/current-selection policy?",
+      "evidence_source": "OFFLINE unchanged AST helpers; fixed provider fixture/in-memory DB, no live job or transaction proof",
+      "facts": {}
+    },
+    {
+      "scenario": "current_behavior__rollover__repeat",
+      "group": "edges",
+      "current_behavior": "Repeat target rejected once created; existing legacy snapshot reuses without checking structured completeness; no master completion/date/recompute prerequisite in helper.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve rollover idempotence/preconditions?",
+      "evidence_source": "OFFLINE unchanged AST helpers; fixed provider fixture/in-memory DB, no live job or transaction proof",
+      "facts": {}
+    },
+    {
+      "scenario": "current_behavior__rollover__snapshot_failure",
+      "group": "snapshot preservation",
+      "current_behavior": "Snapshot error aborts before score/match deletion.",
+      "approved_requirement": "Season rollover may delete active match rows once the historical snapshot has been successfully saved.",
+      "classification": "MATCHES REQUIREMENT",
+      "future_business_question": null,
+      "evidence_source": "OFFLINE unchanged AST helpers; fixed provider fixture/in-memory DB, no live job or transaction proof",
+      "facts": {}
+    },
+    {
+      "scenario": "current_behavior__standings__active_provider",
+      "group": "provider/source",
+      "current_behavior": "Active Flask admin/cron refresh aggregates Balldontlie regular-season fixture games rather than authoritative ESPN.",
+      "approved_requirement": "ESPN is the authoritative standings source.",
+      "classification": "KNOWN GAP",
+      "future_business_question": null,
+      "evidence_source": "OFFLINE unchanged AST helpers; fixed provider fixture/in-memory DB, no live job or transaction proof",
+      "facts": {
+        "provider": "Balldontlie",
+        "rows": 30,
+        "pages": 2,
+        "season_start_year": 2025
+      }
+    },
+    {
+      "scenario": "current_behavior__standings__espn",
+      "group": "provider/source",
+      "current_behavior": "ESPN script parses existing 2026 fixture and updates/inserts codes, preserving absent stale rows; repeated refresh stable row count.",
+      "approved_requirement": "ESPN is the authoritative standings source.",
+      "classification": "MATCHES REQUIREMENT",
+      "future_business_question": null,
+      "evidence_source": "OFFLINE unchanged AST helpers; fixed provider fixture/in-memory DB, no live job or transaction proof",
+      "facts": {
+        "rows_including_stale": 3,
+        "stale_retained": true,
+        "real_provider_contact": false
+      }
+    },
+    {
+      "scenario": "current_behavior__standings__espn_edges",
+      "group": "standings refresh",
+      "current_behavior": "Missing/unknown team skipped, malformed top shape leaves rows intact, duplicate team entries update existing code; changed wins written.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve parser/duplicates/stale and partial data semantics?",
+      "evidence_source": "OFFLINE unchanged AST helpers; fixed provider fixture/in-memory DB, no live job or transaction proof",
+      "facts": {}
+    },
+    {
+      "scenario": "current_behavior__standings__refresh_failure",
+      "group": "failure/atomicity",
+      "current_behavior": "Flask refresh deletes all standings then inserts; insert failure leaves empty table; provider failure occurs before delete.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve replace/error/rollback policy?",
+      "evidence_source": "OFFLINE unchanged AST helpers; fixed provider fixture/in-memory DB, no live job or transaction proof",
+      "facts": {}
+    },
+    {
+      "scenario": "current_behavior__standings__script_failure",
+      "group": "failure/atomicity",
+      "current_behavior": "ESPN DB failure is caught without rollback; per-code updates before failure can remain. Invalid override raises before request.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve error propagation and partial updates?",
+      "evidence_source": "OFFLINE unchanged AST helpers; fixed provider fixture/in-memory DB, no live job or transaction proof",
+      "facts": {}
+    },
+    {
+      "scenario": "current_behavior__standings__year",
+      "group": "season source",
+      "current_behavior": "ESPN year follows independent NBA_STANDINGS_SEASON override or UTC August boundary; NBA_SEASON_YEAR workflow value ignored, not canonical CURRENT_SEASON_CODE.",
+      "approved_requirement": "Future season selection must derive from canonical application season configuration, not conflicting independent environment variables.",
+      "classification": "KNOWN GAP",
+      "future_business_question": null,
+      "evidence_source": "OFFLINE unchanged AST helpers; fixed provider fixture/in-memory DB, no live job or transaction proof",
+      "facts": {
+        "july_2026_end_year": 2026,
+        "august_2026_end_year": 2027,
+        "workflow_variable_consumed": false,
+        "prior_reference": "NC-ENV-04B"
+      }
+    }
+  ],
+  "readiness": {
+    "identity_verified": true,
+    "database_marker": "PASS",
+    "email": "PASS",
+    "providers": "PASS",
+    "external_credentials": "PASS",
+    "jobs": "PASS",
+    "jobs_enabled": false,
+    "fixture_state": "SEEDED",
+    "fixtures_reset": "PASS",
+    "integration_harness": "PASS",
+    "mutation_permitted": false,
+    "harness_state": "AVAILABLE_GUARDED",
+    "harness_scoped_mutation_permitted": false
+  },
+  "business_behavior_changed": false,
+  "production": {
+    "contact": false,
+    "mutation": false,
+    "secrets_used": false,
+    "deployment": false
+  },
+  "classification_counts": {
+    "MATCHES REQUIREMENT": 6,
+    "KNOWN GAP": 4,
+    "REQUIREMENT NOT YET REVIEWED": 14,
+    "UNCLEAR / NEEDS BUSINESS CHECKPOINT": 1
+  },
+  "live_tests": 2,
+  "offline_source_tests": 13,
+  "static_tests": 10,
+  "offline_safety_tests": 217,
+  "starting_heads": {
+    "frontend": "ce54143006f0409265937f5d548286d0b100d454",
+    "backend": "957ec94a3849c055c9088ff4bb04cde3addfa5da"
+  },
+  "starting_branches": "main; clean",
+  "verified_at_utc": "2026-10-15T00:32:36.983558+00:00",
+  "canonical_cleanup": {
+    "fixture_version": "nc-fixtures-v1",
+    "fixture_state": "SEEDED",
+    "marker_version": 2,
+    "checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+    "flask_stopped": true,
+    "leases_released": true,
+    "capture_clear": true,
+    "jobs_disabled": true,
+    "semantic_verifier": "PASS",
+    "marker_acl_verifier": "PASS"
+  },
+  "live_job_execution": false,
+  "next_phase": "NC-01F \u2014 Consolidated regression baseline / requirement-gap matrix; not started",
+  "route_inventory": [
+    {
+      "path": "/admin/env-check",
+      "method": "GET",
+      "function": "admin_env_check",
+      "auth": "JWT",
+      "source_line": 696
+    },
+    {
+      "path": "/admin/leaderboard/snapshot",
+      "method": "POST",
+      "function": "admin_snapshot_leaderboard",
+      "auth": "JWT",
+      "source_line": 799
+    },
+    {
+      "path": "/admin/season/rollover",
+      "method": "POST",
+      "function": "admin_season_rollover",
+      "auth": "JWT",
+      "source_line": 855
+    },
+    {
+      "path": "/admin/standings/refresh",
+      "method": "POST",
+      "function": "admin_refresh_standings",
+      "auth": "JWT",
+      "source_line": 1151
+    },
+    {
+      "path": "/internal/standings/refresh",
+      "method": "POST",
+      "function": "internal_cron_refresh_standings",
+      "auth": "Token",
+      "source_line": 1188
+    },
+    {
+      "path": "/internal/standings/overwrite",
+      "method": "POST",
+      "function": "internal_overwrite_standings",
+      "auth": "Token",
+      "source_line": 1213
+    },
+    {
+      "path": "/admin/insert_test_teams",
+      "method": "POST",
+      "function": "admin_insert_test_teams",
+      "auth": "JWT",
+      "source_line": 1356
+    },
+    {
+      "path": "/health",
+      "method": "GET/HEAD",
+      "function": "health",
+      "auth": "Optional health token",
+      "source_line": 1543
+    },
+    {
+      "path": "/admin/score/master/<master_bracket_id>/recompute",
+      "method": "POST",
+      "function": "recompute_scores",
+      "auth": "JWT",
+      "source_line": 1586
+    },
+    {
+      "path": "/bracket/create",
+      "method": "POST",
+      "function": "create_bracket_for_user",
+      "auth": "JWT",
+      "source_line": 2726
+    },
+    {
+      "path": "/__debug/master-status",
+      "method": "GET",
+      "function": "debug_master_status",
+      "auth": "None",
+      "source_line": 4599
+    }
+  ],
+  "season_sources": {
+    "application": "CURRENT_SEASON_CODE -> seasons.code -> ID/dates; env date fallbacks",
+    "brackets_scoring": "CURRENT_SEASON_ID from app resolution",
+    "flask_standings": "start year parsed from CURRENT_SEASON_CODE; calendar fallback",
+    "scheduled_script": "NBA_STANDINGS_SEASON or UTC month>=August end-year inference",
+    "workflow": "NBA_SEASON_YEAR=2025 supplied but ignored by script",
+    "rollover_target": "request new_season_code; globals/env stay unchanged",
+    "history": "persisted season_id/code",
+    "frontend_admin": "VITE_CURRENT_SEASON_CODE or VITE_CURRENT_SEASON independent UI confirmation"
+  }
+}

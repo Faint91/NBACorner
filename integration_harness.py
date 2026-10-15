@@ -108,7 +108,14 @@ class GuardedHarness:
     def __init__(
         self, config, *, allow_local_mutations=False, characterization_scope=None
     ):
-        if characterization_scope not in {None, "NC-01A", "NC-01B", "NC-01C", "NC-01D"}:
+        if characterization_scope not in {
+            None,
+            "NC-01A",
+            "NC-01B",
+            "NC-01C",
+            "NC-01D",
+            "NC-01E",
+        }:
             raise safety.SafetyError("Unreviewed characterization scope.")
         self.characterization_scope = characterization_scope
         self._auth_subjects = {
@@ -325,6 +332,26 @@ class GuardedHarness:
         self.stack.enter_context(patch.object(requests.Session, "send", requests_send))
 
     def _check_path(self, method, path, *, identity_bootstrap=False):
+        if getattr(self, "characterization_scope", None) == "NC-01E":
+            if method == "GET" and path in {
+                "/health",
+                "/admin/env-check",
+                "/brackets/me",
+            }:
+                return
+            if method == "GET" and path == "/__test__/identity" and identity_bootstrap:
+                return
+            if method == "POST" and path in {
+                "/auth/login",
+                "/admin/standings/refresh",
+                "/internal/standings/refresh",
+                "/internal/standings/overwrite",
+                "/admin/insert_test_teams",
+                "/admin/season/rollover",
+                "/admin/leaderboard/snapshot",
+            }:
+                return  # Job guard unchanged; permitted requests characterize refusals only.
+            raise safety.SafetyError("Outside NC-01E scope.")
         if getattr(self, "characterization_scope", None) == "NC-01D":
             if method == "GET" and path in {
                 "/leaderboard",
@@ -820,6 +847,29 @@ class GuardedHarness:
             "a": identity("score-user-a"),
             "b": identity("score-user-b"),
         }
+
+    def operational_request(self, method, path, *, role=None):
+        self._require_lease()
+        if (
+            not self._ready
+            or self.characterization_scope != "NC-01E"
+            or threading.get_ident() != self._owner
+        ):
+            raise safety.SafetyError("Explicit verified NC-01E context required.")
+        if path == "/auth/login":
+            raise safety.SafetyError("Use synthetic login method.")
+        status, body = self._exchange(
+            method, path, {} if method == "POST" else None, role
+        )
+        self.summary.append(
+            {
+                "method": method,
+                "path": path,
+                "status": status,
+                "shape": sorted(body) if isinstance(body, dict) else "text",
+            }
+        )
+        return status, body
 
     def _require_auth_scope(self):
         self._require_lease()
