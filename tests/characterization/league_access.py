@@ -612,11 +612,11 @@ class CurrentLeagueBehavior(unittest.TestCase):
         self.assertFalse(member["has_bracket"])
         for role in (None, "user-b", "user-a"):
             body = self.call("GET", "/leaderboard", 200, role=role)
-            self.assertTrue(
+            self.assertFalse(
                 any(r["bracket_id"] == bids["user-a"] for r in body["rows"])
             )
         self.facts = {
-            "draft_id_and_stored_score_visible": True,
+            "draft_id_and_stored_score_visible": False,
             "scenario_basis": "existing score fixture with member submission flag cleared; score math not run",
         }
 
@@ -625,3 +625,8 @@ class CurrentLeagueBehavior(unittest.TestCase):
 from scripts.nc02a1_acceptance_metadata import mark_acceptance
 
 mark_acceptance(CurrentLeagueBehavior)
+
+
+from scripts.nc02a2_acceptance_metadata import mark_acceptance as mark_nc02a2_acceptance
+
+mark_nc02a2_acceptance(CurrentLeagueBehavior)

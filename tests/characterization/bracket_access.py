@@ -303,12 +303,16 @@ class CurrentBracketBehavior(unittest.TestCase):
     def current_behavior__bracket__undo_graph(self):
         bid = self.setup_bracket()
         self.fill(bid)
+        self.save(bid)
         self.undo(bid, 6)
         self.assertIsNone(self.at(bid, 8)["team_a"])
         self.assertIsNone(self.at(bid, 8)["predicted_winner"])
         self.undo(bid, 2)
         self.assertIsNone(self.at(bid, 3)["team_b"])
         self.assertIsNone(self.at(bid, 5)["team_b"])
+        bracket, _ = self.state(bid)
+        self.assertFalse(bracket["is_done"])
+        self.assertIsNone(bracket["saved_at"])
 
     @behavior(
         "cross-user authorization",
@@ -394,7 +398,7 @@ class CurrentBracketBehavior(unittest.TestCase):
                 payload={"games": value},
             )
             self.assertEqual(self.at(bid, 6)["predicted_winner_games"], value)
-            self.assertTrue(self.state(bid)[0]["is_done"])
+            self.assertFalse(self.state(bid)[0]["is_done"])
         self.call(
             "PATCH", f"/bracket/match/{m['id']}/games", 400, role="user-a", payload={}
         )
@@ -445,7 +449,7 @@ class CurrentBracketBehavior(unittest.TestCase):
             payload={"games": 7},
         )
         after, _ = self.state(bid)
-        self.assertTrue(after["is_done"] and after["saved_at"] == b["saved_at"])
+        self.assertTrue(not after["is_done"] and after["saved_at"] is None)
 
     @behavior(
         "save/resubmit",
@@ -691,3 +695,8 @@ class CurrentBracketBehavior(unittest.TestCase):
 from scripts.nc02a1_acceptance_metadata import mark_acceptance
 
 mark_acceptance(CurrentBracketBehavior)
+
+
+from scripts.nc02a2_acceptance_metadata import mark_acceptance as mark_nc02a2_acceptance
+
+mark_nc02a2_acceptance(CurrentBracketBehavior)

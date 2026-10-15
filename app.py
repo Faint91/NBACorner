@@ -628,6 +628,28 @@ def with_current_season(q, col_name: str = "season_id"):
         return q.eq(col_name, CURRENT_SEASON_ID)
 
 
+def competitive_bracket_eligible(bracket, *, season_id=...):
+    """Canonical live competition rule: saved, active (not deleted), right season.
+
+    is_done is the existing submission flag. saved_at is submission/tie metadata,
+    not an independent flag: a timestamp cannot make is_done=False eligible.
+    Explicit season_id supports past-season live stats, never snapshot reads.
+    """
+    target = CURRENT_SEASON_ID if season_id is ... else season_id
+    return (
+        bracket.get("is_done") is True
+        and bracket.get("deleted_at") is None
+        and bracket.get("season_id") == target
+    )
+
+
+def invalidate_bracket_submission(bracket_id):
+    """Reuse prediction/undo invalidation for every accepted content edit."""
+    supabase.table("brackets").update({"is_done": False, "saved_at": None}).eq(
+        "id", bracket_id
+    ).execute()
+
+
 def ensure_season_globals():
     """
     Resolve season globals at request time if they weren't set at import time
@@ -747,27 +769,13 @@ def require_private_league_membership(league_id, user, *, public_members_only=Fa
 
 
 def require_auth_for_league_scope(f):
-    """Authenticate private scope only; public/global leaderboard stays unchanged."""
+    """Authenticate explicit league competition scopes; preserve public global reads."""
     authenticated = require_auth(f)
 
     @wraps(f)
     def wrapper(*args, **kwargs):
-        league_id = request.args.get("league_id")
-        if league_id and is_uuid(league_id):
-            try:
-                rows = (
-                    supabase.table("leagues")
-                    .select("password_hash")
-                    .eq("id", league_id)
-                    .limit(1)
-                    .execute()
-                    .data
-                    or []
-                )
-            except Exception:
-                return jsonify({"error": "Unexpected error"}), 500
-            if rows and rows[0].get("password_hash"):
-                return authenticated(*args, **kwargs)
+        if request.args.get("league_id"):
+            return authenticated(*args, **kwargs)
         return f(*args, **kwargs)
 
     return wrapper
@@ -1780,13 +1788,13 @@ def _build_leaderboard_rows_for_current_season():
     br_res = (
         with_current_season(
             supabase.table("brackets")
-            .select("id, user_id, name, deleted_at, season_id")
+            .select("id, user_id, name, is_done, deleted_at, season_id")
             .in_("id", bracket_ids)
             .is_("deleted_at", None)
         )
         .execute()
     )
-    br_rows = br_res.data or []
+    br_rows = [b for b in (br_res.data or []) if competitive_bracket_eligible(b)]
     br_by_id = {b["id"]: b for b in br_rows}
 
     # 3) Users for those brackets
@@ -3289,7 +3297,7 @@ def get_bracket_by_id(bracket_id):
     owner_id = bracket.get("user_id")
     is_owner = str(viewer_id) == str(owner_id)
 
-    if not is_owner and not bracket.get("is_done", False):
+    if not is_owner and not competitive_bracket_eligible(bracket):
         return jsonify({"error": "Bracket not yet saved or not accessible"}), 403
 
     matches_res = (
@@ -3431,7 +3439,9 @@ def list_all_brackets():
             query = query.in_("user_id", list(league_user_ids))
 
         brackets_res = query.order("saved_at", desc=True).execute()
-        brackets = brackets_res.data or []
+        brackets = [
+            b for b in (brackets_res.data or []) if competitive_bracket_eligible(b)
+        ]
 
         if not brackets:
             return jsonify([]), 200
@@ -3799,12 +3809,7 @@ def update_match(bracket_id, match_id):
                     set_in_dest(m3["id"], "b", loser)
 
             # ✅ Mark bracket as not saved
-            supabase.table("brackets").update(
-                {
-                    "is_done": False,
-                    "saved_at": None,
-                }
-            ).eq("id", match["bracket_id"]).execute()
+            invalidate_bracket_submission(match["bracket_id"])
 
             flush_touched_matches()
             return jsonify({"message": "Winner updated"}), 200
@@ -3827,12 +3832,7 @@ def update_match(bracket_id, match_id):
                 set_in_dest(m3["id"], "b", loser)
 
         # ✅ Mark bracket as not saved
-        supabase.table("brackets").update(
-            {
-                "is_done": False,
-                "saved_at": None,
-            }
-        ).eq("id", match["bracket_id"]).execute()
+        invalidate_bracket_submission(match["bracket_id"])
 
         flush_touched_matches()
         return jsonify({"message": "Winner set"}), 200
@@ -3867,12 +3867,7 @@ def update_match(bracket_id, match_id):
                 _mark_touched(m3)
 
         # ✅ Mark bracket as not saved
-        supabase.table("brackets").update(
-            {
-                "is_done": False,
-                "saved_at": None,
-            }
-        ).eq("id", match["bracket_id"]).execute()
+        invalidate_bracket_submission(match["bracket_id"])
 
         flush_touched_matches()
         return jsonify({"message": "Prediction undone"}), 200
@@ -3921,6 +3916,7 @@ def set_match_games(match_id):
         "predicted_winner_games": games,
         "updated_at": datetime.utcnow().isoformat()
     }).eq("id", match_id).execute()
+    invalidate_bracket_submission(match["bracket_id"])
     return jsonify({"ok": True}), 200
 
 
@@ -3940,15 +3936,13 @@ def leaderboard():
             )
             if error:
                 return error
-            # Public league_id was historically ignored here; P9 remains deferred.
-            if league["requires_password"]:
-                members = (
-                    supabase.table("league_members")
-                    .select("user_id")
-                    .eq("league_id", league_id)
-                    .execute().data or []
-                )
-                league_user_ids = {m["user_id"] for m in members if m.get("user_id")}
+            members = (
+                supabase.table("league_members")
+                .select("user_id")
+                .eq("league_id", league_id)
+                .execute().data or []
+            )
+            league_user_ids = {m["user_id"] for m in members if m.get("user_id")}
 
         # -------- 1) Scores for current season --------
         scores_q = (
@@ -3973,13 +3967,7 @@ def leaderboard():
                 "master_matchups": {},
             }), 200
 
-        # -------- 2) Determine master_bracket_id robustly --------
-        freq = {}
-        for s in scores:
-            mid = s.get("master_bracket_id")
-            if mid:
-                freq[mid] = freq.get(mid, 0) + 1
-        master_bracket_id = max(freq, key=freq.get) if freq else None
+        master_bracket_id = None
 
         # -------- 3) Brackets & owners (current season, not deleted) --------
         bracket_ids = list({s["bracket_id"] for s in scores if s.get("bracket_id")})
@@ -3993,7 +3981,7 @@ def leaderboard():
 
         br_q = (
             supabase.table("brackets")
-            .select("id, user_id, name, deleted_at, season_id, saved_at")
+            .select("id, user_id, name, is_done, deleted_at, season_id, saved_at")
             .in_("id", bracket_ids)
             .is_("deleted_at", None)
         )
@@ -4002,8 +3990,25 @@ def leaderboard():
         else:
             br_q = br_q.eq("season_id", CURRENT_SEASON_ID)
 
-        br_rows = (br_q.execute().data) or []
+        br_rows = [
+            b for b in (br_q.execute().data or []) if competitive_bracket_eligible(b)
+        ]
         br_by_id = {b["id"]: b for b in br_rows}
+        # Stale/draft rows cannot influence even the live score-derived metadata.
+        scores = [score for score in scores if score.get("bracket_id") in br_by_id]
+        if not scores:
+            return jsonify({
+                "rows": [], "master_bracket_id": None,
+                "master_updated_at": None, "master_matchups": {},
+            }), 200
+
+        # -------- 2) Determine master_bracket_id robustly --------
+        freq = {}
+        for s in scores:
+            mid = s.get("master_bracket_id")
+            if mid:
+                freq[mid] = freq.get(mid, 0) + 1
+        master_bracket_id = max(freq, key=freq.get) if freq else None
 
         user_ids = list({b["user_id"] for b in br_rows if b.get("user_id")})
         users = (
@@ -4286,7 +4291,12 @@ def champion_pick_stats():
             brackets_q = brackets_q.in_("user_id", list(league_user_ids))
 
         br_res = brackets_q.execute()
-        br_rows = br_res.data or []
+        br_rows = [
+            b for b in (br_res.data or [])
+            if competitive_bracket_eligible(
+                b, season_id=target_season_id if season_code else CURRENT_SEASON_ID
+            )
+        ]
 
         if not br_rows:
             return jsonify(
@@ -5388,6 +5398,8 @@ def get_league_members(league_id):
                 .execute()
             )
             for b in brackets_res.data or []:
+                if not competitive_bracket_eligible(b):
+                    continue
                 uid = b.get("user_id")
                 if not uid:
                     continue

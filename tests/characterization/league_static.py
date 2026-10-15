@@ -211,3 +211,8 @@ class CurrentStaticLeagueBehavior(unittest.TestCase):
 from scripts.nc02a1_acceptance_metadata import mark_acceptance
 
 mark_acceptance(CurrentStaticLeagueBehavior)
+
+
+from scripts.nc02a2_acceptance_metadata import mark_acceptance as mark_nc02a2_acceptance
+
+mark_nc02a2_acceptance(CurrentStaticLeagueBehavior)

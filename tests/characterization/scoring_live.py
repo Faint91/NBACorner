@@ -97,7 +97,7 @@ class CurrentLiveScoring(unittest.TestCase):
     def current_behavior__scoring__draft(self):
         ids = self.c.install_scoring_read_state("draft")
         b = self.call("GET", "/leaderboard", 200)
-        self.assertTrue(any(r["bracket_id"] == ids["a"] for r in b["rows"]))
+        self.assertFalse(any(r["bracket_id"] == ids["a"] for r in b["rows"]))
         self.facts = {"prior_reference": "NC-01C draft_scored_leaderboard"}
 
     @behavior(
@@ -169,3 +169,8 @@ class CurrentLiveScoring(unittest.TestCase):
         self.assertEqual(self.call("GET", "/leaderboard", 200)["rows"], [])
         self.c.login("user-a")
         self.call("GET", "/leaderboard/history/2024-25", 404, "user-a")
+
+
+from scripts.nc02a2_acceptance_metadata import mark_acceptance as mark_nc02a2_acceptance
+
+mark_nc02a2_acceptance(CurrentLiveScoring)

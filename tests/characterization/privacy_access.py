@@ -207,8 +207,18 @@ class PrivacyAccessAcceptance(unittest.TestCase):
         self.call(f"/leagues/{ids['public']}/members", 403, "user-b")
         self.call(f"/brackets?league_id={ids['public']}", 200, "user-b")
         self.context.install_league_score_surface(draft_member=True)
-        # P4/P5 remain deferred: global stored-score eligibility is untouched.
-        self.assertEqual(len(self.call("/leaderboard", 200)["rows"]), 2)
+        # NC-02A2 P4/P5/P9: only saved competitors; public scope requires auth.
+        self.assertEqual(len(self.call("/leaderboard", 200)["rows"]), 1)
+        self.call(f"/leaderboard?league_id={ids['public']}", 401)
         self.assertEqual(
-            len(self.call(f"/leaderboard?league_id={ids['public']}", 200)["rows"]), 2
+            self.call(f"/leaderboard?league_id={ids['public']}", 200, "user-b")["rows"],
+            [],
         )
+
+
+PrivacyAccessAcceptance.test_public_access_and_general_saved_visibility_preserved.metadata.update(
+    repair_phase="NC-02A2",
+    additional_requirements=["P4", "P5", "P9"],
+    prior_checkpoint="c2543b8aa97ee63b683a2a86f0ff047020cc5a29",
+    transition="Previously deferred draft/public leaderboard assertions now enforce approved eligibility; all prior privacy assertions retained",
+)

@@ -123,7 +123,14 @@ class CurrentOfflineOperations(unittest.TestCase):
     def rollover_state(self):
         self.db.rows.update(
             brackets=[
-                dict(id=x, season_id="current", deleted_at=None, user_id=x, name=x)
+                dict(
+                    id=x,
+                    season_id="current",
+                    deleted_at=None,
+                    is_done=True,
+                    user_id=x,
+                    name=x,
+                )
                 for x in ["master", "a", "b"]
             ],
             users=[dict(id=x, username=x) for x in ["a", "b"]],

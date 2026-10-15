@@ -114,7 +114,9 @@ class Q:
 def environment():
     db = DB()
     db.rows["brackets"] = [
-        dict(id=i, season_id="current", deleted_at=None, user_id=i, name=i)
+        dict(
+            id=i, season_id="current", deleted_at=None, is_done=True, user_id=i, name=i
+        )
         for i in ["master", "a", "b"]
     ]
     db.rows["users"] = [
@@ -142,6 +144,7 @@ def environment():
         "_fetch_matches_for_bracket",
         "_compute_score_for_bracket",
         "with_current_season",
+        "competitive_bracket_eligible",
         "_build_leaderboard_rows_for_current_season",
         "_snapshot_leaderboard_for_current_season",
     }

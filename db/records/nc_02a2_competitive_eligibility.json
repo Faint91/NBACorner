@@ -1,0 +1,497 @@
+{
+  "phase": "NC-02A2",
+  "status": "COMPLETED",
+  "verified_at_utc": "2026-10-15T03:58:26.184753+00:00",
+  "starting_repositories": {
+    "backend": {
+      "branch": "main",
+      "head": "c2543b8aa97ee63b683a2a86f0ff047020cc5a29",
+      "clean": true
+    },
+    "frontend": {
+      "branch": "main",
+      "head": "ce54143006f0409265937f5d548286d0b100d454",
+      "clean": true
+    }
+  },
+  "requirements_implemented": [
+    "P4",
+    "P5",
+    "P9"
+  ],
+  "NC02A1_protections_preserved": true,
+  "competitive_surface_inventory": [
+    {
+      "surface": "GET /leaderboard",
+      "before": "Current scores joined nondeleted/current brackets, without saved validation.",
+      "after": "Canonical eligibility before rows/order/master metadata; global anonymous behavior retained."
+    },
+    {
+      "surface": "GET /leaderboard?league_id=public",
+      "before": "Public scope ignored and client filtering used.",
+      "after": "Authenticated server-side member-owner scope and saved eligibility."
+    },
+    {
+      "surface": "GET /leaderboard?league_id=private",
+      "before": "Membership and member-owner scope, but stale draft scores still visible.",
+      "after": "Same private gate plus current saved eligibility."
+    },
+    {
+      "surface": "GET /stats/champion-picks (global or league)",
+      "before": "Already saved/current/nondeleted before picks and least/most point aggregates.",
+      "after": "Same set and denominator, enforced through shared predicate; private/public access unchanged."
+    },
+    {
+      "surface": "GET /stats/champion-picks?season_code=...",
+      "before": "Saved/nondeleted live records in explicit season.",
+      "after": "Same explicit-season rule through predicate, never forced to current season."
+    },
+    {
+      "surface": "GET /brackets and optional league_id",
+      "before": "Saved/current/nondeleted, master excluded; private gate.",
+      "after": "Same eligibility through canonical predicate; safe display and private gate retained."
+    },
+    {
+      "surface": "GET /bracket/<id>",
+      "before": "Own draft allowed; others only saved/current/nondeleted.",
+      "after": "Same rule through predicate; no admin draft bypass."
+    },
+    {
+      "surface": "GET /leagues/<id>/members",
+      "before": "Saved/current member bracket links, harmless no-submission indicator.",
+      "after": "Same private gate/public authorization, canonical eligibility before IDs/links."
+    },
+    {
+      "surface": "GET /brackets/me",
+      "before": "Own management summary may include own draft.",
+      "after": "Unchanged; not a competitive ranking/other-user surface."
+    },
+    {
+      "surface": "New snapshot current-row builder",
+      "before": "Current stored scores could include unsaved bracket.",
+      "after": "Filter current eligible rows before creating a new snapshot; snapshot math/ties unchanged."
+    },
+    {
+      "surface": "Historical snapshot read APIs",
+      "before": "Persisted finalized history, no live join.",
+      "after": "Unchanged and preserved after live edit/deletion."
+    },
+    {
+      "surface": "Admin recomputation entry / internal scorer",
+      "before": "Entry skips unsaved; internal scorer can upsert; stale rows not deleted.",
+      "after": "Unchanged; no live job enabled or auto-recompute introduced."
+    }
+  ],
+  "predicate": {
+    "path": "app.py:competitive_bracket_eligible",
+    "rule": "is_done is True AND deleted_at IS NULL AND season_id equals requested/current competition season",
+    "active_representation": "No separate active field exists. Not deleted is the existing active semantics.",
+    "saved_at_role": "Save/tie metadata, not independent submission flag; existing is_done authority preserved.",
+    "historical_snapshot_reads_filtered": false,
+    "explicit_past_live_stats_use_selected_season": true
+  },
+  "submission_invalidation": {
+    "path": "app.py:invalidate_bracket_submission",
+    "fields": {
+      "is_done": false,
+      "saved_at": null
+    },
+    "winner": "Existing behavior extracted unchanged, including same-winner count path.",
+    "undo": "Existing behavior extracted unchanged; saved-state/graph acceptance verified.",
+    "games_only": "Now calls the same invalidation after successful update.",
+    "authorization_or_lock_changes": false
+  },
+  "stored_score_treatment": {
+    "deleted_on_edit": false,
+    "visible_while_unsaved": false,
+    "resave_restores_eligibility": true,
+    "recomputation_entry": "Existing admin-triggered saved/nondeleted/current selection unchanged.",
+    "internal_scorer": "Existing internal upsert may calculate unsaved state; guarded job, not user-facing. Unchanged.",
+    "automatic_recompute_added": false,
+    "freshness_limit": "As with prior winner-edit/resave workflow, stored values may reappear on resave until existing admin recomputation updates them; no scoring-persistence/timing redesign."
+  },
+  "ranking": "Existing total_points/full_hits/saved_at comparator and row shape preserved; only eligible competitors remain.",
+  "aggregate_denominator": "Existing recorded Finals-pick denominator and least/most point math unchanged; filter eligible bracket IDs first.",
+  "before_after_examples": {
+    "saved": "Visible globally and in applicable authenticated league scopes.",
+    "winner_edit": "is_done false / saved_at null; no current competitive entry.",
+    "games_edit": "Same invalidation; no current competitive entry.",
+    "undo": "Same invalidation; no current competitive entry.",
+    "resave": "Explicit validated save restores eligibility.",
+    "stored_draft_score": "Physically retained but not returned or ranked.",
+    "postlock": "Previously allowed edits still succeed and invalidate; ordinary save still 403.",
+    "admin": "Existing arbitrary mutation permission retained; shared invalidation applies and draft reads remain denied."
+  },
+  "canonical_gap_status": [
+    {
+      "gap_id": "GAP-RESAVE-001",
+      "status": "FIXED",
+      "source_finding_ids": [
+        "NC-01B:current_behavior__bracket__game_count_values",
+        "NC-01B:current_behavior__bracket__games_only_saved_edit"
+      ],
+      "reason": "Submission invalidation and live competitive eligibility now meet P4/P5/P9, retaining NC-02A1 membership gates."
+    },
+    {
+      "gap_id": "GAP-PRIVATE-DETAIL-001",
+      "status": "DEFERRED",
+      "source_finding_ids": [
+        "NC-01C:current_behavior__league__private_bracket_bypass"
+      ],
+      "reason": "General saved-detail access explicitly retained by the prior approved scope; no private relationship exposed."
+    },
+    {
+      "gap_id": "GAP-PRIVATE-SCORES-001",
+      "status": "FIXED",
+      "source_finding_ids": [
+        "NC-01C:current_behavior__league__leaderboard_private_surface",
+        "NC-01C:current_behavior__league__frontend_leaderboard",
+        "NC-01D:current_behavior__scoring__league_surface"
+      ],
+      "reason": "Submission invalidation and live competitive eligibility now meet P4/P5/P9, retaining NC-02A1 membership gates."
+    },
+    {
+      "gap_id": "GAP-DRAFT-SCORES-001",
+      "status": "FIXED",
+      "source_finding_ids": [
+        "NC-01C:current_behavior__league__draft_scored_leaderboard",
+        "NC-01D:current_behavior__scoring__draft"
+      ],
+      "reason": "Submission invalidation and live competitive eligibility now meet P4/P5/P9, retaining NC-02A1 membership gates."
+    }
+  ],
+  "test_transitions": [
+    {
+      "file": "tests/characterization/bracket_access.py",
+      "name": "current_behavior__bracket__game_count_values",
+      "source_finding_id": "NC-01B:current_behavior__bracket__game_count_values",
+      "gap_ids": [
+        "GAP-RESAVE-001"
+      ],
+      "requirement_ids": [
+        "REQ-BRACKET-RESAVE-001"
+      ],
+      "phase_requirements": [
+        "P4",
+        "P5",
+        "P9"
+      ],
+      "prior_classification": "KNOWN GAP",
+      "before": "Games-only accepts negative/zero/large counts, requires field, leaves saved state unchanged; absent set-winner count persists NULL outside play-in.",
+      "acceptance_scope": "P4/P5/P9 saved-state/eligibility only; unrelated mixed-row semantics retained."
+    },
+    {
+      "file": "tests/characterization/bracket_access.py",
+      "name": "current_behavior__bracket__games_only_saved_edit",
+      "source_finding_id": "NC-01B:current_behavior__bracket__games_only_saved_edit",
+      "gap_ids": [
+        "GAP-RESAVE-001"
+      ],
+      "requirement_ids": [
+        "REQ-BRACKET-EDIT-001",
+        "REQ-BRACKET-RESAVE-001"
+      ],
+      "phase_requirements": [
+        "P4",
+        "P5",
+        "P9"
+      ],
+      "prior_classification": "KNOWN GAP",
+      "before": "Games-only edits to a saved bracket do not clear is_done/saved_at, bypassing required resubmission state.",
+      "acceptance_scope": "P4/P5/P9 saved-state/eligibility only; unrelated mixed-row semantics retained."
+    },
+    {
+      "file": "tests/characterization/bracket_access.py",
+      "name": "current_behavior__bracket__save_edit_resubmit",
+      "source_finding_id": "NC-01B:current_behavior__bracket__save_edit_resubmit",
+      "gap_ids": [],
+      "requirement_ids": [
+        "REQ-BRACKET-EDIT-001",
+        "REQ-BRACKET-RESAVE-001"
+      ],
+      "phase_requirements": [
+        "P4",
+        "P5",
+        "P9"
+      ],
+      "prior_classification": "MATCHES REQUIREMENT",
+      "before": "Complete bracket saves repeatedly; pre-lock winner/count edits through set_winner clear is_done/saved_at and require explicit resave.",
+      "acceptance_scope": "P4/P5/P9 saved-state/eligibility only; unrelated mixed-row semantics retained."
+    },
+    {
+      "file": "tests/characterization/bracket_access.py",
+      "name": "current_behavior__bracket__undo_graph",
+      "source_finding_id": "NC-01B:current_behavior__bracket__undo_graph",
+      "gap_ids": [],
+      "requirement_ids": [],
+      "phase_requirements": [
+        "P4",
+        "P5",
+        "P9"
+      ],
+      "prior_classification": "REQUIREMENT NOT YET REVIEWED",
+      "before": "Undo with downstream selections clears advanced slots/predictions/counts; 7-8 play-in winner/loser feeds two branches.",
+      "acceptance_scope": "P4/P5/P9 saved-state/eligibility only; unrelated mixed-row semantics retained."
+    },
+    {
+      "file": "tests/characterization/league_static.py",
+      "name": "current_behavior__league__frontend_leaderboard",
+      "source_finding_id": "NC-01C:current_behavior__league__frontend_leaderboard",
+      "gap_ids": [
+        "GAP-PRIVATE-SCORES-001"
+      ],
+      "requirement_ids": [
+        "REQ-LEAGUE-PRIVATE-001"
+      ],
+      "phase_requirements": [
+        "P4",
+        "P5",
+        "P9"
+      ],
+      "prior_classification": "KNOWN GAP",
+      "before": "LeaderboardPage fetches global leaderboard then filters rows by IDs from member endpoint; points/full-hits/saved-time ordering and ties are presentation only here.",
+      "acceptance_scope": "P4/P5/P9 saved-state/eligibility only; unrelated mixed-row semantics retained."
+    },
+    {
+      "file": "tests/characterization/league_access.py",
+      "name": "current_behavior__league__draft_scored_leaderboard",
+      "source_finding_id": "NC-01C:current_behavior__league__draft_scored_leaderboard",
+      "gap_ids": [
+        "GAP-DRAFT-SCORES-001"
+      ],
+      "requirement_ids": [
+        "REQ-BRACKET-SAVED-001"
+      ],
+      "phase_requirements": [
+        "P4",
+        "P5",
+        "P9"
+      ],
+      "prior_classification": "KNOWN GAP",
+      "before": "Stored score row for an unsaved member bracket appears in anonymous/global and league-query leaderboard, despite member list hiding its draft ID.",
+      "acceptance_scope": "P4/P5/P9 saved-state/eligibility only; unrelated mixed-row semantics retained."
+    },
+    {
+      "file": "tests/characterization/scoring_live.py",
+      "name": "current_behavior__scoring__draft",
+      "source_finding_id": "NC-01D:current_behavior__scoring__draft",
+      "gap_ids": [
+        "GAP-DRAFT-SCORES-001"
+      ],
+      "requirement_ids": [
+        "REQ-BRACKET-SAVED-001"
+      ],
+      "phase_requirements": [
+        "P4",
+        "P5",
+        "P9"
+      ],
+      "prior_classification": "KNOWN GAP",
+      "before": "Stored unsaved score row appears in anonymous leaderboard; same draft-score surface established in NC-01C.",
+      "acceptance_scope": "P4/P5/P9 saved-state/eligibility only; unrelated mixed-row semantics retained."
+    },
+    {
+      "file": "tests/characterization/scoring_static.py",
+      "name": "current_behavior__scoring__league_surface",
+      "source_finding_id": "NC-01D:current_behavior__scoring__league_surface",
+      "gap_ids": [
+        "GAP-PRIVATE-SCORES-001"
+      ],
+      "requirement_ids": [
+        "REQ-LEAGUE-PRIVATE-001"
+      ],
+      "phase_requirements": [
+        "P4",
+        "P5",
+        "P9"
+      ],
+      "prior_classification": "KNOWN GAP",
+      "before": "No backend league filter; frontend filters global rows using member IDs. Existing NC-01C private-score exposure, not a newly counted surface.",
+      "acceptance_scope": "P4/P5/P9 saved-state/eligibility only; unrelated mixed-row semantics retained."
+    }
+  ],
+  "additional_prior_acceptance_adaptation": {
+    "source": "NC-02A1 test_public_access_and_general_saved_visibility_preserved",
+    "change": "Previously deferred global draft and anonymous public-scope assertions now enforce approved P4/P5/P9; earlier privacy assertions retained."
+  },
+  "new_acceptance": {
+    "live_sequences": 6,
+    "offline_sequences": 3,
+    "scope_refusal_safety_tests": 3,
+    "scopes": [
+      "global",
+      "authenticated public league",
+      "authorized private league"
+    ],
+    "lifecycle_edits": [
+      "winner",
+      "dedicated games-only",
+      "undo"
+    ],
+    "preservation": [
+      "stored score rows",
+      "historical snapshots and API output",
+      "league memberships",
+      "existing rank comparator",
+      "NC-02A1 privacy/private access"
+    ]
+  },
+  "historical_behavior": {
+    "existing_snapshots_changed": false,
+    "read_APIs_changed": false,
+    "new_snapshot_builder": "Now selects only currently eligible competition; snapshot writer/tie behavior unchanged."
+  },
+  "deliberately_deferred": [
+    "post-deadline mutation and frontend/backend final locks",
+    "admin arbitrary-user bracket mutation authorization",
+    "ordinary-owner undo UI restriction",
+    "champion +3 bonus",
+    "finalists +1 bonus",
+    "snapshot tie ordering",
+    "standings provider/freeze",
+    "canonical season sources",
+    "league lifecycle/deletion policy",
+    "base/game-count scoring formulas"
+  ],
+  "frontend_changes": false,
+  "schema_changes": false,
+  "NC_ENV_baseline_changes": false,
+  "canonical_fixture_generator_changes": false,
+  "guarded_harness": {
+    "new_scope": "NC-02A2",
+    "allowed": "Fixed reads/login and registered-subject content/save PATCH operations.",
+    "fixture": "Existing synthetic generators combined in fixed scoped installer; no new canonical fixture version.",
+    "unchanged_guards": [
+      "enrollment",
+      "local identity/marker/checksum",
+      "startup admission",
+      "capability",
+      "thread",
+      "exclusive lease",
+      "egress",
+      "email capture",
+      "disabled runtime jobs"
+    ],
+    "jobs_or_lifecycle_routes_enabled": false
+  },
+  "validation": {
+    "passed": true,
+    "full_suite": {
+      "tests_run": 171,
+      "passed": true,
+      "failures": 0,
+      "errors": 0,
+      "evidence": "db/records/nc_02a2_validation.json"
+    },
+    "focused_new_acceptance": {
+      "tests_run": 9,
+      "passed": true,
+      "evidence": "db/records/nc_02a2_competition_validation.json"
+    },
+    "final_strengthened_undo": {
+      "tests_run": 1,
+      "passed": true,
+      "reason": "Final regression additionally saves before undo and asserts both invalidated fields while retaining graph assertions.",
+      "evidence": "db/records/nc_02a2_undo_validation.json"
+    },
+    "offline_safety": {
+      "tests_run": 220,
+      "passed": true
+    },
+    "semantic_schema": "PASS",
+    "fixture_marker_v2": "PASS",
+    "syntax_ast": "PASS for 15 changed Python files",
+    "black": "PASS for 14 changed Python test/tooling files and added/touched helpers",
+    "whitespace": "PASS with cr-at-eol; original app.py CRLF preserved",
+    "credential_hash_privacy_audit": "PASS; recursive API field-absence assertions and added-artifact pattern scans",
+    "historical_baseline_validator": "PASS: 155 rows, 19 requirements, 19 canonical gaps",
+    "type_checker": "No configured Python static type checker; no frontend/TypeScript changes.",
+    "changed_existing_app_functions": [
+      "require_auth_for_league_scope",
+      "_build_leaderboard_rows_for_current_season",
+      "get_bracket_by_id",
+      "list_all_brackets",
+      "update_match",
+      "set_match_games",
+      "leaderboard",
+      "champion_pick_stats",
+      "get_league_members"
+    ],
+    "all_other_app_functions_ast_unchanged": true,
+    "mutation_AST_proof": "Expanding shared invalidation equals prior winner/undo AST; dropping added games invalidation equals prior games route AST."
+  },
+  "canonical_cleanup": {
+    "fixture_state": "SEEDED",
+    "fixture_version": "nc-fixtures-v1",
+    "fixture_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+    "flask_stopped": true,
+    "lease_released": true,
+    "email_capture_empty_same_process": true,
+    "jobs_disabled": true,
+    "fixture_proof": {
+      "identity": "PASS",
+      "marker": "PASS",
+      "email": "PASS",
+      "providers": "PASS",
+      "jobs": "PASS",
+      "fixture_reset": "PASS",
+      "harness": "UNMET",
+      "fixture_version": "nc-fixtures-v1",
+      "fixture_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "mutation_permitted": false
+    },
+    "readiness": {
+      "identity_verified": true,
+      "database_marker": "PASS",
+      "email": "PASS",
+      "providers": "PASS",
+      "external_credentials": "PASS",
+      "jobs": "PASS",
+      "jobs_enabled": false,
+      "fixture_state": "SEEDED",
+      "fixtures_reset": "PASS",
+      "integration_harness": "PASS",
+      "mutation_permitted": false,
+      "harness_state": "AVAILABLE_GUARDED",
+      "harness_scoped_mutation_permitted": false
+    }
+  },
+  "historical_evidence_preservation": {
+    "NC01_unchanged": true,
+    "NC02A1_unchanged": true
+  },
+  "production": {
+    "contact": false,
+    "credentials_used": false,
+    "mutation": false,
+    "deployment": false
+  },
+  "business_behavior_impact": "Only content-edit submission invalidation consistency and current competitive eligibility/visibility, including P9 authenticated server-side public league competition scope. No point/deadline/admin-mutation/lifecycle changes.",
+  "files_changed": [
+    "app.py",
+    "db/records/nc_02a2_competition_validation.json",
+    "db/records/nc_02a2_competitive_eligibility.json",
+    "db/records/nc_02a2_undo_validation.json",
+    "db/records/nc_02a2_validation.json",
+    "docs/repairs/nc-02a2-competitive-eligibility.md",
+    "integration_harness.py",
+    "scripts/nc02a2_acceptance_metadata.py",
+    "scripts/run_competitive_eligibility_acceptance.py",
+    "tests/characterization/bracket_access.py",
+    "tests/characterization/competitive_eligibility.py",
+    "tests/characterization/competitive_offline.py",
+    "tests/characterization/league_access.py",
+    "tests/characterization/league_static.py",
+    "tests/characterization/operations_offline.py",
+    "tests/characterization/privacy_access.py",
+    "tests/characterization/scoring_live.py",
+    "tests/characterization/scoring_offline.py",
+    "tests/characterization/scoring_static.py",
+    "tests/offline/test_competition_scope.py"
+  ],
+  "git_commit_message": "NC-02A2 enforce saved bracket competition eligibility",
+  "next_candidate": {
+    "phase": "NC-02B \u2014 Bracket integrity business-requirements checkpoint",
+    "started": false
+  }
+}
