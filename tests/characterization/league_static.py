@@ -160,7 +160,7 @@ class CurrentStaticLeagueBehavior(unittest.TestCase):
         )
         self.assertIn("getLeagueMembers(leagueId)", source)
         self.assertIn('request.args.get("league_id")', self.fn("leaderboard"))
-        for x in ["total_points", "full_hits", "saved_at", "rows_out.sort"]:
+        for x in ["total_points", "full_hits", "saved_at", "rank_live_rows"]:
             self.assertIn(x, self.fn("leaderboard"))
 
     @behavior(

@@ -63,7 +63,7 @@ class CurrentLiveScoring(unittest.TestCase):
         self.c.install_scoring_read_state()
         b = self.call("GET", "/leaderboard", 200)
         self.assertEqual(len(b["rows"]), 2)
-        self.assertTrue(all("rank" not in r for r in b["rows"]))
+        self.assertTrue(all(type(r.get("rank")) is int for r in b["rows"]))
         self.assertEqual(b, self.call("GET", "/leaderboard?malformed=synthetic", 200))
         self.facts = {"row_fields": sorted(b["rows"][0]), "rows": 2}
 

@@ -1,0 +1,122 @@
+{
+  "phase": "NC-02D1",
+  "status": "PRE_IMPLEMENTATION_INVENTORY",
+  "production_contact": false,
+  "starting_state": {
+    "backend": {
+      "branch": "main",
+      "head": "410507ad6948ec14e67dc68b0cea9838e714588d",
+      "clean": true
+    },
+    "frontend": {
+      "branch": "main",
+      "head": "53dd1d71eb59494596360a2c3955e1f651176ae0",
+      "clean": true
+    }
+  },
+  "paths": [
+    {
+      "path": "app.py:_fetch_matches_for_bracket",
+      "input": "bracket ID",
+      "season": "canonical current_season",
+      "master": "caller chooses bracket",
+      "eligibility": "current and not deleted",
+      "writes": "none"
+    },
+    {
+      "path": "app.py:_compute_score_for_bracket",
+      "input": "caller-supplied master dictionary, master ID, competitor ID",
+      "season": "canonical current_season",
+      "master": "caller authority; does not require season master pointer or is_master",
+      "eligibility": "current active brackets; no submitted check in helper; same-ID pair skipped",
+      "writes": "one independent bracket_scores upsert per competitor",
+      "transaction": "per-row API call; no whole-run atomicity"
+    },
+    {
+      "path": "app.py:recompute_scores",
+      "input": "master ID in admin route URL",
+      "season": "canonical current_season",
+      "master": "caller ID; checks current/active, not canonical master identity",
+      "eligibility": "current saved/not deleted selection",
+      "writes": "loop of per-bracket upserts",
+      "authorization": "JWT admin plus runtime job guard; no explicit users.is_admin recheck here",
+      "transaction": "partial publication possible"
+    },
+    {
+      "path": "app.py:update_match",
+      "input": "bracket/match IDs and winner or undo",
+      "season": "canonical current season",
+      "master": "existing bracket-content authorization",
+      "writes": "match/dependency updates then submission invalidation",
+      "automatic_recompute": false
+    },
+    {
+      "path": "app.py:set_match_games",
+      "input": "match ID and games",
+      "season": "canonical current season",
+      "master": "existing bracket-content authorization",
+      "writes": "count update then submission invalidation",
+      "automatic_recompute": false
+    },
+    {
+      "path": "app.py:leaderboard",
+      "input": "optional league scope",
+      "season": "canonical current_season",
+      "master": "frequency of master IDs among eligible stored score rows",
+      "eligibility": "existing saved/current/active filter and private-league membership",
+      "ordering": "points descending, full_hits descending, saved_at ascending; missing saved_at last",
+      "rank": "no backend competitive rank"
+    },
+    {
+      "path": "frontend/src/pages/LeaderboardPage.tsx",
+      "input": "live leaderboard response",
+      "ordering": "frontend sorts points/full_hits/saved_at then username/bracket ID",
+      "rank": "array index + 1",
+      "manual_recompute": "POST /admin/score/master/<masterId>/recompute"
+    },
+    {
+      "path": "app.py:_snapshot_leaderboard_for_current_season",
+      "input": "stored current scores through builder",
+      "master": "no live recomputation",
+      "ordering": "existing historical sort/rank semantics",
+      "scope": "deferred unchanged to D2"
+    },
+    {
+      "path": "app.py:_rollover_current_season",
+      "scoring_recompute_called": false,
+      "snapshot_gate": "existing snapshot call and semantics; deferred unchanged to D2"
+    },
+    {
+      "path": "app.py:create_bracket_for_user (admin branch)",
+      "input": "explicit master create/replace intent; generated empty graph",
+      "master": "B3 trusted atomic season master pointer creation/replacement",
+      "season": "canonical current_season",
+      "authorization": "DB admin and existing B3 replacement confirmation",
+      "transaction": "bracket/graph/pointer in existing B3 transaction; no score recompute before D1",
+      "required_D1_integration": "After successful canonical master establishment, recompute synchronously against new empty/result truth; leave B3 transaction and policy unchanged"
+    }
+  ],
+  "existing_formula": {
+    "play_in": "winner and both participants correct -> 1/full hit; otherwise 0/miss",
+    "best_of_seven": "winner + exact games + both participants correct -> 3/full hit; correct winner otherwise -> 1/partial; wrong winner -> 0",
+    "unresolved_master": "missing winner or missing games -> pending",
+    "champion_bonus": 0,
+    "finalists_bonus": 0,
+    "full_hits": "play-in full result or winner/games/participants full series outcome; bonuses never counted"
+  },
+  "schema": "bracket_scores stores separate bonus fields, round/match points and total; saved_at is timestamptz on brackets; no base_points column",
+  "canonical_fixture": "foundation has empty brackets/matches/bracket_scores; scenario score rows are temporary, so formula changes need not alter nc-fixtures-v1 or canonical checksum",
+  "clarification_pending": null,
+  "independent_design": "Canonical master resolver; complete eligible source snapshot; transactional trusted-only score publication with source fencing and unchanged-state no-op; server competition ranks; frontend consumes ranks. No code or migrations written yet.",
+  "deferred": [
+    "SC5",
+    "SC10",
+    "SC11",
+    "SC12",
+    "SC13",
+    "SC14",
+    "SC15",
+    "SC16"
+  ],
+  "approved_clarification": "Correct winner/different opponent earns 1 point. Three points requires both teams, winner and game count correct. Full-hit participant condition retained; play-in winner hit still worth 1, full hit requires participants."
+}

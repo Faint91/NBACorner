@@ -1,0 +1,256 @@
+{
+  "phase": "NC-02D1",
+  "status": "COMPLETED",
+  "requirements": [
+    "SC1",
+    "SC2",
+    "SC3",
+    "SC4",
+    "SC6",
+    "SC7",
+    "SC8",
+    "SC9"
+  ],
+  "starting_state": {
+    "backend": {
+      "branch": "main",
+      "head": "410507ad6948ec14e67dc68b0cea9838e714588d",
+      "clean": true
+    },
+    "frontend": {
+      "branch": "main",
+      "head": "53dd1d71eb59494596360a2c3955e1f651176ae0",
+      "clean": true
+    }
+  },
+  "approved_clarification": "Correct winner with a different opponent earns 1. Three points require both participants, winner, and exact series length.",
+  "pure_engine": {
+    "path": "scoring_engine.py",
+    "function": "score_bracket",
+    "side_effect_free": true,
+    "play_in": {
+      "correct_winner": 1,
+      "incorrect_winner": 0,
+      "exact_games_bonus": 0
+    },
+    "series": {
+      "correct_winner": 1,
+      "matching_participants_and_exact_games_additional": 2,
+      "incorrect_winner": 0
+    },
+    "champion_bonus": 3,
+    "both_finalists_bonus": 1,
+    "bonuses_separate_from_base": true,
+    "full_hits": "Participant-matched play-in winner or participant/winner/exact-games series result; excludes bonuses",
+    "partial_master": "Only established completed results score base; known finalists can earn pair bonus before champion; no inferred future results"
+  },
+  "canonical_orchestration": {
+    "path": "scoring_service.py",
+    "resolver": "get_current_scoring_master",
+    "authority": "Canonical application_season -> seasons.master_bracket_id -> active same-season is_master bracket",
+    "caller_ids": "Optional constraints only; mismatches rejected",
+    "eligibility": "Current, saved, active, valid aware saved_at; canonical master excluded",
+    "calculation": "Complete observed current bracket/match inputs; complete eligible score set calculated and validated before publication",
+    "publication": "One trusted transaction replaces current-season scores; removes stale ineligible current rows; preserves other-season/legacy-null rows",
+    "source_fencing": "Canonical pointer and complete typed eligibility/result input snapshot rechecked under publication locks"
+  },
+  "database": {
+    "migration": "db/post-baseline/0005_nc_02d1_atomic_scores.sql",
+    "function": "public.publish_current_bracket_scores(uuid,uuid,jsonb,jsonb)",
+    "owner": "postgres",
+    "security": "INVOKER",
+    "search_path": "pg_catalog,public",
+    "execute_roles": [
+      "postgres",
+      "service_role"
+    ],
+    "untrusted_execute": false,
+    "existing_table_acl_rls_changed": false,
+    "old_migrations_baseline_changed": false,
+    "atomicity": "Complete score publication only, not master mutation plus scoring",
+    "idempotence": "No writes on unchanged complete state, including exact timestamps"
+  },
+  "manual_recompute": {
+    "route": "POST /admin/score/recompute",
+    "legacy_route": "POST /admin/score/master/<id>/recompute (canonical constraint only)",
+    "authorization": "JWT admin plus database users.is_admin",
+    "ordinary_user_denied": true
+  },
+  "automatic_recompute": [
+    "Successful canonical master winner/result change",
+    "Master undo",
+    "Master series game-count change",
+    "Canonical master creation/replacement"
+  ],
+  "automatic_exclusions": [
+    "Failed mutation",
+    "Unchanged scoring truth",
+    "Ordinary user edit",
+    "Read",
+    "Save"
+  ],
+  "failure_semantics": {
+    "committed_master_rollback_claimed": false,
+    "score_partial_publication_allowed": false,
+    "response": "503 SCORE_RECOMPUTATION_FAILED, master_mutation_committed=true; sanitized inspect/manual recovery guidance",
+    "transport_ambiguity": "Last-good or fully new complete scores may exist if acknowledgement is lost; never mixed partial publication"
+  },
+  "live_ranking": {
+    "path": "scoring_engine.rank_live_rows",
+    "competitive_keys": [
+      "total_points DESC",
+      "full_hits DESC",
+      "saved_at UTC ASC"
+    ],
+    "true_ties": "Competition ranks: 1,2,2,4",
+    "stable_display_keys": [
+      "username casefold",
+      "user_id",
+      "bracket_id"
+    ],
+    "invalid_saved_metadata": "Ineligible; never assigned earliest time",
+    "private_league_scope": "Existing authorized server membership filter before ranking"
+  },
+  "frontend": {
+    "path": "src/pages/LeaderboardPage.tsx",
+    "backend_rank_order_preserved": true,
+    "scoped_request": true,
+    "stale_response_protection": true,
+    "manual_master_selection_removed": true,
+    "historical_pages_unchanged": true,
+    "commit": "1a23c571439068e2747e723c6756f6a1331858c8"
+  },
+  "evidence": {
+    "inventory": "db/records/nc_02d1_scoring_path_inventory.json",
+    "regression": "db/records/nc_02d1_validation.json",
+    "focused": "db/records/nc_02d1_lifecycle_validation.json",
+    "fresh_chain": "db/records/nc_02d1_fresh_migration_proof.json",
+    "frontend": "db/records/nc_02d1_frontend_validation.json",
+    "lint": "db/records/nc_02d1_lint_comparison.json",
+    "file_audit": "db/records/nc_02d1_file_audit.json"
+  },
+  "validation": {
+    "offline_tests": {
+      "passed": 285,
+      "failed": 0
+    },
+    "focused_live_tests": {
+      "passed": 7,
+      "failed": 0
+    },
+    "frontend_tests": {
+      "passed": 28,
+      "failed": 0
+    },
+    "frontend_typescript_vite_build": "PASS",
+    "fresh_baseline_0001_0005_chain": "PASS",
+    "actual_second_insert_after_delete_rollback": "PASS",
+    "last_good_rows_ids_timestamps_preserved": true,
+    "spoof_partial_stale_source_untrusted_refusal": "PASS",
+    "semantic_schema_security_verifier": "PASS",
+    "black_20_modules_and_scoped_app": "PASS",
+    "whitespace": "PASS",
+    "secret_privacy_size_syntax": "PASS",
+    "new_unused_imports": 0,
+    "python_lint": "No configured/installed lint engine; AST import comparison, compilation and Black used",
+    "frontend_lint": "Existing 83 errors/1 warning; changed page 11 errors/0 warnings, zero new diagnostics",
+    "complete_backend_regressions": {
+      "passed": 223,
+      "failed": 0,
+      "errors": 0
+    },
+    "protected_historical_files_unchanged": 86
+  },
+  "fixture_identity": {
+    "state": "SEEDED",
+    "version": "nc-fixtures-v1",
+    "checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+    "canonical_scores_empty": true,
+    "checksum_covers_scores": true,
+    "version_change_needed": false
+  },
+  "production": {
+    "contact": false,
+    "queried": false,
+    "migrated": false,
+    "deployed": false,
+    "readiness": "Locally proven; separately approved secured-schema, canonical pointer/master/graph/save-time preflight, backup and coordinated release required",
+    "eventual_recompute_required": true,
+    "bonus_impact": "Up to +4 separately from ordinary series base; clarified wrong-opponent play-in winner now 1 instead of 0; ranking can change",
+    "rollback": "Pause callers, inspect committed master/score state, preserve backups/history and prefer reviewed forward fix; code/function rollback does not restore earlier scores"
+  },
+  "historical_snapshot_semantics_changed": false,
+  "rollover_destructive_gate_changed": false,
+  "deferred_requirements": [
+    "SC5",
+    "SC10",
+    "SC11",
+    "SC12",
+    "SC13",
+    "SC14",
+    "SC15",
+    "SC16"
+  ],
+  "recommended_next_phase": "NC-02D2 \u2014 Historical snapshot integrity, ordering and rollover snapshot gate",
+  "next_phase_started": false,
+  "repair_record": "docs/repairs/nc-02d1-scoring-recompute.md",
+  "verified_at": "2026-10-15T22:06:17.476197+00:00",
+  "cleanup": {
+    "score_rows": 0,
+    "lease_released": true,
+    "standings_rows": 30,
+    "scratch_database_absent": true,
+    "canonical_designation_restored": true,
+    "flask_stopped": true,
+    "fixture_state": "SEEDED",
+    "fixture_version": "nc-fixtures-v1",
+    "fixture_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+    "jobs_disabled": true,
+    "email_capture_empty": true,
+    "app_import_removed": true,
+    "mutation_permitted": false
+  },
+  "files_changed": {
+    "backend": [
+      "app.py",
+      "db/post-baseline/0005_nc_02d1_atomic_scores.sql",
+      "db/post-baseline/README.md",
+      "db/post-baseline/verify_current_schema.sql",
+      "db/post-baseline/verify_nc_02c3_schema.sql",
+      "db/records/nc_02d1_file_audit.json",
+      "db/records/nc_02d1_fresh_migration_proof.json",
+      "db/records/nc_02d1_frontend_validation.json",
+      "db/records/nc_02d1_lifecycle_validation.json",
+      "db/records/nc_02d1_lint_comparison.json",
+      "db/records/nc_02d1_scoring_path_inventory.json",
+      "db/records/nc_02d1_scoring_recompute.json",
+      "db/records/nc_02d1_validation.json",
+      "docs/repairs/nc-02d1-scoring-recompute.md",
+      "integration_harness.py",
+      "job_safety.py",
+      "scoring_engine.py",
+      "scoring_service.py",
+      "scripts/local_supabase_environment.py",
+      "scripts/nc02d1_acceptance_metadata.py",
+      "scripts/prove_scoring_migration.py",
+      "scripts/prove_season_transition_migration.py",
+      "scripts/reset_local_fixtures.py",
+      "scripts/run_scoring_acceptance.py",
+      "tests/characterization/competitive_offline.py",
+      "tests/characterization/league_static.py",
+      "tests/characterization/scoring_live.py",
+      "tests/characterization/scoring_offline.py",
+      "tests/characterization/scoring_recompute.py",
+      "tests/characterization/scoring_static.py",
+      "tests/offline/test_provider_job_safety.py",
+      "tests/offline/test_scoring_engine.py",
+      "tests/offline/test_scoring_scope_safety.py",
+      "tests/offline/test_scoring_service.py",
+      "tests/offline/test_season_transition.py"
+    ],
+    "frontend": [
+      "src/pages/LeaderboardPage.tsx",
+      "scripts/test-live-leaderboard.cjs"
+    ]
+  }
+}

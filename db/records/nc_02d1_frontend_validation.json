@@ -1,0 +1,17 @@
+{
+  "phase": "NC-02D1",
+  "frontendTestsPassed": 28,
+  "frontendTestsFailed": 0,
+  "typescriptViteBuild": "PASS",
+  "lint": {
+    "totalErrors": 83,
+    "totalWarnings": 1,
+    "file": "src/pages/LeaderboardPage.tsx",
+    "beforeErrors": 11,
+    "afterErrors": 11,
+    "beforeWarnings": 2,
+    "afterWarnings": 0,
+    "newDiagnostics": []
+  },
+  "productionContact": false
+}

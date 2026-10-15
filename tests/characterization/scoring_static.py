@@ -54,9 +54,11 @@ class CurrentStaticScoring(unittest.TestCase):
     )
     def current_behavior__scoring__master_source(self):
         f = self.fn("recompute_scores")
-        self.assertNotIn('.eq("is_master"', f)
-        self.assertNotIn('master_bracket_id")', f)
-        self.assertIn("len(brs) < 2", self.fn("_compute_score_for_bracket"))
+        self.assertIn("recompute_current_scores", f)
+        self.assertNotIn("_compute_score_for_bracket", self.app)
+        service = (ROOT / "scoring_service.py").read_text(encoding="utf-8")
+        self.assertIn("get_current_scoring_master", service)
+        self.assertIn("canonical_master_invalid", service)
 
     @behavior(
         "recomputation",
@@ -64,9 +66,9 @@ class CurrentStaticScoring(unittest.TestCase):
         question="Approve recalculation timing and transaction/failure behavior?",
     )
     def current_behavior__scoring__recompute_source(self):
-        self.assertIn('.eq("is_done", True)', self.fn("recompute_scores"))
-        for n in ["update_match", "save_bracket"]:
-            self.assertNotIn("_compute_score", self.fn(n))
+        self.assertIn("recompute_after_master_change", self.fn("update_match"))
+        self.assertIn("recompute_after_master_change", self.fn("set_match_games"))
+        self.assertNotIn("recompute_current_scores", self.fn("save_bracket"))
 
     @behavior(
         "league leaderboard",
@@ -123,7 +125,8 @@ class CurrentStaticScoring(unittest.TestCase):
         f = (ROOT.parent / "frontend/src/pages/LeaderboardPage.tsx").read_text(
             encoding="utf-8"
         )
-        self.assertIn("const sa = a.saved_at", f)
+        self.assertIn("{r.rank}", f)
+        self.assertNotIn("cleaned.sort(", f)
         self.assertIn("bonus_champion", f)
 
     @behavior(

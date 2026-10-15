@@ -147,3 +147,17 @@ Earlier rollover snapshot/cleanup/insertion calls remain separate transactions;
 full recovery/legacy snapshot ambiguity are explicitly not solved. No production
 migration or rollover was run. See docs/repairs/nc-02c3-season-transition.md for
 acceptance, fresh-chain proof, operational preflight and rollback limits.
+
+
+## NC-02D1 atomic current score publication
+
+Apply 0005 after baseline and 0001-0004, then verify_current_schema.sql.
+The frozen C3 verifier is verify_nc_02c3_schema.sql. The new trusted-only
+publish_current_bracket_scores(uuid,uuid,jsonb,jsonb) is postgres-owned PL/pgSQL
+SECURITY INVOKER with pinned pg_catalog,public search_path. It fences canonical
+season/master and typed scoring/eligibility inputs, verifies the complete eligible
+set and components, and replaces current scores atomically. Unchanged output is a
+no-write result, preserving timestamps. Existing table/security/history objects
+and prior migrations are unchanged. See nc-02d1 repair/evidence for actual rollback,
+master mutation integration, preflight and operational recovery limits. No
+production migration or score recomputation has been performed by this phase.

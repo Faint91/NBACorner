@@ -1,0 +1,162 @@
+{
+  "phase": "NC-02D1",
+  "passed": true,
+  "tests_run": 7,
+  "failures": 0,
+  "errors": 0,
+  "findings": [
+    {
+      "phase": "NC-02D1",
+      "scenario": "test_d1_auto_winner_undo_count_and_failed_ordinary_no_recompute",
+      "requirements": [
+        "SC1",
+        "SC2",
+        "SC3",
+        "SC4",
+        "SC6",
+        "SC7",
+        "SC8",
+        "SC9"
+      ],
+      "passed": true,
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "production_contact": false
+    },
+    {
+      "phase": "NC-02D1",
+      "scenario": "test_d1_canonical_master_spoofs_and_invalid_pointers_preserve_scores",
+      "requirements": [
+        "SC1",
+        "SC2",
+        "SC3",
+        "SC4",
+        "SC6",
+        "SC7",
+        "SC8",
+        "SC9"
+      ],
+      "passed": true,
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "production_contact": false
+    },
+    {
+      "phase": "NC-02D1",
+      "scenario": "test_d1_changed_source_rejects_entire_publication",
+      "requirements": [
+        "SC1",
+        "SC2",
+        "SC3",
+        "SC4",
+        "SC6",
+        "SC7",
+        "SC8",
+        "SC9"
+      ],
+      "passed": true,
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "production_contact": false
+    },
+    {
+      "phase": "NC-02D1",
+      "scenario": "test_d1_committed_master_recompute_failure_last_good_then_manual_recovery",
+      "requirements": [
+        "SC1",
+        "SC2",
+        "SC3",
+        "SC4",
+        "SC6",
+        "SC7",
+        "SC8",
+        "SC9"
+      ],
+      "passed": true,
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "production_contact": false
+    },
+    {
+      "phase": "NC-02D1",
+      "scenario": "test_d1_live_ranks_and_stored_bonus_components",
+      "requirements": [
+        "SC1",
+        "SC2",
+        "SC3",
+        "SC4",
+        "SC6",
+        "SC7",
+        "SC8",
+        "SC9"
+      ],
+      "passed": true,
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "production_contact": false
+    },
+    {
+      "phase": "NC-02D1",
+      "scenario": "test_d1_manual_complete_set_idempotence_and_eligibility",
+      "requirements": [
+        "SC1",
+        "SC2",
+        "SC3",
+        "SC4",
+        "SC6",
+        "SC7",
+        "SC8",
+        "SC9"
+      ],
+      "passed": true,
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "production_contact": false
+    },
+    {
+      "phase": "NC-02D1",
+      "scenario": "test_d1_master_replacement_recomputes_new_truth_and_failure_recovers",
+      "requirements": [
+        "SC1",
+        "SC2",
+        "SC3",
+        "SC4",
+        "SC6",
+        "SC7",
+        "SC8",
+        "SC9"
+      ],
+      "passed": true,
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "production_contact": false
+    }
+  ],
+  "readiness": {
+    "identity_verified": true,
+    "database_marker": "PASS",
+    "email": "PASS",
+    "providers": "PASS",
+    "external_credentials": "PASS",
+    "jobs": "PASS",
+    "jobs_enabled": false,
+    "fixture_state": "SEEDED",
+    "fixtures_reset": "PASS",
+    "integration_harness": "PASS",
+    "mutation_permitted": false,
+    "harness_state": "AVAILABLE_GUARDED",
+    "harness_scoped_mutation_permitted": false
+  },
+  "canonical_cleanup": {
+    "fixture_readiness": {
+      "identity": "PASS",
+      "marker": "PASS",
+      "email": "PASS",
+      "providers": "PASS",
+      "jobs": "PASS",
+      "fixture_reset": "PASS",
+      "harness": "UNMET",
+      "fixture_version": "nc-fixtures-v1",
+      "fixture_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "mutation_permitted": false
+    },
+    "flask_stopped": true,
+    "email_capture_empty": true,
+    "app_import_removed": true
+  },
+  "production_contact": false,
+  "historical_NC01_evidence_rewritten": false
+}

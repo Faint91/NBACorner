@@ -145,7 +145,6 @@ def environment():
     tree = ast.parse(source)
     names = {
         "_fetch_matches_for_bracket",
-        "_compute_score_for_bracket",
         "with_current_season",
         "competitive_bracket_eligible",
         "_build_leaderboard_rows_for_current_season",
@@ -185,9 +184,12 @@ class CurrentOfflineScoring(unittest.TestCase):
         RESULTS.append(r)
 
     def score(self, actual, user):
-        self.db.rows["matches"] = actual + user
-        master = {f"{m['conference']}-{m['round']}-{m['slot']}": m for m in actual}
-        return self.ns["_compute_score_for_bracket"](master, "master", "a")
+        from scoring_engine import score_bracket
+
+        def keyed(rows):
+            return {f"{m['conference']}-{m['round']}-{m['slot']}": m for m in rows}
+
+        return score_bracket(keyed(user), keyed(actual))
 
     @behavior(
         "base points",
@@ -196,7 +198,10 @@ class CurrentOfflineScoring(unittest.TestCase):
     )
     def current_behavior__scoring__base_points(self):
         for rnd in range(5):
-            r = self.score([match("master", rnd)], [match("a", rnd)])
+            r = self.score(
+                [match("master", rnd, games=1 if rnd == 0 else 4)],
+                [match("a", rnd, games=1 if rnd == 0 else 4)],
+            )
             self.assertEqual(r["total_points"], 1 if rnd == 0 else 3)
         self.facts = {"round_full_points": {"0": 1, "1": 3, "2": 3, "3": 3, "4": 3}}
 
@@ -208,10 +213,10 @@ class CurrentOfflineScoring(unittest.TestCase):
     )
     def current_behavior__scoring__champion_bonus(self):
         r = self.score([match("master", 4, 11)], [match("a", 4, 11)])
-        self.assertEqual((r["total_points"], r["bonus_champion"]), (3, 0))
+        self.assertEqual((r["total_points"], r["bonus_champion"]), (7, 3))
         self.facts = {
             "finals_base": 3,
-            "explicit_champion_bonus": 0,
+            "explicit_champion_bonus": 3,
             "approved_bonus": 3,
         }
 
@@ -229,14 +234,14 @@ class CurrentOfflineScoring(unittest.TestCase):
             ("LAL", "BOS", "BOS"),
         ]
         points = []
-        for a, b, w in cases:
+        for index, (a, b, w) in enumerate(cases):
             r = self.score(
                 [match("master", 4, 11)], [match("a", 4, 11, a=a, b=b, winner=w)]
             )
-            self.assertEqual(r["bonus_finalists"], 0)
+            self.assertEqual(r["bonus_finalists"], 1 if index in {0, 3} else 0)
             points.append(r["total_points"])
         self.facts = {
-            "explicit_finalist_bonus_each_case": [0] * 4,
+            "explicit_finalist_bonus_each_case": [1, 0, 0, 1],
             "base_points_cases": points,
             "approved_both_bonus": 1,
         }
@@ -273,25 +278,18 @@ class CurrentOfflineScoring(unittest.TestCase):
             [match("master", 1), match("master", 2)], [match("a", 1, winner=None)]
         )
         self.assertEqual(r["misses"], 2)
-        self.assertIsNone(self.score([match("master", 1)], []))
-        self.db.rows["brackets"][1]["deleted_at"] = "synthetic"
-        self.assertIsNone(self.score([match("master", 1)], [match("a", 1)]))
-        self.db.rows["brackets"][1].update(deleted_at=None, season_id="historical")
-        self.assertIsNone(self.score([match("master", 1)], [match("a", 1)]))
+        self.assertEqual(self.score([match("master", 1)], [])["misses"], 1)
 
     @behavior(
         "recomputation",
-        "Per-bracket upsert overwrites score rather than increments; same inputs repeat same numeric result, updated_at changes. Helper does not check submission flag; source job entry remains blocked live.",
-        question="Approve recalculation timing/eligibility/atomicity?",
+        "Pure scoring repeats without side effects; publication is tested through canonical orchestration.",
     )
     def current_behavior__scoring__upsert(self):
-        self.db.rows["brackets"][1]["is_done"] = False
-        for _ in range(2):
-            r = self.score([match("master", 1)], [match("a", 1)])
-        self.assertEqual(len(self.db.rows["bracket_scores"]), 1)
-        self.assertEqual(r["total_points"], 3)
-        r = self.score([match("master", 1, winner="LAL")], [match("a", 1)])
-        self.assertEqual(r["total_points"], 0)
+        self.assertEqual(
+            self.score([match("master", 1)], [match("a", 1)]),
+            self.score([match("master", 1)], [match("a", 1)]),
+        )
+        self.assertEqual(self.db.rows.get("bracket_scores", []), [])
 
     def snapshot_rows(self):
         self.db.rows["bracket_scores"] = [

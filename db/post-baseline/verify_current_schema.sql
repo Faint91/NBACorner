@@ -64,7 +64,7 @@ BEGIN
   IF (SELECT string_agg(c.relname, ',' ORDER BY c.relname COLLATE "C") FROM pg_class c WHERE c.relnamespace='public'::regnamespace AND c.relkind IN ('r','p','v','m','S','f') AND NOT EXISTS (SELECT 1 FROM pg_depend d WHERE d.classid='pg_class'::regclass AND d.objid=c.oid AND d.deptype='e')) IS DISTINCT FROM 'application_season,bracket_scores,bracket_view,brackets,leaderboard_history,leaderboard_history_id_seq,leaderboard_history_rows,leaderboard_history_snapshots,league_members,leagues,matches,password_resets,password_resets_id_seq,seasons,standings,standings_id_seq,teams,users' THEN
     RAISE EXCEPTION 'Baseline mismatch: application relation inventory';
   END IF;
-  IF (SELECT string_agg(p.proname, ',' ORDER BY p.proname COLLATE "C") FROM pg_proc p WHERE p.pronamespace='public'::regnamespace AND NOT EXISTS (SELECT 1 FROM pg_depend d WHERE d.classid='pg_proc'::regclass AND d.objid=p.oid AND d.deptype='e')) IS DISTINCT FROM '_set_bracket_scores_season_id,_set_matches_season_id,atomic_update_match,create_master_bracket_atomic,finalize_season_transition,fix_season_master_on_bracket_soft_delete,publish_current_standings,set_master_bracket,set_winner_atomic,undo_prediction_atomic' THEN
+  IF (SELECT string_agg(p.proname, ',' ORDER BY p.proname COLLATE "C") FROM pg_proc p WHERE p.pronamespace='public'::regnamespace AND NOT EXISTS (SELECT 1 FROM pg_depend d WHERE d.classid='pg_proc'::regclass AND d.objid=p.oid AND d.deptype='e')) IS DISTINCT FROM '_set_bracket_scores_season_id,_set_matches_season_id,atomic_update_match,create_master_bracket_atomic,finalize_season_transition,fix_season_master_on_bracket_soft_delete,publish_current_bracket_scores,publish_current_standings,set_master_bracket,set_winner_atomic,undo_prediction_atomic' THEN
     RAISE EXCEPTION 'Baseline mismatch: application function inventory';
   END IF;
   IF (SELECT relkind::text FROM pg_class WHERE oid='public.bracket_scores'::regclass) IS DISTINCT FROM 'r' THEN
@@ -4539,4 +4539,50 @@ END;
  IF has_function_privilege('anon',f,'EXECUTE') OR has_function_privilege('authenticated',f,'EXECUTE') OR NOT has_function_privilege('service_role',f,'EXECUTE') THEN RAISE EXCEPTION 'Transition function ACL mismatch'; END IF;
  IF (SELECT count(*) FROM pg_proc p,LATERAL aclexplode(p.proacl) a WHERE p.oid=f AND (a.grantee NOT IN ('postgres'::regrole,'service_role'::regrole) OR a.privilege_type<>'EXECUTE' OR a.is_grantable))<>0 THEN RAISE EXCEPTION 'Unexpected transition execute grants'; END IF;
 END $transition_verify$;
+DO $scores_verify$
+DECLARE f oid:=to_regprocedure('public.publish_current_bracket_scores(uuid,uuid,jsonb,jsonb)'); BEGIN
+ IF f IS NULL THEN RAISE EXCEPTION 'Score publisher missing'; END IF;
+ IF (SELECT p.proowner='postgres'::regrole AND l.lanname='plpgsql' AND NOT p.prosecdef AND p.prorettype='jsonb'::regtype AND p.proconfig=ARRAY['search_path=pg_catalog, public']::text[] AND NOT p.proretset FROM pg_proc p JOIN pg_language l ON l.oid=p.prolang WHERE p.oid=f) IS DISTINCT FROM true THEN RAISE EXCEPTION 'Score publisher definition mismatch'; END IF;
+ IF (SELECT prosrc FROM pg_proc WHERE oid=f) IS DISTINCT FROM '
+DECLARE selected_id uuid; selected_master uuid; source_now jsonb; source_expected jsonb; old_scores jsonb; normalized_rows jsonb; row_count integer; BEGIN
+ SELECT season_id INTO STRICT selected_id FROM public.application_season WHERE singleton FOR UPDATE;
+ IF selected_id IS DISTINCT FROM p_season_id THEN RAISE EXCEPTION ''Canonical season changed'' USING ERRCODE=''40001''; END IF;
+ SELECT master_bracket_id INTO STRICT selected_master FROM public.seasons WHERE id=selected_id FOR SHARE;
+ IF selected_master IS NULL OR selected_master IS DISTINCT FROM p_master_id THEN RAISE EXCEPTION ''Canonical master changed'' USING ERRCODE=''40001''; END IF;
+ -- Briefly freeze input tables to validate a complete observed input set, including inserts.
+ LOCK TABLE public.brackets,public.matches IN SHARE MODE;
+ IF NOT EXISTS(SELECT 1 FROM public.brackets WHERE id=selected_master AND season_id=selected_id AND is_master IS TRUE AND deleted_at IS NULL) THEN RAISE EXCEPTION ''Invalid canonical master''; END IF;
+ IF jsonb_typeof(p_source) IS DISTINCT FROM ''object'' OR jsonb_typeof(p_source->''brackets'') IS DISTINCT FROM ''array'' OR jsonb_typeof(p_source->''matches'') IS DISTINCT FROM ''array'' THEN RAISE EXCEPTION ''Invalid score source''; END IF;
+ SELECT jsonb_build_object(
+ ''brackets'',(SELECT coalesce(jsonb_agg(to_jsonb(b) ORDER BY b.id),''[]''::jsonb) FROM (SELECT id,user_id,season_id,is_master,is_done,deleted_at,saved_at FROM public.brackets WHERE season_id=selected_id) b),
+ ''matches'',(SELECT coalesce(jsonb_agg(to_jsonb(m) ORDER BY m.id),''[]''::jsonb) FROM (SELECT id,bracket_id,season_id,conference,round,slot,team_a,team_b,predicted_winner,predicted_winner_games FROM public.matches WHERE season_id=selected_id) m)) INTO source_now;
+ SELECT jsonb_build_object(
+ ''brackets'',(SELECT coalesce(jsonb_agg(to_jsonb(b) ORDER BY b.id),''[]''::jsonb) FROM jsonb_to_recordset(p_source->''brackets'') AS b(id uuid,user_id uuid,season_id uuid,is_master boolean,is_done boolean,deleted_at timestamptz,saved_at timestamptz)),
+ ''matches'',(SELECT coalesce(jsonb_agg(to_jsonb(m) ORDER BY m.id),''[]''::jsonb) FROM jsonb_to_recordset(p_source->''matches'') AS m(id uuid,bracket_id uuid,season_id uuid,conference text,round integer,slot integer,team_a text,team_b text,predicted_winner text,predicted_winner_games integer))) INTO source_expected;
+ IF source_now IS DISTINCT FROM source_expected THEN RAISE EXCEPTION ''Scoring inputs changed; recompute required'' USING ERRCODE=''40001''; END IF;
+ IF jsonb_typeof(p_rows) IS DISTINCT FROM ''array'' THEN RAISE EXCEPTION ''Complete score array required''; END IF;
+ IF EXISTS(SELECT 1 FROM jsonb_array_elements(p_rows) r WHERE jsonb_typeof(r) IS DISTINCT FROM ''object''
+ OR (SELECT array_agg(k ORDER BY k) FROM jsonb_object_keys(r) k) IS DISTINCT FROM ARRAY[''bonus_champion'',''bonus_finalists'',''bracket_id'',''full_hits'',''master_bracket_id'',''misses'',''partial_hits'',''points_by_match'',''points_by_round'',''season_id'',''total_points'']::text[]
+ OR jsonb_typeof(r->''points_by_match'') IS DISTINCT FROM ''object'' OR jsonb_typeof(r->''points_by_round'') IS DISTINCT FROM ''object''
+ OR (r->>''master_bracket_id'')::uuid IS DISTINCT FROM selected_master OR (r->>''season_id'')::uuid IS DISTINCT FROM selected_id) THEN RAISE EXCEPTION ''Invalid score row''; END IF;
+ IF EXISTS(SELECT 1 FROM jsonb_array_elements(p_rows) r CROSS JOIN LATERAL jsonb_each(r) f WHERE f.key IN (''total_points'',''full_hits'',''partial_hits'',''misses'',''bonus_finalists'',''bonus_champion'') AND (jsonb_typeof(f.value) IS DISTINCT FROM ''number'' OR (f.value::text)::numeric<0 OR (f.value::text)::numeric<>trunc((f.value::text)::numeric))) THEN RAISE EXCEPTION ''Invalid score components''; END IF;
+ IF EXISTS(SELECT 1 FROM jsonb_array_elements(p_rows) r WHERE (r->>''bonus_champion'')::integer NOT IN (0,3) OR (r->>''bonus_finalists'')::integer NOT IN (0,1)
+ OR EXISTS(SELECT 1 FROM jsonb_each(r->''points_by_round'') q WHERE jsonb_typeof(q.value) IS DISTINCT FROM ''number'' OR (q.value::text)::numeric<0 OR (q.value::text)::numeric<>trunc((q.value::text)::numeric))
+ OR (r->>''total_points'')::numeric <> coalesce((SELECT sum((q.value::text)::numeric) FROM jsonb_each(r->''points_by_round'') q),0)+(r->>''bonus_champion'')::integer+(r->>''bonus_finalists'')::integer) THEN RAISE EXCEPTION ''Score component total mismatch''; END IF;
+ IF (SELECT coalesce(jsonb_agg(b.id ORDER BY b.id),''[]''::jsonb) FROM public.brackets b WHERE b.season_id=selected_id AND b.id<>selected_master AND b.is_done IS TRUE AND b.deleted_at IS NULL AND b.saved_at IS NOT NULL AND isfinite(b.saved_at))
+ IS DISTINCT FROM (SELECT coalesce(jsonb_agg((r->>''bracket_id'')::uuid ORDER BY (r->>''bracket_id'')::uuid),''[]''::jsonb) FROM jsonb_array_elements(p_rows) r) THEN RAISE EXCEPTION ''Complete eligible score set required''; END IF;
+ SELECT coalesce(jsonb_agg(to_jsonb(s)-''updated_at'' ORDER BY s.bracket_id),''[]''::jsonb) INTO old_scores FROM public.bracket_scores s WHERE season_id=selected_id;
+ SELECT coalesce(jsonb_agg(r ORDER BY (r->>''bracket_id'')::uuid),''[]''::jsonb) INTO normalized_rows FROM jsonb_array_elements(p_rows) r;
+ row_count:=jsonb_array_length(p_rows);
+ IF old_scores=normalized_rows THEN RETURN jsonb_build_object(''state'',''unchanged'',''master_bracket_id'',selected_master,''season_id'',selected_id,''updated_brackets'',row_count,''written_rows'',0); END IF;
+ DELETE FROM public.bracket_scores WHERE season_id=selected_id;
+ INSERT INTO public.bracket_scores(bracket_id,master_bracket_id,season_id,total_points,full_hits,partial_hits,misses,bonus_finalists,bonus_champion,points_by_round,points_by_match)
+ SELECT x.bracket_id,x.master_bracket_id,x.season_id,x.total_points,x.full_hits,x.partial_hits,x.misses,x.bonus_finalists,x.bonus_champion,x.points_by_round,x.points_by_match
+ FROM jsonb_to_recordset(p_rows) AS x(bracket_id uuid,master_bracket_id uuid,season_id uuid,total_points integer,full_hits integer,partial_hits integer,misses integer,bonus_finalists integer,bonus_champion integer,points_by_round jsonb,points_by_match jsonb);
+ RETURN jsonb_build_object(''state'',''published'',''master_bracket_id'',selected_master,''season_id'',selected_id,''updated_brackets'',row_count,''written_rows'',row_count);
+END;
+' THEN RAISE EXCEPTION 'Score publisher body mismatch'; END IF;
+ IF has_function_privilege('anon',f,'EXECUTE') OR has_function_privilege('authenticated',f,'EXECUTE') OR NOT has_function_privilege('service_role',f,'EXECUTE') THEN RAISE EXCEPTION 'Score publisher ACL mismatch'; END IF;
+ IF (SELECT count(*) FROM pg_proc p,LATERAL aclexplode(p.proacl) a WHERE p.oid=f AND (a.grantee NOT IN ('postgres'::regrole,'service_role'::regrole) OR a.privilege_type<>'EXECUTE' OR a.is_grantable))<>0 THEN RAISE EXCEPTION 'Unexpected score execute grants'; END IF;
+END $scores_verify$;
 COMMIT;

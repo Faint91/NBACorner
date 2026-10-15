@@ -122,6 +122,7 @@ class GuardedHarness:
             "NC-02C1",
             "NC-02C2",
             "NC-02C3",
+            "NC-02D1",
         }:
             raise safety.SafetyError("Unreviewed characterization scope.")
         self.characterization_scope = characterization_scope
@@ -141,6 +142,7 @@ class GuardedHarness:
         self._closed = False
         self._admission = secrets.token_urlsafe(32)
         self._tokens = {}
+        self._scoring_active = False
         self._transition_active = False
         self._standings_jobs = frozenset()
         self._standings_token_mode = "missing"
@@ -242,6 +244,7 @@ class GuardedHarness:
                                 "NC-02C1",
                                 "NC-02C2",
                                 "NC-02C3",
+                                "NC-02D1",
                             }
                             else request.path
                         ),
@@ -352,6 +355,19 @@ class GuardedHarness:
         self.stack.enter_context(patch.object(requests.Session, "send", requests_send))
 
     def _check_path(self, method, path, *, identity_bootstrap=False):
+        if (
+            getattr(self, "characterization_scope", None) == "NC-02D1"
+            and method == "POST"
+            and (
+                path == "/admin/score/recompute"
+                or path
+                in {
+                    "/admin/score/master/" + bid + "/recompute"
+                    for bid in self._brackets
+                }
+            )
+        ):
+            return
         if getattr(self, "characterization_scope", None) == "NC-02C3":
             if method == "POST" and path in {
                 "/admin/season/rollover",
@@ -385,6 +401,7 @@ class GuardedHarness:
             "NC-02C1",
             "NC-02C2",
             "NC-02C3",
+            "NC-02D1",
         }:
             lids = getattr(self, "_leagues", set())
             reads = {
@@ -417,7 +434,15 @@ class GuardedHarness:
                 return
             if (
                 self.characterization_scope
-                in {"NC-02B1", "NC-02B2", "NC-02B3", "NC-02C1", "NC-02C2", "NC-02C3"}
+                in {
+                    "NC-02B1",
+                    "NC-02B2",
+                    "NC-02B3",
+                    "NC-02C1",
+                    "NC-02C2",
+                    "NC-02C3",
+                    "NC-02D1",
+                }
                 and method == "POST"
                 and path == "/bracket/create"
             ):
@@ -588,7 +613,11 @@ class GuardedHarness:
             if role not in self._tokens:
                 raise safety.SafetyError("Synthetic login session required.")
             headers["Authorization"] = "Bearer " + self._tokens[role]
-        if self.characterization_scope in {"NC-02C2", "NC-02C3"} and path in {
+        if self.characterization_scope in {
+            "NC-02C2",
+            "NC-02C3",
+            "NC-02D1",
+        } and path in {
             "/internal/standings/refresh",
             "/internal/standings/overwrite",
         }:
@@ -681,6 +710,7 @@ class GuardedHarness:
                 "NC-02C1",
                 "NC-02C2",
                 "NC-02C3",
+                "NC-02D1",
             }
             or threading.get_ident() != self._owner
         ):
@@ -711,7 +741,7 @@ class GuardedHarness:
     def standings_request(self, kind, *, role=None, token="valid", payload=None):
         self._require_bracket_scope()
         if (
-            self.characterization_scope not in {"NC-02C2", "NC-02C3"}
+            self.characterization_scope not in {"NC-02C2", "NC-02C3", "NC-02D1"}
             or kind not in {"scheduled", "admin", "cron", "overwrite", "seed"}
             or token not in {"valid", "invalid", "missing"}
         ):
@@ -773,6 +803,23 @@ class GuardedHarness:
         finally:
             self._standings_jobs = frozenset()
             self._standings_token_mode = "missing"
+
+    def recompute_request(self, *, master_id=None, role="admin"):
+        self._require_bracket_scope()
+        if self.characterization_scope != "NC-02D1" or (
+            master_id is not None and master_id not in self._brackets
+        ):
+            raise safety.SafetyError("Registered D1 scoring request required")
+        self._scoring_active = True
+        try:
+            path = (
+                "/admin/score/recompute"
+                if master_id is None
+                else "/admin/score/master/" + master_id + "/recompute"
+            )
+            return self._exchange("POST", path, {}, role)
+        finally:
+            self._scoring_active = False
 
     def prepare_transition_competition(self):
         """Fixed C3 prerequisite graph; align the explicit synthetic history IDs."""
@@ -855,6 +902,7 @@ class GuardedHarness:
             "NC-02C1",
             "NC-02C2",
             "NC-02C3",
+            "NC-02D1",
         } or relative not in {
             "before",
             "at",
@@ -1007,6 +1055,7 @@ class GuardedHarness:
                 "NC-02C1",
                 "NC-02C2",
                 "NC-02C3",
+                "NC-02D1",
             }
             else {"user-a", "user-b", "admin"}
         ):
@@ -1069,6 +1118,7 @@ class GuardedHarness:
                 "NC-02C1",
                 "NC-02C2",
                 "NC-02C3",
+                "NC-02D1",
             }
             or threading.get_ident() != self._owner
         ):
@@ -1181,6 +1231,7 @@ class GuardedHarness:
                 "NC-02C1",
                 "NC-02C2",
                 "NC-02C3",
+                "NC-02D1",
             }
             or self._brackets
         ):
@@ -1256,6 +1307,7 @@ class GuardedHarness:
             "NC-02C1",
             "NC-02C2",
             "NC-02C3",
+            "NC-02D1",
         }:
             raise safety.SafetyError("Verified NC-02A2 context required.")
         result = self.bracket_snapshot()
@@ -1336,6 +1388,9 @@ class GuardedHarness:
             "leaderboard_history",
         ):
             self.module.supabase.table(table).insert(data[table]).execute()
+        self.module.supabase.table("seasons").update(
+            {"master_bracket_id": identity("bracket-master")}
+        ).eq("id", identity("current")).execute()
         self._brackets.update(b["id"] for b in data["brackets"])
         return {
             "master": identity("bracket-master"),
@@ -1513,6 +1568,7 @@ class GuardedHarness:
                 "NC-02C1",
                 "NC-02C2",
                 "NC-02C3",
+                "NC-02D1",
             }
             else {"user-a", "user-b", "admin"}
         ):
@@ -1597,7 +1653,7 @@ def authorize_standings_test_job(job):
     permit = _ACTIVE
     if (
         type(permit) is not GuardedHarness
-        or permit.characterization_scope not in {"NC-02C2", "NC-02C3"}
+        or permit.characterization_scope not in {"NC-02C2", "NC-02C3", "NC-02D1"}
         or not permit._ready
         or job not in permit._standings_jobs
     ):
@@ -1650,4 +1706,37 @@ def authorize_transition_test_job(job):
         and hmac.compare_digest(
             request.headers.get("X-NBA-Test-Context", ""), permit._admission
         )
+    )
+
+
+def authorize_scoring_test_job(job):
+    permit = _ACTIVE
+    if (
+        type(permit) is not GuardedHarness
+        or not permit._ready
+        or job != "score-recompute"
+    ):
+        return False
+    permit._require_lease()
+    from flask import has_request_context, request
+
+    if not has_request_context() or not hmac.compare_digest(
+        request.headers.get("X-NBA-Test-Context", ""), permit._admission
+    ):
+        return False
+    if permit.characterization_scope == "NC-02D1" and permit._scoring_active:
+        return request.method == "POST" and (
+            request.path == "/admin/score/recompute"
+            or request.path
+            in {"/admin/score/master/" + bid + "/recompute" for bid in permit._brackets}
+        )
+    # Existing registered mutation scenarios must exercise the new production auto path.
+    # Admission does not permit manual maintenance, snapshots or any other job.
+    if request.method == "POST" and request.path == "/bracket/create":
+        return True
+    if request.method != "PATCH":
+        return False
+    return request.path in (
+        {f"/bracket/{bid}/match/{mid}" for bid, mid in permit._matches}
+        | {f"/bracket/match/{mid}/games" for _, mid in permit._matches}
     )

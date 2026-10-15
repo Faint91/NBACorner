@@ -1,3 +1,9 @@
+from scoring_engine import rank_live_rows
+from scoring_service import (
+    recompute_current_scores,
+    get_current_scoring_master,
+    ScoringError,
+)
 from standings_service import refresh_current_standings, StandingsRefreshError, log_result
 from canonical_season import get_current_season, SeasonConfigurationError
 from bracket_rules import game_count_error, apply_prediction, submission_error
@@ -455,179 +461,6 @@ def _fetch_matches_for_bracket(bracket_id: str):
         key = f"{conf}-{rnd}-{slot}"
         by_key[key] = m
     return by_key
-
-
-def _compute_score_for_bracket(
-    master_matches_by_key: dict, master_bracket_id: str, bracket_id: str
-):
-    """
-    Compare one user bracket against the master bracket and upsert into bracket_scores.
-    Ensures both brackets are in the CURRENT_SEASON_ID.
-
-    Scoring rules unchanged (see original docstring).
-    """
-    guard_runtime_job("score-recompute")
-    # Sanity: both brackets must exist, be active, and belong to CURRENT_SEASON_ID
-    brs = (
-        supabase.table("brackets")
-        .select("id, season_id, deleted_at")
-        .in_("id", [master_bracket_id, bracket_id])
-        .execute()
-        .data
-    )
-    if not brs or len(brs) < 2:
-        return None
-
-    season_ok = True
-    for b in brs:
-        if b.get("deleted_at") is not None or b.get("season_id") != current_season().id:
-            season_ok = False
-            break
-    if not season_ok:
-        return None
-
-    user_matches = _fetch_matches_for_bracket(bracket_id)
-    if not user_matches:
-        return None
-
-    total_points = 0
-    full_hits = 0
-    partial_hits = 0
-    misses = 0
-
-    # bonuses (for later; leave as 0 for now)
-    bonus_finalists = 0
-    bonus_champion = 0
-
-    points_by_round = {}  # e.g. { "0": 5, "1": 12, ... }
-    points_by_match = {}  # e.g. { "east-1-4": { ... }, ... }
-
-    for key, m_master in master_matches_by_key.items():
-        m_user = user_matches.get(key)
-
-        conf = (m_master.get("conference") or "").lower()
-        rnd = m_master.get("round")
-        slot = m_master.get("slot")
-        match_key = f"{conf}-{rnd}-{slot}"
-
-        actual_winner = m_master.get("predicted_winner")
-        actual_games = m_master.get("predicted_winner_games")
-
-        # If the master bracket doesn't have a final result yet, mark as pending
-        if not actual_winner or actual_games is None:
-            points_by_match[match_key] = {
-                "points": 0,
-                "status": "pending",
-                "conference": conf,
-                "round": rnd,
-                "slot": slot,
-            }
-            continue
-
-        # If the user bracket somehow doesn't have a match here, treat as miss
-        if not m_user:
-            misses += 1
-            points_by_match[match_key] = {
-                "points": 0,
-                "status": "no_match",
-                "conference": conf,
-                "round": rnd,
-                "slot": slot,
-            }
-            continue
-
-        user_winner = m_user.get("predicted_winner")
-        user_games = m_user.get("predicted_winner_games")
-
-        # No pick at all
-        if not user_winner:
-            misses += 1
-            points_by_match[match_key] = {
-                "points": 0,
-                "status": "no_pick",
-                "conference": conf,
-                "round": rnd,
-                "slot": slot,
-            }
-            continue
-
-        # Basic correctness flags
-        winner_correct = user_winner == actual_winner
-        series_len_correct = user_games == actual_games
-
-        master_teams = {
-            m_master.get("team_a"),
-            m_master.get("team_b"),
-        }
-        user_teams = {
-            m_user.get("team_a"),
-            m_user.get("team_b"),
-        }
-        participants_correct = (
-            None not in master_teams
-            and None not in user_teams
-            and master_teams == user_teams
-        )
-
-        # Special scoring rule for play-in (round 0)
-        is_play_in = int(rnd) == 0 if rnd is not None else False
-
-        if is_play_in:
-            if winner_correct and participants_correct:
-                pts = 1
-                status = "full"
-                full_hits += 1
-            else:
-                pts = 0
-                status = "miss"
-                misses += 1
-        else:
-            if winner_correct and series_len_correct and participants_correct:
-                pts = 3
-                status = "full"
-                full_hits += 1
-            elif winner_correct:
-                pts = 1
-                status = "partial"
-                partial_hits += 1
-            else:
-                pts = 0
-                status = "miss"
-                misses += 1
-
-        total_points += pts
-        round_key = str(rnd)
-        points_by_round[round_key] = points_by_round.get(round_key, 0) + pts
-
-        points_by_match[match_key] = {
-            "points": pts,
-            "status": status,
-            "conference": conf,
-            "round": rnd,
-            "slot": slot,
-            "winner_correct": winner_correct,
-            "series_len_correct": series_len_correct,
-            "participants_correct": participants_correct,
-        }
-
-    record = {
-        "season_id": current_season().id,  # 👈 ensure season tagged
-        "bracket_id": bracket_id,
-        "master_bracket_id": master_bracket_id,
-        "total_points": total_points + bonus_finalists + bonus_champion,
-        "full_hits": full_hits,
-        "partial_hits": partial_hits,
-        "misses": misses,
-        "bonus_finalists": bonus_finalists,
-        "bonus_champion": bonus_champion,
-        "points_by_round": points_by_round,
-        "points_by_match": points_by_match,
-        "updated_at": datetime.now(timezone.utc).isoformat(),
-    }
-
-    # Upsert into bracket_scores (PK is bracket_id)
-    supabase.table("bracket_scores").upsert(record).execute()
-    return record
 
 
 def with_current_season(q, col_name: str = "season_id"):
@@ -1339,77 +1172,64 @@ def health():
     return resp
 
 
+@app.route("/admin/score/recompute", methods=["POST"])
 @app.route("/admin/score/master/<master_bracket_id>/recompute", methods=["POST"])
 @require_auth
-def recompute_scores(master_bracket_id):
-    """
-    Admin-only: recompute bracket_scores for ALL saved brackets
-    in the CURRENT season against the given master_bracket_id.
-    """
+def recompute_scores(master_bracket_id=None):
+    """Admin maintenance: complete canonical recomputation, never caller-selected truth."""
     guard_runtime_job("score-recompute")
-    # --- Admin check (JWT flag) ---
-    user_info = request.user or {}
-    user_id = user_info.get("user_id")
-    is_admin_token = user_info.get("is_admin", False)
-
-    if not is_admin_token:
+    user = request.user or {}
+    if not user.get("is_admin"):
         return jsonify({"error": "Forbidden"}), 403
-
-    if not is_uuid(master_bracket_id):
-        return jsonify({"error": "Invalid master bracket id"}), 400
-
-    if not current_season().id:
-        return jsonify({"error": "CURRENT_SEASON not resolved on server"}), 500
-
-    # Ensure the master bracket exists, is active, and is in the CURRENT season
-    br_res = (
-        supabase.table("brackets")
-        .select("id, deleted_at, season_id")
-        .eq("id", master_bracket_id)
-        .is_("deleted_at", None)
+    admins = (
+        supabase.table("users")
+        .select("is_admin")
+        .eq("id", user.get("user_id"))
         .limit(1)
         .execute()
         .data
+        or []
     )
-    if not br_res:
-        return jsonify({"error": "Master bracket not found"}), 404
-    if br_res[0].get("season_id") != current_season().id:
-        return jsonify({"error": "Master bracket is not in the current season"}), 400
+    if not admins or admins[0].get("is_admin") is not True:
+        return jsonify({"error": "Forbidden"}), 403
+    try:
+        result = recompute_current_scores(
+            supabase,
+            expected_season_id=current_season().id,
+            expected_master_id=master_bracket_id,
+        )
+    except ScoringError as error:
+        status = 400 if error.stage == "caller_master_mismatch" else 503
+        return (
+            jsonify({"error": str(error), "code": "SCORE_RECOMPUTATION_FAILED"}),
+            status,
+        )
+    return jsonify(dict(result, message="Scores recomputed")), 200
 
-    # Load master matches once (will validate season internally)
-    master_matches = _fetch_matches_for_bracket(master_bracket_id)
-    if not master_matches:
-        return jsonify({"error": "Master bracket has no matches"}), 400
 
-    # Get all saved brackets in CURRENT season (exclude deleted)
-    brackets_res = (
-        supabase.table("brackets")
-        .select("id, is_done, deleted_at, season_id")
-        .is_("deleted_at", None)
-        .eq("is_done", True)
-        .eq("season_id", current_season().id)  # 👈 season scope
-        .execute()
-        .data
-    )
-
-    updated_count = 0
-    for b in brackets_res:
-        bid = b["id"]
-        rec = _compute_score_for_bracket(master_matches, master_bracket_id, bid)
-        if rec:
-            updated_count += 1
-
-    return (
-        jsonify(
-            {
-                "message": "Scores recomputed",
-                "master_bracket_id": master_bracket_id,
-                "season_id": current_season().id,
-                "updated_brackets": updated_count,
-            }
-        ),
-        200,
-    )
+def recompute_after_master_change(bracket, *, truth_changed=True):
+    """Master edit is already committed; preserve last-good scores on publish failure."""
+    if not truth_changed or not current_master_bracket(bracket):
+        return None
+    try:
+        recompute_current_scores(
+            supabase,
+            expected_season_id=current_season().id,
+            expected_master_id=bracket["id"],
+        )
+    except ScoringError as error:
+        return (
+            jsonify(
+                {
+                    "error": str(error),
+                    "code": "SCORE_RECOMPUTATION_FAILED",
+                    "master_mutation_committed": True,
+                    "message": "Master change committed; score recomputation failed or could not be confirmed. Score publication is atomic. An admin must inspect and recompute scores to recover.",
+                }
+            ),
+            503,
+        )
+    return None
 
 
 def _build_leaderboard_rows_for_current_season():
@@ -2837,6 +2657,11 @@ def create_bracket_for_user():
             500,
         )
 
+    if is_admin:
+        score_error = recompute_after_master_change(bracket)
+        if score_error:
+            return score_error
+
     return jsonify({"message": "Bracket created successfully", "bracket": bracket}), 200
 
 
@@ -3469,6 +3294,16 @@ def update_match(bracket_id, match_id):
             }
         ).eq("id", row["id"]).execute()
     invalidate_bracket_submission(match["bracket_id"])
+    truth_fields = ("team_a", "team_b", "predicted_winner", "predicted_winner_games")
+    truth_changed = any(
+        any(row.get(k) != matches_by_id[row["id"]].get(k) for k in truth_fields)
+        for row in changed
+    )
+    score_error = recompute_after_master_change(
+        bracket_check[0], truth_changed=truth_changed
+    )
+    if score_error:
+        return score_error
     return (
         jsonify(
             {"message": "Prediction undone" if action == "undo" else "Winner updated"}
@@ -3525,6 +3360,11 @@ def set_match_games(match_id):
         {"predicted_winner_games": games, "updated_at": datetime.utcnow().isoformat()}
     ).eq("id", match_id).execute()
     invalidate_bracket_submission(match["bracket_id"])
+    score_error = recompute_after_master_change(
+        br[0], truth_changed=games != match.get("predicted_winner_games")
+    )
+    if score_error:
+        return score_error
     return jsonify({"ok": True}), 200
 
 
@@ -3626,13 +3466,14 @@ def leaderboard():
                 200,
             )
 
-        # -------- 2) Determine master_bracket_id robustly --------
-        freq = {}
-        for s in scores:
-            mid = s.get("master_bracket_id")
-            if mid:
-                freq[mid] = freq.get(mid, 0) + 1
-        master_bracket_id = max(freq, key=freq.get) if freq else None
+        _, scoring_master = get_current_scoring_master(
+            supabase, expected_season_id=current_season().id
+        )
+        master_bracket_id = scoring_master["id"]
+        # Replaced-master rows cannot masquerade as scores for current truth.
+        scores = [
+            row for row in scores if row.get("master_bracket_id") == master_bracket_id
+        ]
 
         user_ids = list({b["user_id"] for b in br_rows if b.get("user_id")})
         users = (
@@ -3672,41 +3513,7 @@ def leaderboard():
                 }
             )
 
-        def _parse_ts(val):
-            """
-            Parse saved_at into a numeric timestamp for safe comparisons.
-            Returns None if it can't be parsed.
-            """
-            if not val:
-                return None
-
-            if isinstance(val, datetime):
-                dt = val
-            elif isinstance(val, str):
-                try:
-                    # Handle "Z" UTC suffix if present
-                    v = val.replace("Z", "+00:00") if "Z" in val else val
-                    dt = datetime.fromisoformat(v)
-                except Exception:
-                    return None
-            else:
-                return None
-
-            try:
-                return dt.timestamp()
-            except Exception:
-                return None
-
-        def _sort_key(row):
-            pts = row.get("total_points") or 0
-            full = row.get("full_hits") or 0
-            ts = _parse_ts(row.get("saved_at"))
-            # Earlier saved_at should win. Unknown saved_at goes last.
-            if ts is None:
-                ts = float("inf")
-            return (-pts, -full, ts)
-
-        rows_out.sort(key=_sort_key)
+        rows_out = rank_live_rows(rows_out)
 
         # -------- 5) Build a canonical master_matchups map --------
         master_matchups = {}
@@ -3821,6 +3628,11 @@ def leaderboard():
             200,
         )
 
+    except ScoringError as error:
+        return (
+            jsonify({"error": str(error), "code": "SCORING_CONFIGURATION_UNAVAILABLE"}),
+            503,
+        )
     except Exception as e:
         if ENABLE_DEBUG_LOGS:
             try:

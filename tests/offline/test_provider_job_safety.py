@@ -362,7 +362,6 @@ class ProviderJobTests(unittest.TestCase):
             "recompute_scores",
             "_snapshot_leaderboard_for_current_season",
             "_rollover_current_season",
-            "_compute_score_for_bracket",
         ):
             fn = function("app.py", name)
             i = (

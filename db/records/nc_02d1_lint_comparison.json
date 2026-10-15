@@ -1,0 +1,155 @@
+{
+  "phase": "NC-02D1",
+  "python_lint": "No configured/installed lint engine; AST import-usage comparison and compile/Black checks used",
+  "new_unused_imports": 0,
+  "files": [
+    {
+      "file": "app.py",
+      "before": [],
+      "after": [],
+      "new": []
+    },
+    {
+      "file": "integration_harness.py",
+      "before": [],
+      "after": [],
+      "new": []
+    },
+    {
+      "file": "job_safety.py",
+      "before": [],
+      "after": [],
+      "new": []
+    },
+    {
+      "file": "scripts/local_supabase_environment.py",
+      "before": [],
+      "after": [],
+      "new": []
+    },
+    {
+      "file": "scripts/prove_season_transition_migration.py",
+      "before": [],
+      "after": [],
+      "new": []
+    },
+    {
+      "file": "scripts/reset_local_fixtures.py",
+      "before": [],
+      "after": [],
+      "new": []
+    },
+    {
+      "file": "tests/characterization/competitive_offline.py",
+      "before": [],
+      "after": [],
+      "new": []
+    },
+    {
+      "file": "tests/characterization/league_static.py",
+      "before": [],
+      "after": [],
+      "new": []
+    },
+    {
+      "file": "tests/characterization/scoring_live.py",
+      "before": [],
+      "after": [],
+      "new": []
+    },
+    {
+      "file": "tests/characterization/scoring_offline.py",
+      "before": [],
+      "after": [],
+      "new": []
+    },
+    {
+      "file": "tests/characterization/scoring_static.py",
+      "before": [],
+      "after": [],
+      "new": []
+    },
+    {
+      "file": "tests/offline/test_provider_job_safety.py",
+      "before": [
+        "copy",
+        "defaultdict"
+      ],
+      "after": [
+        "copy",
+        "defaultdict"
+      ],
+      "new": []
+    },
+    {
+      "file": "tests/offline/test_scoring_scope_safety.py",
+      "before": [],
+      "after": [],
+      "new": []
+    },
+    {
+      "file": "tests/offline/test_season_transition.py",
+      "before": [],
+      "after": [],
+      "new": []
+    },
+    {
+      "file": "scoring_engine.py",
+      "before": [],
+      "after": [],
+      "new": []
+    },
+    {
+      "file": "scoring_service.py",
+      "before": [],
+      "after": [],
+      "new": []
+    },
+    {
+      "file": "scripts/nc02d1_acceptance_metadata.py",
+      "before": [],
+      "after": [],
+      "new": []
+    },
+    {
+      "file": "scripts/prove_scoring_migration.py",
+      "before": [],
+      "after": [],
+      "new": []
+    },
+    {
+      "file": "scripts/run_scoring_acceptance.py",
+      "before": [],
+      "after": [],
+      "new": []
+    },
+    {
+      "file": "tests/characterization/scoring_recompute.py",
+      "before": [],
+      "after": [],
+      "new": []
+    },
+    {
+      "file": "tests/offline/test_scoring_engine.py",
+      "before": [],
+      "after": [],
+      "new": []
+    },
+    {
+      "file": "tests/offline/test_scoring_service.py",
+      "before": [],
+      "after": [],
+      "new": []
+    }
+  ],
+  "frontend": {
+    "totalErrors": 83,
+    "totalWarnings": 1,
+    "file": "src/pages/LeaderboardPage.tsx",
+    "beforeErrors": 11,
+    "afterErrors": 11,
+    "beforeWarnings": 2,
+    "afterWarnings": 0,
+    "newDiagnostics": []
+  }
+}

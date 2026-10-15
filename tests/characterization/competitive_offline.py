@@ -91,18 +91,22 @@ class CompetitiveEligibilityOffline(unittest.TestCase):
 
     @acceptance
     def test_recompute_selection_skips_unsaved_without_deleting_stale_score(self):
-        self.db.rows["brackets"][1]["is_done"] = False
-        stale = {"bracket_id": "a", "season_id": "current", "total_points": 3}
-        self.db.rows["bracket_scores"] = [stale.copy()]
-        visited = []
+        # Route delegates once to canonical complete-set orchestration; no row loop.
+        self.db.rows["users"].append(dict(id="admin", is_admin=True))
+        delegated = []
+
+        def recompute(client, **kwargs):
+            self.assertIs(client, self.db)
+            delegated.append(kwargs)
+            return dict(updated_brackets=1, state="unchanged")
+
+        from scoring_service import ScoringError
+
         self.ns.update(
             request=SimpleNamespace(user={"user_id": "admin", "is_admin": True}),
-            is_uuid=lambda _: True,
             jsonify=lambda value: value,
-            _fetch_matches_for_bracket=lambda _: {"synthetic": {}},
-            _compute_score_for_bracket=lambda _, master, bid: (
-                visited.append(bid) or (None if bid == master else {"bracket_id": bid})
-            ),
+            recompute_current_scores=recompute,
+            ScoringError=ScoringError,
         )
         tree = ast.parse((ROOT / "app.py").read_text(encoding="utf-8"))
         node = next(
@@ -113,13 +117,19 @@ class CompetitiveEligibilityOffline(unittest.TestCase):
         node.decorator_list = []
         exec(
             compile(
-                ast.Module(body=[node], type_ignores=[]), "recompute_selection", "exec"
+                ast.Module(body=[node], type_ignores=[]),
+                "recompute_canonical_delegation",
+                "exec",
             ),
             self.ns,
         )
         body, status = self.ns["recompute_scores"]("master")
         self.assertEqual(status, 200)
         self.assertEqual(body["updated_brackets"], 1)
-        self.assertNotIn("a", visited)
-        self.assertIn("b", visited)
-        self.assertEqual(self.db.rows["bracket_scores"], [stale])
+        self.assertEqual(
+            delegated, [dict(expected_season_id="current", expected_master_id="master")]
+        )
+        self.facts = {
+            "prior_reference": "NC-01C draft_scored_leaderboard",
+            "complete_publication_verified_by": "NC-02D1 live/RPC tests",
+        }
