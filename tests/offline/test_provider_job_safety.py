@@ -185,7 +185,7 @@ class ProviderJobTests(unittest.TestCase):
         for url in (
             "https://stats.nba.com/stats/leaguestandingsv3",
             "https://evil.invalid/",
-            ESPN.replace("season=2026", "season=2027"),
+            ESPN.replace("season=2026", "season=2028"),
             ESPN.replace("espn.com", "espn.com.evil.invalid"),
         ):
             with self.subTest(url=url), self.assertRaises(safety.SafetyError):

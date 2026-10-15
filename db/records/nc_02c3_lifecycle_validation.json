@@ -1,0 +1,120 @@
+{
+  "phase": "NC-02C3",
+  "passed": true,
+  "tests_run": 7,
+  "failures": 0,
+  "errors": 0,
+  "findings": [
+    {
+      "phase": "NC-02C3",
+      "scenario": "test_c3_existing_target_refused_before_snapshot",
+      "requirements": [
+        "S10",
+        "S11"
+      ],
+      "passed": true,
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "production_contact": false
+    },
+    {
+      "phase": "NC-02C3",
+      "scenario": "test_c3_finalization_failure_exposes_earlier_commits_without_split",
+      "requirements": [
+        "S10",
+        "S11"
+      ],
+      "passed": true,
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "production_contact": false
+    },
+    {
+      "phase": "NC-02C3",
+      "scenario": "test_c3_invalid_target_and_auth_fail_before_mutation",
+      "requirements": [
+        "S10",
+        "S11"
+      ],
+      "passed": true,
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "production_contact": false
+    },
+    {
+      "phase": "NC-02C3",
+      "scenario": "test_c3_season_insert_failure_preserves_pointer_and_standings",
+      "requirements": [
+        "S10",
+        "S11"
+      ],
+      "passed": true,
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "production_contact": false
+    },
+    {
+      "phase": "NC-02C3",
+      "scenario": "test_c3_snapshot_failure_preserves_pointer_and_standings",
+      "requirements": [
+        "S10",
+        "S11"
+      ],
+      "passed": true,
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "production_contact": false
+    },
+    {
+      "phase": "NC-02C3",
+      "scenario": "test_c3_source_conflict_fails_closed_before_snapshot",
+      "requirements": [
+        "S10",
+        "S11"
+      ],
+      "passed": true,
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "production_contact": false
+    },
+    {
+      "phase": "NC-02C3",
+      "scenario": "test_c3_success_consumers_history_refresh_freeze_and_repeat",
+      "requirements": [
+        "S10",
+        "S11"
+      ],
+      "passed": true,
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "production_contact": false
+    }
+  ],
+  "readiness": {
+    "identity_verified": true,
+    "database_marker": "PASS",
+    "email": "PASS",
+    "providers": "PASS",
+    "external_credentials": "PASS",
+    "jobs": "PASS",
+    "jobs_enabled": false,
+    "fixture_state": "SEEDED",
+    "fixtures_reset": "PASS",
+    "integration_harness": "PASS",
+    "mutation_permitted": false,
+    "harness_state": "AVAILABLE_GUARDED",
+    "harness_scoped_mutation_permitted": false
+  },
+  "canonical_cleanup": {
+    "fixture_readiness": {
+      "identity": "PASS",
+      "marker": "PASS",
+      "email": "PASS",
+      "providers": "PASS",
+      "jobs": "PASS",
+      "fixture_reset": "PASS",
+      "harness": "UNMET",
+      "fixture_version": "nc-fixtures-v1",
+      "fixture_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "mutation_permitted": false
+    },
+    "flask_stopped": true,
+    "email_capture_empty": true,
+    "app_import_removed": true
+  },
+  "production_contact": false,
+  "historical_NC01_evidence_rewritten": false
+}

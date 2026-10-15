@@ -64,7 +64,7 @@ BEGIN
   IF (SELECT string_agg(c.relname, ',' ORDER BY c.relname COLLATE "C") FROM pg_class c WHERE c.relnamespace='public'::regnamespace AND c.relkind IN ('r','p','v','m','S','f') AND NOT EXISTS (SELECT 1 FROM pg_depend d WHERE d.classid='pg_class'::regclass AND d.objid=c.oid AND d.deptype='e')) IS DISTINCT FROM 'application_season,bracket_scores,bracket_view,brackets,leaderboard_history,leaderboard_history_id_seq,leaderboard_history_rows,leaderboard_history_snapshots,league_members,leagues,matches,password_resets,password_resets_id_seq,seasons,standings,standings_id_seq,teams,users' THEN
     RAISE EXCEPTION 'Baseline mismatch: application relation inventory';
   END IF;
-  IF (SELECT string_agg(p.proname, ',' ORDER BY p.proname COLLATE "C") FROM pg_proc p WHERE p.pronamespace='public'::regnamespace AND NOT EXISTS (SELECT 1 FROM pg_depend d WHERE d.classid='pg_proc'::regclass AND d.objid=p.oid AND d.deptype='e')) IS DISTINCT FROM '_set_bracket_scores_season_id,_set_matches_season_id,atomic_update_match,create_master_bracket_atomic,fix_season_master_on_bracket_soft_delete,publish_current_standings,set_master_bracket,set_winner_atomic,undo_prediction_atomic' THEN
+  IF (SELECT string_agg(p.proname, ',' ORDER BY p.proname COLLATE "C") FROM pg_proc p WHERE p.pronamespace='public'::regnamespace AND NOT EXISTS (SELECT 1 FROM pg_depend d WHERE d.classid='pg_proc'::regclass AND d.objid=p.oid AND d.deptype='e')) IS DISTINCT FROM '_set_bracket_scores_season_id,_set_matches_season_id,atomic_update_match,create_master_bracket_atomic,finalize_season_transition,fix_season_master_on_bracket_soft_delete,publish_current_standings,set_master_bracket,set_winner_atomic,undo_prediction_atomic' THEN
     RAISE EXCEPTION 'Baseline mismatch: application function inventory';
   END IF;
   IF (SELECT relkind::text FROM pg_class WHERE oid='public.bracket_scores'::regclass) IS DISTINCT FROM 'r' THEN
@@ -4515,4 +4515,28 @@ END;
  IF has_function_privilege('anon',f,'EXECUTE') OR has_function_privilege('authenticated',f,'EXECUTE') OR NOT has_function_privilege('service_role',f,'EXECUTE') THEN RAISE EXCEPTION 'Standings function ACL mismatch'; END IF;
  IF (SELECT count(*) FROM pg_proc p,LATERAL aclexplode(p.proacl) a WHERE p.oid=f AND (a.grantee NOT IN ('postgres'::regrole,'service_role'::regrole) OR a.privilege_type<>'EXECUTE' OR a.is_grantable))<>0 THEN RAISE EXCEPTION 'Unexpected standings execute grants'; END IF;
 END $standings_verify$;
+DO $transition_verify$
+DECLARE f oid := to_regprocedure('public.finalize_season_transition(uuid,uuid,text)'); BEGIN
+ IF f IS NULL THEN RAISE EXCEPTION 'Transition function missing'; END IF;
+ IF (SELECT p.proowner='postgres'::regrole AND l.lanname='plpgsql' AND NOT p.prosecdef AND p.prorettype='jsonb'::regtype AND p.proconfig=ARRAY['search_path=pg_catalog, public']::text[] AND NOT p.proretset FROM pg_proc p JOIN pg_language l ON l.oid=p.prolang WHERE p.oid=f) IS DISTINCT FROM true THEN RAISE EXCEPTION 'Transition function definition mismatch'; END IF;
+ IF (SELECT p.prosrc FROM pg_proc p WHERE p.oid=f) IS DISTINCT FROM '
+DECLARE selected_id uuid; target public.seasons%ROWTYPE; BEGIN
+ SELECT season_id INTO STRICT selected_id FROM public.application_season WHERE singleton FOR UPDATE;
+ IF selected_id IS DISTINCT FROM p_source_season_id THEN RAISE EXCEPTION ''Canonical source season changed'' USING ERRCODE=''40001''; END IF;
+ IF p_new_season_id IS NULL OR p_new_season_id=selected_id THEN RAISE EXCEPTION ''Distinct target season required''; END IF;
+ SELECT * INTO STRICT target FROM public.seasons WHERE id=p_new_season_id FOR SHARE;
+ IF target.code IS DISTINCT FROM p_new_season_code OR target.code !~ ''^[0-9]{4}-[0-9]{2}$'' THEN RAISE EXCEPTION ''Target season code mismatch''; END IF;
+ IF right(target.code,2)::integer <> (left(target.code,4)::integer+1)%100 THEN RAISE EXCEPTION ''Invalid target season code''; END IF;
+ IF target.regular_season_end_utc IS NULL OR target.playoffs_start_utc IS NULL
+ OR NOT isfinite(target.regular_season_end_utc) OR NOT isfinite(target.playoffs_start_utc)
+ OR target.regular_season_end_utc>target.playoffs_start_utc THEN RAISE EXCEPTION ''Target season timing is unconfigured or invalid''; END IF;
+ -- Same canonical lock order as publish_current_standings; no stale refresh crosses activation.
+ UPDATE public.application_season SET season_id=target.id WHERE singleton;
+ DELETE FROM public.standings WHERE id IS NOT NULL;
+ RETURN jsonb_build_object(''state'',''transitioned'',''season_id'',target.id,''season_code'',target.code,''standings_count'',0);
+END;
+' THEN RAISE EXCEPTION 'Transition function body mismatch'; END IF;
+ IF has_function_privilege('anon',f,'EXECUTE') OR has_function_privilege('authenticated',f,'EXECUTE') OR NOT has_function_privilege('service_role',f,'EXECUTE') THEN RAISE EXCEPTION 'Transition function ACL mismatch'; END IF;
+ IF (SELECT count(*) FROM pg_proc p,LATERAL aclexplode(p.proacl) a WHERE p.oid=f AND (a.grantee NOT IN ('postgres'::regrole,'service_role'::regrole) OR a.privilege_type<>'EXECUTE' OR a.is_grantable))<>0 THEN RAISE EXCEPTION 'Unexpected transition execute grants'; END IF;
+END $transition_verify$;
 COMMIT;

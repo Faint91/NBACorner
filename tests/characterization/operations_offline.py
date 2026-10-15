@@ -46,11 +46,19 @@ class DB(prior["DB"]):
         self.fail = None
 
     def rpc(self, name, params):
-        assert name == "publish_current_standings"
+        assert name in {"publish_current_standings", "finalize_season_transition"}
         db = self
 
         class Publish:
             def execute(self):
+                if name == "finalize_season_transition":
+                    if db.fail == ("transition", "finalize"):
+                        raise RuntimeError("Synthetic finalization failure")
+                    db.rows["standings"] = []
+                    db.ns["CURRENT_SEASON_ID"] = params["p_new_season_id"]
+                    db.ns["CURRENT_SEASON_CODE"] = params["p_new_season_code"]
+                    db.calls.append(("transition", "finalize"))
+                    return SimpleNamespace(data={"state": "transitioned"})
                 if db.fail == ("standings", "publish"):
                     raise RuntimeError("Synthetic publish failure")
                 db.rows["standings"] = copy.deepcopy(params["p_rows"])
@@ -134,6 +142,9 @@ class CurrentOfflineOperations(unittest.TestCase):
             {"_rollover_current_season", "fetch_and_sync_standings_from_nba"},
             self.ns,
         )
+        self.db.ns = self.ns
+        self.ns["get_current_season"] = lambda client: self.ns["current_season"]()
+        self.ns["has_request_context"] = lambda: False
         self.facts = {}
 
     def tearDown(self):
@@ -169,7 +180,11 @@ class CurrentOfflineOperations(unittest.TestCase):
         )
 
     def roll(self, code="2026-27"):
-        return self.ns["_rollover_current_season"](code)
+        return self.ns["_rollover_current_season"](
+            code,
+            datetime(2027, 4, 12, tzinfo=timezone.utc),
+            datetime(2027, 4, 18, tzinfo=timezone.utc),
+        )
 
     def espn(self, data=None):
         import standings_service as service
@@ -362,11 +377,11 @@ class CurrentOfflineOperations(unittest.TestCase):
         self.assertEqual(
             self.db.rows["matches"], [dict(id="past", season_id="historical")]
         )
-        self.assertEqual(len(self.db.rows["standings"]), 1)
-        self.assertEqual(self.ns["CURRENT_SEASON_CODE"], "2025-26")
+        self.assertEqual(len(self.db.rows["standings"]), 0)
+        self.assertEqual(self.ns["CURRENT_SEASON_CODE"], "2026-27")
         self.facts = {
             "steps": [s["step"] for s in r["steps"]],
-            "globals_unchanged": True,
+            "canonical_advanced_by_finalization": True,
         }
 
     @behavior(
@@ -410,7 +425,7 @@ class CurrentOfflineOperations(unittest.TestCase):
         self.rollover_state()
         for code in ["", "2025-26"]:
             self.assertFalse(self.roll(code)["ok"])
-        self.assertTrue(self.roll("arbitrary-code")["ok"])
+        self.assertFalse(self.roll("arbitrary-code")["ok"])
 
     @behavior(
         "failure/atomicity",

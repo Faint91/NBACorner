@@ -67,7 +67,7 @@ def provider_get(production_get, url, *, settings=None, ambient=None, **kwargs):
         "/apis/v2/sports/basketball/nba/standings",
     ):
         query = parse_qs(parsed.query)
-        if query.get("season") != ["2026"] or kwargs.get("params"):
+        if query.get("season") not in (["2026"], ["2027"]) or kwargs.get("params"):
             raise SafetyError("ESPN fixture supports only its explicit season.")
         return FixtureResponse("espn-standings-complete-2026.json")
     if (parsed.scheme, parsed.netloc, parsed.path) == (

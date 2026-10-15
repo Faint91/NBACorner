@@ -76,7 +76,16 @@ def get_current_season(client):
         )
         if len(rows) != 1 or not rows[0].get("id"):
             raise SeasonConfigurationError()
-        row = rows[0]
+        return validate_season_row(rows[0])
+    except Exception:
+        raise SeasonConfigurationError() from None
+
+
+def validate_season_row(row):
+    """Validate a stored or proposed canonical season without choosing authority."""
+    try:
+        if not row.get("id"):
+            raise SeasonConfigurationError()
         season_start_year(row["code"])
         opening = timestamp(row["regular_season_end_utc"])
         lock = timestamp(row["playoffs_start_utc"])

@@ -144,7 +144,7 @@ class StandingsServiceTests(unittest.TestCase):
             )
             .rsplit("COMMIT;", 1)[0]
         )
-        current = (ROOT / "db/post-baseline/verify_current_schema.sql").read_text()
+        current = (ROOT / "db/post-baseline/verify_nc_02c2_schema.sql").read_text()
         self.assertEqual(current.split("DO $standings_verify$", 1)[0], old)
         self.assertEqual(
             hashlib.sha256(

@@ -42,9 +42,12 @@ def require_explicit_test_job(settings, job, *, requested_job=None):
 def guard_runtime_job(job):
     settings = runtime_safety_settings()
     if settings.get("NBA_CORNER_ENV") == "test":
-        from integration_harness import authorize_standings_test_job
+        from integration_harness import (
+            authorize_standings_test_job,
+            authorize_transition_test_job,
+        )
 
-        if authorize_standings_test_job(job):
+        if authorize_standings_test_job(job) or authorize_transition_test_job(job):
             return
         require_explicit_test_job(settings, job)
     # Production is a no-op: existing JWT/cron auth and job behavior unchanged.

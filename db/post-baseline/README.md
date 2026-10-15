@@ -132,3 +132,18 @@ No history, season column, rollover reset or advancement. Explicit primary-key
 DELETE predicate honors safe-update enforcement. Full verifier adds only function
 inventory and strict new function assertions; earlier checks remain unchanged.
 See nc-02c2 repair/evidence for fresh-chain, real rollback, preflight and rollback.
+
+
+## NC-02C3 canonical transition finalization
+
+Apply 0004 after baseline -> 0001 -> 0002 -> 0003, then the full current verifier.
+The prior C2 verifier is frozen as verify_nc_02c2_schema.sql. No prior migration or
+existing table/security object is modified. The new finalize_season_transition
+(uuid,uuid,text) is postgres-owned PL/pgSQL SECURITY INVOKER with pinned search_path
+pg_catalog,public and postgres/service_role-only execution. It fences the expected
+source and intended valid target, then moves the singleton and clears current
+standings atomically. It shares the canonical lock order with standings publication.
+Earlier rollover snapshot/cleanup/insertion calls remain separate transactions;
+full recovery/legacy snapshot ambiguity are explicitly not solved. No production
+migration or rollover was run. See docs/repairs/nc-02c3-season-transition.md for
+acceptance, fresh-chain proof, operational preflight and rollback limits.

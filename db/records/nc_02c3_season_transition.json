@@ -1,0 +1,202 @@
+{
+  "phase": "NC-02C3",
+  "status": "COMPLETED",
+  "requirements": [
+    "S10",
+    "S11"
+  ],
+  "verified_at": "2026-10-15T17:49:51.487203+00:00",
+  "starting_state": {
+    "backend": {
+      "branch": "main",
+      "head": "dc476ca28e8263c1e6ef3c347f8be87a5c0f643b",
+      "clean": true
+    },
+    "frontend": {
+      "branch": "main",
+      "head": "947a785ed2abf38d0098f588d2edb0910169e6d7",
+      "clean": true
+    }
+  },
+  "pre_change_inventory": "db/records/nc_02c3_rollover_path_inventory.json",
+  "success_point": "Only after existing snapshot/cleanup/target creation succeeds and narrow finalization is confirmed",
+  "application_integration": "app.py:_rollover_current_season",
+  "target_validation": "canonical_season.py:validate_season_row; exact intended existing newly-created target/code; both ordered timezone-aware timing values required",
+  "atomic_unit": [
+    "canonical pointer advancement",
+    "current standings deletion"
+  ],
+  "rpc": {
+    "name": "public.finalize_season_transition(uuid,uuid,text)",
+    "migration": "db/post-baseline/0004_nc_02c3_season_transition.sql",
+    "owner": "postgres",
+    "language": "plpgsql",
+    "security": "INVOKER",
+    "search_path": "pg_catalog,public",
+    "execute": [
+      "postgres",
+      "service_role"
+    ],
+    "anon_authenticated_execute": false,
+    "table_acl_rls_changes": false,
+    "source_fenced": true,
+    "same_pointer_lock_as_standings_publish": true
+  },
+  "consumer_consistency": [
+    "canonical helper",
+    "/season",
+    "bracket creation",
+    "scoring filters/current leaderboard",
+    "admin master creation",
+    "standings service/new ESPN year",
+    "subsequent rollover source"
+  ],
+  "standings_post_transition": {
+    "rows": 0,
+    "history_or_season_column_added": false,
+    "standalone_standings_read_route_exists": false,
+    "existing_bracket_creation_empty_response_preserved": true,
+    "first_fixture_refresh_new_year": 2027,
+    "first_fixture_refresh_rows": 30,
+    "new_freeze_used": true
+  },
+  "failure_semantics": {
+    "prior_cleanup_transactions_preserved": true,
+    "full_rollover_atomicity_claimed": false,
+    "finalization_pair_rollback_proven": true,
+    "transport_confirmation_ambiguity_documented": true,
+    "automatic_retry_added": false,
+    "existing_target_refusal_preserved": true
+  },
+  "validation": {
+    "complete_applicable_backend": {
+      "passed": 216,
+      "failed": 0
+    },
+    "final_focused": {
+      "passed": 7,
+      "failed": 0
+    },
+    "offline_safety": {
+      "passed": 266,
+      "failed": 0
+    },
+    "frontend": {
+      "testsPassed": 22,
+      "testsFailed": 0,
+      "typescriptViteBuild": "PASS",
+      "buildWarnings": [
+        "existing outdated browser metadata",
+        "existing large chunk warning"
+      ],
+      "lint": {
+        "phase": "NC-02C3",
+        "totalErrors": 83,
+        "totalWarnings": 3,
+        "comparison": [
+          {
+            "file": "src/pages/AdminPage.tsx",
+            "beforeErrors": 6,
+            "afterErrors": 6,
+            "beforeWarnings": 0,
+            "afterWarnings": 0,
+            "unchangedDiagnostics": true
+          },
+          {
+            "file": "src/season/useCurrentSeason.ts",
+            "beforeErrors": 0,
+            "afterErrors": 0,
+            "beforeWarnings": 0,
+            "afterWarnings": 0,
+            "unchangedDiagnostics": true
+          }
+        ],
+        "productionContact": false
+      }
+    },
+    "fresh_chain": true,
+    "actual_post_pointer_failure_rollback": true,
+    "semantic_schema_and_security_verifier": "PASS",
+    "black_15_modules_and_scoped_app": "PASS",
+    "whitespace": "PASS",
+    "secret_privacy_size_syntax": "PASS",
+    "historical_protected_files_unchanged": 79,
+    "python_lint": "No configured/installed lint engine; AST import comparison reports zero new unused imports"
+  },
+  "cleanup": {
+    "lease_released": true,
+    "standings_rows": 30,
+    "scratch_database_absent": true,
+    "canonical_designation_restored": true,
+    "flask_stopped": true,
+    "fixture_version": "nc-fixtures-v1",
+    "fixture_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+    "jobs_disabled": true,
+    "email_capture_empty": true,
+    "app_import_removed": true,
+    "mutation_permitted": false
+  },
+  "frontend_commit": "53dd1d71eb59494596360a2c3955e1f651176ae0",
+  "repair_record": "docs/repairs/nc-02c3-season-transition.md",
+  "files_changed": {
+    "backend": [
+      "app.py",
+      "canonical_season.py",
+      "db/post-baseline/0004_nc_02c3_season_transition.sql",
+      "db/post-baseline/README.md",
+      "db/post-baseline/verify_current_schema.sql",
+      "db/post-baseline/verify_nc_02c2_schema.sql",
+      "db/records/nc_02c3_file_audit.json",
+      "db/records/nc_02c3_fresh_migration_proof.json",
+      "db/records/nc_02c3_frontend_validation.json",
+      "db/records/nc_02c3_lifecycle_validation.json",
+      "db/records/nc_02c3_lint_comparison.json",
+      "db/records/nc_02c3_rollover_path_inventory.json",
+      "db/records/nc_02c3_season_transition.json",
+      "db/records/nc_02c3_validation.json",
+      "docs/repairs/nc-02c3-season-transition.md",
+      "integration_harness.py",
+      "job_safety.py",
+      "provider_transport.py",
+      "scripts/local_supabase_environment.py",
+      "scripts/nc02c3_acceptance_metadata.py",
+      "scripts/prove_season_transition_migration.py",
+      "scripts/prove_standings_migration.py",
+      "scripts/reset_local_fixtures.py",
+      "scripts/run_season_transition_acceptance.py",
+      "tests/characterization/operations_offline.py",
+      "tests/characterization/season_transition.py",
+      "tests/offline/test_provider_job_safety.py",
+      "tests/offline/test_season_transition.py",
+      "tests/offline/test_standings_service.py"
+    ],
+    "frontend": [
+      "src/pages/AdminPage.tsx",
+      "src/season/useCurrentSeason.ts",
+      "scripts/test-canonical-season.cjs"
+    ]
+  },
+  "production": {
+    "contact": false,
+    "queries": false,
+    "migrated": false,
+    "rolled_over": false,
+    "deployed": false,
+    "readiness": "Portable migration locally proven; separately approved secured-schema/source/target/timing/backup/network/server-role preflight and coordinated release required",
+    "reset_impact": "Current standings intentionally empty until valid pre-freeze new-year ESPN refresh",
+    "rollback": "Pause callers and inspect committed state; prefer reviewed forward fix; code/migration rollback does not undo earlier cleanup or safely restore data"
+  },
+  "deferred": [
+    "legacy-only snapshot success",
+    "structured snapshot failure semantics",
+    "full rollover transactionality",
+    "partial recovery/resume",
+    "retry policy",
+    "exact trigger timing",
+    "master completion prerequisites",
+    "retention beyond approved rules",
+    "scoring bonuses/tie logic"
+  ],
+  "final_NC_02C_status": "C1/C2/C3 completed locally; production unchanged",
+  "recommended_next_checkpoint": "Review NC-02C completion and explicitly authorize the next domain; none started"
+}

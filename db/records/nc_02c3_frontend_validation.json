@@ -1,0 +1,33 @@
+{
+  "testsPassed": 22,
+  "testsFailed": 0,
+  "typescriptViteBuild": "PASS",
+  "buildWarnings": [
+    "existing outdated browser metadata",
+    "existing large chunk warning"
+  ],
+  "lint": {
+    "phase": "NC-02C3",
+    "totalErrors": 83,
+    "totalWarnings": 3,
+    "comparison": [
+      {
+        "file": "src/pages/AdminPage.tsx",
+        "beforeErrors": 6,
+        "afterErrors": 6,
+        "beforeWarnings": 0,
+        "afterWarnings": 0,
+        "unchangedDiagnostics": true
+      },
+      {
+        "file": "src/season/useCurrentSeason.ts",
+        "beforeErrors": 0,
+        "afterErrors": 0,
+        "beforeWarnings": 0,
+        "afterWarnings": 0,
+        "unchangedDiagnostics": true
+      }
+    ],
+    "productionContact": false
+  }
+}

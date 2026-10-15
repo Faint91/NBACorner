@@ -1,0 +1,26 @@
+{
+  "phase": "NC-02C3",
+  "pre_change": true,
+  "source": "canonical current_season() pinned per request",
+  "entry": "POST /admin/season/rollover -> _rollover_current_season",
+  "authorization": [
+    "require_auth",
+    "JWT admin",
+    "users.is_admin",
+    "season-rollover job guard"
+  ],
+  "target": "new_season_code; optional regular_season_end_utc and playoffs_start_utc; existing code rejected before snapshot",
+  "order": [
+    "snapshot current leaderboard; exact existing-snapshot error reused as success",
+    "delete current bracket_scores",
+    "delete current matches",
+    "soft-delete current brackets",
+    "insert target seasons row"
+  ],
+  "transaction_boundaries": "Separate PostgREST calls; no full rollover transaction or recovery",
+  "failure": "Earlier calls remain committed on later failure; structured/legacy snapshot ambiguity unchanged",
+  "canonical_interaction": "Reads canonical authority; no pointer update",
+  "standings_interaction": "No clear/reset",
+  "frontend": "Canonical hook; stale activation-pending confirmation; no post-rollover season refetch",
+  "production_contact": false
+}

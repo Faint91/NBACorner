@@ -1,0 +1,102 @@
+{
+  "phase": "NC-02C3",
+  "method": "AST import-use comparison + compile + Black; full Python lint unavailable; no dependency installed",
+  "ruff_available": false,
+  "pyflakes_available": false,
+  "files": {
+    "app.py": {
+      "before_unused_imports": [],
+      "after_unused_imports": [],
+      "new_unused_imports": []
+    },
+    "canonical_season.py": {
+      "before_unused_imports": [],
+      "after_unused_imports": [],
+      "new_unused_imports": []
+    },
+    "integration_harness.py": {
+      "before_unused_imports": [],
+      "after_unused_imports": [],
+      "new_unused_imports": []
+    },
+    "job_safety.py": {
+      "before_unused_imports": [],
+      "after_unused_imports": [],
+      "new_unused_imports": []
+    },
+    "provider_transport.py": {
+      "before_unused_imports": [],
+      "after_unused_imports": [],
+      "new_unused_imports": []
+    },
+    "scripts/local_supabase_environment.py": {
+      "before_unused_imports": [],
+      "after_unused_imports": [],
+      "new_unused_imports": []
+    },
+    "scripts/nc02c3_acceptance_metadata.py": {
+      "before_unused_imports": [],
+      "after_unused_imports": [],
+      "new_unused_imports": []
+    },
+    "scripts/prove_season_transition_migration.py": {
+      "before_unused_imports": [],
+      "after_unused_imports": [],
+      "new_unused_imports": []
+    },
+    "scripts/prove_standings_migration.py": {
+      "before_unused_imports": [],
+      "after_unused_imports": [],
+      "new_unused_imports": []
+    },
+    "scripts/reset_local_fixtures.py": {
+      "before_unused_imports": [],
+      "after_unused_imports": [],
+      "new_unused_imports": []
+    },
+    "scripts/run_season_transition_acceptance.py": {
+      "before_unused_imports": [],
+      "after_unused_imports": [],
+      "new_unused_imports": []
+    },
+    "tests/characterization/operations_offline.py": {
+      "before_unused_imports": [
+        "date",
+        "requests"
+      ],
+      "after_unused_imports": [
+        "date",
+        "requests"
+      ],
+      "new_unused_imports": []
+    },
+    "tests/characterization/season_transition.py": {
+      "before_unused_imports": [],
+      "after_unused_imports": [],
+      "new_unused_imports": []
+    },
+    "tests/offline/test_provider_job_safety.py": {
+      "before_unused_imports": [
+        "copy",
+        "defaultdict"
+      ],
+      "after_unused_imports": [
+        "copy",
+        "defaultdict"
+      ],
+      "new_unused_imports": []
+    },
+    "tests/offline/test_season_transition.py": {
+      "before_unused_imports": [],
+      "after_unused_imports": [],
+      "new_unused_imports": []
+    },
+    "tests/offline/test_standings_service.py": {
+      "before_unused_imports": [],
+      "after_unused_imports": [],
+      "new_unused_imports": []
+    }
+  },
+  "new_unused_imports": 0,
+  "production_contact": false
+}
