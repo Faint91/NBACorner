@@ -1,0 +1,2744 @@
+{
+  "phase": "NC-01C",
+  "passed": true,
+  "tests_run": 35,
+  "failures": 0,
+  "errors": 0,
+  "findings": [
+    {
+      "scenario": "current_behavior__league__admin_join_delete",
+      "group": "admin powers",
+      "current_behavior": "Admin cannot bypass private join password and cannot delete another owner's league; admin own creation/delete works.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve admin league powers?",
+      "evidence_source": "LIVE guarded local Flask; canonical reset per sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "owner",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues/<id>/join",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues/<id>/join",
+          "status": 201,
+          "shape": [
+            "league"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/leagues/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues",
+          "status": 201,
+          "shape": [
+            "league"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/leagues/<id>",
+          "status": 200,
+          "shape": [
+            "league"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__league__admin_private_bracket",
+      "group": "private leagues",
+      "current_behavior": "Nonmember admin obtains private member saved-bracket ID through admin bypass, contrary to membership requirement.",
+      "approved_requirement": "Private-league bracket information requires league membership.",
+      "classification": "KNOWN GAP",
+      "future_business_question": null,
+      "evidence_source": "LIVE guarded local Flask; canonical reset per sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "owner",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/<id>/members",
+          "status": 200,
+          "shape": [
+            "league",
+            "members"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__league__creation",
+      "group": "creation",
+      "current_behavior": "Ordinary public/private and admin creation succeed pre-lock; owner membership auto-created; password optional bcrypt hash, no season field.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve creator powers, limits and defaults?",
+      "evidence_source": "LIVE guarded local Flask; canonical reset per sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues",
+          "status": 201,
+          "shape": [
+            "league"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues",
+          "status": 201,
+          "shape": [
+            "league"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues",
+          "status": 201,
+          "shape": [
+            "league"
+          ]
+        }
+      ],
+      "facts": {
+        "created": 3,
+        "owner_memberships": 3,
+        "password_hashed": true,
+        "season_field": false
+      },
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__league__creation_forged_fields",
+      "group": "creation",
+      "current_behavior": "Backend ignores visibility/owner/is_global request fields; missing password yields public even if private requested; supplied password yields private even if public requested.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve public/private wire contract and ignored request fields?",
+      "evidence_source": "LIVE guarded local Flask; canonical reset per sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues",
+          "status": 201,
+          "shape": [
+            "league"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues",
+          "status": 201,
+          "shape": [
+            "league"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__league__creation_validation",
+      "group": "creation",
+      "current_behavior": "Names trim and enforce 3\u201380 characters, exact duplicate names rejected; case-distinct name accepted. Missing/empty name and short password fail.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve naming/uniqueness/password rules?",
+      "evidence_source": "LIVE guarded local Flask; canonical reset per sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues",
+          "status": 201,
+          "shape": [
+            "league"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues",
+          "status": 201,
+          "shape": [
+            "league"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues",
+          "status": 500,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__league__delete",
+      "group": "delete",
+      "current_behavior": "Only owner can hard-delete public/private leagues, including after lock; memberships cascade, bracket remains; deleted join/member access returns 404.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve hard-delete/cascade/retention policy?",
+      "evidence_source": "LIVE guarded local Flask; canonical reset per sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "owner",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/leagues/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/leagues/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/leagues/<id>",
+          "status": 200,
+          "shape": [
+            "league"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/leagues/<id>",
+          "status": 200,
+          "shape": [
+            "league"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/<id>/members",
+          "status": 404,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues/<id>/join",
+          "status": 404,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__league__discovery",
+      "group": "discovery",
+      "current_behavior": "Authenticated roles discover public/private non-global metadata and member counts; anonymous list/me denied; member-only own list, no emails/brackets/scores in discovery.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve metadata discovery for private leagues?",
+      "evidence_source": "LIVE guarded local Flask; canonical reset per sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "owner",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/me",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues",
+          "status": 200,
+          "shape": [
+            "leagues"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues",
+          "status": 200,
+          "shape": [
+            "leagues"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues",
+          "status": 200,
+          "shape": [
+            "leagues"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues",
+          "status": 200,
+          "shape": [
+            "leagues"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/me",
+          "status": 200,
+          "shape": [
+            "leagues"
+          ]
+        }
+      ],
+      "facts": {
+        "discovery_fields": [
+          "created_at",
+          "id",
+          "is_global",
+          "is_member",
+          "member_count",
+          "name",
+          "owner_user_id",
+          "requires_password",
+          "updated_at"
+        ],
+        "anonymous_denied": true
+      },
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__league__draft_saved_visibility",
+      "group": "member bracket access",
+      "current_behavior": "Public/private member lists hide draft ID and predictions, showing has_bracket=false; saved IDs shown to members. Direct other-user draft denied; nonmembers get no draft via filtered list.",
+      "approved_requirement": "Another user may see a bracket only if that bracket is saved.",
+      "classification": "MATCHES REQUIREMENT",
+      "future_business_question": null,
+      "evidence_source": "LIVE guarded local Flask; canonical reset per sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "owner",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/<id>/members",
+          "status": 200,
+          "shape": [
+            "league",
+            "members"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/bracket/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/bracket/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/bracket/<id>",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "matches"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/brackets?league_id=<id>",
+          "status": 200,
+          "shape": "list"
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/<id>/members",
+          "status": 200,
+          "shape": [
+            "league",
+            "members"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/bracket/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/bracket/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/bracket/<id>",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "matches"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/brackets?league_id=<id>",
+          "status": 200,
+          "shape": "list"
+        }
+      ],
+      "facts": {
+        "draft_id_hidden": true,
+        "draft_predictions_hidden": true,
+        "not_submitted_indicator": true
+      },
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__league__empty_final_leave",
+      "group": "leave",
+      "current_behavior": "Final non-owner membership can leave an owner-not-member fixture, leaving empty league and unchanged owner; owner/nonmember rules unchanged after lock.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve owner-not-member/empty-league lifecycle?",
+      "evidence_source": "LIVE guarded local Flask; canonical reset per sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "owner",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues/<id>/join",
+          "status": 201,
+          "shape": [
+            "league"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/leagues/<id>/membership",
+          "status": 200,
+          "shape": [
+            "league"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/<id>/members",
+          "status": 200,
+          "shape": [
+            "league",
+            "members"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/leagues/<id>/membership",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__league__errors",
+      "group": "schema/edge behavior",
+      "current_behavior": "Malformed/nonexistent IDs, missing auth, non-object join payloads and repeat delete produce representative 400/404/401/500 errors; no arbitrary user mutation routes.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve error/status contract?",
+      "evidence_source": "LIVE guarded local Flask; canonical reset per sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "owner",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/invalid/members",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/<id>/members",
+          "status": 404,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues/invalid/join",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues/<id>/join",
+          "status": 404,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues/<id>/join",
+          "status": 500,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues/<id>/join",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/leagues/<id>/membership",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/leagues/<id>",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/leagues/<id>",
+          "status": 404,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/leagues/<id>",
+          "status": 200,
+          "shape": [
+            "league"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/leagues/<id>",
+          "status": 404,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__league__global",
+      "group": "schema/edge behavior",
+      "current_behavior": "Global league excluded from discovery/own list; join/leave/delete rejected even for owner; private/public represented independently of is_global.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve global-league special policies?",
+      "evidence_source": "LIVE guarded local Flask; canonical reset per sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "owner",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues",
+          "status": 200,
+          "shape": [
+            "leagues"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues/<id>/join",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/leagues/<id>/membership",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/leagues/<id>",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__league__historical",
+      "group": "historical/cross-season behavior",
+      "current_behavior": "Leagues/membership have no season linkage; current member bracket lookup omits historical bracket; explicit historical champion-picks keeps league membership gate.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve historical league access/public scope separately?",
+      "evidence_source": "LIVE guarded local Flask; canonical reset per sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "owner",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/<id>/members",
+          "status": 200,
+          "shape": [
+            "league",
+            "members"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/stats/champion-picks?league_id=<id>&season_code=2024-25",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/stats/champion-picks?league_id=<id>&season_code=2024-25",
+          "status": 200,
+          "shape": [
+            "league_id",
+            "rows",
+            "scope",
+            "total_brackets"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__league__join",
+      "group": "join",
+      "current_behavior": "Public join succeeds; repeated/owner join fails; private missing/wrong password fails, trimmed correct password succeeds; membership is caller identity despite forged user_id.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve join/password/repeat contract?",
+      "evidence_source": "LIVE guarded local Flask; canonical reset per sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "owner",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues/<id>/join",
+          "status": 201,
+          "shape": [
+            "league"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues/<id>/join",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues/<id>/join",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues/<id>/join",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues/<id>/join",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues/<id>/join",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues/<id>/join",
+          "status": 201,
+          "shape": [
+            "league"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__league__leaderboard_private_surface",
+      "group": "league leaderboard",
+      "current_behavior": "Global leaderboard is anonymous and ignores league_id; league filtering is client-side. Nonmember can obtain saved private-member score/bracket rows; no email fields there.",
+      "approved_requirement": "Private-league bracket information requires league membership.",
+      "classification": "KNOWN GAP",
+      "future_business_question": null,
+      "evidence_source": "LIVE guarded local Flask; canonical reset per sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "owner",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leaderboard",
+          "status": 200,
+          "shape": [
+            "master_bracket_id",
+            "master_matchups",
+            "master_updated_at",
+            "rows"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leaderboard?league_id=<id>",
+          "status": 200,
+          "shape": [
+            "master_bracket_id",
+            "master_matchups",
+            "master_updated_at",
+            "rows"
+          ]
+        }
+      ],
+      "facts": {
+        "rows": 2,
+        "equal_score_tie_fixture": true,
+        "row_fields": [
+          "bonus_champion",
+          "bonus_finalists",
+          "bracket_id",
+          "bracket_name",
+          "full_hits",
+          "misses",
+          "partial_hits",
+          "points_by_match",
+          "saved_at",
+          "total_points",
+          "updated_at",
+          "user_id",
+          "username"
+        ],
+        "filter_ignored": true,
+        "score_math_validated": false
+      },
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__league__leave",
+      "group": "leave",
+      "current_behavior": "Ordinary member leaves without changing league/owner/brackets; repeat/nonmember leave fails; owner cannot leave with other members.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve owner-leave and repeated leave rules?",
+      "evidence_source": "LIVE guarded local Flask; canonical reset per sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "owner",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/leagues/<id>/membership",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/leagues/<id>/membership",
+          "status": 200,
+          "shape": [
+            "league"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/leagues/<id>/membership",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/leagues/<id>/membership",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__league__member_access",
+      "group": "membership",
+      "current_behavior": "Member/owner can list members; ordinary nonmember denied for public/private; no anonymous member listing.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve public member-list visibility contract?",
+      "evidence_source": "LIVE guarded local Flask; canonical reset per sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "owner",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/<id>/members",
+          "status": 200,
+          "shape": [
+            "league",
+            "members"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/<id>/members",
+          "status": 200,
+          "shape": [
+            "league",
+            "members"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/<id>/members",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/<id>/members",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/<id>/members",
+          "status": 200,
+          "shape": [
+            "league",
+            "members"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/<id>/members",
+          "status": 200,
+          "shape": [
+            "league",
+            "members"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/<id>/members",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/<id>/members",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__league__member_email",
+      "group": "privacy/email",
+      "current_behavior": "Member/owner/admin listing responses actually emit other users' emails on public/private surfaces, confirming NC-01A static warning.",
+      "approved_requirement": "Email addresses must never be exposed to other users.",
+      "classification": "KNOWN GAP",
+      "future_business_question": null,
+      "evidence_source": "LIVE guarded local Flask; canonical reset per sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "owner",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/<id>/members",
+          "status": 200,
+          "shape": [
+            "league",
+            "members"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/<id>/members",
+          "status": 200,
+          "shape": [
+            "league",
+            "members"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/<id>/members",
+          "status": 200,
+          "shape": [
+            "league",
+            "members"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/<id>/members",
+          "status": 200,
+          "shape": [
+            "league",
+            "members"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/<id>/members",
+          "status": 200,
+          "shape": [
+            "league",
+            "members"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/<id>/members",
+          "status": 200,
+          "shape": [
+            "league",
+            "members"
+          ]
+        }
+      ],
+      "facts": {
+        "member_fields": [
+          "bracket_id",
+          "email",
+          "has_bracket",
+          "is_owner",
+          "joined_at",
+          "user_id",
+          "username"
+        ],
+        "other_user_email_present": true,
+        "prior_reference": "NC-01A display_fields_static"
+      },
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "prior_reference": "NC-01A display_fields_static warning; same email rule as NC-01A1/NC-01B, independent league member surface"
+    },
+    {
+      "scenario": "current_behavior__league__missing_scores",
+      "group": "league leaderboard",
+      "current_behavior": "Members with no score rows absent from leaderboard; saved member ID remains in member list; empty score surface returns empty rows.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve missing-score/member presentation and tie policy?",
+      "evidence_source": "LIVE guarded local Flask; canonical reset per sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "owner",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leaderboard",
+          "status": 200,
+          "shape": [
+            "master_bracket_id",
+            "master_matchups",
+            "master_updated_at",
+            "rows"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/<id>/members",
+          "status": 200,
+          "shape": [
+            "league",
+            "members"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__league__own_list_hash_surface",
+      "group": "password behavior",
+      "current_behavior": "Own-leagues requires_password contains actual stored bcrypt hash instead of boolean; other discovery/create/join surfaces use booleans.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve password-derived response contract/security requirement? Hash values withheld.",
+      "evidence_source": "LIVE guarded local Flask; canonical reset per sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "owner",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/me",
+          "status": 200,
+          "shape": [
+            "leagues"
+          ]
+        }
+      ],
+      "facts": {
+        "requires_password_type": "string",
+        "equals_stored_hash": true,
+        "value_recorded": false
+      },
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__league__owner_not_member",
+      "group": "owner powers",
+      "current_behavior": "Owner without membership can read saved member bracket ID through owner bypass on private league.",
+      "approved_requirement": "Private-league bracket information requires league membership.",
+      "classification": "KNOWN GAP",
+      "future_business_question": null,
+      "evidence_source": "LIVE guarded local Flask; canonical reset per sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "owner",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues/<id>/join",
+          "status": 201,
+          "shape": [
+            "league"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/<id>/members",
+          "status": 200,
+          "shape": [
+            "league",
+            "members"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__league__password_normalization",
+      "group": "password behavior",
+      "current_behavior": "Create/join strip outer password whitespace; whitespace-only creates public; one-/three-character passwords fail minimum; repeated incorrect join remains 400.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve normalization, minimum length and retry policy?",
+      "evidence_source": "LIVE guarded local Flask; canonical reset per sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues",
+          "status": 201,
+          "shape": [
+            "league"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues",
+          "status": 201,
+          "shape": [
+            "league"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues/<id>/join",
+          "status": 201,
+          "shape": [
+            "league"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__league__private_bracket_bypass",
+      "group": "member bracket access",
+      "current_behavior": "Ordinary nonmember is denied private member endpoint, but league-filtered saved list and direct saved-bracket detail bypass membership.",
+      "approved_requirement": "Private-league bracket information requires league membership.",
+      "classification": "KNOWN GAP",
+      "future_business_question": null,
+      "evidence_source": "LIVE guarded local Flask; canonical reset per sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "owner",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/<id>/members",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/brackets?league_id=<id>",
+          "status": 200,
+          "shape": "list"
+        },
+        {
+          "method": "GET",
+          "path": "/bracket/<id>",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "matches"
+          ]
+        }
+      ],
+      "facts": {
+        "nonmember_saved_list_access": true,
+        "nonmember_saved_detail_access": true,
+        "prior_bracket_reference": "NC-01B"
+      },
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "prior_reference": "NC-01B saved detail/list access, now tested in private-league scope"
+    },
+    {
+      "scenario": "current_behavior__league__stats_admin_bypass",
+      "group": "private leagues",
+      "current_behavior": "Admin without membership can read private champion-picks bracket aggregate through bypass.",
+      "approved_requirement": "Private-league bracket information requires league membership.",
+      "classification": "KNOWN GAP",
+      "future_business_question": null,
+      "evidence_source": "LIVE guarded local Flask; canonical reset per sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "owner",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/stats/champion-picks?league_id=<id>",
+          "status": 200,
+          "shape": [
+            "league_id",
+            "rows",
+            "scope",
+            "total_brackets"
+          ]
+        }
+      ],
+      "facts": {
+        "nonmember_admin_private_aggregate": true,
+        "math_validated": false
+      },
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__league__stats_membership",
+      "group": "private leagues",
+      "current_behavior": "League champion-picks endpoint denies ordinary nonmember and anonymous requests; members/owner can access; calculations not validated.",
+      "approved_requirement": "Private-league bracket information requires league membership.",
+      "classification": "MATCHES REQUIREMENT",
+      "future_business_question": null,
+      "evidence_source": "LIVE guarded local Flask; canonical reset per sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "owner",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/stats/champion-picks?league_id=<id>",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/stats/champion-picks?league_id=<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/stats/champion-picks?league_id=<id>",
+          "status": 200,
+          "shape": [
+            "league_id",
+            "rows",
+            "scope",
+            "total_brackets"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/stats/champion-picks?league_id=<id>",
+          "status": 200,
+          "shape": [
+            "league_id",
+            "rows",
+            "scope",
+            "total_brackets"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__league__timing",
+      "group": "schema/edge behavior",
+      "current_behavior": "Playoff lock blocks league create/join even for admin; leave/delete remain available. No approved league timing contract assigned.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve league timing distinct from bracket-content final lock?",
+      "evidence_source": "LIVE guarded local Flask; canonical reset per sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "owner",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues/<id>/join",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues/<id>/join",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/leagues/<id>/membership",
+          "status": 200,
+          "shape": [
+            "league"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/leagues/<id>",
+          "status": 200,
+          "shape": [
+            "league"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__league__failure_paths",
+      "group": "schema/edge behavior",
+      "current_behavior": "Leave exception handler returns 200 empty-members fallback; create/join are separate writes with no transaction/RPC or encoded numeric league limit.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve failure category, atomicity and limits?",
+      "evidence_source": "STATIC source/schema/frontend; no browser claim"
+    },
+    {
+      "scenario": "current_behavior__league__frontend_forms",
+      "group": "frontend",
+      "current_behavior": "Create has public/private selection; private requires local password; API sends name/password, clears form. Join passwords held in local React state, cleared after success.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve client validation and password-state lifetime?",
+      "evidence_source": "STATIC source/schema/frontend; no browser claim"
+    },
+    {
+      "scenario": "current_behavior__league__frontend_leaderboard",
+      "group": "league leaderboard",
+      "current_behavior": "LeaderboardPage fetches global leaderboard then filters rows by IDs from member endpoint; points/full-hits/saved-time ordering and ties are presentation only here.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve membership enforcement placement and league tie/display contract?",
+      "evidence_source": "STATIC source/schema/frontend; no browser claim"
+    },
+    {
+      "scenario": "current_behavior__league__frontend_members",
+      "group": "frontend",
+      "current_behavior": "Member UI shows username/role/join date, links saved bracket ID, otherwise No bracket yet; API type includes email, UI member table does not render it.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve member presentation and not-submitted wording?",
+      "evidence_source": "STATIC source/schema/frontend; no browser claim"
+    },
+    {
+      "scenario": "current_behavior__league__frontend_owner",
+      "group": "owner powers",
+      "current_behavior": "UI offers owner deletion and non-owner leave confirmations; no member removal/ownership-transfer/password-change UI. Loading/error states and protected frontend routes are client presentation.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve owner-leave/delete and missing management features?",
+      "evidence_source": "STATIC source/schema/frontend; no browser claim"
+    },
+    {
+      "scenario": "current_behavior__league__history_source",
+      "group": "historical/cross-season behavior",
+      "current_behavior": "No league history endpoint or season columns; LeagueStatsPage passes optional season_code and league_id to champion-picks; current memberships gate explicit past-season stats.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve historical league privacy scope versus permitted public history?",
+      "evidence_source": "STATIC source/schema/frontend; no browser claim"
+    },
+    {
+      "scenario": "current_behavior__league__password_source",
+      "group": "password behavior",
+      "current_behavior": "bcrypt hashing/comparison with configured rounds; optional password determines public/private; no join limiter in route; owner auto-membership insertion failure is nonfatal.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve password/attempt throttling and partial-creation contract?",
+      "evidence_source": "STATIC source/schema/frontend; no browser claim"
+    },
+    {
+      "scenario": "current_behavior__league__route_absences",
+      "group": "membership",
+      "current_behavior": "Membership writes always use JWT subject; no rename/update/transfer/kick/invite/detail GET/admin-specific league routes. Member GET doubles as detail.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Which owner/admin management features are required?",
+      "evidence_source": "STATIC source/schema/frontend; no browser claim"
+    },
+    {
+      "scenario": "current_behavior__league__schema",
+      "group": "schema/edge behavior",
+      "current_behavior": "DB enforces exact league-name and league/user membership uniqueness; owner FK no cascade, membership FKs cascade; nullable hash, no league/member season or soft-delete fields.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve case/uniqueness/owner deletion and season policies?",
+      "evidence_source": "STATIC source/schema/frontend; no browser claim"
+    },
+    {
+      "scenario": "current_behavior__league__draft_scored_leaderboard",
+      "group": "league leaderboard",
+      "current_behavior": "Stored score row for an unsaved member bracket appears in anonymous/global and league-query leaderboard, despite member list hiding its draft ID.",
+      "approved_requirement": "Another user may see a bracket only if that bracket is saved.",
+      "classification": "KNOWN GAP",
+      "future_business_question": null,
+      "evidence_source": "LIVE guarded local Flask; canonical reset per sequence",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "owner",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/<id>/members",
+          "status": 200,
+          "shape": [
+            "league",
+            "members"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leaderboard?league_id=<id>",
+          "status": 200,
+          "shape": [
+            "master_bracket_id",
+            "master_matchups",
+            "master_updated_at",
+            "rows"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leaderboard?league_id=<id>",
+          "status": 200,
+          "shape": [
+            "master_bracket_id",
+            "master_matchups",
+            "master_updated_at",
+            "rows"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leaderboard?league_id=<id>",
+          "status": 200,
+          "shape": [
+            "master_bracket_id",
+            "master_matchups",
+            "master_updated_at",
+            "rows"
+          ]
+        }
+      ],
+      "facts": {
+        "draft_id_and_stored_score_visible": true,
+        "scenario_basis": "existing score fixture with member submission flag cleared; score math not run"
+      },
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    }
+  ],
+  "readiness": {
+    "identity_verified": true,
+    "database_marker": "PASS",
+    "email": "PASS",
+    "providers": "PASS",
+    "external_credentials": "PASS",
+    "jobs": "PASS",
+    "jobs_enabled": false,
+    "fixture_state": "SEEDED",
+    "fixtures_reset": "PASS",
+    "integration_harness": "PASS",
+    "mutation_permitted": false,
+    "harness_state": "AVAILABLE_GUARDED",
+    "harness_scoped_mutation_permitted": false
+  },
+  "business_behavior_changed": false,
+  "production": {
+    "contact": false,
+    "mutation": false,
+    "secrets_used": false,
+    "deployment": false
+  },
+  "validation_recovery": {
+    "initial_tests": 34,
+    "initial_failures": 4,
+    "initial_errors": 1,
+    "cause": "Test-only owner-role exclusion and query admission stripped approved query before exact allowlist validation. No product change.",
+    "rechecked_tests": 6,
+    "rechecked_scenarios": [
+      "draft_saved_visibility",
+      "historical",
+      "private_bracket_bypass",
+      "stats_admin_bypass",
+      "stats_membership",
+      "leaderboard_private_surface"
+    ],
+    "recheck_passed": true,
+    "total_test_attempts": 42,
+    "final_surface_tests": [
+      "draft_scored_leaderboard",
+      "leaderboard_private_surface"
+    ]
+  },
+  "classification_counts": {
+    "MATCHES REQUIREMENT": 2,
+    "KNOWN GAP": 7,
+    "REQUIREMENT NOT YET REVIEWED": 26,
+    "UNCLEAR / NEEDS BUSINESS CHECKPOINT": 0
+  },
+  "live_tests": 26,
+  "static_tests": 9,
+  "offline_tests": 210,
+  "starting_heads": {
+    "frontend": "ce54143006f0409265937f5d548286d0b100d454",
+    "backend": "d7041e76416387bf14e9960532e75e0d8fc599ce"
+  },
+  "starting_branches": "main; clean",
+  "verified_at_utc": "2026-10-15T00:14:02.928644+00:00",
+  "canonical_cleanup": {
+    "fixture_version": "nc-fixtures-v1",
+    "fixture_state": "SEEDED",
+    "marker_version": 2,
+    "checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+    "flask_stopped": true,
+    "lease_released": true,
+    "email_capture_clear": true,
+    "jobs_disabled": true,
+    "semantic_verifier": "PASS",
+    "marker_acl_verifier": "PASS",
+    "fixture_readiness": "PASS",
+    "basis": "All guarded sequence exits/reset proofs; independent final readiness/checksum and connection refusal"
+  },
+  "next_phase": "NC-01D \u2014 Scoring / leaderboard / history characterization baseline; not started",
+  "route_inventory": [
+    {
+      "method": "GET",
+      "path": "/bracket/<bracket_id>",
+      "auth": "JWT",
+      "owner_membership_requirement": "Owner OR admin OR saved; no league membership lookup",
+      "admin": "DB admin draft bypass (NC-01B)",
+      "effect": "Read",
+      "tables": "brackets; matches; seasons; users; teams",
+      "frontend_caller": "BracketPage follows member link",
+      "source_function": "get_bracket_by_id",
+      "source_line": 3158
+    },
+    {
+      "method": "GET",
+      "path": "/brackets",
+      "auth": "JWT",
+      "owner_membership_requirement": "league_id filters owners, no league membership gate",
+      "admin": "Same saved-list scope",
+      "effect": "Read",
+      "tables": "leagues; league_members; users; current saved brackets",
+      "frontend_caller": "DashboardPage",
+      "source_function": "list_all_brackets",
+      "source_line": 3294
+    },
+    {
+      "method": "GET",
+      "path": "/leaderboard",
+      "auth": "None",
+      "owner_membership_requirement": "No league gate; league_id ignored",
+      "admin": "No gate",
+      "effect": "Read",
+      "tables": "bracket_scores; brackets; users; matches; teams",
+      "frontend_caller": "LeaderboardPage then client member filter",
+      "source_function": "leaderboard",
+      "source_line": 3866
+    },
+    {
+      "method": "GET",
+      "path": "/stats/champion-picks",
+      "auth": "JWT",
+      "owner_membership_requirement": "league scope: member OR owner OR admin",
+      "admin": "JWT admin bypass",
+      "effect": "Read",
+      "tables": "leagues; league_members; brackets; bracket_scores; matches; teams; seasons",
+      "frontend_caller": "LeagueStatsPage",
+      "source_function": "champion_pick_stats",
+      "source_line": 4111
+    },
+    {
+      "method": "GET",
+      "path": "/leagues/me",
+      "auth": "JWT",
+      "owner_membership_requirement": "Own memberships",
+      "admin": "No special admin power",
+      "effect": "Read",
+      "tables": "leagues; league_members",
+      "frontend_caller": "LeagueInfoPage; LeaderboardPage; DashboardPage",
+      "source_function": "get_my_leagues",
+      "source_line": 4674
+    },
+    {
+      "method": "GET",
+      "path": "/leagues",
+      "auth": "JWT",
+      "owner_membership_requirement": "No membership required for metadata",
+      "admin": "No special admin power",
+      "effect": "Read",
+      "tables": "leagues; league_members",
+      "frontend_caller": "FindLeaguesPage",
+      "source_function": "list_leagues",
+      "source_line": 4750
+    },
+    {
+      "method": "POST",
+      "path": "/leagues",
+      "auth": "JWT",
+      "owner_membership_requirement": "Creator becomes owner/member; pre-playoffs",
+      "admin": "No time bypass",
+      "effect": "Write",
+      "tables": "leagues; league_members",
+      "frontend_caller": "LeagueInfoPage",
+      "source_function": "create_league",
+      "source_line": 4838
+    },
+    {
+      "method": "POST",
+      "path": "/leagues/<league_id>/join",
+      "auth": "JWT",
+      "owner_membership_requirement": "Caller membership; private password; pre-playoffs",
+      "admin": "No password/time bypass",
+      "effect": "Write",
+      "tables": "leagues; league_members",
+      "frontend_caller": "FindLeaguesPage",
+      "source_function": "join_league",
+      "source_line": 4957
+    },
+    {
+      "method": "DELETE",
+      "path": "/leagues/<league_id>/membership",
+      "auth": "JWT",
+      "owner_membership_requirement": "Caller is member, not owner; non-global",
+      "admin": "Same rules",
+      "effect": "Write",
+      "tables": "leagues; league_members",
+      "frontend_caller": "LeagueInfoPage",
+      "source_function": "leave_league",
+      "source_line": 5075
+    },
+    {
+      "method": "DELETE",
+      "path": "/leagues/<league_id>",
+      "auth": "JWT",
+      "owner_membership_requirement": "Owner only; non-global",
+      "admin": "No override",
+      "effect": "Write",
+      "tables": "leagues; league_members cascade",
+      "frontend_caller": "LeagueInfoPage",
+      "source_function": "delete_league",
+      "source_line": 5192
+    },
+    {
+      "method": "GET",
+      "path": "/leagues/<league_id>/members",
+      "auth": "JWT",
+      "owner_membership_requirement": "Member OR owner OR admin",
+      "admin": "JWT admin bypass",
+      "effect": "Read",
+      "tables": "leagues; league_members; users; current saved brackets",
+      "frontend_caller": "LeagueInfoPage; LeaderboardPage",
+      "source_function": "get_league_members",
+      "source_line": 5261
+    }
+  ]
+}

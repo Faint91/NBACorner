@@ -108,7 +108,7 @@ class GuardedHarness:
     def __init__(
         self, config, *, allow_local_mutations=False, characterization_scope=None
     ):
-        if characterization_scope not in {None, "NC-01A", "NC-01B"}:
+        if characterization_scope not in {None, "NC-01A", "NC-01B", "NC-01C"}:
             raise safety.SafetyError("Unreviewed characterization scope.")
         self.characterization_scope = characterization_scope
         self._auth_subjects = {
@@ -212,7 +212,13 @@ class GuardedHarness:
                     return jsonify({"error": "Guarded harness admission required"}), 403
                 try:
                     self._check_path(
-                        request.method, request.path, identity_bootstrap=True
+                        request.method,
+                        (
+                            request.full_path.removesuffix("?")
+                            if self.characterization_scope == "NC-01C"
+                            else request.path
+                        ),
+                        identity_bootstrap=True,
                     )
                 except safety.SafetyError:
                     return jsonify({"error": "Route outside approved smoke scope"}), 403
@@ -319,6 +325,39 @@ class GuardedHarness:
         self.stack.enter_context(patch.object(requests.Session, "send", requests_send))
 
     def _check_path(self, method, path, *, identity_bootstrap=False):
+        if getattr(self, "characterization_scope", None) == "NC-01C":
+            lids = getattr(self, "_leagues", set()) | {
+                identity("missing-league"),
+                "invalid",
+            }
+            reads = {"/leagues", "/leagues/me", "/leaderboard", "/brackets/me"}
+            reads |= {f"/leagues/{lid}/members" for lid in lids}
+            reads |= {
+                f"/{route}?league_id={lid}"
+                for route in ("brackets", "stats/champion-picks", "leaderboard")
+                for lid in lids
+            }
+            reads |= {
+                f"/stats/champion-picks?league_id={lid}&season_code=2024-25"
+                for lid in lids
+            }
+            reads |= {"/bracket/" + bid for bid in self._brackets}
+            if method == "GET" and (
+                path in reads or path == "/__test__/identity" and identity_bootstrap
+            ):
+                return
+            if method == "POST" and (
+                path in {"/auth/login", "/leagues"}
+                or path in {f"/leagues/{lid}/join" for lid in lids}
+            ):
+                return
+            if method == "DELETE" and path in {
+                f"/leagues/{lid}{suffix}"
+                for lid in lids
+                for suffix in ("", "/membership")
+            }:
+                return
+            raise safety.SafetyError("Outside NC-01C route scope.")
         if not isinstance(path, str) or "?" in path or "%" in path or "\\" in path:
             raise safety.SafetyError("Unexpected guarded HTTP path.")
         if getattr(self, "characterization_scope", None) == "NC-01B":
@@ -479,7 +518,7 @@ class GuardedHarness:
         self._require_lease()
         if (
             not self._ready
-            or self.characterization_scope != "NC-01B"
+            or self.characterization_scope not in {"NC-01B", "NC-01C"}
             or threading.get_ident() != self._owner
         ):
             raise safety.SafetyError("Explicit verified NC-01B context required.")
@@ -537,7 +576,11 @@ class GuardedHarness:
             "master",
             "deleted",
             "historical",
-        } or role not in {"user-a", "user-b", "admin"}:
+        } or role not in (
+            {"user-a", "user-b", "admin", "owner"}
+            if self.characterization_scope == "NC-01C"
+            else {"user-a", "user-b", "admin"}
+        ):
             raise safety.SafetyError("Unreviewed synthetic bracket scenario.")
         data = bracket_scenario(kind)
         row = data["brackets"][0]
@@ -582,6 +625,109 @@ class GuardedHarness:
             .data
         )
         return {"brackets": brackets, "matches": matches, "seasons": seasons}
+
+    def _require_league_scope(self):
+        self._require_lease()
+        if (
+            not self._ready
+            or self.characterization_scope != "NC-01C"
+            or threading.get_ident() != self._owner
+        ):
+            raise safety.SafetyError("Explicit verified NC-01C context required.")
+
+    def league_request(self, method, path, *, payload=None, role=None):
+        self._require_league_scope()
+        if path == "/auth/login":
+            raise safety.SafetyError("Use synthetic login method.")
+        status, body = self._exchange(method, path, payload, role)
+        self.summary.append(
+            {
+                "method": method,
+                "path": re.sub(r"[0-9a-f]{8}-[0-9a-f-]{27}", "<id>", path),
+                "status": status,
+                "shape": (
+                    sorted(body)
+                    if isinstance(body, dict)
+                    else "list" if isinstance(body, list) else "text"
+                ),
+            }
+        )
+        if method == "POST" and path == "/leagues" and status == 201:
+            self._leagues = getattr(self, "_leagues", set()) | {body["league"]["id"]}
+        return status, body
+
+    def install_league_scenario(self, *, empty=False, global_public=False):
+        self._require_league_scope()
+        if (
+            type(empty) is not bool
+            or type(global_public) is not bool
+            or getattr(self, "_leagues", set())
+        ):
+            raise safety.SafetyError("Single reviewed league fixture only.")
+        from synthetic_fixtures import league_scenario
+
+        data = league_scenario()
+        if global_public:
+            data["leagues"][0]["is_global"] = True
+        self.module.supabase.table("leagues").insert(data["leagues"]).execute()
+        if not empty:
+            self.module.supabase.table("league_members").insert(
+                data["league_members"]
+            ).execute()
+        self._leagues = {r["id"] for r in data["leagues"]}
+        return {kind: identity("league-" + kind) for kind in ("public", "private")}
+
+    def league_snapshot(self):
+        self._require_league_scope()
+        leagues = self.module.supabase.table("leagues").select("*").execute().data or []
+        members = (
+            self.module.supabase.table("league_members").select("*").execute().data
+            or []
+        )
+        allowed = getattr(self, "_leagues", set())
+        if any(
+            l["id"] not in allowed or l["owner_user_id"] not in self._auth_subjects
+            for l in leagues
+        ) or any(
+            m["league_id"] not in allowed or m["user_id"] not in self._auth_subjects
+            for m in members
+        ):
+            raise safety.SafetyError("Unexpected league subjects.")
+        return {
+            "leagues": leagues,
+            "members": members,
+        }  # In-memory only: never serialize hashes.
+
+    def install_league_score_surface(self, *, draft_member=False):
+        self._require_league_scope()
+        if type(draft_member) is not bool or self._brackets:
+            raise safety.SafetyError("Single reviewed score-display fixture only.")
+        from synthetic_fixtures import score_history_scenario
+
+        data = score_history_scenario()
+        if draft_member:
+            for row in data["brackets"]:
+                if row["id"] == identity("score-user-a"):
+                    row.update(is_done=False, saved_at=None)
+        self.module.supabase.table("brackets").insert(data["brackets"]).execute()
+        matches = data["matches"]
+        self.module.supabase.table("matches").insert(
+            [dict(m, next_match_id=None, next_slot=None) for m in matches]
+        ).execute()
+        for m in matches:
+            if m["next_match_id"]:
+                self.module.supabase.table("matches").update(
+                    {"next_match_id": m["next_match_id"], "next_slot": m["next_slot"]}
+                ).eq("id", m["id"]).execute()
+        self.module.supabase.table("bracket_scores").insert(
+            data["bracket_scores"]
+        ).execute()
+        self.module.supabase.table("seasons").update(
+            {"master_bracket_id": identity("bracket-master")}
+        ).eq("id", identity("current")).execute()
+        self._brackets.update(b["id"] for b in data["brackets"])
+        self._matches.update((m["bracket_id"], m["id"]) for m in matches)
+        return {role: identity("score-" + role) for role in ("user-a", "user-b")}
 
     def _require_auth_scope(self):
         self._require_lease()
@@ -718,7 +864,11 @@ class GuardedHarness:
 
     def login(self, role):
         self._require_lease()
-        if not self._ready or role not in {"user-a", "user-b", "admin"}:
+        if not self._ready or role not in (
+            {"user-a", "user-b", "admin", "owner"}
+            if self.characterization_scope == "NC-01C"
+            else {"user-a", "user-b", "admin"}
+        ):
             raise safety.SafetyError("Seeded smoke login required.")
         status, body = self._exchange(
             "POST",

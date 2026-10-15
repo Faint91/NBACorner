@@ -1,6 +1,7 @@
 """NC-01B cannot broaden other harness scopes or bypass a verified lease."""
 
 import unittest
+from unittest.mock import patch
 from integration_harness import GuardedHarness
 from environment_safety import SafetyError
 from synthetic_fixtures import identity
@@ -51,5 +52,8 @@ class BracketScopeSafetyTests(unittest.TestCase):
                     c._check_path("PATCH", path)
 
     def test_unknown_scope_still_rejected(self):
-        with self.assertRaises(SafetyError):
-            GuardedHarness("unread", characterization_scope="NC-01C")
+        with patch("environment_safety.load_test_config") as load, self.assertRaises(
+            SafetyError
+        ):
+            GuardedHarness("unread", characterization_scope="NC-UNAPPROVED")
+        load.assert_not_called()
