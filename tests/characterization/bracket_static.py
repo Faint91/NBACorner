@@ -114,7 +114,9 @@ class CurrentStaticBracketBehavior(unittest.TestCase):
         source = (FRONT / "pages/DashboardPage.tsx").read_text(encoding="utf-8")
         for value in [
             'get("/brackets/me")',
-            'post("/bracket/create", {})',
+            'post("/bracket/create",',
+            "replace_existing_master: true",
+            "window.confirm(",
             "del(`/bracket/${deleteTargetId}`)",
             "bracketCreationDisabled({",
             "locked: playoffsLocked, ready: flagsReady",
@@ -137,6 +139,13 @@ class CurrentStaticBracketBehavior(unittest.TestCase):
             '"brackets_season_id_fkey"',
         ]:
             self.assertIn(value, self.schema)
+        migration = (
+            ROOT / "db/post-baseline/0001_nc_02b3_bracket_lifecycle.sql"
+        ).read_text(encoding="utf-8")
+        self.assertIn("DROP INDEX public.unique_active_bracket_per_user;", migration)
+        self.assertNotIn(
+            "DROP INDEX public.uniq_active_bracket_per_user_per_season", migration
+        )
 
     @behavior(
         "schema/timing quirks",
@@ -144,6 +153,9 @@ class CurrentStaticBracketBehavior(unittest.TestCase):
         question="Approve partial-write/transaction contract and trigger behavior?",
     )
     def current_behavior__bracket__triggers_rpc(self):
+        self.assertIn(
+            "create_master_bracket_atomic", self.fn("create_bracket_for_user")
+        )
         for value in [
             '"trg_matches_set_season"',
             '"trg_fix_season_master_on_bracket_soft_delete"',
@@ -153,7 +165,6 @@ class CurrentStaticBracketBehavior(unittest.TestCase):
         ]:
             self.assertIn(value, self.schema)
         for name in [
-            "create_bracket_for_user",
             "update_match",
             "save_bracket",
             "delete_bracket",
@@ -187,7 +198,7 @@ class CurrentStaticBracketBehavior(unittest.TestCase):
         self.assertNotIn("playoffs_locked", self.fn("_season_bootstrap"))
         self.assertIn("bracket_content_mutation_error", self.fn("update_match"))
         self.assertIn("bracket_content_mutation_error", self.fn("set_match_games"))
-        self.assertNotIn("playoffs_locked", self.fn("delete_bracket"))
+        self.assertIn("playoffs_locked", self.fn("delete_bracket"))
 
     @behavior(
         "save/resubmit",
@@ -222,3 +233,7 @@ mark_nc02b1(CurrentStaticBracketBehavior)
 from scripts.nc02b2_acceptance_metadata import mark_acceptance as mark_nc02b2
 
 mark_nc02b2(CurrentStaticBracketBehavior)
+
+from scripts.nc02b3_acceptance_metadata import mark_acceptance as mark_nc02b3
+
+mark_nc02b3(CurrentStaticBracketBehavior)

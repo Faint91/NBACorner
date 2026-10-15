@@ -760,6 +760,49 @@ def require_auth(f):
     return wrapper
 
 
+def bracket_read_auth(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if not request.path.startswith("/history/bracket/"):
+            return require_auth(f)(*args, **kwargs)
+        header = request.headers.get("Authorization")
+        if header:
+            if not header.startswith("Bearer "):
+                return jsonify({"error": "Invalid Authorization header"}), 401
+            payload = decode_token(header.split(" ", 1)[1])
+            if not payload:
+                return jsonify({"error": "Invalid or expired token"}), 401
+            request.user = payload
+        else:
+            request.user = {}
+        return f(*args, **kwargs)
+
+    return wrapper
+
+
+def active_current_master_exists():
+    seasons = (
+        supabase.table("seasons")
+        .select("master_bracket_id")
+        .eq("id", CURRENT_SEASON_ID)
+        .limit(1)
+        .execute()
+        .data
+        or []
+    )
+    pointer = seasons[0].get("master_bracket_id") if seasons else None
+    rows = (
+        supabase.table("brackets")
+        .select("id, is_master")
+        .eq("season_id", CURRENT_SEASON_ID)
+        .is_("deleted_at", None)
+        .execute()
+        .data
+        or []
+    )
+    return any(row.get("is_master") or row["id"] == pointer for row in rows)
+
+
 def public_user(user):
     """Allowlisted other-user identity; own-account auth responses stay separate."""
     return {"id": user.get("id"), "username": user.get("username")}
@@ -2875,74 +2918,61 @@ def send_email_via_brevo(to_email, subject, body):
 def create_bracket_for_user():
     user_info = request.user or {}
     user_id = user_info["user_id"]
-    is_admin = user_info.get("is_admin", False)
+    accounts = (
+        supabase.table("users")
+        .select("is_admin")
+        .eq("id", user_id)
+        .limit(1)
+        .execute()
+        .data
+        or []
+    )
+    is_admin = bool(accounts and accounts[0].get("is_admin"))
+    body = request.get_json(silent=True) or {}
+    replace = (
+        body.get("replace_existing_master", False) if isinstance(body, dict) else False
+    )
+    if type(replace) is not bool:
+        return jsonify({"error": "replace_existing_master must be a boolean"}), 400
+    if replace and not is_admin:
+        return jsonify({"error": "Only an admin may replace the master bracket"}), 403
+    if is_admin and active_current_master_exists() and not replace:
+        return (
+            jsonify({"error": "Explicit master replacement confirmation required"}),
+            409,
+        )
 
     # Admin master creation keeps its existing window bypass/lifecycle.
     if not is_admin:
         if playoffs_locked():
             return bracket_final_lock_error()
         if REGULAR_SEASON_END_UTC and now_utc() < REGULAR_SEASON_END_UTC:
-            return jsonify({"error": "Bracket creation opens after the regular season ends."}), 403
+            return (
+                jsonify(
+                    {"error": "Bracket creation opens after the regular season ends."}
+                ),
+                403,
+            )
 
-    # ✅ Check if the user already has a bracket for the CURRENT season
-    existing = (
-        supabase.table("brackets")
-        .select("id, deleted_at, season_id")
-        .eq("user_id", user_id)
-        .eq("season_id", CURRENT_SEASON_ID)
-        .is_("deleted_at", None)
-        .execute()
-        .data
-    )
-    if existing:
-        return jsonify({"error": "User already has a bracket for this season"}), 400
-
-    # ✅ Create bracket bound to CURRENT season
-    try:
-        bracket = (
+    if not is_admin:
+        existing = (
             supabase.table("brackets")
-            .insert({"user_id": user_id, "season_id": CURRENT_SEASON_ID})
+            .select("id")
+            .eq("user_id", user_id)
+            .eq("season_id", CURRENT_SEASON_ID)
+            .is_("deleted_at", None)
             .execute()
-            .data[0]
+            .data
         )
-    except Exception as e:
-        if hasattr(e, "args") and e.args and "duplicate key value" in str(e.args[0]):
+        if existing:
             return jsonify({"error": "User already has a bracket for this season"}), 400
-        return jsonify({"error": "Unexpected error creating bracket", "details": str(e)}), 500
-
-    # 🔁 Auto-promote to MASTER for this season if an admin created it
-    if is_admin and CURRENT_SEASON_ID:
-        try:
-            # Demote prior master for the season (if any)
-            supabase.table("brackets").update({"is_master": False}) \
-                .eq("season_id", CURRENT_SEASON_ID) \
-                .eq("is_master", True) \
-                .execute()
-
-            # Promote the new bracket as master
-            supabase.table("brackets").update({"is_master": True}) \
-                .eq("id", bracket["id"]) \
-                .execute()
-
-            # Update the season pointer
-            supabase.table("seasons").update({"master_bracket_id": bracket["id"]}) \
-                .eq("id", CURRENT_SEASON_ID) \
-                .execute()
-
-            bracket["is_master"] = True
-        except Exception as e:
-            app.logger.exception("Auto master promotion failed: %s", e)
-            # Non-fatal
 
     # ------------------------------------------------------------------
     # 🔢 Fetch teams (canonical conference) + standings (no season filter)
     # ------------------------------------------------------------------
     try:
         teams = (
-            supabase.table("teams")
-            .select("id, name, conference, code")
-            .execute()
-            .data
+            supabase.table("teams").select("id, name, conference, code").execute().data
         )
     except Exception as e:
         app.logger.exception("Failed to fetch teams for bracket creation: %s", e)
@@ -2956,20 +2986,20 @@ def create_bracket_for_user():
 
     try:
         # standings is always "current season", no season_id column anymore
-        standings_rows = (
-            supabase.table("standings")
-            .select("code, seed")
-            .execute()
-            .data
-        )
+        standings_rows = supabase.table("standings").select("code, seed").execute().data
     except Exception as e:
         app.logger.exception("Failed to fetch standings for bracket creation: %s", e)
         return jsonify({"error": "Failed to fetch standings"}), 500
 
     if not standings_rows:
-        return jsonify({
-            "error": "Standings table is empty. Make sure the standings script has been run."
-        }), 400
+        return (
+            jsonify(
+                {
+                    "error": "Standings table is empty. Make sure the standings script has been run."
+                }
+            ),
+            400,
+        )
 
     # ------------------------------------------------------------------
     # 🧮 Build seeded lists per conference using the seed column
@@ -3021,15 +3051,25 @@ def create_bracket_for_user():
             len(west_teams),
         )
         if len(east_teams) < 10:
-            return jsonify({
-                "error": f"Not enough seeded teams (need 10) for conference EAST, found {len(east_teams)}. "
-                         "Check that the standings script has set seeds 1–10 for EAST."
-            }), 400
+            return (
+                jsonify(
+                    {
+                        "error": f"Not enough seeded teams (need 10) for conference EAST, found {len(east_teams)}. "
+                        "Check that the standings script has set seeds 1–10 for EAST."
+                    }
+                ),
+                400,
+            )
         else:
-            return jsonify({
-                "error": f"Not enough seeded teams (need 10) for conference WEST, found {len(west_teams)}. "
-                         "Check that the standings script has set seeds 1–10 for WEST."
-            }), 400
+            return (
+                jsonify(
+                    {
+                        "error": f"Not enough seeded teams (need 10) for conference WEST, found {len(west_teams)}. "
+                        "Check that the standings script has set seeds 1–10 for WEST."
+                    }
+                ),
+                400,
+            )
 
     # 🧱 From here on, east_teams[0..9] and west_teams[0..9] are seeds 1..10
 
@@ -3058,8 +3098,18 @@ def create_bracket_for_user():
         # ---- ROUND 1 ----
         # 1 vs play-in winner, 2 vs play-in winner, 3 vs 6, 4 vs 5
         r1 = [
-            {"round": 1, "slot": 4, "conference": conference, "team_a": teams_[0]["id"]},  # 1 seed
-            {"round": 1, "slot": 5, "conference": conference, "team_a": teams_[1]["id"]},  # 2 seed
+            {
+                "round": 1,
+                "slot": 4,
+                "conference": conference,
+                "team_a": teams_[0]["id"],
+            },  # 1 seed
+            {
+                "round": 1,
+                "slot": 5,
+                "conference": conference,
+                "team_a": teams_[1]["id"],
+            },  # 2 seed
             {
                 "round": 1,
                 "slot": 6,
@@ -3091,59 +3141,72 @@ def create_bracket_for_user():
     all_matches.extend(create_conference_matches("west", west_teams))
     all_matches.append({"round": 4, "slot": 11, "conference": "nba"})  # NBA Finals
 
+    # Prepare the same existing graph before writing. Master creation commits
+    # bracket, matches, retirement and pointer together inside the trusted RPC.
+    by_key = {}
     for m in all_matches:
-        m["bracket_id"] = bracket["id"]
-
-    # 2️⃣ Insert matches
-    supabase.table("matches").insert(all_matches).execute()
-
-    # 3️⃣ Retrieve IDs for linking
-    inserted = (
-        supabase.table("matches")
-        .select("id, round, slot, conference")
-        .eq("bracket_id", bracket["id"])
-        .execute()
-        .data
-    )
-
-    # 4️⃣ Link matches
-    def link(conference, from_slot, to_slot, next_slot):
-        src = next((m for m in inserted if m["conference"] == conference and m["slot"] == from_slot), None)
-        dest = next((m for m in inserted if m["conference"] == conference and m["slot"] == to_slot), None)
-        if src and dest:
-            supabase.table("matches").update(
-                {"next_match_id": dest["id"], "next_slot": next_slot}
-            ).eq("id", src["id"]).execute()
-
-    # 🏀 PLAY-IN ROUND
-    link("east", 1, 3, "a"); link("west", 1, 3, "a")
-    link("east", 2, 3, "b"); link("west", 2, 3, "b")
-    link("east", 2, 5, "b"); link("west", 2, 5, "b")
-    link("east", 3, 4, "b"); link("west", 3, 4, "b")
-
-    # ---- Round 1 → Semifinals ----
-    link("east", 4, 9, "a"); link("east", 7, 9, "b")
-    link("east", 5, 8, "b"); link("east", 6, 8, "a")
-    link("west", 4, 9, "a"); link("west", 7, 9, "b")
-    link("west", 5, 8, "b"); link("west", 6, 8, "a")
-
-    # ---- Semifinals → Conference Finals ----
-    link("east", 8, 10, "b"); link("east", 9, 10, "a")
-    link("west", 8, 10, "b"); link("west", 9, 10, "a")
-
-    # ----- Conference Finals → NBA Finals -----
-    nba_final = next((m for m in inserted if m["conference"] == "nba" and m["slot"] == 11), None)
-    if nba_final:
-        east_final = next((m for m in inserted if m["conference"] == "east" and m["slot"] == 10), None)
-        west_final = next((m for m in inserted if m["conference"] == "west" and m["slot"] == 10), None)
-        if east_final:
-            supabase.table("matches").update(
-                {"next_match_id": nba_final["id"], "next_slot": "a"}
-            ).eq("id", east_final["id"]).execute()
-        if west_final:
-            supabase.table("matches").update(
-                {"next_match_id": nba_final["id"], "next_slot": "b"}
-            ).eq("id", west_final["id"]).execute()
+        m["id"] = str(uuid.uuid4())
+        by_key[(m["conference"], m["slot"])] = m
+    links = [
+        (1, 3, "a"),
+        (2, 5, "b"),
+        (3, 4, "b"),
+        (4, 9, "a"),
+        (7, 9, "b"),
+        (5, 8, "b"),
+        (6, 8, "a"),
+        (8, 10, "b"),
+        (9, 10, "a"),
+    ]
+    for conf in ("east", "west"):
+        for src, dest, slot in links:
+            by_key[(conf, src)].update(
+                next_match_id=by_key[(conf, dest)]["id"], next_slot=slot
+            )
+        by_key[(conf, 10)].update(
+            next_match_id=by_key[("nba", 11)]["id"],
+            next_slot="a" if conf == "east" else "b",
+        )
+    try:
+        if is_admin:
+            bracket = (
+                supabase.rpc(
+                    "create_master_bracket_atomic",
+                    {
+                        "p_user_id": user_id,
+                        "p_season_id": CURRENT_SEASON_ID,
+                        "p_replace": replace,
+                        "p_matches": all_matches,
+                    },
+                )
+                .execute()
+                .data
+            )
+        else:
+            bracket = (
+                supabase.table("brackets")
+                .insert({"user_id": user_id, "season_id": CURRENT_SEASON_ID})
+                .execute()
+                .data[0]
+            )
+            supabase.table("matches").insert(
+                [dict(m, bracket_id=bracket["id"]) for m in all_matches]
+            ).execute()
+    except Exception as error:
+        code = getattr(error, "code", None)
+        if code == "P0001":
+            return (
+                jsonify({"error": "Explicit master replacement confirmation required"}),
+                409,
+            )
+        if code == "23505":
+            return jsonify({"error": "User already has a bracket for this season"}), 400
+        return (
+            jsonify(
+                {"error": "Bracket creation failed; no master replacement committed"}
+            ),
+            500,
+        )
 
     return jsonify({"message": "Bracket created successfully", "bracket": bracket}), 200
 
@@ -3228,7 +3291,9 @@ def get_my_bracket():
         res = (
             with_current_season(
                 supabase.table("brackets")
-                .select("id, user_id, name, is_done, created_at, saved_at, deleted_at")
+                .select(
+                    "id, user_id, name, is_done, created_at, saved_at, deleted_at, is_master"
+                )
                 .eq("user_id", user_id)
                 .is_("deleted_at", None)
             )
@@ -3238,17 +3303,34 @@ def get_my_bracket():
         )
         rows = res.data or []
 
+        master_exists = (
+            active_current_master_exists() if request.user.get("is_admin") else False
+        )
         locked = playoffs_locked()
         creation_open = bracket_creation_open()
 
         if not rows:
-            return jsonify({
-                "bracket": None,
-                "playoffs_locked": locked,
-                "bracket_creation_open": creation_open,
-                "regular_season_end_utc": REGULAR_SEASON_END_UTC.isoformat() if REGULAR_SEASON_END_UTC else None,
-                "playoffs_deadline_utc": PLAYOFFS_START_UTC.isoformat() if PLAYOFFS_START_UTC else None,
-            }), 200
+            return (
+                jsonify(
+                    {
+                        "bracket": None,
+                        "master_exists": master_exists,
+                        "playoffs_locked": locked,
+                        "bracket_creation_open": creation_open,
+                        "regular_season_end_utc": (
+                            REGULAR_SEASON_END_UTC.isoformat()
+                            if REGULAR_SEASON_END_UTC
+                            else None
+                        ),
+                        "playoffs_deadline_utc": (
+                            PLAYOFFS_START_UTC.isoformat()
+                            if PLAYOFFS_START_UTC
+                            else None
+                        ),
+                    }
+                ),
+                200,
+            )
 
         b = rows[0]
 
@@ -3262,20 +3344,33 @@ def get_my_bracket():
         u_rows = user_res.data or []
         u = u_rows[0] if u_rows else {}
 
-        return jsonify({
-            "bracket": {
-                "bracket_id": b["id"],
-                "name": b.get("name"),
-                "created_at": b.get("created_at"),
-                "saved_at": b.get("saved_at"),
-                "is_done": b.get("is_done"),
-                "user": {"id": b["user_id"], "username": u.get("username")},
-            },
-            "playoffs_locked": locked,
-            "bracket_creation_open": creation_open,
-            "regular_season_end_utc": REGULAR_SEASON_END_UTC.isoformat() if REGULAR_SEASON_END_UTC else None,
-            "playoffs_deadline_utc": PLAYOFFS_START_UTC.isoformat() if PLAYOFFS_START_UTC else None,
-        }), 200
+        return (
+            jsonify(
+                {
+                    "bracket": {
+                        "bracket_id": b["id"],
+                        "name": b.get("name"),
+                        "created_at": b.get("created_at"),
+                        "saved_at": b.get("saved_at"),
+                        "is_done": b.get("is_done"),
+                        "is_master": bool(b.get("is_master")),
+                        "user": {"id": b["user_id"], "username": u.get("username")},
+                    },
+                    "master_exists": master_exists,
+                    "playoffs_locked": locked,
+                    "bracket_creation_open": creation_open,
+                    "regular_season_end_utc": (
+                        REGULAR_SEASON_END_UTC.isoformat()
+                        if REGULAR_SEASON_END_UTC
+                        else None
+                    ),
+                    "playoffs_deadline_utc": (
+                        PLAYOFFS_START_UTC.isoformat() if PLAYOFFS_START_UTC else None
+                    ),
+                }
+            ),
+            200,
+        )
 
     except Exception as e:
         if ENABLE_DEBUG_LOGS:
@@ -3284,7 +3379,8 @@ def get_my_bracket():
 
 
 @app.route("/bracket/<bracket_id>", methods=["GET"])
-@require_auth
+@app.route("/history/bracket/<bracket_id>", methods=["GET"])
+@bracket_read_auth
 def get_bracket_by_id(bracket_id):
     if not is_uuid(bracket_id):
         return jsonify({"error": "Invalid bracket id"}), 400
@@ -3294,7 +3390,9 @@ def get_bracket_by_id(bracket_id):
 
     br_res = (
         supabase.table("brackets")
-        .select("id, user_id, is_done, deleted_at, name, created_at, saved_at, season_id, is_master")
+        .select(
+            "id, user_id, is_done, deleted_at, name, created_at, saved_at, season_id, is_master"
+        )
         .eq("id", bracket_id)
         .is_("deleted_at", None)
         .limit(1)
@@ -3306,8 +3404,8 @@ def get_bracket_by_id(bracket_id):
 
     bracket = br_rows[0]
 
-    # Season consistency
-    if bracket.get("season_id") != CURRENT_SEASON_ID:
+    historical = request.path.startswith("/history/bracket/")
+    if not historical and bracket.get("season_id") != CURRENT_SEASON_ID:
         return jsonify({"error": "Bracket is not in the current season"}), 404
 
     # 🔎 Derive true master flag from season.master_bracket_id OR brackets.is_master
@@ -3315,13 +3413,22 @@ def get_bracket_by_id(bracket_id):
     if bracket.get("season_id"):
         season_res = (
             supabase.table("seasons")
-            .select("id, master_bracket_id")
+            .select("id, code, master_bracket_id")
             .eq("id", bracket["season_id"])
             .limit(1)
             .execute()
         )
         srows = season_res.data or []
         season_row = srows[0] if srows else None
+
+    if historical:
+        code = (season_row or {}).get("code", "")
+        if (
+            bracket.get("season_id") == CURRENT_SEASON_ID
+            or not re.fullmatch(r"[0-9]{4}-[0-9]{2}", code)
+            or code >= CURRENT_SEASON_CODE
+        ):
+            return jsonify({"error": "Historical bracket not found"}), 404
 
     derived_is_master = bool(bracket.get("is_master")) or (
         season_row is not None
@@ -3331,7 +3438,9 @@ def get_bracket_by_id(bracket_id):
     owner_id = bracket.get("user_id")
     is_owner = str(viewer_id) == str(owner_id)
 
-    if not is_owner and not competitive_bracket_eligible(bracket):
+    if not is_owner and not competitive_bracket_eligible(
+        bracket, season_id=bracket["season_id"] if historical else CURRENT_SEASON_ID
+    ):
         return jsonify({"error": "Bracket not yet saved or not accessible"}), 403
 
     matches_res = (
@@ -3345,8 +3454,10 @@ def get_bracket_by_id(bracket_id):
 
     team_ids = set()
     for m in matches:
-        if m.get("team_a"): team_ids.add(m["team_a"])
-        if m.get("team_b"): team_ids.add(m["team_b"])
+        if m.get("team_a"):
+            team_ids.add(m["team_a"])
+        if m.get("team_b"):
+            team_ids.add(m["team_b"])
 
     teams_by_id = {}
     if team_ids:
@@ -3369,21 +3480,25 @@ def get_bracket_by_id(bracket_id):
         ta = teams_by_id.get(match.get("team_a"))
         tb = teams_by_id.get(match.get("team_b"))
         if ta:
-            enriched.update({
-                "team_a_name": ta.get("name"),
-                "team_a_code": ta.get("code"),
-                "team_a_logo_url": ta.get("logo_url"),
-                "team_a_primary_color": ta.get("primary_color"),
-                "team_a_secondary_color": ta.get("secondary_color"),
-            })
+            enriched.update(
+                {
+                    "team_a_name": ta.get("name"),
+                    "team_a_code": ta.get("code"),
+                    "team_a_logo_url": ta.get("logo_url"),
+                    "team_a_primary_color": ta.get("primary_color"),
+                    "team_a_secondary_color": ta.get("secondary_color"),
+                }
+            )
         if tb:
-            enriched.update({
-                "team_b_name": tb.get("name"),
-                "team_b_code": tb.get("code"),
-                "team_b_logo_url": tb.get("logo_url"),
-                "team_b_primary_color": tb.get("primary_color"),
-                "team_b_secondary_color": tb.get("secondary_color"),
-            })
+            enriched.update(
+                {
+                    "team_b_name": tb.get("name"),
+                    "team_b_code": tb.get("code"),
+                    "team_b_logo_url": tb.get("logo_url"),
+                    "team_b_primary_color": tb.get("primary_color"),
+                    "team_b_secondary_color": tb.get("secondary_color"),
+                }
+            )
         grouped[conf][rnd].append(enriched)
 
     owner_res = (
@@ -3397,16 +3512,23 @@ def get_bracket_by_id(bracket_id):
     owner = owner_rows[0] if owner_rows else {}
 
     # 👇 Inject both snake_case and camelCase for the frontend
-    return jsonify({
-        "bracket": {
-            **bracket,
-            "owner": public_user(owner),
-            "is_owner": is_owner,
-            "is_master": bool(derived_is_master),
-            "isMaster": bool(derived_is_master),
-        },
-        "matches": grouped,
-    }), 200
+    return (
+        jsonify(
+            {
+                "bracket": {
+                    **bracket,
+                    "owner": public_user(owner),
+                    "is_owner": is_owner,
+                    "is_historical": historical,
+                    "read_only": historical,
+                    "is_master": bool(derived_is_master),
+                    "isMaster": bool(derived_is_master),
+                },
+                "matches": grouped,
+            }
+        ),
+        200,
+    )
 
 
 @app.route("/brackets", methods=["GET"])
@@ -3533,11 +3655,7 @@ def delete_bracket(bracket_id):
     user_id = request.user["user_id"]
 
     user_res = (
-        supabase.table("users")
-        .select("id, is_admin")
-        .eq("id", user_id)
-        .execute()
-        .data
+        supabase.table("users").select("id, is_admin").eq("id", user_id).execute().data
     )
     if not user_res:
         return jsonify({"error": "User not found"}), 404
@@ -3545,7 +3663,7 @@ def delete_bracket(bracket_id):
 
     bracket_res = (
         supabase.table("brackets")
-        .select("id, user_id, deleted_at, season_id")
+        .select("id, user_id, deleted_at, season_id, is_master, is_done")
         .eq("id", bracket_id)
         .is_("deleted_at", None)
         .limit(1)
@@ -3561,8 +3679,26 @@ def delete_bracket(bracket_id):
     if bracket.get("season_id") != CURRENT_SEASON_ID:
         return jsonify({"error": "Bracket is not in the current season"}), 403
 
-    if bracket["user_id"] != user_id and not is_admin:
-        return jsonify({"error": "Unauthorized: Only the owner or an admin can delete this bracket"}), 403
+    if current_master_bracket(bracket):
+        return (
+            jsonify(
+                {
+                    "error": "Active master must be explicitly replaced or retired through controlled rollover"
+                }
+            ),
+            403,
+        )
+    if bracket["user_id"] != user_id:
+        return jsonify({"error": "Only the owner may delete this bracket"}), 403
+    if playoffs_locked() and bracket.get("is_done") is True:
+        return (
+            jsonify(
+                {
+                    "error": "Submitted brackets cannot be deleted after the final deadline"
+                }
+            ),
+            403,
+        )
 
     update_fields = {
         "deleted_at": datetime.utcnow().isoformat(),
@@ -3573,10 +3709,14 @@ def delete_bracket(bracket_id):
     # Clean up scores referencing this bracket
     try:
         supabase.table("bracket_scores").delete().eq("bracket_id", bracket_id).execute()
-        supabase.table("bracket_scores").delete().eq("master_bracket_id", bracket_id).execute()
+        supabase.table("bracket_scores").delete().eq(
+            "master_bracket_id", bracket_id
+        ).execute()
     except Exception as e:
         if ENABLE_DEBUG_LOGS:
-            safe_print("🔴 Error cleaning bracket_scores on delete (class):", type(e).__name__)
+            safe_print(
+                "🔴 Error cleaning bracket_scores on delete (class):", type(e).__name__
+            )
 
     return jsonify({"message": "Bracket deleted successfully"})
 

@@ -113,7 +113,7 @@ def main():
         # A new verified session must be able to reacquire the exclusive lease.
         with LocalFixtureLease(context.original_settings, allow_local_reset=True):
             pass
-        sql_file(ROOT / "db/baseline/verify_current_schema.sql")
+        sql_file(ROOT / "db/post-baseline/verify_current_schema.sql")
         sql_file(
             ROOT / "test-infrastructure/local-supabase/verify-fixture-marker-v2.sql"
         )

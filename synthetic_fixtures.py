@@ -410,8 +410,8 @@ def validate_state(data):
         } != set(codes):
             raise ValueError("Standings rank mismatch")
     active = [r for r in brackets.values() if r["deleted_at"] is None]
-    if len({r["user_id"] for r in active}) != len(active):
-        raise ValueError("Preserved active bracket uniqueness limitation")
+    if len({(r["user_id"], r["season_id"]) for r in active}) != len(active):
+        raise ValueError("Duplicate active user-season bracket")
     masters = [r for r in brackets.values() if r["is_master"]]
     if len({r["season_id"] for r in masters}) != len(masters):
         raise ValueError("Master uniqueness limitation")

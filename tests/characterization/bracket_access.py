@@ -182,8 +182,8 @@ class CurrentBracketBehavior(unittest.TestCase):
     )
     def current_behavior__bracket__historical_creation_constraint(self):
         self.setup_bracket("historical")
-        self.call("POST", "/bracket/create", 400, role="user-a", payload={})
-        self.assertEqual(len(self.context.bracket_snapshot()["brackets"]), 1)
+        self.call("POST", "/bracket/create", 200, role="user-a", payload={})
+        self.assertEqual(len(self.context.bracket_snapshot()["brackets"]), 2)
 
     @behavior(
         "admin/master behavior",
@@ -197,9 +197,15 @@ class CurrentBracketBehavior(unittest.TestCase):
         body = self.call("POST", "/bracket/create", 200, role="admin", payload={})
         bid = body["bracket"]["id"]
         self.assertTrue(self.state(bid)[0]["is_master"])
-        self.call("DELETE", f"/bracket/{bid}", 200, role="admin")
+        self.call("DELETE", f"/bracket/{bid}", 403, role="admin")
         self.context.bracket_timing("locked")
-        body = self.call("POST", "/bracket/create", 200, role="admin", payload={})
+        body = self.call(
+            "POST",
+            "/bracket/create",
+            200,
+            role="admin",
+            payload={"replace_existing_master": True},
+        )
         b = self.state(body["bracket"]["id"])[0]
         s = self.context.bracket_snapshot()
         self.assertTrue(
@@ -215,9 +221,14 @@ class CurrentBracketBehavior(unittest.TestCase):
     def current_behavior__bracket__master_replacement(self):
         old = self.setup_bracket("master", role="user-b")
         self.context.login("admin")
-        new = self.call("POST", "/bracket/create", 200, role="admin", payload={})[
-            "bracket"
-        ]["id"]
+        self.call("POST", "/bracket/create", 409, role="admin", payload={})
+        new = self.call(
+            "POST",
+            "/bracket/create",
+            200,
+            role="admin",
+            payload={"replace_existing_master": True},
+        )["bracket"]["id"]
         self.assertFalse(self.state(old)[0]["is_master"])
         self.assertTrue(self.state(new)[0]["is_master"])
         self.context.login("user-a")
@@ -359,9 +370,9 @@ class CurrentBracketBehavior(unittest.TestCase):
         )
         self.save(bid, role="admin", status=403)
         self.assertEqual(before, self.state(bid))
-        # B10/B11 deletion is explicitly deferred and unchanged.
-        self.call("DELETE", f"/bracket/{bid}", 200, role="admin")
-        self.assertIsNotNone(self.state(bid)[0]["deleted_at"])
+        # B3 now deliberately denies arbitrary admin deletion as well.
+        self.call("DELETE", f"/bracket/{bid}", 403, role="admin")
+        self.assertIsNone(self.state(bid)[0]["deleted_at"])
 
     @behavior(
         "admin/master behavior",
@@ -581,6 +592,10 @@ class CurrentBracketBehavior(unittest.TestCase):
     )
     def current_behavior__bracket__delete_recreate(self):
         bid = self.setup_bracket("saved", timing="locked")
+        before = self.state(bid)
+        self.call("DELETE", f"/bracket/{bid}", 403, role="user-a")
+        self.assertEqual(before, self.state(bid))
+        self.context.bracket_timing("open")
         self.call("DELETE", f"/bracket/{bid}", 200, role="user-a")
         b, ms = self.state(bid)
         self.assertTrue(
@@ -600,15 +615,17 @@ class CurrentBracketBehavior(unittest.TestCase):
     )
     def current_behavior__bracket__master_delete(self):
         bid = self.setup_bracket("master", role="admin")
-        self.call("DELETE", f"/bracket/{bid}", 200, role="admin")
-        self.assertFalse(self.state(bid)[0]["is_master"])
-        self.assertTrue(
-            all(
-                s["master_bracket_id"] != bid
-                for s in self.context.bracket_snapshot()["seasons"]
-            )
+        before = self.context.bracket_snapshot()
+        self.call("DELETE", f"/bracket/{bid}", 403, role="admin")
+        self.call("POST", "/bracket/create", 409, role="admin", payload={})
+        self.assertEqual(before, self.context.bracket_snapshot())
+        self.call(
+            "POST",
+            "/bracket/create",
+            200,
+            role="admin",
+            payload={"replace_existing_master": True},
         )
-        self.call("POST", "/bracket/create", 200, role="admin", payload={})
 
     @behavior(
         "historical brackets",
@@ -722,3 +739,7 @@ mark_nc02b1(CurrentBracketBehavior)
 from scripts.nc02b2_acceptance_metadata import mark_acceptance as mark_nc02b2
 
 mark_nc02b2(CurrentBracketBehavior)
+
+from scripts.nc02b3_acceptance_metadata import mark_acceptance as mark_nc02b3
+
+mark_nc02b3(CurrentBracketBehavior)

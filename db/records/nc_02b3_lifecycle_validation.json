@@ -1,0 +1,1042 @@
+{
+  "phase": "NC-02B3",
+  "passed": true,
+  "tests_run": 12,
+  "failures": 0,
+  "errors": 0,
+  "findings": [
+    {
+      "phase": "NC-02B3",
+      "scenario": "test_b3_cross_season_and_same_season_uniqueness",
+      "requirements": [
+        "B10",
+        "B11",
+        "B12",
+        "B13",
+        "B14",
+        "B15"
+      ],
+      "facts": {
+        "cross_season_allowed": true,
+        "same_season_duplicate_denied": true,
+        "different_users_allowed": true
+      },
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "message"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "message"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02B3",
+      "scenario": "test_b3_current_ids_not_exposed_through_public_history",
+      "requirements": [
+        "B10",
+        "B11",
+        "B12",
+        "B13",
+        "B14",
+        "B15"
+      ],
+      "facts": {
+        "current_auth_contract_preserved": true,
+        "historical_surface_not_current_bypass": true
+      },
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/history/bracket/<id>",
+          "status": 404,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/history/bracket/<id>",
+          "status": 404,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/bracket/<id>",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/bracket/<id>",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "matches"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02B3",
+      "scenario": "test_b3_historical_draft_owner_private_no_public_leak",
+      "requirements": [
+        "B10",
+        "B11",
+        "B12",
+        "B13",
+        "B14",
+        "B15"
+      ],
+      "facts": {
+        "historical_draft_owner_read": true,
+        "anonymous_other_admin_denied": true,
+        "no_autopromotion": true
+      },
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/history/bracket/<id>",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "matches"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/history/bracket/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/history/bracket/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/history/bracket/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02B3",
+      "scenario": "test_b3_historical_submitted_public_safe_and_immutable",
+      "requirements": [
+        "B10",
+        "B11",
+        "B12",
+        "B13",
+        "B14",
+        "B15"
+      ],
+      "facts": {
+        "public_submitted_history": true,
+        "safe_serialization": true,
+        "historical_writes_denied": true
+      },
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/history/bracket/<id>",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "matches"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/history/bracket/<id>",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "matches"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/history/bracket/<id>",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "matches"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/history/bracket/<id>",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "matches"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/bracket/<id>",
+          "status": 404,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02B3",
+      "scenario": "test_b3_master_create_explicit_replace_and_delete_protection",
+      "requirements": [
+        "B10",
+        "B11",
+        "B12",
+        "B13",
+        "B14",
+        "B15"
+      ],
+      "facts": {
+        "explicit_replace": true,
+        "one_active_master": true,
+        "old_retired_records_retained": true
+      },
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "message"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 409,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/bracket/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "message"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02B3",
+      "scenario": "test_b3_nonowner_and_admin_arbitrary_delete_denied",
+      "requirements": [
+        "B10",
+        "B11",
+        "B12",
+        "B13",
+        "B14",
+        "B15"
+      ],
+      "facts": {
+        "nonowner_delete_denied": true,
+        "admin_arbitrary_delete_denied": true
+      },
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/bracket/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/bracket/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02B3",
+      "scenario": "test_b3_ordinary_replacement_and_malformed_intent_refused",
+      "requirements": [
+        "B10",
+        "B11",
+        "B12",
+        "B13",
+        "B14",
+        "B15"
+      ],
+      "facts": {
+        "ordinary_replace_denied": true,
+        "explicit_boolean_required": true
+      },
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "message"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02B3",
+      "scenario": "test_b3_postlock_draft_delete_and_no_recreation",
+      "requirements": [
+        "B10",
+        "B11",
+        "B12",
+        "B13",
+        "B14",
+        "B15"
+      ],
+      "facts": {
+        "postlock_draft_delete": true,
+        "postlock_recreation_denied": true
+      },
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/bracket/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02B3",
+      "scenario": "test_b3_postlock_master_replace_other_season_preserved",
+      "requirements": [
+        "B10",
+        "B11",
+        "B12",
+        "B13",
+        "B14",
+        "B15"
+      ],
+      "facts": {
+        "postlock_master_replace": true,
+        "other_season_master_unchanged": true
+      },
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "message"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "message"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02B3",
+      "scenario": "test_b3_predeadline_delete_recreate_and_closed_window",
+      "requirements": [
+        "B10",
+        "B11",
+        "B12",
+        "B13",
+        "B14",
+        "B15"
+      ],
+      "facts": {
+        "soft_delete_retains_matches": true,
+        "open_recreate": true,
+        "early_recreate_denied": true
+      },
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/bracket/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "message"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/bracket/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02B3",
+      "scenario": "test_b3_replacement_failure_rolls_back_retirement_pointer_and_graph",
+      "requirements": [
+        "B10",
+        "B11",
+        "B12",
+        "B13",
+        "B14",
+        "B15"
+      ],
+      "facts": {
+        "forced_fk_failure": true,
+        "whole_replacement_rolled_back": true
+      },
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "message"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02B3",
+      "scenario": "test_b3_submitted_delete_at_and_after_deadline_preserves_all_data",
+      "requirements": [
+        "B10",
+        "B11",
+        "B12",
+        "B13",
+        "B14",
+        "B15"
+      ],
+      "facts": {
+        "submitted_delete_denied_at_and_after": true,
+        "competitive_history_and_rows_preserved": true
+      },
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "owner",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 200,
+          "shape": [
+            "message",
+            "name",
+            "saved_at"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/bracket/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/bracket/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    }
+  ],
+  "readiness": {
+    "identity_verified": true,
+    "database_marker": "PASS",
+    "email": "PASS",
+    "providers": "PASS",
+    "external_credentials": "PASS",
+    "jobs": "PASS",
+    "jobs_enabled": false,
+    "fixture_state": "SEEDED",
+    "fixtures_reset": "PASS",
+    "integration_harness": "PASS",
+    "mutation_permitted": false,
+    "harness_state": "AVAILABLE_GUARDED",
+    "harness_scoped_mutation_permitted": false
+  },
+  "canonical_cleanup": {
+    "fixture_readiness": {
+      "identity": "PASS",
+      "marker": "PASS",
+      "email": "PASS",
+      "providers": "PASS",
+      "jobs": "PASS",
+      "fixture_reset": "PASS",
+      "harness": "UNMET",
+      "fixture_version": "nc-fixtures-v1",
+      "fixture_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "mutation_permitted": false
+    },
+    "flask_stopped": true,
+    "email_capture_empty": true,
+    "app_import_removed": true
+  },
+  "production_contact": false,
+  "historical_NC01_evidence_rewritten": false
+}

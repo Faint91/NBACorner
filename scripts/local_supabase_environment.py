@@ -211,11 +211,13 @@ def main():
             # Empty-only baseline refuses existing objects. No reset or DROP helper.
             sql_file(ROOT / "db/baseline/000_current_schema.sql")
             sql_file(ROOT / "db/baseline/verify_current_schema.sql")
+            sql_file(ROOT / "db/post-baseline/0001_nc_02b3_bracket_lifecycle.sql")
+            sql_file(ROOT / "db/post-baseline/verify_current_schema.sql")
             sql_file(WORK / "identity-marker.sql")
             sql_file(WORK / "fixture-marker-v2.sql")
             sql_file(WORK / "verify-fixture-marker-v2.sql")
         elif args.action == "verify":
-            sql_file(ROOT / "db/baseline/verify_current_schema.sql")
+            sql_file(ROOT / "db/post-baseline/verify_current_schema.sql")
             sql_file(WORK / "verify-fixture-marker-v2.sql")
         elif args.action == "configure":
             container_identity()

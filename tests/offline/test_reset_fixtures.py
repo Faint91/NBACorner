@@ -356,6 +356,10 @@ class FixtureTests(Offline):
         data = fixtures.bracket_scenario("saved")
         extra = copy.deepcopy(fixtures.bracket_scenario("historical")["brackets"][0])
         data["brackets"].append(extra)
+        fixtures.validate_state(data)
+        duplicate = copy.deepcopy(data["brackets"][0])
+        duplicate["id"] = fixtures.identity("same-season-duplicate")
+        data["brackets"].append(duplicate)
         with self.assertRaises(ValueError):
             fixtures.validate_state(data)
 

@@ -1,0 +1,17 @@
+{
+  "phase": "NC-02B3",
+  "fresh_database": true,
+  "platform_source": "schema-only verified local Supabase; no rows/roles/password dump",
+  "baseline_bootstrap": true,
+  "prior_post_baseline_migrations": [],
+  "migration": "db/post-baseline/0001_nc_02b3_bracket_lifecycle.sql",
+  "semantic_verification": true,
+  "synthetic_seed": true,
+  "cross_season_coexistence": true,
+  "same_season_duplicate_refused": true,
+  "soft_delete_recreation": true,
+  "fresh_master_create_replace_rollback": true,
+  "canonical_fixture_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+  "production_contact": false,
+  "disposable_database_removed": true
+}

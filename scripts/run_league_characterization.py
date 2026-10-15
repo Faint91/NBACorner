@@ -48,7 +48,7 @@ def main():
     result = unittest.TextTestRunner(verbosity=2, resultclass=SanitizedResult).run(
         suite
     )
-    sql_file(ROOT / "db/baseline/verify_current_schema.sql")
+    sql_file(ROOT / "db/post-baseline/verify_current_schema.sql")
     sql_file(ROOT / "test-infrastructure/local-supabase/verify-fixture-marker-v2.sql")
     report = {
         "phase": "NC-01C",

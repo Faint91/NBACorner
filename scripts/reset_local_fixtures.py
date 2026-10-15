@@ -29,7 +29,7 @@ from scripts.local_supabase_environment import (
 )
 from synthetic_fixtures import TABLES, SEQUENCES, VERSION, foundation, validate_state
 
-VERIFIER_SHA = "e041a918814b6a052b82888fddf9e721763884089aecd36a695e3a5ef279252f"
+VERIFIER_SHA = "7ff200f3d75b5697c68587942a78f30d36b357c4f086ac5792e973dbec91606e"
 
 
 def validate_inventory(tables, sequences, external_dependencies=()):
@@ -66,7 +66,7 @@ def literal(value):
 
 
 def baseline_body():
-    raw = (ROOT / "db/baseline/verify_current_schema.sql").read_bytes()
+    raw = (ROOT / "db/post-baseline/verify_current_schema.sql").read_bytes()
     if hashlib.sha256(raw).hexdigest() != VERIFIER_SHA:
         raise SafetyError("Reviewed semantic verifier bytes changed.")
     return raw.decode().replace("BEGIN READ ONLY;", "", 1).rsplit("COMMIT;", 1)[0]

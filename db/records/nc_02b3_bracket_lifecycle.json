@@ -1,0 +1,217 @@
+{
+  "phase": "NC-02B3",
+  "status": "COMPLETED",
+  "starting_repositories": {
+    "backend": {
+      "branch": "main",
+      "head": "84a0ddc0f245864b8b6c0093f6e3f984e5deafaa",
+      "clean": true
+    },
+    "frontend": {
+      "branch": "main",
+      "head": "3ba43ee1fef4e2c63b0169efda01b6e2f2f896d5",
+      "clean": true
+    }
+  },
+  "requirements": {
+    "B10": "Owner current ordinary soft delete before final lock; recreation only in ordinary creation window.",
+    "B11": "At/after final lock submitted owner deletion denied; unsaved draft owner deletion allowed; no recreation bypass.",
+    "B12": "Historical and current active brackets coexist; active user/season uniqueness retained.",
+    "B13": "Strict explicit replacement intent; season-locked atomic retirement/new bracket/matches/pointer transaction.",
+    "B14": "Active current-season master generic delete denied, admin included; rollover implementation unchanged.",
+    "B15": "Separate public submitted historical detail; owner-private historical draft; all historical content read-only."
+  },
+  "migration": {
+    "path": "db/post-baseline/0001_nc_02b3_bracket_lifecycle.sql",
+    "sha256": "e98346423a4f73690371d8f1c178347330e5da33f02b6b9f4475475d237b4376",
+    "applied_to": "Verified enrolled local Supabase only",
+    "production_applied": false,
+    "dry_run_full_verification_and_rollback": true,
+    "obsolete_index_removed": "unique_active_bracket_per_user",
+    "retained_user_season_index": "uniq_active_bracket_per_user_per_season UNIQUE(user_id,season_id) WHERE deleted_at IS NULL",
+    "retained_master_indexes": [
+      "uq_master_per_season",
+      "ux_brackets_one_master_per_season"
+    ],
+    "new_rpc": "public.create_master_bracket_atomic(uuid,uuid,boolean,jsonb)",
+    "rpc_security": "SECURITY INVOKER; search_path pg_catalog, public; EXECUTE revoked from PUBLIC/anon/authenticated in same transaction; postgres/service_role only",
+    "old_acls_rls_policies_triggers_functions_defaults": "Unchanged and checked by complete evolved verifier",
+    "old_baseline_unchanged": true,
+    "legacy_nc_sec_migrations_not_replayed": true
+  },
+  "migration_preflight": {
+    "duplicates": "Active user/season and active master duplicates cause refusal; no auto merge/delete.",
+    "existing_constraint": "Retained all-active per-user/season index includes master, matching original model.",
+    "production_knowledge": "Old global uniqueness already excludes duplicate non-NULL active user/season combinations; existing nullable legacy keys and pointer/flag inconsistencies require future preflight, no production queries.",
+    "rollback": "Refuse when legitimate cross-season active rows violate obsolete global uniqueness; never delete/merge to force rollback.",
+    "prerequisites": "Future explicit authorization, verified target/backup/catalog/data preflight, coordinated DB/backend/frontend rollout; avoid old-backend master creation during transition."
+  },
+  "deletion_matrix": {
+    "owner_current_ordinary_before_lock": "ALLOW",
+    "owner_submitted_at_or_after_lock": "DENY 403, no competitive/history side effects",
+    "owner_draft_at_or_after_lock": "ALLOW soft delete; recreate still denied by B5",
+    "ordinary_nonowner": "DENY 403",
+    "admin_arbitrary_ordinary": "DENY 403; prompt preferred denial and no separately approved operational delete requirement found",
+    "active_current_master_any_caller": "DENY 403; use explicit replacement/controlled rollover",
+    "historical_generic_delete": "DENY existing current-season guard",
+    "allowed_delete_preserves": "Soft deletion/match retention/score cleanup behavior retained"
+  },
+  "master_lifecycle": {
+    "first_admin_create": "Allowed outside ordinary window",
+    "existing_master_no_intent": "409",
+    "replacement_field": "replace_existing_master must be boolean; only literal true authorizes replacement intent",
+    "ordinary_replacement": "403",
+    "frontend_confirmation_required": true,
+    "cancellation_sends_no_request": true,
+    "transaction": "Lock season row; DB admin check; retire old master; insert new bracket+graph; set pointer; single commit",
+    "old_master_records": "Retained soft-deleted/demoted; match/score rows not purged by replacement",
+    "exactly_one_active_master": true,
+    "other_season_master_unchanged": true,
+    "postlock_replace": true,
+    "forced_fk_failure": "Whole operation rolled back; old master/graph/pointer preserved",
+    "rollover": "Direct controlled helper unchanged; generic-delete policy does not intercept it"
+  },
+  "historical_access": {
+    "route": "GET /history/bracket/<id>",
+    "submitted": "Anonymous/owner/other user/admin read allowed for nondeleted submitted older-season records",
+    "draft": "Authenticated owner only; other users/admin/anonymous denied",
+    "current_ids": "404 on historical surface; current detail still authenticated/current-only",
+    "season_source": "Existing configured CURRENT_SEASON_CODE/CURRENT_SEASON_ID; no new canonical source",
+    "payload": "NC-02A public-user allowlist; read_only/is_historical metadata",
+    "mutations": "Existing current-season guards deny prediction/undo/count/save; no historical mutation route added",
+    "current_competition": "Historical rows remain excluded",
+    "snapshots": "Unchanged independent frozen history; snapshot-row IDs are not guessed as bracket IDs",
+    "navigation": "Existing snapshot UI retained; dedicated read-only bracket route accepts actual persisted bracket ID; no new public draft/list discovery"
+  },
+  "frontend_files": [
+    "src/pages/DashboardPage.tsx",
+    "src/pages/BracketPage.tsx",
+    "src/main.tsx",
+    "scripts/test-bracket-lifecycle.cjs"
+  ],
+  "preservation": {
+    "B1_B9_B16": "Required and rerun in complete suite",
+    "NC02A_privacy_eligibility": "Required and rerun",
+    "product_ast": "Exactly four lifecycle/detail functions changed and two scoped helpers added; prediction/count/graph/scoring/season/rollover/league/account functions unchanged",
+    "historical_files": "58 baseline/security/characterization/repair files byte-for-byte unchanged"
+  },
+  "validation": {
+    "focused_lifecycle": {
+      "passed": true,
+      "tests": 12
+    },
+    "source_regressions": {
+      "passed": true,
+      "tests": 45
+    },
+    "offline": {
+      "passed": true,
+      "tests": 244,
+      "new_safety_cases": 6
+    },
+    "frontend": {
+      "passed": true,
+      "tests": 13,
+      "new_lifecycle_tests": 6
+    },
+    "typescript_vite_build": "PASS",
+    "lint_comparison": {
+      "BracketPage.tsx": {
+        "before": 16,
+        "after": 16,
+        "new_findings": 0
+      },
+      "DashboardPage.tsx": {
+        "before": 8,
+        "after": 8,
+        "new_findings": 0
+      },
+      "main.tsx": {
+        "before": 2,
+        "after": 2,
+        "new_findings": 0
+      },
+      "new_test_file_errors": 0
+    },
+    "formatting": "12 touched rule/harness/tooling/test Python files and six application functions Black-clean",
+    "immutable_baseline_validators": "PASS original NC-ENV lexical/provenance/ACL validator and NC-01 consolidated provenance validator",
+    "schema_semantics": "Full evolved verifier passed after dry run, fresh bootstrap and local application",
+    "complete_applicable_suite": {
+      "passed": true,
+      "tests_run": 201,
+      "failures": 0,
+      "errors": 0
+    },
+    "fresh_baseline_migration_proof": {
+      "phase": "NC-02B3",
+      "fresh_database": true,
+      "platform_source": "schema-only verified local Supabase; no rows/roles/password dump",
+      "baseline_bootstrap": true,
+      "prior_post_baseline_migrations": [],
+      "migration": "db/post-baseline/0001_nc_02b3_bracket_lifecycle.sql",
+      "semantic_verification": true,
+      "synthetic_seed": true,
+      "cross_season_coexistence": true,
+      "same_season_duplicate_refused": true,
+      "soft_delete_recreation": true,
+      "fresh_master_create_replace_rollback": true,
+      "canonical_fixture_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "production_contact": false,
+      "disposable_database_removed": true
+    },
+    "final_file_audit": {
+      "passed": true,
+      "reviewed_files": 33,
+      "historical_files_unchanged": 58,
+      "secrets_found": 0,
+      "unrelated_product_functions_changed": 0,
+      "json_python_parse": "PASS",
+      "oversized_files": 0,
+      "new_production_identifiers": 0
+    }
+  },
+  "initial_recovery_notes": [
+    "Dry-run verifier function-body literal normalized consistently with baseline; all failed attempts rolled back before correction.",
+    "Disposable managed-schema restore requires local platform-admin role for original ownership; baseline/migration execute as postgres; no roles changed.",
+    "Initial focused B3 test admission missed a multiline scope entry; fixed only reviewed registered-ID paths, complete focused rerun passed.",
+    "Fresh proof final checksum required the same UTC/ISO/extra_float_digits=3 serialization settings as canonical reset; synthetic rows and sequences already compared equal, final proof then passed."
+  ],
+  "production": {
+    "queried": false,
+    "modified": false,
+    "deployed": false,
+    "migration_ready": "Ready for review/controlled future rollout, conditional on explicit authorization and production preflight; not applied"
+  },
+  "remaining_unrelated": [
+    "Champion bonus",
+    "Finalist bonus",
+    "Snapshot tie ordering",
+    "Standings provider/freeze",
+    "Canonical season source",
+    "League lifecycle questions",
+    "Rollover atomicity/recovery beyond compatibility",
+    "Unrelated auth behavior"
+  ],
+  "recommended_next_phase": "Read-only canonical seasons and standings requirements review (proposed NC-05 in established consolidated order); business approval before implementation",
+  "next_phase_started": false,
+  "verified_at_utc": "2026-10-15T06:17:17.426574+00:00",
+  "canonical_cleanup": {
+    "fixture_lease_released": true,
+    "disposable_database_absent": true,
+    "flask_stopped": true,
+    "fixture_readiness": {
+      "identity": "PASS",
+      "marker": "PASS",
+      "email": "PASS",
+      "providers": "PASS",
+      "jobs": "PASS",
+      "fixture_reset": "PASS",
+      "harness": "UNMET",
+      "fixture_version": "nc-fixtures-v1",
+      "fixture_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "mutation_permitted": false
+    },
+    "email_capture_empty": true,
+    "app_import_removed": true
+  }
+}

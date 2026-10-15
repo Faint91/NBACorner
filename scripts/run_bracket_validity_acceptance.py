@@ -118,7 +118,7 @@ def main():
             )
         )
         return 0 if result.wasSuccessful() else 1
-    sql_file(ROOT / "db/baseline/verify_current_schema.sql")
+    sql_file(ROOT / "db/post-baseline/verify_current_schema.sql")
     sql_file(ROOT / "test-infrastructure/local-supabase/verify-fixture-marker-v2.sql")
     settings = load_test_config(args.config)
     fixture_proof = verify_fixture_readiness(settings)
