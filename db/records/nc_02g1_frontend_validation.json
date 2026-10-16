@@ -1,0 +1,13 @@
+{
+  "global_errors": 83,
+  "global_warnings": 1,
+  "new_diagnostics": [],
+  "frontend_tests": 54,
+  "production_contact": false,
+  "typescript": true,
+  "build": true,
+  "build_warnings": [
+    "existing browser mapping age",
+    "existing bundle size"
+  ]
+}

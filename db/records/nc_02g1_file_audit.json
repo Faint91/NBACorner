@@ -1,0 +1,226 @@
+{
+  "phase": "NC-02G1",
+  "verified_at": "2026-10-16T22:59:55.485854+00:00",
+  "credential_patterns": [
+    "private_key",
+    "JWT_literal",
+    "credential_URL",
+    "Supabase_secret",
+    "provider_token"
+  ],
+  "findings": [],
+  "completion_evidence_raw_test_secrets": false,
+  "env_archive_dump_additions": false,
+  "compilation": true,
+  "no_new_unused_imports": true,
+  "Black": true,
+  "whitespace": "PASS with existing CRLF preserved",
+  "only_existing_functions_changed": [
+    "register",
+    "login"
+  ],
+  "baseline_through_0009_unchanged": true,
+  "frontend_session_reset_account_routes_unchanged": true,
+  "privacy_serialization_preserved": true,
+  "production_contact": false,
+  "files": [
+    {
+      "repository": "backend",
+      "path": "app.py",
+      "bytes": 139141,
+      "sha256": "77768e556e97f0cc5b56c186e03d350c04d33c2e52823d13af5a6acd5b9a3782"
+    },
+    {
+      "repository": "backend",
+      "path": "db/post-baseline/0010_nc_02g1_identity_auth.sql",
+      "bytes": 2528,
+      "sha256": "158967feebad44df173f8b72ed1fb1aab88e5c740ebb5f2fbb8b46c154b37be5"
+    },
+    {
+      "repository": "backend",
+      "path": "db/post-baseline/README.md",
+      "bytes": 14780,
+      "sha256": "92e565203022749314419b86632eaa2c489c3797196c228c92a1d300673c4ea7"
+    },
+    {
+      "repository": "backend",
+      "path": "db/post-baseline/verify_current_schema.sql",
+      "bytes": 522666,
+      "sha256": "7be14d9d1f221d34f978236659d070e63b3c1376f634c986d40fd67511be9628"
+    },
+    {
+      "repository": "backend",
+      "path": "db/post-baseline/verify_nc_02f2_schema.sql",
+      "bytes": 518863,
+      "sha256": "3c8bf7d87361436da69119bf0c0182d9e5b5e9c0d893754920a235bebd716ae0"
+    },
+    {
+      "repository": "backend",
+      "path": "db/records/nc_02g1_before.json",
+      "bytes": 967,
+      "sha256": "3cc57da0fb7e6739cab67cacf90ec31a7dc6e75324883d4f4ac57dfe3c4f0987"
+    },
+    {
+      "repository": "backend",
+      "path": "db/records/nc_02g1_cleanup_verification.json",
+      "bytes": 1375,
+      "sha256": "b47be8bc971e6531e0adcde7ce719a4919ff9ca8600766524ce71bfea8e64321"
+    },
+    {
+      "repository": "backend",
+      "path": "db/records/nc_02g1_focused_initial_validation.json",
+      "bytes": 3521,
+      "sha256": "430e7642468648c7373d564cfd5f967197caf394554e7fb992b2ca8e5ca29c2d"
+    },
+    {
+      "repository": "backend",
+      "path": "db/records/nc_02g1_fresh_migration_proof.json",
+      "bytes": 7048,
+      "sha256": "a5e4fb3d65e16d93601ffd67e69ea2ceabe1caeef131161af1475a485ff40710"
+    },
+    {
+      "repository": "backend",
+      "path": "db/records/nc_02g1_frontend_validation.json",
+      "bytes": 259,
+      "sha256": "ef377ba144cd7f6975dcc68d77645cf6a3db5fde393c8a6724266f042ce30e79"
+    },
+    {
+      "repository": "backend",
+      "path": "db/records/nc_02g1_identity_auth.json",
+      "bytes": 8330,
+      "sha256": "36099369c6d2e7c2c9506ec66e76ee3484bad3bbf856466b6d1553a8756849f2"
+    },
+    {
+      "repository": "backend",
+      "path": "db/records/nc_02g1_initial_validation.json",
+      "bytes": 515697,
+      "sha256": "e176d3a1c35383491febf987f8bb8775eeefef5685ba341507bf08138caa3eb1"
+    },
+    {
+      "repository": "backend",
+      "path": "db/records/nc_02g1_lifecycle_validation.json",
+      "bytes": 3532,
+      "sha256": "a4e4b8077abf3be0e25ae82c04267ec07e1ae23a0ef4aed0c11cbc01ddf8a053"
+    },
+    {
+      "repository": "backend",
+      "path": "db/records/nc_02g1_preservation.json",
+      "bytes": 2820,
+      "sha256": "ba8114bfb79ec2b56bcd16120690b1107cefd67c5a6259f389b6a302c870a99f"
+    },
+    {
+      "repository": "backend",
+      "path": "db/records/nc_02g1_recheck_validation.json",
+      "bytes": 3061,
+      "sha256": "deefef3c322d22f15ce91b6a2d6f18e6d134369c048942b32618d7cb45f0a953"
+    },
+    {
+      "repository": "backend",
+      "path": "db/records/nc_02g1_starting_state.json",
+      "bytes": 234,
+      "sha256": "723f2da8e26e0ee4115ef1f587113a8d3414b7ae17694bd3352c68d4a6c91126"
+    },
+    {
+      "repository": "backend",
+      "path": "db/records/nc_02g1_validation.json",
+      "bytes": 608,
+      "sha256": "31ab1739f3bc568205d2c16c2ec526cf58b15dae63d1a45e36e57286a543bbac"
+    },
+    {
+      "repository": "backend",
+      "path": "db/records/nc_02g1_validation_corrections.json",
+      "bytes": 1089,
+      "sha256": "d48e10d98deb53e71dd4ce15471169a3334b1ed2b7b45861e4a3107613d6a5ad"
+    },
+    {
+      "repository": "backend",
+      "path": "docs/repairs/nc-02g1-identity-auth.md",
+      "bytes": 14502,
+      "sha256": "e3b4044093c987f4715e28c8ad6b5063fb52f74518c1f46fa1ec33e2710eeaaf"
+    },
+    {
+      "repository": "backend",
+      "path": "identity_auth_service.py",
+      "bytes": 2805,
+      "sha256": "47ad6647f09d816c33245ed29c6e812b7ffb01bc28e3889fecb05c7f1a0337b2"
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/local_supabase_environment.py",
+      "bytes": 12522,
+      "sha256": "b612998f7a89c300eb6e5c6da6035bb6969c898b0bb74958640c43b15b9fbbe5"
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/nc02g1_database_acceptance.py",
+      "bytes": 12232,
+      "sha256": "684f59b5a10547027591571e50c38c7bd1554d7c264221ffbc78914a54c73ad7"
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/prove_identity_auth_migration.py",
+      "bytes": 40048,
+      "sha256": "0e864b924d3633c28e35a17c68cfebc7383737e8f2e1c72ab7a75fc20deffd29"
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/prove_league_history_migration.py",
+      "bytes": 39217,
+      "sha256": "c8cff829d68c5ac5387e6b135330f46b5787aed3f2edf0a6a5f1c7c9da555ded"
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/reset_local_fixtures.py",
+      "bytes": 16614,
+      "sha256": "e50c4e15d6b2ca64013f7b560e96202a63ff4d807595b2883ab7b978440d2277"
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/run_identity_auth_acceptance.py",
+      "bytes": 17814,
+      "sha256": "69781236168bb4bd85df62b775565400c05f18c664118dee47b802dc34a7f995"
+    },
+    {
+      "repository": "backend",
+      "path": "tests/characterization/identity_auth.py",
+      "bytes": 6991,
+      "sha256": "f4e8069e00a3e7459593a0862ef34ccc3d426d5896017e4671df60d77ccfb1c9"
+    },
+    {
+      "repository": "backend",
+      "path": "tests/offline/test_identity_auth.py",
+      "bytes": 6101,
+      "sha256": "e54312ff47dc7bc2a6c1acabfaeb98a6d4f415ef37eeef0586412b860645fce2"
+    },
+    {
+      "repository": "frontend",
+      "path": "scripts/test-identity-auth.cjs",
+      "bytes": 5156,
+      "sha256": "d66c1d3279c6f91227fa6cfd4e378f1818f8f4bdc0436e6da16a2da9eaa23772"
+    },
+    {
+      "repository": "frontend",
+      "path": "src/api/auth.ts",
+      "bytes": 488,
+      "sha256": "0181484e2888608a0ca18fb5e301565d019dc40468bf416488ee504a4bad889f"
+    },
+    {
+      "repository": "frontend",
+      "path": "src/auth/identityPolicy.ts",
+      "bytes": 1259,
+      "sha256": "62043b9d84841def947559795991b3c5a56db57982e3d1572cc8d7fa23fc1fc0"
+    },
+    {
+      "repository": "frontend",
+      "path": "src/pages/LoginPage.tsx",
+      "bytes": 11337,
+      "sha256": "839bacc8f48ef503d287b919d888f27a9d2ee793e74b99b077d168481e4d4265"
+    },
+    {
+      "repository": "frontend",
+      "path": "src/pages/RegisterPage.tsx",
+      "bytes": 13087,
+      "sha256": "20c66fd6ddf5e42a17fcd648ae914479110d05a7cf750f7711921e381a63e246"
+    }
+  ]
+}

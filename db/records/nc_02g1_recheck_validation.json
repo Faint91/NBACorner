@@ -1,0 +1,93 @@
+{
+  "phase": "NC-02G1",
+  "superseded_assertions": [
+    {
+      "test": "nc02g1_auth_access.CurrentAuthBehavior.current_behavior__auth__username_case_resolution",
+      "reason": "Approved A2/A6 normalized uniqueness replaces case-distinct accounts; covered by G1 live and DB race acceptance. Original evidence unchanged."
+    }
+  ],
+  "selected_case_ids": [
+    "nc02g1_auth_access.CurrentAuthBehavior.current_behavior__auth__duplicate_username"
+  ],
+  "failed_case_ids": [],
+  "passed": true,
+  "tests_run": 1,
+  "failures": 0,
+  "errors": 0,
+  "findings": [
+    {
+      "scenario": "current_behavior__auth__duplicate_username",
+      "group": "Registration",
+      "current_behavior": "Approved G1 controlled request/conflict/exact-password behavior; original evidence retained",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve username uniqueness and normalization?",
+      "evidence_source": "Live guarded local Flask API; canonical reset per case",
+      "phase": "NC-02G1",
+      "previous_metadata": {
+        "scenario": "current_behavior__auth__duplicate_username",
+        "group": "Registration",
+        "current_behavior": "Duplicate valid username rejected with 400.",
+        "approved_requirement": null,
+        "classification": "REQUIREMENT NOT YET REVIEWED",
+        "future_business_question": "Approve username uniqueness and normalization?",
+        "evidence_source": "Live guarded local Flask API; canonical reset per case"
+      },
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/register",
+          "status": 201,
+          "shape": [
+            "message",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/register",
+          "status": 409,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    }
+  ],
+  "readiness": {
+    "identity_verified": true,
+    "database_marker": "PASS",
+    "email": "PASS",
+    "providers": "PASS",
+    "external_credentials": "PASS",
+    "jobs": "PASS",
+    "jobs_enabled": false,
+    "fixture_state": "SEEDED",
+    "fixtures_reset": "PASS",
+    "integration_harness": "PASS",
+    "mutation_permitted": false,
+    "harness_state": "AVAILABLE_GUARDED",
+    "harness_scoped_mutation_permitted": false
+  },
+  "canonical_cleanup": {
+    "fixture_readiness": {
+      "identity": "PASS",
+      "marker": "PASS",
+      "email": "PASS",
+      "providers": "PASS",
+      "jobs": "PASS",
+      "fixture_reset": "PASS",
+      "harness": "UNMET",
+      "fixture_version": "nc-fixtures-v1",
+      "fixture_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "mutation_permitted": false
+    },
+    "flask_stopped": true,
+    "email_capture_empty": true,
+    "app_import_removed": true
+  },
+  "production_contact": false,
+  "historical_NC01_evidence_rewritten": false
+}

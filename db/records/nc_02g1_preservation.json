@@ -1,0 +1,38 @@
+{
+  "changed_existing_functions": [
+    "login",
+    "register"
+  ],
+  "new_routes": [],
+  "JWT_creation_validation_unchanged": true,
+  "password_reset_routes_and_policy_unchanged": true,
+  "public_user_unchanged": true,
+  "identity_editing_endpoints": false,
+  "impersonation_endpoints": false,
+  "email_verification_added": false,
+  "protected_sha256": {
+    "scoring_engine.py": "0095a2a60e96e050c696cc19c1c26159959cc095e80ad829adaad00f51254243",
+    "scoring_service.py": "4fe5601d0d57107dda5e2c4db172f693e7bb56f85746a1a571b57fae6d845aaf",
+    "history_service.py": "b31db88775829475c8ad03ac0e132c26a89a347453e3dabcdc8a06be77299355",
+    "rollover_service.py": "a4f22d5530707349e2fa08cfce57c81115a0ac2308cc372daf9f2d5a92ef9566",
+    "league_service.py": "01614e73d9a5566dfd841505af038657f3371b87dd2d2332965c7dc9a3459d47",
+    "league_history_service.py": "fd70cab88dd419c0a768391f9481c18dee4d8258cf45e46e728f3aaa6b3a5e31",
+    "synthetic_fixtures.py": "2eb5935489c9f6ee715cabf960bf047ab6b64105a304daa0a942bafa8572bb6c",
+    "db/baseline/000_current_schema.sql": "8ca7b98f54544d177de41511ed9d3d969ac4389591ec966e5730f99369de4209",
+    "db/baseline/README.md": "766b35b9238423293df300fd1bbb1732c28c77291b98b419ebfc2f8946fdf112",
+    "db/baseline/manifest.json": "d7c6b947c32fe15546e55f452111b757a8227131c37a5b97bceb2b6bc1da250d",
+    "db/baseline/provenance.json": "83b697cf420b9a377b8491ad43c8d3f0a405c69c898b4393d5681a229651d19e",
+    "db/baseline/validate_baseline.py": "df5da63d5898c53f90330b86df06485a6e8c4cd5314edbfafcf2dbca0b2a07c7",
+    "db/baseline/verify_current_schema.sql": "e041a918814b6a052b82888fddf9e721763884089aecd36a695e3a5ef279252f",
+    "db/post-baseline/0001_nc_02b3_bracket_lifecycle.sql": "e98346423a4f73690371d8f1c178347330e5da33f02b6b9f4475475d237b4376",
+    "db/post-baseline/0002_nc_02c1_canonical_season.sql": "ab38f5182351d5bbf6df0116c2af944e97401b55e8b0fea037f0c11fa11296ec",
+    "db/post-baseline/0003_nc_02c2_atomic_standings.sql": "e359e09771af5b6a4fdf94542138a6655b8e273a8b064dbfb9a54c3973968d29",
+    "db/post-baseline/0004_nc_02c3_season_transition.sql": "8e252eb6247f477c42c2e38a83b881524e058f9f707e969e4e917e2bc85a6736",
+    "db/post-baseline/0005_nc_02d1_atomic_scores.sql": "11fdf464ab393bd0e5b58e8f34537447c6e320a731f7352fa62d4a295b657433",
+    "db/post-baseline/0006_nc_02d2_final_snapshots.sql": "3e1e3e34788cf6c05cb450d0b370fe1ca55ef6314f4bbb632d81445e7558c9d7",
+    "db/post-baseline/0007_nc_02e_atomic_rollover.sql": "cd3dbfd415d9a390e434df6b74ea2030fbf5bac9ae9ad8ebb63d01445c1bc1d8",
+    "db/post-baseline/0008_nc_02f1_league_lifecycle.sql": "e4abfcf9d7093847940cd967a2f37c760f3fa2708dca4256791effa8ca6740b9",
+    "db/post-baseline/0009_nc_02f2_league_history.sql": "3658bf8d6cd3552c8b1a4f9d46f07b43a6eaa2c68382eb18172f1b952470403b"
+  },
+  "production_contact": false
+}

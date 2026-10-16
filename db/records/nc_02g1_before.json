@@ -1,0 +1,31 @@
+{
+  "phase": "NC-02G1",
+  "captured_at": "2026-10-16T22:27:54.837080+00:00",
+  "before_repair": true,
+  "facts": {
+    "nonobject_registration_status": 500,
+    "registration_status": 201,
+    "email_storage_canonical": true,
+    "spaced_password_exact_login_status": 401,
+    "case_variant_registration_status": 201,
+    "login_failure_contracts": [
+      {
+        "status": 401,
+        "error": "Invalid username/email or password"
+      },
+      {
+        "status": 401,
+        "error": "Invalid username/email or password"
+      },
+      {
+        "status": 400,
+        "error": "Invalid credentials"
+      }
+    ],
+    "local_normalized_username_collisions": 1
+  },
+  "production_contact": false,
+  "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+  "historical_evidence_rewritten": false,
+  "prechange_race": "Single insert, raw case-sensitive unique constraints; race exception is generic 500 by source inspection"
+}

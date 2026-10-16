@@ -222,3 +222,19 @@ races and prior E atomic rollover protections in a removed disposable DB.
 See `docs/repairs/nc-02f2-league-history.md` and F2 evidence for transaction scopes,
 current privacy, deletion, local cleanup and separate production prerequisites.
 No production action is authorized by this local phase.
+
+
+## NC-02G1 identity, registration and login
+
+Apply `0010_nc_02g1_identity_auth.sql` after immutable baseline and 0001-0009.
+The frozen prior verifier is `verify_nc_02f2_schema.sql`. Current verification
+adds exact normalized username/email indexes, nonblank identity constraint and
+trusted-only SQL normalization/lookup functions. No existing users/hashes are
+rewritten. Collision/blank preflight fails transactionally without choosing a user.
+
+`python scripts/prove_identity_auth_migration.py` reuses the fixed disposable local
+fresh-chain proof and adds collision refusal, exact schema/ACL assertions and two
+real concurrent normalized identity races. See `docs/repairs/nc-02g1-identity-auth.md`
+and G1 evidence for hash compatibility, canonical fixture checksum and separately
+authorized production prerequisites. Reset/session changes remain G2 work.
+No production contact or deployment is authorized by this local phase.

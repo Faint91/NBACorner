@@ -1,0 +1,20 @@
+{
+  "phase": "NC-02G1",
+  "passed": true,
+  "tests_run": 225,
+  "unique_applicable_cases": 225,
+  "failed_case_ids": [],
+  "failures": 0,
+  "errors": 0,
+  "full_run": "db/records/nc_02g1_initial_validation.json",
+  "full_run_passed_cases": 224,
+  "full_run_adapter_mismatch": 1,
+  "corrective_recheck": "db/records/nc_02g1_recheck_validation.json",
+  "corrective_recheck_cases": 1,
+  "final_affected_auth_recheck": "db/records/nc_02g1_lifecycle_validation.json",
+  "final_affected_auth_cases": 8,
+  "offline_tests": 325,
+  "frontend_tests": 54,
+  "fresh_G1_proof_groups": 14,
+  "production_contact": false
+}

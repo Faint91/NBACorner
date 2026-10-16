@@ -62,6 +62,9 @@ HEALTHCHECK_TOKEN = os.getenv("HEALTHCHECK_TOKEN")
 
 # ✅ Bcrypt work factor (cost). 12 is a good starting point.
 BCRYPT_ROUNDS = int(os.getenv("BCRYPT_ROUNDS", "12"))
+from identity_auth_service import hash_password as hash_account_password
+
+DUMMY_LOGIN_HASH = hash_account_password(os.urandom(32).hex(), rounds=BCRYPT_ROUNDS)
 
 # ✅ Password policy
 PASSWORD_MIN_LENGTH = 10
@@ -1371,151 +1374,160 @@ def _rollover_current_season(
 
 @app.route("/auth/register", methods=["POST"])
 def register():
-    data = request.get_json() or {}
-
-    ip = get_client_ip()
-    if is_rate_limited("register_ip", ip):
-        return jsonify({
-            "error": "Too many sign-up attempts from this IP. Please try again later."
-        }), 429
-
-    email = (data.get("email") or "").strip().lower()
-    username = (data.get("username") or "").strip()
-    password = data.get("password")
-
-    if not email or not username or not password:
-        return jsonify({"error": "Email, username, and password are required"}), 400
-
-    # 🔐 Validate email/username format
-    if not re.match(EMAIL_REGEX, email):
-        return jsonify({"error": "Invalid email format"}), 400
-
-    if not re.match(USERNAME_REGEX, username):
-        return jsonify({"error": "Invalid username format"}), 400
-
-    # ✅ Enforce password policy
-    ok, msg = is_strong_password(password)
-    if not ok:
-        return jsonify({"error": msg}), 400
-
-    # ✅ Check if email or username already exists (no .or_ with raw input)
-    existing_email = (
-        supabase.table("users")
-        .select("id")
-        .eq("email", email)
-        .execute()
-        .data
+    from identity_auth_service import (
+        normalize_username_display,
+        normalize_email,
+        valid_username,
+        valid_email,
+        validate_password,
+        hash_password,
     )
-    if existing_email:
-        return jsonify({"error": "Email or username already in use"}), 400
 
-    existing_username = (
-        supabase.table("users")
-        .select("id")
-        .eq("username", username)
-        .execute()
-        .data
-    )
-    if existing_username:
-        return jsonify({"error": "Email or username already in use"}), 400
-
-    # ✅ Use explicit bcrypt cost
-    hashed_password = bcrypt.hashpw(
-        password.encode("utf-8"),
-        bcrypt.gensalt(rounds=BCRYPT_ROUNDS),
-    ).decode("utf-8")
-
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({"error": "A JSON object is required"}), 400
+    if is_rate_limited("register_ip", get_client_ip()):
+        return (
+            jsonify(
+                {
+                    "error": "Too many sign-up attempts from this IP. Please try again later."
+                }
+            ),
+            429,
+        )
+    try:
+        username = normalize_username_display(data.get("username"))
+        if not valid_username(username):
+            raise ValueError("Invalid username format")
+        if not isinstance(data.get("email"), str) or not valid_email(
+            data["email"].strip()
+        ):
+            raise ValueError("Invalid email format")
+        password = validate_password(data.get("password"))
+        email = normalize_email(data["email"], supabase)
+        if not valid_email(email):
+            raise ValueError("Invalid email format")
+        hashed = hash_password(password, rounds=BCRYPT_ROUNDS)
+    except ValueError:
+        return (
+            jsonify(
+                {
+                    "error": "Invalid registration fields. Use a valid email, a 3-30 character username with letters, numbers or underscores, and an 8-128 character password."
+                }
+            ),
+            400,
+        )
+    except Exception:
+        return jsonify({"error": "Registration unavailable"}), 503
     try:
         user = (
             supabase.table("users")
-            .insert({
-                "email": email,
-                "username": username,
-                "password": hashed_password
-            })
+            .insert({"username": username, "email": email, "password": hashed})
             .execute()
             .data[0]
         )
-        return jsonify({
-            "message": "User registered successfully",
-            "user": {
-                "id": user["id"],
-                "email": user["email"],
-                "username": user["username"],
-                "created_at": user.get("created_at")
+    except Exception as error:
+        if getattr(error, "code", None) == "23505":
+            return jsonify({"error": "Email or username already in use"}), 409
+        return jsonify({"error": "Registration unavailable"}), 503
+    return (
+        jsonify(
+            {
+                "message": "User registered successfully",
+                "user": {
+                    "id": user["id"],
+                    "email": user["email"],
+                    "username": user["username"],
+                    "created_at": user.get("created_at"),
+                },
             }
-        }), 201
-    except Exception as e:
-        if ENABLE_DEBUG_LOGS:
-            safe_print("🔴 Error in /auth/register (class):", type(e).__name__)
-        return jsonify({"error": "Unexpected error"}), 500
+        ),
+        201,
+    )
 
 
 @app.route("/auth/login", methods=["POST"])
 def login():
-    data = request.get_json() or {}
-
-    # 1) Per-IP rate limit
-    ip = get_client_ip()
-    if is_rate_limited("login_ip", ip):
-        return jsonify({
-            "error": "Too many login attempts. Please wait a bit and try again."
-        }), 429
-
-    # 2) Normalize identifier (email or username)
-    identifier = (data.get("email") or data.get("username") or "").strip().lower()
-    password = (data.get("password") or "").strip()
-
-    if not identifier or not password:
-        return jsonify({"error": "Invalid credentials"}), 400
-
-    # 3) Per-identifier rate limit (email/username)
-    if is_rate_limited("login_identifier", identifier):
-        return jsonify({
-            "error": "Too many login attempts. Please wait a bit and try again."
-        }), 429
-
-    # 4) Decide whether this is an email or username; validate format
-    if re.match(EMAIL_REGEX, identifier):
-        lookup_field = "email"
-    elif re.match(USERNAME_REGEX, identifier):
-        lookup_field = "username"
-    else:
-        # Invalid format → treat as bad credentials (no extra info)
-        return jsonify({"error": "Invalid username/email or password"}), 401
-
-    user_res = (
-        supabase.table("users")
-        .select("*")
-        .eq(lookup_field, identifier)
-        .execute()
-        .data
+    from identity_auth_service import (
+        normalize_username_display,
+        normalize_username_key,
+        normalize_email,
+        valid_username,
+        valid_email,
+        verify_password,
     )
-    if not user_res:
-        return jsonify({"error": "Invalid username/email or password"}), 401
 
-    user = user_res[0]
-    stored_password = user.get("password")
-
-    if not bcrypt.checkpw(password.encode("utf-8"), stored_password.encode("utf-8")):
-        return jsonify({"error": "Invalid username/email or password"}), 401
-
-    # ✅ Generate JWT
-    token = generate_token(user["id"], user["username"], user.get("is_admin", False))
-
-    return jsonify({
-        "message": "Login successful",
-        "token": token,
-        "user": {
-            "id": user["id"],
-            "email": user["email"],
-            "username": user["username"],
-            "is_admin": user.get("is_admin", False),
-            "created_at": user.get("created_at")
-        }
-    }), 200
-
-
+    failure = ({"error": "Invalid username/email or password"}, 401)
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({"error": "A JSON object is required"}), 400
+    if is_rate_limited("login_ip", get_client_ip()):
+        return (
+            jsonify(
+                {"error": "Too many login attempts. Please wait a bit and try again."}
+            ),
+            429,
+        )
+    raw = data.get("email") or data.get("username")
+    password = data.get("password")
+    if (
+        not isinstance(raw, str)
+        or not isinstance(password, str)
+        or not raw.strip()
+        or not password
+    ):
+        return jsonify({"error": "Invalid credentials"}), 400
+    try:
+        display = normalize_username_display(raw)
+        if valid_email(display):
+            field = "email"
+            identifier = normalize_email(raw, supabase)
+        elif valid_username(display):
+            field = "username"
+            identifier = normalize_username_key(raw)
+        else:
+            return jsonify(failure[0]), failure[1]
+        if is_rate_limited("login_identifier", identifier):
+            return (
+                jsonify(
+                    {
+                        "error": "Too many login attempts. Please wait a bit and try again."
+                    }
+                ),
+                429,
+            )
+        user = (
+            supabase.rpc("find_auth_user", {"p_field": field, "p_identity": identifier})
+            .execute()
+            .data
+        )
+        if user is not None and not isinstance(user, dict):
+            raise RuntimeError("Invalid identity result")
+        # Same bcrypt work for absent identities; no timing-elimination claim.
+        stored = user.get("password") if user else DUMMY_LOGIN_HASH
+        if not verify_password(password, stored) or not user:
+            return jsonify(failure[0]), failure[1]
+        token = generate_token(
+            user["id"], user["username"], user.get("is_admin", False)
+        )
+        return (
+            jsonify(
+                {
+                    "message": "Login successful",
+                    "token": token,
+                    "user": {
+                        "id": user["id"],
+                        "email": user["email"],
+                        "username": user["username"],
+                        "is_admin": user.get("is_admin", False),
+                        "created_at": user.get("created_at"),
+                    },
+                }
+            ),
+            200,
+        )
+    except Exception:
+        return jsonify({"error": "Login unavailable"}), 503
 @app.route("/auth/forgot-password", methods=["POST"])
 def forgot_password():
     data = request.get_json() or {}

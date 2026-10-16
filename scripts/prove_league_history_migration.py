@@ -592,7 +592,7 @@ ROLLBACK;
             )
         )
         sql(
-            (ROOT / "db/post-baseline/verify_current_schema.sql").read_text(
+            (ROOT / "db/post-baseline/verify_nc_02f2_schema.sql").read_text(
                 encoding="utf-8"
             )
         )
@@ -616,7 +616,7 @@ ROLLBACK;
 
         post_f2_rollover.append(committed_failure_retry(current_sql))
         sql(
-            (ROOT / "db/post-baseline/verify_current_schema.sql").read_text(
+            (ROOT / "db/post-baseline/verify_nc_02f2_schema.sql").read_text(
                 encoding="utf-8"
             )
         )

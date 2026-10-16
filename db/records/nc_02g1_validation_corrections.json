@@ -1,0 +1,16 @@
+{
+  "phase": "NC-02G1",
+  "initial_full_attempt": {
+    "tests_run": 225,
+    "failures": 8,
+    "errors": 159,
+    "passed": false
+  },
+  "classification": "Genuine in-scope module packaging defect: older characterization modules prepend their directory, shadowing identity_auth service with the new test module. Renamed service to identity_auth_service; no assertions weakened.",
+  "cleanup": "Canonical local reset explicitly restored after failed F2 setup",
+  "focused_initial": "Grouped requests reached unchanged IP limits; test-only isolation plus independent 429 acceptance added",
+  "production_contact": false,
+  "fresh_route_adapter": "Aligned psql output needed leading-whitespace stripping; proof-only parser corrected, no application change; fresh actual route proof then passed.",
+  "legacy_duplicate_adapter": "Corrected status conversion to preserve initial 201; the single failed case passed its corrective recheck.",
+  "final_malformed_text": "NUL and invalid-surrogate email rejected as client input before DB access; 325 offline and eight final live groups passed."
+}

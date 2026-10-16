@@ -43,7 +43,7 @@ F2_TABLES = (
     "leaderboard_history_competitors",
 )
 
-VERIFIER_SHA = "3c8bf7d87361436da69119bf0c0182d9e5b5e9c0d893754920a235bebd716ae0"
+VERIFIER_SHA = "7be14d9d1f221d34f978236659d070e63b3c1376f634c986d40fd67511be9628"
 
 
 def validate_inventory(tables, sequences, external_dependencies=()):

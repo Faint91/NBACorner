@@ -1,0 +1,207 @@
+{
+  "phase": "NC-02G1",
+  "status": "COMPLETE_LOCAL_ONLY",
+  "verified_at": "2026-10-16T22:59:05.154812+00:00",
+  "starting_state": {
+    "backend": {
+      "branch": "main",
+      "head": "e28a5231fe2e435f93ff2af7804de298fb1a2893",
+      "status": ""
+    },
+    "frontend": {
+      "branch": "main",
+      "head": "4a5718ebeeb5557e8bb516d8b9fb77297c7435e3",
+      "status": ""
+    }
+  },
+  "requirements": {
+    "A1": "object/typed fields and controlled malformed input",
+    "A2": "trimmed display-case username; normalized DB unique key",
+    "A3": "canonical lowercase new emails via PostgreSQL normalization; structural unique key",
+    "A4": "exact password strings",
+    "A5": "8-128 Unicode code points, no complexity",
+    "A6": "single atomic INSERT and structural race protection",
+    "A7": "generic 401 for unknown/incorrect formatted credentials; no timing-elimination claim",
+    "A17": "own-email-only auth fields, safe other-user serializers unchanged",
+    "A18": "no admin credential bypass or impersonation",
+    "A19": "no identity-edit endpoints",
+    "A20": "no new email verification"
+  },
+  "architecture": "Browser -> Flask custom bcrypt-compatible auth/PyJWT -> server-side Supabase/Postgres; unchanged",
+  "routes": {
+    "registration": "POST /auth/register, object string username/email/password; 201 own user, no token; malformed400/conflict409/rate429/internal503",
+    "login": "POST /auth/login, existing email or username;200 safe own user/token; malformed400/generic401/rate429/internal503",
+    "own": "GET /auth/test-me unchanged claims only",
+    "admin": "GET /admin/env-check unchanged masked presence and DB admin recheck",
+    "reset": "forgot/reset routes unchanged and deferred"
+  },
+  "identity": {
+    "display_username": "Python trim, preserve case; unchanged ASCII 3-30 letters/digits/underscore policy",
+    "username_key": "lowercase trimmed ASCII",
+    "email": "PostgreSQL auth_identity_key is authoritative for Unicode trim/lower, shared by storage/lookup/index",
+    "old_rows_rewritten": false,
+    "invalid_technical_text": "NUL/invalid UTF-8 email rejected before database access"
+  },
+  "password": {
+    "policy": "8-128 Python Unicode code points; spaces permitted; no normalization",
+    "new_format": "nc-bcrypt-sha256-v1$ + bcrypt",
+    "prehash": "Base64(SHA256(domain separator + exact UTF-8 password)); 44 bytes into bcrypt",
+    "domain": "NBA-Corner/account-password/v1 followed by NUL",
+    "cost": "Existing configured BCRYPT_ROUNDS, default12",
+    "legacy": "raw bcrypt formats supported, never truncate >72-byte input; existing bcrypt5 limit preserved",
+    "bulk_rehash": false,
+    "opportunistic_rehash": false,
+    "raw_passwords_in_evidence": false,
+    "reset_hash_workflow_changed": false
+  },
+  "migration": {
+    "path": "db/post-baseline/0010_nc_02g1_identity_auth.sql",
+    "preflight": "normalized username/email collisions and blank/null identities; fail atomically without repair",
+    "indexes": [
+      "nc_g1_username_key",
+      "nc_g1_email_key"
+    ],
+    "check": "nc_g1_nonblank_identity",
+    "earlier_migrations_unchanged": true
+  },
+  "DB_functions": {
+    "auth_identity_key(text)": {
+      "owner": "postgres",
+      "language": "sql",
+      "mode": "INVOKER",
+      "volatility": "IMMUTABLE STRICT",
+      "search_path": "pg_catalog,public",
+      "execute": [
+        "postgres",
+        "service_role"
+      ]
+    },
+    "find_auth_user(text,text)": {
+      "owner": "postgres",
+      "language": "sql",
+      "mode": "INVOKER",
+      "volatility": "STABLE",
+      "search_path": "pg_catalog,public",
+      "execute": [
+        "postgres",
+        "service_role"
+      ]
+    }
+  },
+  "registration_atomicity": "one INSERT; 23505 internally mapped to sanitized409; no precheck as race authority",
+  "concurrency": "Two actual two-session username/email normalized-key races, observed lock wait, exactly one commit each; live duplicate409 and offline race-error adapter confirmed",
+  "JWT": "creation/validation/claims/seven-day lifetime/storage unchanged",
+  "frontend": "shared codepoint/exact-password form policy and status-mapped safe errors; both identifiers/navigation/session behavior preserved; no redesign",
+  "privacy_admin_editing_verification": "public_user and all unrelated functions unchanged; no identity editor, impersonation or mandatory verification",
+  "validation": {
+    "phase": "NC-02G1",
+    "passed": true,
+    "tests_run": 225,
+    "unique_applicable_cases": 225,
+    "failed_case_ids": [],
+    "failures": 0,
+    "errors": 0,
+    "full_run": "db/records/nc_02g1_initial_validation.json",
+    "full_run_passed_cases": 224,
+    "full_run_adapter_mismatch": 1,
+    "corrective_recheck": "db/records/nc_02g1_recheck_validation.json",
+    "corrective_recheck_cases": 1,
+    "final_affected_auth_recheck": "db/records/nc_02g1_lifecycle_validation.json",
+    "final_affected_auth_cases": 8,
+    "offline_tests": 325,
+    "frontend_tests": 54,
+    "fresh_G1_proof_groups": 14,
+    "production_contact": false
+  },
+  "frontend_validation": {
+    "global_errors": 83,
+    "global_warnings": 1,
+    "new_diagnostics": [],
+    "frontend_tests": 54,
+    "production_contact": false,
+    "typescript": true,
+    "build": true,
+    "build_warnings": [
+      "existing browser mapping age",
+      "existing bundle size"
+    ]
+  },
+  "proof": {
+    "G1_groups": 14,
+    "F2_groups": 17,
+    "F1_groups": 9,
+    "post_F2_E_groups": 21,
+    "fresh_actual_flask_registration_login_JWT": true,
+    "baseline_through_0010": true,
+    "strict_schema_security": true,
+    "disposable_removed": true
+  },
+  "formatting_compilation_import_audit": true,
+  "cleanup": "db/records/nc_02g1_cleanup_verification.json",
+  "fixture_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+  "production_contact": false,
+  "production_changes": false,
+  "production_prerequisites": [
+    "backup",
+    "normalized username collision preflight",
+    "normalized email collision preflight",
+    "blank/null identity preflight",
+    "0010 review",
+    "hash compatibility review",
+    "coordinated separately authorized backend/frontend rollout",
+    "no automatic collision repair"
+  ],
+  "files": {
+    "backend": [
+      "app.py",
+      "db/post-baseline/0010_nc_02g1_identity_auth.sql",
+      "db/post-baseline/README.md",
+      "db/post-baseline/verify_current_schema.sql",
+      "db/post-baseline/verify_nc_02f2_schema.sql",
+      "db/records/nc_02g1_before.json",
+      "db/records/nc_02g1_cleanup_verification.json",
+      "db/records/nc_02g1_file_audit.json",
+      "db/records/nc_02g1_focused_initial_validation.json",
+      "db/records/nc_02g1_fresh_migration_proof.json",
+      "db/records/nc_02g1_frontend_validation.json",
+      "db/records/nc_02g1_identity_auth.json",
+      "db/records/nc_02g1_initial_validation.json",
+      "db/records/nc_02g1_lifecycle_validation.json",
+      "db/records/nc_02g1_preservation.json",
+      "db/records/nc_02g1_recheck_validation.json",
+      "db/records/nc_02g1_starting_state.json",
+      "db/records/nc_02g1_validation.json",
+      "db/records/nc_02g1_validation_corrections.json",
+      "docs/repairs/nc-02g1-identity-auth.md",
+      "identity_auth_service.py",
+      "scripts/local_supabase_environment.py",
+      "scripts/nc02g1_database_acceptance.py",
+      "scripts/prove_identity_auth_migration.py",
+      "scripts/prove_league_history_migration.py",
+      "scripts/reset_local_fixtures.py",
+      "scripts/run_identity_auth_acceptance.py",
+      "tests/characterization/identity_auth.py",
+      "tests/offline/test_identity_auth.py"
+    ],
+    "frontend": [
+      "scripts/test-identity-auth.cjs",
+      "src/api/auth.ts",
+      "src/auth/identityPolicy.ts",
+      "src/pages/LoginPage.tsx",
+      "src/pages/RegisterPage.tsx"
+    ]
+  },
+  "git": {
+    "frontend_commit": "2cfc7acb674b71f0bddeded77554d7ba25c164b5",
+    "backend_commit": "Reported in completing response; evidence included in normal commit",
+    "amended": false,
+    "message": "NC-02G1 harden registration and login identity"
+  },
+  "deferred": [
+    "password reset lifecycle/token security",
+    "reset completion UI",
+    "JWT session version/revocation"
+  ],
+  "next_phase": "NC-02G2 \u2014 Password reset, reset-token security & JWT revocation",
+  "next_phase_started": false
+}
