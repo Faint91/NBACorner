@@ -1,0 +1,10 @@
+{
+  "local_only": true,
+  "production_contact": false,
+  "counts": {
+    "leagues": 0,
+    "membership_duplicates": 0,
+    "invalid_owner_membership": 0,
+    "normalized_name_collisions": 0
+  }
+}

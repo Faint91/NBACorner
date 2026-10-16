@@ -1,0 +1,29 @@
+{
+  "phase": "NC-02F1",
+  "global_errors": 83,
+  "global_warnings": 1,
+  "changed_files": [
+    "src/api/client.ts",
+    "src/api/leagues.ts",
+    "src/pages/LeagueInfoPage.tsx",
+    "src/components/leagues/LeagueOwnerControls.tsx"
+  ],
+  "new_changed_file_diagnostics": [],
+  "changed_file_errors_before": 10,
+  "changed_file_errors_after": 10,
+  "production_contact": false,
+  "final_global_errors": 83,
+  "final_global_warnings": 1,
+  "new_component_errors": 0,
+  "tests_command": "node --test scripts/test-*.cjs",
+  "tests_passed": 42,
+  "tests_failed": 0,
+  "build_command": "npm run build",
+  "typescript_passed": true,
+  "build_passed": true,
+  "build_warnings": [
+    "Existing browsers metadata age notices",
+    "Existing chunk-size warning"
+  ],
+  "no_production_contact": true
+}

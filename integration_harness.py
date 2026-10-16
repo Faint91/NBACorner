@@ -124,6 +124,7 @@ class GuardedHarness:
             "NC-02C3",
             "NC-02D1",
             "NC-02D2",
+            "NC-02F1",
         }:
             raise safety.SafetyError("Unreviewed characterization scope.")
         self.characterization_scope = characterization_scope
@@ -248,6 +249,7 @@ class GuardedHarness:
                                 "NC-02C3",
                                 "NC-02D1",
                                 "NC-02D2",
+                                "NC-02F1",
                             }
                             else request.path
                         ),
@@ -358,6 +360,40 @@ class GuardedHarness:
         self.stack.enter_context(patch.object(requests.Session, "send", requests_send))
 
     def _check_path(self, method, path, *, identity_bootstrap=False):
+        if getattr(self, "characterization_scope", None) == "NC-02F1":
+            lids = getattr(self, "_leagues", set()) | {
+                identity("missing-league"),
+                "invalid",
+            }
+            if method == "GET" and path in {"/leagues", "/leagues/me", "/health"}:
+                return
+            if method == "POST" and (
+                path == "/leagues"
+                or path
+                in {
+                    f"/leagues/{lid}/{suffix}"
+                    for lid in lids
+                    for suffix in ("join", "ownership")
+                }
+            ):
+                return
+            if method == "PATCH" and path in {f"/leagues/{lid}" for lid in lids}:
+                return
+            if method == "DELETE" and (
+                path
+                in {
+                    f"/leagues/{lid}{suffix}"
+                    for lid in lids
+                    for suffix in ("", "/membership")
+                }
+                or path
+                in {
+                    f"/leagues/{lid}/members/{uid}"
+                    for lid in lids
+                    for uid in self._auth_subjects | {identity("missing-user")}
+                }
+            ):
+                return
         if (
             getattr(self, "characterization_scope", None) == "NC-02D2"
             and method == "POST"
@@ -365,7 +401,8 @@ class GuardedHarness:
         ):
             return
         if (
-            getattr(self, "characterization_scope", None) in {"NC-02D1", "NC-02D2"}
+            getattr(self, "characterization_scope", None)
+            in {"NC-02D1", "NC-02D2", "NC-02F1"}
             and method == "POST"
             and (
                 path == "/admin/score/recompute"
@@ -377,7 +414,11 @@ class GuardedHarness:
             )
         ):
             return
-        if getattr(self, "characterization_scope", None) in {"NC-02C3", "NC-02D2"}:
+        if getattr(self, "characterization_scope", None) in {
+            "NC-02C3",
+            "NC-02D2",
+            "NC-02F1",
+        }:
             if method == "POST" and path in {
                 "/admin/season/rollover",
                 "/admin/standings/refresh",
@@ -412,6 +453,7 @@ class GuardedHarness:
             "NC-02C3",
             "NC-02D1",
             "NC-02D2",
+            "NC-02F1",
         }:
             lids = getattr(self, "_leagues", set())
             reads = {
@@ -430,7 +472,7 @@ class GuardedHarness:
                 for lid in lids
             }
             reads |= {"/bracket/" + bid for bid in self._brackets}
-            if self.characterization_scope in {"NC-02B3", "NC-02D2"}:
+            if self.characterization_scope in {"NC-02B3", "NC-02D2", "NC-02F1"}:
                 # E reuses the D2 lease for post-rollover B15 read-only proof.
                 reads |= {"/history/bracket/" + bid for bid in self._brackets}
             if self.characterization_scope == "NC-02B3":
@@ -455,6 +497,7 @@ class GuardedHarness:
                     "NC-02C3",
                     "NC-02D1",
                     "NC-02D2",
+                    "NC-02F1",
                 }
                 and method == "POST"
                 and path == "/bracket/create"
@@ -631,6 +674,7 @@ class GuardedHarness:
             "NC-02C3",
             "NC-02D1",
             "NC-02D2",
+            "NC-02F1",
         } and path in {
             "/internal/standings/refresh",
             "/internal/standings/overwrite",
@@ -726,6 +770,7 @@ class GuardedHarness:
                 "NC-02C3",
                 "NC-02D1",
                 "NC-02D2",
+                "NC-02F1",
             }
             or threading.get_ident() != self._owner
         ):
@@ -757,12 +802,16 @@ class GuardedHarness:
         self._require_bracket_scope()
         if (
             self.characterization_scope
-            not in {"NC-02C2", "NC-02C3", "NC-02D1", "NC-02D2"}
+            not in {"NC-02C2", "NC-02C3", "NC-02D1", "NC-02D2", "NC-02F1"}
             or kind not in {"scheduled", "admin", "cron", "overwrite", "seed"}
             or token not in {"valid", "invalid", "missing"}
         ):
             raise safety.SafetyError("Fixed C2 standings request required")
-        if self.characterization_scope in {"NC-02C3", "NC-02D2"} and kind not in {
+        if self.characterization_scope in {
+            "NC-02C3",
+            "NC-02D2",
+            "NC-02F1",
+        } and kind not in {
             "scheduled",
             "admin",
             "cron",
@@ -822,7 +871,7 @@ class GuardedHarness:
 
     def recompute_request(self, *, master_id=None, role="admin"):
         self._require_bracket_scope()
-        if self.characterization_scope not in {"NC-02D1", "NC-02D2"} or (
+        if self.characterization_scope not in {"NC-02D1", "NC-02D2", "NC-02F1"} or (
             master_id is not None and master_id not in self._brackets
         ):
             raise safety.SafetyError("Registered D1 scoring request required")
@@ -850,7 +899,7 @@ class GuardedHarness:
     def prepare_transition_competition(self):
         """Fixed C3 prerequisite graph; align the explicit synthetic history IDs."""
         self._require_bracket_scope()
-        if self.characterization_scope not in {"NC-02C3", "NC-02D2"}:
+        if self.characterization_scope not in {"NC-02C3", "NC-02D2", "NC-02F1"}:
             raise safety.SafetyError("Fixed C3 prerequisite context required")
         ids = self.install_competitive_scenario()
         # The existing scenario inserts history IDs 1/2 explicitly; nextval must
@@ -866,7 +915,7 @@ class GuardedHarness:
         """Only the fixed next synthetic target through the real authorized route."""
         self._require_bracket_scope()
         if (
-            self.characterization_scope not in {"NC-02C3", "NC-02D2"}
+            self.characterization_scope not in {"NC-02C3", "NC-02D2", "NC-02F1"}
             or not isinstance(payload, dict)
             or payload.get("new_season_code") != "2026-27"
             or set(payload)
@@ -930,6 +979,7 @@ class GuardedHarness:
             "NC-02C3",
             "NC-02D1",
             "NC-02D2",
+            "NC-02F1",
         } or relative not in {
             "before",
             "at",
@@ -1084,6 +1134,7 @@ class GuardedHarness:
                 "NC-02C3",
                 "NC-02D1",
                 "NC-02D2",
+                "NC-02F1",
             }
             else {"user-a", "user-b", "admin"}
         ):
@@ -1148,6 +1199,7 @@ class GuardedHarness:
                 "NC-02C3",
                 "NC-02D1",
                 "NC-02D2",
+                "NC-02F1",
             }
             or threading.get_ident() != self._owner
         ):
@@ -1187,11 +1239,21 @@ class GuardedHarness:
         data = league_scenario()
         if global_public:
             data["leagues"][0]["is_global"] = True
-        self.module.supabase.table("leagues").insert(data["leagues"]).execute()
-        if not empty:
-            self.module.supabase.table("league_members").insert(
-                data["league_members"]
-            ).execute()
+        # F1 owner membership must exist at commit; "empty" means owner-only.
+        if empty:
+            data["league_members"] = [
+                m for m in data["league_members"] if m["user_id"] == identity("owner")
+            ]
+        sql = "BEGIN;\n"
+        for table in ("leagues", "league_members"):
+            columns = ",".join('"' + c + '"' for c in data[table][0])
+            payload = json.dumps(data[table]).replace("'", "''")
+            sql += f"INSERT INTO public.{table}({columns}) SELECT {columns} FROM jsonb_populate_recordset(NULL::public.{table},'{payload}'::jsonb);\n"
+        result = self.lease._exchange(
+            (sql + "COMMIT; SELECT '{\"installed\":true}'::jsonb;\n").encode()
+        )
+        if result != {"installed": True}:
+            raise safety.SafetyError("Atomic synthetic league installation failed")
         self._leagues = {r["id"] for r in data["leagues"]}
         return {kind: identity("league-" + kind) for kind in ("public", "private")}
 
@@ -1262,6 +1324,7 @@ class GuardedHarness:
                 "NC-02C3",
                 "NC-02D1",
                 "NC-02D2",
+                "NC-02F1",
             }
             or self._brackets
         ):
@@ -1339,6 +1402,7 @@ class GuardedHarness:
             "NC-02C3",
             "NC-02D1",
             "NC-02D2",
+            "NC-02F1",
         }:
             raise safety.SafetyError("Verified NC-02A2 context required.")
         result = self.bracket_snapshot()
@@ -1601,6 +1665,7 @@ class GuardedHarness:
                 "NC-02C3",
                 "NC-02D1",
                 "NC-02D2",
+                "NC-02F1",
             }
             else {"user-a", "user-b", "admin"}
         ):
@@ -1686,7 +1751,7 @@ def authorize_standings_test_job(job):
     if (
         type(permit) is not GuardedHarness
         or permit.characterization_scope
-        not in {"NC-02C2", "NC-02C3", "NC-02D1", "NC-02D2"}
+        not in {"NC-02C2", "NC-02C3", "NC-02D1", "NC-02D2", "NC-02F1"}
         or not permit._ready
         or job not in permit._standings_jobs
     ):
@@ -1723,7 +1788,7 @@ def authorize_transition_test_job(job):
     if (
         type(permit) is not GuardedHarness
         or not permit._ready
-        or permit.characterization_scope not in {"NC-02C3", "NC-02D2"}
+        or permit.characterization_scope not in {"NC-02C3", "NC-02D2", "NC-02F1"}
         or job not in {"season-rollover", "leaderboard-snapshot", "score-recompute"}
     ):
         return False
@@ -1737,7 +1802,7 @@ def authorize_transition_test_job(job):
     return request.method == "POST" and (
         (permit._transition_active and request.path == "/admin/season/rollover")
         or (
-            permit.characterization_scope == "NC-02D2"
+            permit.characterization_scope in {"NC-02D2", "NC-02F1"}
             and getattr(permit, "_snapshot_active", False)
             and job in {"leaderboard-snapshot", "score-recompute"}
             and request.path == "/admin/leaderboard/snapshot"
@@ -1761,7 +1826,7 @@ def authorize_scoring_test_job(job):
     ):
         return False
     if (
-        permit.characterization_scope in {"NC-02D1", "NC-02D2"}
+        permit.characterization_scope in {"NC-02D1", "NC-02D2", "NC-02F1"}
         and permit._scoring_active
     ):
         return request.method == "POST" and (

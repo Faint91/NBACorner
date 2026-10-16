@@ -140,7 +140,7 @@ class RolloverPreparationSafety(unittest.TestCase):
             .rsplit("COMMIT;", 1)[0]
         )
         actual = (
-            (root / "verify_current_schema.sql")
+            (root / "verify_nc_02e_schema.sql")
             .read_text(encoding="utf-8")
             .split("DO $rollover_verify$", 1)[0]
         )
@@ -169,8 +169,13 @@ class RolloverRoutePreservation(unittest.TestCase):
                         and deco.func.attr == "route"
                     ):
                         inventory.append([node.name, ast.dump(deco)])
+        additions = {"update_league", "transfer_league_owner", "remove_league_member"}
+        self.assertEqual({n for n, _ in inventory} & additions, additions)
         actual = hashlib.sha256(
-            json.dumps(sorted(inventory), sort_keys=True).encode()
+            json.dumps(
+                sorted(item for item in inventory if item[0] not in additions),
+                sort_keys=True,
+            ).encode()
         ).hexdigest()
         # Reviewed complete pre-E Flask route contract, including registration.
         self.assertEqual(

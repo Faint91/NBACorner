@@ -1,0 +1,239 @@
+{
+  "phase": "NC-02F1",
+  "before": [
+    {
+      "function": "list_all_brackets",
+      "path": "/brackets",
+      "methods": [
+        "GET"
+      ],
+      "decorators": [
+        "require_auth"
+      ]
+    },
+    {
+      "function": "leaderboard",
+      "path": "/leaderboard",
+      "methods": [
+        "GET"
+      ],
+      "decorators": [
+        "require_auth_for_league_scope"
+      ]
+    },
+    {
+      "function": "champion_pick_stats",
+      "path": "/stats/champion-picks",
+      "methods": [
+        "GET"
+      ],
+      "decorators": [
+        "require_auth"
+      ]
+    },
+    {
+      "function": "get_my_leagues",
+      "path": "/leagues/me",
+      "methods": [
+        "GET"
+      ],
+      "decorators": [
+        "require_auth"
+      ]
+    },
+    {
+      "function": "list_leagues",
+      "path": "/leagues",
+      "methods": [
+        "GET"
+      ],
+      "decorators": [
+        "require_auth"
+      ]
+    },
+    {
+      "function": "create_league",
+      "path": "/leagues",
+      "methods": [
+        "POST"
+      ],
+      "decorators": [
+        "require_auth"
+      ]
+    },
+    {
+      "function": "join_league",
+      "path": "/leagues/<league_id>/join",
+      "methods": [
+        "POST"
+      ],
+      "decorators": [
+        "require_auth"
+      ]
+    },
+    {
+      "function": "leave_league",
+      "path": "/leagues/<league_id>/membership",
+      "methods": [
+        "DELETE"
+      ],
+      "decorators": [
+        "require_auth"
+      ]
+    },
+    {
+      "function": "delete_league",
+      "path": "/leagues/<league_id>",
+      "methods": [
+        "DELETE"
+      ],
+      "decorators": [
+        "require_auth"
+      ]
+    },
+    {
+      "function": "get_league_members",
+      "path": "/leagues/<league_id>/members",
+      "methods": [
+        "GET"
+      ],
+      "decorators": [
+        "require_auth"
+      ]
+    }
+  ],
+  "after": [
+    {
+      "function": "list_all_brackets",
+      "path": "/brackets",
+      "methods": [
+        "GET"
+      ],
+      "decorators": [
+        "require_auth"
+      ]
+    },
+    {
+      "function": "leaderboard",
+      "path": "/leaderboard",
+      "methods": [
+        "GET"
+      ],
+      "decorators": [
+        "require_auth_for_league_scope"
+      ]
+    },
+    {
+      "function": "champion_pick_stats",
+      "path": "/stats/champion-picks",
+      "methods": [
+        "GET"
+      ],
+      "decorators": [
+        "require_auth"
+      ]
+    },
+    {
+      "function": "get_my_leagues",
+      "path": "/leagues/me",
+      "methods": [
+        "GET"
+      ],
+      "decorators": [
+        "require_auth"
+      ]
+    },
+    {
+      "function": "list_leagues",
+      "path": "/leagues",
+      "methods": [
+        "GET"
+      ],
+      "decorators": [
+        "require_auth"
+      ]
+    },
+    {
+      "function": "create_league",
+      "path": "/leagues",
+      "methods": [
+        "POST"
+      ],
+      "decorators": [
+        "require_auth"
+      ]
+    },
+    {
+      "function": "join_league",
+      "path": "/leagues/<league_id>/join",
+      "methods": [
+        "POST"
+      ],
+      "decorators": [
+        "require_auth"
+      ]
+    },
+    {
+      "function": "leave_league",
+      "path": "/leagues/<league_id>/membership",
+      "methods": [
+        "DELETE"
+      ],
+      "decorators": [
+        "require_auth"
+      ]
+    },
+    {
+      "function": "delete_league",
+      "path": "/leagues/<league_id>",
+      "methods": [
+        "DELETE"
+      ],
+      "decorators": [
+        "require_auth"
+      ]
+    },
+    {
+      "function": "get_league_members",
+      "path": "/leagues/<league_id>/members",
+      "methods": [
+        "GET"
+      ],
+      "decorators": [
+        "require_auth"
+      ]
+    },
+    {
+      "function": "update_league",
+      "path": "/leagues/<league_id>",
+      "methods": [
+        "PATCH"
+      ],
+      "decorators": [
+        "require_auth"
+      ]
+    },
+    {
+      "function": "transfer_league_owner",
+      "path": "/leagues/<league_id>/ownership",
+      "methods": [
+        "POST"
+      ],
+      "decorators": [
+        "require_auth"
+      ]
+    },
+    {
+      "function": "remove_league_member",
+      "path": "/leagues/<league_id>/members/<target_user_id>",
+      "methods": [
+        "DELETE"
+      ],
+      "decorators": [
+        "require_auth"
+      ]
+    }
+  ],
+  "timing_change": "create/join no longer use playoffs_locked; bracket lock remains unchanged",
+  "production_contact": false
+}

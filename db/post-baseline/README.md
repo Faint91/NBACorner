@@ -185,3 +185,24 @@ best effort; repeat-success and transaction advisory lock prevent duplicate clea
 See `docs/repairs/nc-02e-atomic-rollover.md` for failure proofs, fixed local commands,
 fixture digest preservation and backup/hard-deletion operational limitations.
 No production action is authorized by this local repair.
+
+
+## NC-02F1 live league lifecycle
+
+Apply `0008_nc_02f1_league_lifecycle.sql` after immutable baseline and 0001-0007.
+The E verifier is frozen as `verify_nc_02e_schema.sql`; the current verifier adds
+exact F1 functional-name uniqueness, owner-membership FK and trusted RPC checks.
+Local bootstrap and verifier-pinned reset use the complete current chain.
+
+Before any separately authorized production rollout: backup; review normalized
+name collisions/invalid names, owner-member consistency and membership duplicates;
+review the migration; coordinate backend/frontend rollout. Migration refuses
+inconsistent data transactionally and never auto-renames or invents memberships.
+All nine new functions are postgres-owned INVOKER with pinned pg_catalog,public
+path and postgres/service_role-only execution. Browser grants are unchanged.
+
+`python scripts/prove_league_lifecycle_migration.py` proves a fresh local disposable
+baseline-to-0008 chain, real name contention, owner/member rollback and all E SQL
+safety groups. The older E proof remains bound to its frozen verifier.
+See `docs/repairs/nc-02f1-league-lifecycle.md` and F1 machine evidence.
+No production contact or NC-02F2 work is authorized by this local phase.

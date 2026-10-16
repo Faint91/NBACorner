@@ -1,0 +1,49 @@
+{
+  "fixture": {
+    "identity": "PASS",
+    "marker": "PASS",
+    "email": "PASS",
+    "providers": "PASS",
+    "jobs": "PASS",
+    "fixture_reset": "PASS",
+    "harness": "UNMET",
+    "fixture_version": "nc-fixtures-v1",
+    "fixture_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+    "mutation_permitted": false
+  },
+  "readiness": {
+    "identity_verified": true,
+    "database_marker": "PASS",
+    "email": "PASS",
+    "providers": "PASS",
+    "external_credentials": "PASS",
+    "jobs": "PASS",
+    "jobs_enabled": false,
+    "fixture_state": "SEEDED",
+    "fixtures_reset": "PASS",
+    "integration_harness": "PASS",
+    "mutation_permitted": false,
+    "harness_state": "AVAILABLE_GUARDED",
+    "harness_scoped_mutation_permitted": false
+  },
+  "counts": {
+    "users": 4,
+    "leagues": 0,
+    "matches": 0,
+    "brackets": 0,
+    "standings": 30,
+    "lease_locks": 0,
+    "bracket_scores": 0,
+    "league_members": 0,
+    "proof_databases": 0,
+    "leaderboard_history": 0,
+    "season_rollover_audits": 0,
+    "leaderboard_history_rows": 0,
+    "leaderboard_history_snapshots": 0
+  },
+  "flask_stopped": true,
+  "email_capture_empty": true,
+  "lease_released": true,
+  "scratch_databases_removed": true,
+  "production_contact": false
+}

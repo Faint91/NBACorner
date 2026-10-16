@@ -1,0 +1,226 @@
+{
+  "phase": "NC-02F1",
+  "superseded_assertions": [],
+  "selected_case_ids": [
+    "nc02f1_league_lifecycle.LeagueLifecycleAcceptance.test_f1_password_privacy_switches_members_and_long_passwords",
+    "nc02f1_league_lifecycle.LeagueLifecycleAcceptance.test_f1_real_rollover_league_owner_membership_persistence",
+    "nc02f1_league_access.CurrentLeagueBehavior.current_behavior__league__errors"
+  ],
+  "failed_case_ids": [],
+  "passed": true,
+  "tests_run": 3,
+  "failures": 0,
+  "errors": 0,
+  "findings": [
+    {
+      "phase": "NC-02F1",
+      "scenario": "test_f1_password_privacy_switches_members_and_long_passwords",
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02F1",
+      "scenario": "test_f1_real_rollover_league_owner_membership_persistence",
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__league__errors",
+      "group": "schema/edge behavior",
+      "current_behavior": "Preserve ID/auth/missing/repeat-delete error matrix with approved F1 malformed-object 400 and explicit confirmed deletion.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve error/status contract?",
+      "evidence_source": "LIVE guarded local Flask; canonical reset per sequence",
+      "phase": "NC-02F1",
+      "previous_metadata": {
+        "scenario": "current_behavior__league__errors",
+        "group": "schema/edge behavior",
+        "current_behavior": "Malformed/nonexistent IDs, missing auth, non-object join payloads and repeat delete produce representative 400/404/401/500 errors; no arbitrary user mutation routes.",
+        "approved_requirement": null,
+        "classification": "REQUIREMENT NOT YET REVIEWED",
+        "future_business_question": "Approve error/status contract?",
+        "evidence_source": "LIVE guarded local Flask; canonical reset per sequence"
+      },
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "owner",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/invalid/members",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/leagues/<id>/members",
+          "status": 404,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues/invalid/join",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues/<id>/join",
+          "status": 404,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues/<id>/join",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/leagues/<id>/join",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/leagues/<id>/membership",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/leagues/<id>",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/leagues/<id>",
+          "status": 404,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/leagues/<id>",
+          "status": 200,
+          "shape": [
+            "league",
+            "ok",
+            "state",
+            "status"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/leagues/<id>",
+          "status": 404,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    }
+  ],
+  "readiness": {
+    "identity_verified": true,
+    "database_marker": "PASS",
+    "email": "PASS",
+    "providers": "PASS",
+    "external_credentials": "PASS",
+    "jobs": "PASS",
+    "jobs_enabled": false,
+    "fixture_state": "SEEDED",
+    "fixtures_reset": "PASS",
+    "integration_harness": "PASS",
+    "mutation_permitted": false,
+    "harness_state": "AVAILABLE_GUARDED",
+    "harness_scoped_mutation_permitted": false
+  },
+  "canonical_cleanup": {
+    "fixture_readiness": {
+      "identity": "PASS",
+      "marker": "PASS",
+      "email": "PASS",
+      "providers": "PASS",
+      "jobs": "PASS",
+      "fixture_reset": "PASS",
+      "harness": "UNMET",
+      "fixture_version": "nc-fixtures-v1",
+      "fixture_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "mutation_permitted": false
+    },
+    "flask_stopped": true,
+    "email_capture_empty": true,
+    "app_import_removed": true
+  },
+  "production_contact": false,
+  "historical_NC01_evidence_rewritten": false
+}

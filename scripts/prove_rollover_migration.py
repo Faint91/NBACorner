@@ -543,7 +543,7 @@ ROLLBACK;
             )
         )
         sql(
-            (ROOT / "db/post-baseline/verify_current_schema.sql").read_text(
+            (ROOT / "db/post-baseline/verify_nc_02e_schema.sql").read_text(
                 encoding="utf-8"
             )
         )
@@ -557,7 +557,7 @@ ROLLBACK;
         rollover_findings.append(contention(sql, PROOF_DB))
         rollover_findings.append(committed_failure_retry(sql))
         sql(
-            (ROOT / "db/post-baseline/verify_current_schema.sql").read_text(
+            (ROOT / "db/post-baseline/verify_nc_02e_schema.sql").read_text(
                 encoding="utf-8"
             )
         )

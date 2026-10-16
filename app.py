@@ -3787,424 +3787,26 @@ def list_leagues():
 @app.route("/leagues", methods=["POST"])
 @require_auth
 def create_league():
-    """
-    Create a new *private* league (non-global).
-
-    - Requires authentication.
-    - Allowed only until playoffs start (no creation after playoffs_locked()).
-    - The creator becomes the owner and is automatically added as a member.
-    """
-    user_info = getattr(request, "user", None) or {}
-    user_id = user_info.get("user_id")
-
-    if not user_id:
-        return jsonify({"error": "Unauthorized"}), 401
-
-    # ⛔ Time gating: league creation only until playoffs start
-    if playoffs_locked():
-        return jsonify({"error": "League creation is closed once the playoffs start."}), 403
-
-    data = request.get_json() or {}
-
-    name = (data.get("name") or "").strip()
-    # Password is optional: empty / missing = public league
-    password = (data.get("password") or "").strip()
-
-    # Basic validation
-    if not name:
-        return jsonify({"error": "Name is required"}), 400
-
-    if len(name) < 3 or len(name) > 80:
-        return jsonify({"error": "League name must be between 3 and 80 characters."}), 400
-
-    # Optional: keep league passwords simple (no strong policy for now)
-    # Only enforce minimum length if a password was actually provided.
-    if password and len(password) < 4:
-        return jsonify(
-            {"error": "League password must be at least 4 characters long."}
-        ), 400
-
-    # ✅ Enforce unique league name
-    existing = (
-        supabase.table("leagues")
-        .select("id")
-        .eq("name", name)
-        .execute()
-        .data
-    )
-    if existing:
-        return jsonify({"error": "League name is already in use"}), 400
-
-    # 🔐 Only hash password if one was provided; otherwise this is a public league.
-    password_hash = None
-    if password:
-        password_hash = bcrypt.hashpw(
-            password.encode("utf-8"),
-            bcrypt.gensalt(rounds=BCRYPT_ROUNDS),
-        ).decode("utf-8")
-
-    # 1) Insert league
-    try:
-        league = (
-            supabase.table("leagues")
-            .insert(
-                {
-                    "name": name,
-                    "password_hash": password_hash,
-                    "owner_user_id": user_id,
-                    "is_global": False,
-                }
-            )
-            .execute()
-            .data[0]
-        )
-    except Exception as e:
-        # Fallback if unique constraint still hits (race condition)
-        if hasattr(e, "args") and e.args and "duplicate key value" in str(e.args[0]):
-            return jsonify({"error": "League name is already in use"}), 400
-
-        if ENABLE_DEBUG_LOGS:
-            safe_print("🔴 Error creating league:", type(e).__name__, str(e))
-        return jsonify({"error": "Unexpected error creating league"}), 500
-
-    # 2) Insert membership for the creator (owner is also a member)
-    membership = None
-    try:
-        membership = (
-            supabase.table("league_members")
-            .insert(
-                {
-                    "league_id": league["id"],
-                    "user_id": user_id,
-                }
-            )
-            .execute()
-            .data[0]
-        )
-    except Exception as e:
-        # This shouldn't normally fail; log and continue
-        if ENABLE_DEBUG_LOGS:
-            safe_print("⚠️ Error adding owner as league member:", type(e).__name__, str(e))
-
-    # Build response
-    resp = {
-        "id": league["id"],
-        "name": league.get("name"),
-        "owner_user_id": league.get("owner_user_id"),
-        "is_global": league.get("is_global", False),
-        "created_at": league.get("created_at"),
-        "updated_at": league.get("updated_at"),
-        "is_member": True,  # creator is always considered a member
-        "requires_password": bool(league.get("password_hash")),
-    }
-    if membership:
-        resp["joined_at"] = membership.get("joined_at")
-
-    return jsonify({"league": resp}), 201
+    return _league_lifecycle_action("create")
 
 
 @app.route("/leagues/<league_id>/join", methods=["POST"])
 @require_auth
 def join_league(league_id):
-    """
-    Join an existing *private* league by password.
-
-    - Requires authentication.
-    - Allowed only until playoffs start (no joins after playoffs_locked()).
-    - Cannot be used to join the global league (is_global = true).
-    """
-    user_info = getattr(request, "user", None) or {}
-    user_id = user_info.get("user_id")
-
-    if not user_id:
-        return jsonify({"error": "Unauthorized"}), 401
-
-    # Optional: basic UUID validation for league_id
-    if not is_uuid(league_id):
-        return jsonify({"error": "Invalid league id"}), 400
-
-    # ⛔ Time gating: can only join leagues until playoffs start
-    if playoffs_locked():
-        return jsonify({"error": "Joining leagues is closed once the playoffs start."}), 403
-
-    data = request.get_json() or {}
-    password = (data.get("password") or "").strip()
-
-    try:
-        # 1) Load the league
-        league_res = (
-            supabase.table("leagues")
-            .select(
-                "id, name, owner_user_id, password_hash, is_global, created_at, updated_at"
-            )
-            .eq("id", league_id)
-            .limit(1)
-            .execute()
-        )
-        league_rows = league_res.data or []
-        if not league_rows:
-            return jsonify({"error": "League not found"}), 404
-
-        league = league_rows[0]
-
-        # Cannot join global league via this endpoint
-        if league.get("is_global"):
-            return jsonify({"error": "You cannot join the global league."}), 400
-
-        # 2) Check if already a member
-        membership_res = (
-            supabase.table("league_members")
-            .select("id, joined_at")
-            .eq("league_id", league["id"])
-            .eq("user_id", user_id)
-            .limit(1)
-            .execute()
-        )
-        membership_rows = membership_res.data or []
-        if membership_rows:
-            return jsonify({"error": "You are already a member of this league."}), 400
-
-        # 3) Verify password (only if the league actually has a password)
-        stored_hash = league.get("password_hash")
-
-        if stored_hash:
-            # Private league: password is required
-            if not password:
-                return jsonify(
-                    {"error": "Password is required to join this league."}
-                ), 400
-
-            try:
-                valid_pw = bcrypt.checkpw(
-                    password.encode("utf-8"),
-                    stored_hash.encode("utf-8"),
-                )
-            except Exception:
-                valid_pw = False
-
-            if not valid_pw:
-                return jsonify({"error": "Invalid league password"}), 400
-
-        # 4) Insert membership
-        mem_insert_res = (
-            supabase.table("league_members")
-            .insert(
-                {
-                    "league_id": league["id"],
-                    "user_id": user_id,
-                }
-            )
-            .execute()
-        )
-        mem_rows = mem_insert_res.data or []
-        membership = mem_rows[0] if mem_rows else None
-
-        # 5) Build response
-        resp = {
-            "id": league["id"],
-            "name": league.get("name"),
-            "owner_user_id": league.get("owner_user_id"),
-            "is_global": league.get("is_global", False),
-            "created_at": league.get("created_at"),
-            "updated_at": league.get("updated_at"),
-            "is_member": True,
-            "requires_password": bool(league.get("password_hash")),
-        }
-        if membership:
-            resp["joined_at"] = membership.get("joined_at")
-
-        return jsonify({"league": resp}), 201
-
-    except Exception as e:
-        if ENABLE_DEBUG_LOGS:
-            safe_print("🔴 Error in POST /leagues/<id>/join:", type(e).__name__, str(e))
-        return jsonify({"error": "Unexpected error joining league"}), 500
+    return _league_lifecycle_action("join", league_id)
 
 
 @app.route("/leagues/<league_id>/membership", methods=["DELETE"])
 @require_auth
 def leave_league(league_id):
-    """
-    Leave a private league.
-
-    Rules:
-    - Requires authentication.
-    - User can leave only private leagues where they are a member.
-    - User CANNOT leave:
-      - The global league (is_global = true).
-      - A league they own (owner must delete the league instead).
-    - Leaving is allowed at any time (no playoffs gating).
-    """
-    user_info = getattr(request, "user", None) or {}
-    user_id = user_info.get("user_id")
-
-    if not user_id:
-        return jsonify({"error": "Unauthorized"}), 401
-
-    # Validate league_id format (UUID)
-    if not is_uuid(league_id):
-        return jsonify({"error": "Invalid league id"}), 400
-
-    try:
-        # 1) Load league
-        league_res = (
-            supabase.table("leagues")
-            .select("id, name, owner_user_id, is_global, created_at, updated_at")
-            .eq("id", league_id)
-            .limit(1)
-            .execute()
-        )
-        league_rows = league_res.data or []
-        if not league_rows:
-            return jsonify({"error": "League not found"}), 404
-
-        league = league_rows[0]
-
-        # Cannot leave the global league
-        if league.get("is_global"):
-            return jsonify({"error": "You cannot leave the global league."}), 400
-
-        # Owner cannot leave their own league
-        if league.get("owner_user_id") == user_id:
-            return jsonify(
-                {
-                    "error": "The owner cannot leave their own league. "
-                             "Delete the league instead."
-                }
-            ), 400
-
-        # 2) Check membership
-        mem_res = (
-            supabase.table("league_members")
-            .select("id, joined_at")
-            .eq("league_id", league["id"])
-            .eq("user_id", user_id)
-            .limit(1)
-            .execute()
-        )
-        mem_rows = mem_res.data or []
-        if not mem_rows:
-            return jsonify({"error": "You are not a member of this league."}), 400
-
-        membership = mem_rows[0]
-
-        # 3) Delete membership
-        supabase.table("league_members") \
-            .delete() \
-            .eq("league_id", league["id"]) \
-            .eq("user_id", user_id) \
-            .execute()
-
-        # 4) Build response (basic league info + membership info that was removed)
-        resp = {
-            "id": league["id"],
-            "name": league.get("name"),
-            "owner_user_id": league.get("owner_user_id"),
-            "is_global": league.get("is_global", False),
-            "created_at": league.get("created_at"),
-            "updated_at": league.get("updated_at"),
-            "was_member": True,
-            "left_at": now_utc().isoformat(),
-            "joined_at": membership.get("joined_at"),
-        }
-
-        return jsonify({"league": resp}), 200
-
-    except Exception as e:
-        if ENABLE_DEBUG_LOGS:
-            try:
-                safe_print(
-                    "🔴 Error in GET /leagues/<id>/members:",
-                    type(e).__name__,
-                    str(e),
-                )
-            except Exception:
-                pass
-
-        # Fail-open: empty members, minimal league info so the UI doesn't crash
-        return jsonify(
-            {
-                "league": {
-                    "id": league_id,
-                    "name": None,
-                    "owner_user_id": None,
-                    "is_global": False,
-                    "created_at": None,
-                    "updated_at": None,
-                },
-                "members": [],
-            }
-        ), 200
+    return _league_lifecycle_action("leave", league_id)
 
 
 
 @app.route("/leagues/<league_id>", methods=["DELETE"])
 @require_auth
 def delete_league(league_id):
-    """
-    Delete a private league.
-
-    Rules:
-    - Requires authentication.
-    - Only the league owner can delete the league.
-    - The global league (is_global = true) cannot be deleted.
-    - Deletion is allowed at any time (before/after playoffs).
-    - Deleting the league will also remove all its memberships via ON DELETE CASCADE.
-    """
-    user_info = getattr(request, "user", None) or {}
-    user_id = user_info.get("user_id")
-
-    if not user_id:
-        return jsonify({"error": "Unauthorized"}), 401
-
-    # Validate league_id format
-    if not is_uuid(league_id):
-        return jsonify({"error": "Invalid league id"}), 400
-
-    try:
-        # 1) Load league
-        league_res = (
-            supabase.table("leagues")
-            .select("id, name, owner_user_id, is_global, created_at, updated_at")
-            .eq("id", league_id)
-            .limit(1)
-            .execute()
-        )
-        league_rows = league_res.data or []
-        if not league_rows:
-            return jsonify({"error": "League not found"}), 404
-
-        league = league_rows[0]
-
-        # Cannot delete global league
-        if league.get("is_global"):
-            return jsonify({"error": "You cannot delete the global league."}), 400
-
-        # Only owner can delete
-        if league.get("owner_user_id") != user_id:
-            return jsonify({"error": "Only the league owner can delete this league."}), 403
-
-        # 2) Delete league (memberships will be removed via ON DELETE CASCADE)
-        supabase.table("leagues").delete().eq("id", league["id"]).execute()
-
-        # 3) Build response with info about deleted league
-        resp = {
-            "id": league["id"],
-            "name": league.get("name"),
-            "owner_user_id": league.get("owner_user_id"),
-            "is_global": league.get("is_global", False),
-            "created_at": league.get("created_at"),
-            "updated_at": league.get("updated_at"),
-            "deleted": True,
-            "deleted_at": now_utc().isoformat(),
-        }
-
-        return jsonify({"league": resp}), 200
-
-    except Exception as e:
-        if ENABLE_DEBUG_LOGS:
-            safe_print("🔴 Error in DELETE /leagues/<id>:", type(e).__name__, str(e))
-        return jsonify({"error": "Unexpected error deleting league"}), 500
+    return _league_lifecycle_action("delete", league_id)
 
 
 @app.route("/leagues/<league_id>/members", methods=["GET"])
@@ -4324,6 +3926,53 @@ def get_league_members(league_id):
         if ENABLE_DEBUG_LOGS:
             safe_print("🔴 Error in GET /leagues/<id>/members:", type(e).__name__, str(e))
         return jsonify({"error": "Unexpected error"}), 500
+
+
+def _league_lifecycle_action(action, league_id=None, target_user_id=None):
+    from league_service import mutate, LeagueError
+
+    if league_id is not None and not is_uuid(league_id):
+        return jsonify({"error": "Invalid league id"}), 400
+    data = request.get_json(silent=True)
+    if data is None:
+        data = {}
+    if action == "transfer" and isinstance(data, dict):
+        target_user_id = data.get("target_user_id")
+    if action in {"transfer", "remove"} and not is_uuid(target_user_id):
+        return jsonify({"error": "Invalid target user id"}), 400
+    try:
+        result = mutate(
+            supabase,
+            action,
+            (request.user or {}).get("user_id"),
+            lid=league_id,
+            target=target_user_id,
+            body=data,
+            rounds=BCRYPT_ROUNDS,
+        )
+        return jsonify(result), result.get("status", 200)
+    except LeagueError as error:
+        return jsonify({"error": str(error)}), error.status
+    except Exception:
+        return jsonify({"error": "League operation unavailable; please retry"}), 503
+
+
+@app.route("/leagues/<league_id>", methods=["PATCH"])
+@require_auth
+def update_league(league_id):
+    return _league_lifecycle_action("settings", league_id)
+
+
+@app.route("/leagues/<league_id>/ownership", methods=["POST"])
+@require_auth
+def transfer_league_owner(league_id):
+    return _league_lifecycle_action("transfer", league_id)
+
+
+@app.route("/leagues/<league_id>/members/<target_user_id>", methods=["DELETE"])
+@require_auth
+def remove_league_member(league_id, target_user_id):
+    return _league_lifecycle_action("remove", league_id, target_user_id)
 
 
 # --------------------------------------------------------

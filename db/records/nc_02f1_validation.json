@@ -1,0 +1,364 @@
+{
+  "phase": "NC-02F1",
+  "passed": true,
+  "tests_run": 211,
+  "unique_applicable_backend_tests": 211,
+  "failures": 0,
+  "errors": 0,
+  "initial_run": "db/records/nc_02f1_initial_validation.json",
+  "initial_failures": 3,
+  "initial_errors": 0,
+  "corrective_recheck": "db/records/nc_02f1_recheck_validation.json",
+  "recheck_tests_run": 3,
+  "validation_model": "One full applicable run plus only three corrected-case reruns. Original evidence is retained.",
+  "corrections": [
+    "128-character Unicode fixture restored from encoding corruption; policy unchanged",
+    "New synthetic season moved into normal bracket creation window; production bracket timing unchanged",
+    "Historical error matrix explicitly adapted to malformed-object 400 and server confirmation flag"
+  ],
+  "superseded_assertions": [
+    {
+      "test": "nc02f1_history_snapshot.HistoryAcceptance.test_d2_failure_is_never_zero_and_gate_stays_closed",
+      "reason": "Superseded NC-02F1 atomic RPC, completed-master and retention contract; replaced by E live/DB proof. Historical evidence unchanged."
+    },
+    {
+      "test": "nc02f1_history_snapshot.HistoryAcceptance.test_d2_later_cleanup_failure_preserves_final_snapshot",
+      "reason": "Superseded NC-02F1 atomic RPC, completed-master and retention contract; replaced by E live/DB proof. Historical evidence unchanged."
+    },
+    {
+      "test": "nc02f1_history_snapshot.HistoryAcceptance.test_d2_legacy_success_structured_failure_blocks_cleanup",
+      "reason": "Superseded NC-02F1 atomic RPC, completed-master and retention contract; replaced by E live/DB proof. Historical evidence unchanged."
+    },
+    {
+      "test": "nc02f1_history_snapshot.HistoryAcceptance.test_d2_zero_participation_verified_final_repeat_and_cleanup",
+      "reason": "Superseded NC-02F1 atomic RPC, completed-master and retention contract; replaced by E live/DB proof. Historical evidence unchanged."
+    },
+    {
+      "test": "nc02f1_season_transition.SeasonTransitionAcceptance.test_c3_existing_target_refused_before_snapshot",
+      "reason": "Superseded NC-02F1 atomic RPC, completed-master and retention contract; replaced by E live/DB proof. Historical evidence unchanged."
+    },
+    {
+      "test": "nc02f1_season_transition.SeasonTransitionAcceptance.test_c3_finalization_failure_exposes_earlier_commits_without_split",
+      "reason": "Superseded NC-02F1 atomic RPC, completed-master and retention contract; replaced by E live/DB proof. Historical evidence unchanged."
+    },
+    {
+      "test": "nc02f1_season_transition.SeasonTransitionAcceptance.test_c3_invalid_target_and_auth_fail_before_mutation",
+      "reason": "Superseded NC-02F1 atomic RPC, completed-master and retention contract; replaced by E live/DB proof. Historical evidence unchanged."
+    },
+    {
+      "test": "nc02f1_season_transition.SeasonTransitionAcceptance.test_c3_season_insert_failure_preserves_pointer_and_standings",
+      "reason": "Superseded NC-02F1 atomic RPC, completed-master and retention contract; replaced by E live/DB proof. Historical evidence unchanged."
+    },
+    {
+      "test": "nc02f1_season_transition.SeasonTransitionAcceptance.test_c3_snapshot_failure_preserves_pointer_and_standings",
+      "reason": "Superseded NC-02F1 atomic RPC, completed-master and retention contract; replaced by E live/DB proof. Historical evidence unchanged."
+    },
+    {
+      "test": "nc02f1_season_transition.SeasonTransitionAcceptance.test_c3_source_conflict_fails_closed_before_snapshot",
+      "reason": "Superseded NC-02F1 atomic RPC, completed-master and retention contract; replaced by E live/DB proof. Historical evidence unchanged."
+    },
+    {
+      "test": "nc02f1_season_transition.SeasonTransitionAcceptance.test_c3_success_consumers_history_refresh_freeze_and_repeat",
+      "reason": "Superseded NC-02F1 atomic RPC, completed-master and retention contract; replaced by E live/DB proof. Historical evidence unchanged."
+    },
+    {
+      "test": "nc02f1_league_access.CurrentLeagueBehavior.current_behavior__league__admin_join_delete",
+      "reason": "Approved L1-L19 F1 contract replaces old timing, minimum length, already-member error, unconfirmed delete and invalid ownerless fixture assumptions; covered by league_lifecycle live acceptance. Original evidence unchanged."
+    },
+    {
+      "test": "nc02f1_league_access.CurrentLeagueBehavior.current_behavior__league__creation_validation",
+      "reason": "Approved L1-L19 F1 contract replaces old timing, minimum length, already-member error, unconfirmed delete and invalid ownerless fixture assumptions; covered by league_lifecycle live acceptance. Original evidence unchanged."
+    },
+    {
+      "test": "nc02f1_league_access.CurrentLeagueBehavior.current_behavior__league__delete",
+      "reason": "Approved L1-L19 F1 contract replaces old timing, minimum length, already-member error, unconfirmed delete and invalid ownerless fixture assumptions; covered by league_lifecycle live acceptance. Original evidence unchanged."
+    },
+    {
+      "test": "nc02f1_league_access.CurrentLeagueBehavior.current_behavior__league__empty_final_leave",
+      "reason": "Approved L1-L19 F1 contract replaces old timing, minimum length, already-member error, unconfirmed delete and invalid ownerless fixture assumptions; covered by league_lifecycle live acceptance. Original evidence unchanged."
+    },
+    {
+      "test": "nc02f1_league_access.CurrentLeagueBehavior.current_behavior__league__join",
+      "reason": "Approved L1-L19 F1 contract replaces old timing, minimum length, already-member error, unconfirmed delete and invalid ownerless fixture assumptions; covered by league_lifecycle live acceptance. Original evidence unchanged."
+    },
+    {
+      "test": "nc02f1_league_access.CurrentLeagueBehavior.current_behavior__league__leave",
+      "reason": "Approved L1-L19 F1 contract replaces old timing, minimum length, already-member error, unconfirmed delete and invalid ownerless fixture assumptions; covered by league_lifecycle live acceptance. Original evidence unchanged."
+    },
+    {
+      "test": "nc02f1_league_access.CurrentLeagueBehavior.current_behavior__league__owner_not_member",
+      "reason": "Approved L1-L19 F1 contract replaces old timing, minimum length, already-member error, unconfirmed delete and invalid ownerless fixture assumptions; covered by league_lifecycle live acceptance. Original evidence unchanged."
+    },
+    {
+      "test": "nc02f1_league_access.CurrentLeagueBehavior.current_behavior__league__timing",
+      "reason": "Approved L1-L19 F1 contract replaces old timing, minimum length, already-member error, unconfirmed delete and invalid ownerless fixture assumptions; covered by league_lifecycle live acceptance. Original evidence unchanged."
+    },
+    {
+      "test": "nc02f1_league_static.CurrentStaticLeagueBehavior.current_behavior__league__failure_paths",
+      "reason": "Approved L1-L19 F1 contract replaces old timing, minimum length, already-member error, unconfirmed delete and invalid ownerless fixture assumptions; covered by league_lifecycle live acceptance. Original evidence unchanged."
+    },
+    {
+      "test": "nc02f1_league_static.CurrentStaticLeagueBehavior.current_behavior__league__frontend_members",
+      "reason": "Approved L1-L19 F1 contract replaces old timing, minimum length, already-member error, unconfirmed delete and invalid ownerless fixture assumptions; covered by league_lifecycle live acceptance. Original evidence unchanged."
+    },
+    {
+      "test": "nc02f1_league_static.CurrentStaticLeagueBehavior.current_behavior__league__frontend_owner",
+      "reason": "Approved L1-L19 F1 contract replaces old timing, minimum length, already-member error, unconfirmed delete and invalid ownerless fixture assumptions; covered by league_lifecycle live acceptance. Original evidence unchanged."
+    },
+    {
+      "test": "nc02f1_league_static.CurrentStaticLeagueBehavior.current_behavior__league__password_source",
+      "reason": "Approved L1-L19 F1 contract replaces old timing, minimum length, already-member error, unconfirmed delete and invalid ownerless fixture assumptions; covered by league_lifecycle live acceptance. Original evidence unchanged."
+    },
+    {
+      "test": "nc02f1_league_static.CurrentStaticLeagueBehavior.current_behavior__league__route_absences",
+      "reason": "Approved L1-L19 F1 contract replaces old timing, minimum length, already-member error, unconfirmed delete and invalid ownerless fixture assumptions; covered by league_lifecycle live acceptance. Original evidence unchanged."
+    },
+    {
+      "test": "nc02f1_privacy_access.PrivacyAccessAcceptance.test_owner_without_membership_all_private_surfaces",
+      "reason": "Approved L1-L19 F1 contract replaces old timing, minimum length, already-member error, unconfirmed delete and invalid ownerless fixture assumptions; covered by league_lifecycle live acceptance. Original evidence unchanged."
+    },
+    {
+      "test": "nc02f1_operations_static.CurrentStaticOperations.current_behavior__rollover__season_model",
+      "reason": "Superseded NC-02F1 atomic RPC, completed-master and retention contract; replaced by E live/DB proof. Historical evidence unchanged."
+    },
+    {
+      "test": "nc02f1_operations_offline.CurrentOfflineOperations.current_behavior__rollover__failures",
+      "reason": "Superseded NC-02F1 atomic RPC, completed-master and retention contract; replaced by E live/DB proof. Historical evidence unchanged."
+    },
+    {
+      "test": "nc02f1_operations_offline.CurrentOfflineOperations.current_behavior__rollover__order",
+      "reason": "Superseded NC-02F1 atomic RPC, completed-master and retention contract; replaced by E live/DB proof. Historical evidence unchanged."
+    },
+    {
+      "test": "nc02f1_operations_offline.CurrentOfflineOperations.current_behavior__rollover__partial_snapshot",
+      "reason": "Superseded NC-02F1 atomic RPC, completed-master and retention contract; replaced by E live/DB proof. Historical evidence unchanged."
+    },
+    {
+      "test": "nc02f1_operations_offline.CurrentOfflineOperations.current_behavior__rollover__preconditions",
+      "reason": "Superseded NC-02F1 atomic RPC, completed-master and retention contract; replaced by E live/DB proof. Historical evidence unchanged."
+    },
+    {
+      "test": "nc02f1_operations_offline.CurrentOfflineOperations.current_behavior__rollover__repeat",
+      "reason": "Superseded NC-02F1 atomic RPC, completed-master and retention contract; replaced by E live/DB proof. Historical evidence unchanged."
+    },
+    {
+      "test": "nc02f1_operations_offline.CurrentOfflineOperations.current_behavior__rollover__snapshot_failure",
+      "reason": "Superseded NC-02F1 atomic RPC, completed-master and retention contract; replaced by E live/DB proof. Historical evidence unchanged."
+    }
+  ],
+  "selected_case_ids": [
+    "nc02f1_league_lifecycle.LeagueLifecycleAcceptance.test_f1_admin_and_nonowner_no_owner_capabilities",
+    "nc02f1_league_lifecycle.LeagueLifecycleAcceptance.test_f1_create_join_all_timing_windows_and_idempotency",
+    "nc02f1_league_lifecycle.LeagueLifecycleAcceptance.test_f1_discovery_minimal_and_private_member_access",
+    "nc02f1_league_lifecycle.LeagueLifecycleAcceptance.test_f1_leave_kick_delete_keep_competition_and_scope_live",
+    "nc02f1_league_lifecycle.LeagueLifecycleAcceptance.test_f1_names_uniqueness_normalization_reuse_and_validation",
+    "nc02f1_league_lifecycle.LeagueLifecycleAcceptance.test_f1_owner_transfer_leave_and_rejections",
+    "nc02f1_league_lifecycle.LeagueLifecycleAcceptance.test_f1_password_privacy_switches_members_and_long_passwords",
+    "nc02f1_league_lifecycle.LeagueLifecycleAcceptance.test_f1_real_rollover_league_owner_membership_persistence",
+    "nc02f1_rollover_atomic.AtomicRolloverAcceptance.test_e_calculation_failure_is_not_zero_and_rpc_failure_sanitized",
+    "nc02f1_rollover_atomic.AtomicRolloverAcceptance.test_e_full_success_history_readonly_new_refresh_and_repeat",
+    "nc02f1_rollover_atomic.AtomicRolloverAcceptance.test_e_preconditions_authorization_and_complete_master_gate",
+    "nc02f1_rollover_atomic.AtomicRolloverAcceptance.test_e_zero_competitors_requires_complete_master_and_reuses_snapshot",
+    "nc02f1_history_snapshot.HistoryAcceptance.test_d2_admin_only_snapshot_and_legacy_structure_requires_review",
+    "nc02f1_history_snapshot.HistoryAcceptance.test_d2_changed_source_during_snapshot_is_refused",
+    "nc02f1_history_snapshot.HistoryAcceptance.test_d2_fresh_scores_stored_ties_public_privacy_and_repeat",
+    "nc02f1_history_snapshot.HistoryAcceptance.test_d2_history_survives_live_mutation_and_canonical_change",
+    "nc02f1_scoring_recompute.ScoringAcceptance.test_d1_auto_winner_undo_count_and_failed_ordinary_no_recompute",
+    "nc02f1_scoring_recompute.ScoringAcceptance.test_d1_canonical_master_spoofs_and_invalid_pointers_preserve_scores",
+    "nc02f1_scoring_recompute.ScoringAcceptance.test_d1_changed_source_rejects_entire_publication",
+    "nc02f1_scoring_recompute.ScoringAcceptance.test_d1_committed_master_recompute_failure_last_good_then_manual_recovery",
+    "nc02f1_scoring_recompute.ScoringAcceptance.test_d1_live_ranks_and_stored_bonus_components",
+    "nc02f1_scoring_recompute.ScoringAcceptance.test_d1_manual_complete_set_idempotence_and_eligibility",
+    "nc02f1_scoring_recompute.ScoringAcceptance.test_d1_master_replacement_recomputes_new_truth_and_failure_recovers",
+    "nc02f1_standings_refresh.StandingsAcceptance.test_c2_authorization_and_retired_bypasses",
+    "nc02f1_standings_refresh.StandingsAcceptance.test_c2_freeze_at_after_all_paths_no_fetch",
+    "nc02f1_standings_refresh.StandingsAcceptance.test_c2_freeze_distinct_from_bracket_lock",
+    "nc02f1_standings_refresh.StandingsAcceptance.test_c2_invalid_data_and_provider_failures_preserve_rows",
+    "nc02f1_standings_refresh.StandingsAcceptance.test_c2_success_scheduled_admin_cron_equivalent",
+    "nc02f1_canonical_source.CanonicalAcceptance.test_c1_explicit_switch_visible_without_restart",
+    "nc02f1_canonical_source.CanonicalAcceptance.test_c1_missing_state_503_and_restored_next_request",
+    "nc02f1_canonical_source.CanonicalAcceptance.test_c1_status_and_bracket_share_canonical_identity",
+    "nc02f1_bracket_lifecycle.BracketLifecycleAcceptance.test_b3_cross_season_and_same_season_uniqueness",
+    "nc02f1_bracket_lifecycle.BracketLifecycleAcceptance.test_b3_current_ids_not_exposed_through_public_history",
+    "nc02f1_bracket_lifecycle.BracketLifecycleAcceptance.test_b3_historical_draft_owner_private_no_public_leak",
+    "nc02f1_bracket_lifecycle.BracketLifecycleAcceptance.test_b3_historical_submitted_public_safe_and_immutable",
+    "nc02f1_bracket_lifecycle.BracketLifecycleAcceptance.test_b3_master_create_explicit_replace_and_delete_protection",
+    "nc02f1_bracket_lifecycle.BracketLifecycleAcceptance.test_b3_nonowner_and_admin_arbitrary_delete_denied",
+    "nc02f1_bracket_lifecycle.BracketLifecycleAcceptance.test_b3_ordinary_replacement_and_malformed_intent_refused",
+    "nc02f1_bracket_lifecycle.BracketLifecycleAcceptance.test_b3_postlock_draft_delete_and_no_recreation",
+    "nc02f1_bracket_lifecycle.BracketLifecycleAcceptance.test_b3_postlock_master_replace_other_season_preserved",
+    "nc02f1_bracket_lifecycle.BracketLifecycleAcceptance.test_b3_predeadline_delete_recreate_and_closed_window",
+    "nc02f1_bracket_lifecycle.BracketLifecycleAcceptance.test_b3_replacement_failure_rolls_back_retirement_pointer_and_graph",
+    "nc02f1_bracket_lifecycle.BracketLifecycleAcceptance.test_b3_submitted_delete_at_and_after_deadline_preserves_all_data",
+    "nc02f1_bracket_validity.BracketValidityAcceptance.test_b2_counts_both_routes_and_playin",
+    "nc02f1_bracket_validity.BracketValidityAcceptance.test_b2_finals_dependency",
+    "nc02f1_bracket_validity.BracketValidityAcceptance.test_b2_master_participants_and_incremental_save",
+    "nc02f1_bracket_validity.BracketValidityAcceptance.test_b2_master_recursive_change",
+    "nc02f1_bracket_validity.BracketValidityAcceptance.test_b2_master_recursive_undo",
+    "nc02f1_bracket_validity.BracketValidityAcceptance.test_b2_ordinary_participants_and_draft_progression",
+    "nc02f1_bracket_validity.BracketValidityAcceptance.test_b2_playin_dual_feed",
+    "nc02f1_bracket_validity.BracketValidityAcceptance.test_b2_submission_rejects_faults_and_accepts_only_complete",
+    "nc02f1_bracket_validity.BracketValidityAcceptance.test_b2_undo_recursive_opponent_dependency",
+    "nc02f1_bracket_validity.BracketValidityAcceptance.test_b2_winner_change_recursive_opponent_dependency",
+    "nc02f1_bracket_lock.BracketLockAcceptance.test_admin_own_ordinary_denied",
+    "nc02f1_bracket_lock.BracketLockAcceptance.test_create_hard_lock_overrides_inconsistent_open_window",
+    "nc02f1_bracket_lock.BracketLockAcceptance.test_draft_after_boundary_frozen_readable_ineligible",
+    "nc02f1_bracket_lock.BracketLockAcceptance.test_draft_at_boundary_frozen_readable_ineligible",
+    "nc02f1_bracket_lock.BracketLockAcceptance.test_nonadmin_master_owner_denied_admin_postlock_permitted",
+    "nc02f1_bracket_lock.BracketLockAcceptance.test_nonowner_and_admin_ordinary_content_denied",
+    "nc02f1_bracket_lock.BracketLockAcceptance.test_ordinary_before_boundary_all_content_and_resave",
+    "nc02f1_bracket_lock.BracketLockAcceptance.test_saved_at_boundary_no_mutation_or_invalidation",
+    "nc02f1_auth_access.CurrentAuthBehavior.current_behavior__auth__admin_boundary",
+    "nc02f1_auth_access.CurrentAuthBehavior.current_behavior__auth__admin_claim_db_recheck",
+    "nc02f1_auth_access.CurrentAuthBehavior.current_behavior__auth__cross_user_draft_boundary",
+    "nc02f1_auth_access.CurrentAuthBehavior.current_behavior__auth__cross_user_saved_owner_display",
+    "nc02f1_auth_access.CurrentAuthBehavior.current_behavior__auth__duplicate_email",
+    "nc02f1_auth_access.CurrentAuthBehavior.current_behavior__auth__duplicate_username",
+    "nc02f1_auth_access.CurrentAuthBehavior.current_behavior__auth__fixture_username_login",
+    "nc02f1_auth_access.CurrentAuthBehavior.current_behavior__auth__login_failures",
+    "nc02f1_auth_access.CurrentAuthBehavior.current_behavior__auth__login_metadata",
+    "nc02f1_auth_access.CurrentAuthBehavior.current_behavior__auth__password_whitespace",
+    "nc02f1_auth_access.CurrentAuthBehavior.current_behavior__auth__public_health",
+    "nc02f1_auth_access.CurrentAuthBehavior.current_behavior__auth__registration_invalid_fields",
+    "nc02f1_auth_access.CurrentAuthBehavior.current_behavior__auth__registration_nonobject",
+    "nc02f1_auth_access.CurrentAuthBehavior.current_behavior__auth__registration_password_policy",
+    "nc02f1_auth_access.CurrentAuthBehavior.current_behavior__auth__required_identity_access",
+    "nc02f1_auth_access.CurrentAuthBehavior.current_behavior__auth__reset_completion_and_sessions",
+    "nc02f1_auth_access.CurrentAuthBehavior.current_behavior__auth__reset_delivery_failure",
+    "nc02f1_auth_access.CurrentAuthBehavior.current_behavior__auth__reset_expired_invalid",
+    "nc02f1_auth_access.CurrentAuthBehavior.current_behavior__auth__reset_invalid_payload",
+    "nc02f1_auth_access.CurrentAuthBehavior.current_behavior__auth__reset_request_metadata",
+    "nc02f1_auth_access.CurrentAuthBehavior.current_behavior__auth__reset_request_repeated",
+    "nc02f1_auth_access.CurrentAuthBehavior.current_behavior__auth__reset_request_unknown",
+    "nc02f1_auth_access.CurrentAuthBehavior.current_behavior__auth__test_email_boundary",
+    "nc02f1_auth_access.CurrentAuthBehavior.current_behavior__auth__username_case_resolution",
+    "nc02f1_auth_access.CurrentAuthBehavior.current_behavior__auth__valid_registration",
+    "nc02f1_auth_static.CurrentStaticAuthBehavior.current_behavior__auth__account_route_absence",
+    "nc02f1_auth_static.CurrentStaticAuthBehavior.current_behavior__auth__display_fields_static",
+    "nc02f1_auth_static.CurrentStaticAuthBehavior.current_behavior__auth__frontend_admin_display",
+    "nc02f1_auth_static.CurrentStaticAuthBehavior.current_behavior__auth__frontend_login_register_flow",
+    "nc02f1_auth_static.CurrentStaticAuthBehavior.current_behavior__auth__frontend_reset_request_only",
+    "nc02f1_auth_static.CurrentStaticAuthBehavior.current_behavior__auth__frontend_storage_logout_guard",
+    "nc02f1_auth_static.CurrentStaticAuthBehavior.current_behavior__auth__implementation_defaults",
+    "nc02f1_auth_static.CurrentStaticAuthBehavior.current_behavior__auth__rate_limit_static",
+    "nc02f1_bracket_access.CurrentBracketBehavior.current_behavior__bracket__admin_arbitrary_mutations",
+    "nc02f1_bracket_access.CurrentBracketBehavior.current_behavior__bracket__admin_creation_bypass",
+    "nc02f1_bracket_access.CurrentBracketBehavior.current_behavior__bracket__admin_draft_visibility",
+    "nc02f1_bracket_access.CurrentBracketBehavior.current_behavior__bracket__creation_payload",
+    "nc02f1_bracket_access.CurrentBracketBehavior.current_behavior__bracket__creation_windows",
+    "nc02f1_bracket_access.CurrentBracketBehavior.current_behavior__bracket__delete_recreate",
+    "nc02f1_bracket_access.CurrentBracketBehavior.current_behavior__bracket__edge_errors",
+    "nc02f1_bracket_access.CurrentBracketBehavior.current_behavior__bracket__email_serialization",
+    "nc02f1_bracket_access.CurrentBracketBehavior.current_behavior__bracket__game_count_values",
+    "nc02f1_bracket_access.CurrentBracketBehavior.current_behavior__bracket__games_only_saved_edit",
+    "nc02f1_bracket_access.CurrentBracketBehavior.current_behavior__bracket__historical_boundaries",
+    "nc02f1_bracket_access.CurrentBracketBehavior.current_behavior__bracket__historical_creation_constraint",
+    "nc02f1_bracket_access.CurrentBracketBehavior.current_behavior__bracket__master_delete",
+    "nc02f1_bracket_access.CurrentBracketBehavior.current_behavior__bracket__master_mutations",
+    "nc02f1_bracket_access.CurrentBracketBehavior.current_behavior__bracket__master_replacement",
+    "nc02f1_bracket_access.CurrentBracketBehavior.current_behavior__bracket__nonowner_mutations",
+    "nc02f1_bracket_access.CurrentBracketBehavior.current_behavior__bracket__ordinary_creation",
+    "nc02f1_bracket_access.CurrentBracketBehavior.current_behavior__bracket__owner_undo",
+    "nc02f1_bracket_access.CurrentBracketBehavior.current_behavior__bracket__partial_graph_save",
+    "nc02f1_bracket_access.CurrentBracketBehavior.current_behavior__bracket__postlock_content",
+    "nc02f1_bracket_access.CurrentBracketBehavior.current_behavior__bracket__postlock_save",
+    "nc02f1_bracket_access.CurrentBracketBehavior.current_behavior__bracket__prediction_validation",
+    "nc02f1_bracket_access.CurrentBracketBehavior.current_behavior__bracket__save_edit_resubmit",
+    "nc02f1_bracket_access.CurrentBracketBehavior.current_behavior__bracket__undo_graph",
+    "nc02f1_bracket_access.CurrentBracketBehavior.current_behavior__bracket__visibility_boundary",
+    "nc02f1_bracket_access.CurrentBracketBehavior.current_behavior__bracket__winner_change_graph",
+    "nc02f1_bracket_access.CurrentBracketBehavior.current_behavior__bracket__wrong_bracket_deleted",
+    "nc02f1_bracket_static.CurrentStaticBracketBehavior.current_behavior__bracket__frontend_controls",
+    "nc02f1_bracket_static.CurrentStaticBracketBehavior.current_behavior__bracket__frontend_creation",
+    "nc02f1_bracket_static.CurrentStaticBracketBehavior.current_behavior__bracket__frontend_lock",
+    "nc02f1_bracket_static.CurrentStaticBracketBehavior.current_behavior__bracket__frontend_undo",
+    "nc02f1_bracket_static.CurrentStaticBracketBehavior.current_behavior__bracket__history_source",
+    "nc02f1_bracket_static.CurrentStaticBracketBehavior.current_behavior__bracket__save_completeness_static",
+    "nc02f1_bracket_static.CurrentStaticBracketBehavior.current_behavior__bracket__schema_constraints",
+    "nc02f1_bracket_static.CurrentStaticBracketBehavior.current_behavior__bracket__state_model",
+    "nc02f1_bracket_static.CurrentStaticBracketBehavior.current_behavior__bracket__timing",
+    "nc02f1_bracket_static.CurrentStaticBracketBehavior.current_behavior__bracket__triggers_rpc",
+    "nc02f1_league_access.CurrentLeagueBehavior.current_behavior__league__admin_private_bracket",
+    "nc02f1_league_access.CurrentLeagueBehavior.current_behavior__league__creation",
+    "nc02f1_league_access.CurrentLeagueBehavior.current_behavior__league__creation_forged_fields",
+    "nc02f1_league_access.CurrentLeagueBehavior.current_behavior__league__discovery",
+    "nc02f1_league_access.CurrentLeagueBehavior.current_behavior__league__draft_saved_visibility",
+    "nc02f1_league_access.CurrentLeagueBehavior.current_behavior__league__draft_scored_leaderboard",
+    "nc02f1_league_access.CurrentLeagueBehavior.current_behavior__league__errors",
+    "nc02f1_league_access.CurrentLeagueBehavior.current_behavior__league__global",
+    "nc02f1_league_access.CurrentLeagueBehavior.current_behavior__league__historical",
+    "nc02f1_league_access.CurrentLeagueBehavior.current_behavior__league__leaderboard_private_surface",
+    "nc02f1_league_access.CurrentLeagueBehavior.current_behavior__league__member_access",
+    "nc02f1_league_access.CurrentLeagueBehavior.current_behavior__league__member_email",
+    "nc02f1_league_access.CurrentLeagueBehavior.current_behavior__league__missing_scores",
+    "nc02f1_league_access.CurrentLeagueBehavior.current_behavior__league__own_list_hash_surface",
+    "nc02f1_league_access.CurrentLeagueBehavior.current_behavior__league__password_normalization",
+    "nc02f1_league_access.CurrentLeagueBehavior.current_behavior__league__private_bracket_bypass",
+    "nc02f1_league_access.CurrentLeagueBehavior.current_behavior__league__stats_admin_bypass",
+    "nc02f1_league_access.CurrentLeagueBehavior.current_behavior__league__stats_membership",
+    "nc02f1_league_static.CurrentStaticLeagueBehavior.current_behavior__league__frontend_forms",
+    "nc02f1_league_static.CurrentStaticLeagueBehavior.current_behavior__league__frontend_leaderboard",
+    "nc02f1_league_static.CurrentStaticLeagueBehavior.current_behavior__league__history_source",
+    "nc02f1_league_static.CurrentStaticLeagueBehavior.current_behavior__league__schema",
+    "nc02f1_scoring_live.CurrentLiveScoring.current_behavior__history__reads",
+    "nc02f1_scoring_live.CurrentLiveScoring.current_behavior__scoring__deleted",
+    "nc02f1_scoring_live.CurrentLiveScoring.current_behavior__scoring__draft",
+    "nc02f1_scoring_live.CurrentLiveScoring.current_behavior__scoring__empty",
+    "nc02f1_scoring_live.CurrentLiveScoring.current_behavior__scoring__global",
+    "nc02f1_scoring_live.CurrentLiveScoring.current_behavior__scoring__hits_priority",
+    "nc02f1_scoring_live.CurrentLiveScoring.current_behavior__scoring__job_refusal",
+    "nc02f1_scoring_live.CurrentLiveScoring.current_behavior__scoring__tie",
+    "nc02f1_scoring_static.CurrentStaticScoring.current_behavior__history__frontend",
+    "nc02f1_scoring_static.CurrentStaticScoring.current_behavior__history__retention",
+    "nc02f1_scoring_static.CurrentStaticScoring.current_behavior__history__snapshot_source",
+    "nc02f1_scoring_static.CurrentStaticScoring.current_behavior__history__sorting",
+    "nc02f1_scoring_static.CurrentStaticScoring.current_behavior__history__storage",
+    "nc02f1_scoring_static.CurrentStaticScoring.current_behavior__scoring__league_surface",
+    "nc02f1_scoring_static.CurrentStaticScoring.current_behavior__scoring__master_source",
+    "nc02f1_scoring_static.CurrentStaticScoring.current_behavior__scoring__recompute_source",
+    "nc02f1_scoring_offline.CurrentOfflineScoring.current_behavior__history__snapshot_empty",
+    "nc02f1_scoring_offline.CurrentOfflineScoring.current_behavior__history__snapshot_repeat",
+    "nc02f1_scoring_offline.CurrentOfflineScoring.current_behavior__history__snapshot_tie",
+    "nc02f1_scoring_offline.CurrentOfflineScoring.current_behavior__scoring__base_points",
+    "nc02f1_scoring_offline.CurrentOfflineScoring.current_behavior__scoring__champion_bonus",
+    "nc02f1_scoring_offline.CurrentOfflineScoring.current_behavior__scoring__counts",
+    "nc02f1_scoring_offline.CurrentOfflineScoring.current_behavior__scoring__edges",
+    "nc02f1_scoring_offline.CurrentOfflineScoring.current_behavior__scoring__finalist_bonus",
+    "nc02f1_scoring_offline.CurrentOfflineScoring.current_behavior__scoring__upsert",
+    "nc02f1_privacy_access.PrivacyAccessAcceptance.test_discovery_and_boolean_password_state",
+    "nc02f1_privacy_access.PrivacyAccessAcceptance.test_membership_removal_takes_effect_without_new_token",
+    "nc02f1_privacy_access.PrivacyAccessAcceptance.test_private_direct_api_role_matrix",
+    "nc02f1_privacy_access.PrivacyAccessAcceptance.test_public_access_and_general_saved_visibility_preserved",
+    "nc02f1_privacy_access.PrivacyAccessAcceptance.test_public_user_allowlist_and_nested_bracket_payloads",
+    "nc02f1_privacy_access.PrivacyAccessAcceptance.test_scoped_error_contracts",
+    "nc02f1_operations_live.CurrentLiveOperations.current_behavior__admin_ops__diagnostics",
+    "nc02f1_operations_live.CurrentLiveOperations.current_behavior__admin_ops__refusals",
+    "nc02f1_operations_static.CurrentStaticOperations.current_behavior__admin_ops__creation_bypass",
+    "nc02f1_operations_static.CurrentStaticOperations.current_behavior__admin_ops__cron",
+    "nc02f1_operations_static.CurrentStaticOperations.current_behavior__admin_ops__frontend",
+    "nc02f1_operations_static.CurrentStaticOperations.current_behavior__admin_ops__lock",
+    "nc02f1_operations_static.CurrentStaticOperations.current_behavior__admin_ops__teams",
+    "nc02f1_operations_static.CurrentStaticOperations.current_behavior__standings__freeze",
+    "nc02f1_operations_static.CurrentStaticOperations.current_behavior__standings__overwrite",
+    "nc02f1_operations_static.CurrentStaticOperations.current_behavior__standings__schedule",
+    "nc02f1_operations_static.CurrentStaticOperations.current_behavior__standings__season_sources",
+    "nc02f1_operations_offline.CurrentOfflineOperations.current_behavior__admin_ops__token",
+    "nc02f1_operations_offline.CurrentOfflineOperations.current_behavior__standings__active_provider",
+    "nc02f1_operations_offline.CurrentOfflineOperations.current_behavior__standings__espn",
+    "nc02f1_operations_offline.CurrentOfflineOperations.current_behavior__standings__espn_edges",
+    "nc02f1_operations_offline.CurrentOfflineOperations.current_behavior__standings__refresh_failure",
+    "nc02f1_operations_offline.CurrentOfflineOperations.current_behavior__standings__script_failure",
+    "nc02f1_operations_offline.CurrentOfflineOperations.current_behavior__standings__year",
+    "nc02f1_competitive_eligibility.CompetitiveEligibilityAcceptance.test_admin_mutation_authorization_unchanged_invalidation_shared",
+    "nc02f1_competitive_eligibility.CompetitiveEligibilityAcceptance.test_games_only_edit_resave_all_surfaces",
+    "nc02f1_competitive_eligibility.CompetitiveEligibilityAcceptance.test_postlock_edits_still_allowed_but_all_invalidate",
+    "nc02f1_competitive_eligibility.CompetitiveEligibilityAcceptance.test_stored_draft_score_hidden_without_deletion",
+    "nc02f1_competitive_eligibility.CompetitiveEligibilityAcceptance.test_undo_resave_all_surfaces",
+    "nc02f1_competitive_eligibility.CompetitiveEligibilityAcceptance.test_winner_edit_resave_all_surfaces",
+    "nc02f1_competitive_offline.CompetitiveEligibilityOffline.test_new_snapshot_uses_saved_only_old_history_unchanged",
+    "nc02f1_competitive_offline.CompetitiveEligibilityOffline.test_predicate_submission_deleted_season_and_legacy_metadata",
+    "nc02f1_competitive_offline.CompetitiveEligibilityOffline.test_recompute_selection_skips_unsaved_without_deleting_stale_score"
+  ],
+  "failed_case_ids": [],
+  "production_contact": false
+}

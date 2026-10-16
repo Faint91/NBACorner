@@ -64,7 +64,7 @@ BEGIN
   IF (SELECT string_agg(c.relname, ',' ORDER BY c.relname COLLATE "C") FROM pg_class c WHERE c.relnamespace='public'::regnamespace AND c.relkind IN ('r','p','v','m','S','f') AND NOT EXISTS (SELECT 1 FROM pg_depend d WHERE d.classid='pg_class'::regclass AND d.objid=c.oid AND d.deptype='e')) IS DISTINCT FROM 'application_season,bracket_scores,bracket_view,brackets,leaderboard_history,leaderboard_history_id_seq,leaderboard_history_rows,leaderboard_history_snapshots,league_members,leagues,matches,password_resets,password_resets_id_seq,season_rollover_audits,seasons,standings,standings_id_seq,teams,users' THEN
     RAISE EXCEPTION 'Baseline mismatch: application relation inventory';
   END IF;
-  IF (SELECT string_agg(p.proname, ',' ORDER BY p.proname COLLATE "C") FROM pg_proc p WHERE p.pronamespace='public'::regnamespace AND NOT EXISTS (SELECT 1 FROM pg_depend d WHERE d.classid='pg_proc'::regclass AND d.objid=p.oid AND d.deptype='e')) IS DISTINCT FROM '_set_bracket_scores_season_id,_set_matches_season_id,atomic_update_match,create_master_bracket_atomic,execute_season_rollover_transition,finalize_season_transition,fix_season_master_on_bracket_soft_delete,protect_final_leaderboard_history,publish_current_bracket_scores,publish_current_standings,publish_leaderboard_snapshot,require_completed_rollover_master,run_season_rollover,set_master_bracket,set_winner_atomic,undo_prediction_atomic' THEN
+  IF (SELECT string_agg(p.proname, ',' ORDER BY p.proname COLLATE "C") FROM pg_proc p WHERE p.pronamespace='public'::regnamespace AND NOT EXISTS (SELECT 1 FROM pg_depend d WHERE d.classid='pg_proc'::regclass AND d.objid=p.oid AND d.deptype='e')) IS DISTINCT FROM '_set_bracket_scores_season_id,_set_matches_season_id,atomic_update_match,create_league_with_owner,create_master_bracket_atomic,delete_league_confirmed,execute_season_rollover_transition,finalize_season_transition,fix_season_master_on_bracket_soft_delete,inspect_league_name,join_league_member,league_name_key,normalize_league_name,protect_final_leaderboard_history,publish_current_bracket_scores,publish_current_standings,publish_leaderboard_snapshot,remove_league_membership,require_completed_rollover_master,run_season_rollover,set_master_bracket,set_winner_atomic,transfer_league_ownership,undo_prediction_atomic,update_league_settings' THEN
     RAISE EXCEPTION 'Baseline mismatch: application function inventory';
   END IF;
   IF (SELECT relkind::text FROM pg_class WHERE oid='public.bracket_scores'::regclass) IS DISTINCT FROM 'r' THEN
@@ -1279,7 +1279,7 @@ BEGIN
   IF (SELECT relforcerowsecurity FROM pg_class WHERE oid='public.leagues'::regclass) IS DISTINCT FROM false THEN
     RAISE EXCEPTION 'Baseline mismatch: leagues RLS forced';
   END IF;
-  IF (SELECT COALESCE(string_agg(conname, ',' ORDER BY conname COLLATE "C"),'') FROM pg_constraint WHERE conrelid='public.leagues'::regclass) IS DISTINCT FROM 'leagues_name_unique,leagues_owner_user_id_fkey,leagues_pkey' THEN
+  IF (SELECT COALESCE(string_agg(conname, ',' ORDER BY conname COLLATE "C"),'') FROM pg_constraint WHERE conrelid='public.leagues'::regclass) IS DISTINCT FROM 'leagues_owner_user_id_fkey,leagues_pkey,nc_f1_league_name_valid,nc_f1_owner_membership' THEN
     RAISE EXCEPTION 'Baseline mismatch: leagues pg_constraint inventory';
   END IF;
   IF (SELECT COALESCE(string_agg(polname, ',' ORDER BY polname COLLATE "C"),'') FROM pg_policy WHERE polrelid='public.leagues'::regclass) IS DISTINCT FROM '' THEN
@@ -1288,7 +1288,7 @@ BEGIN
   IF (SELECT COALESCE(string_agg(tgname, ',' ORDER BY tgname COLLATE "C"),'') FROM pg_trigger WHERE tgrelid='public.leagues'::regclass AND NOT tgisinternal) IS DISTINCT FROM '' THEN
     RAISE EXCEPTION 'Baseline mismatch: leagues pg_trigger inventory';
   END IF;
-  IF (SELECT string_agg(c.relname, ',' ORDER BY c.relname COLLATE "C") FROM pg_index i JOIN pg_class c ON c.oid=i.indexrelid WHERE i.indrelid='public.leagues'::regclass) IS DISTINCT FROM 'leagues_name_unique,leagues_pkey' THEN
+  IF (SELECT string_agg(c.relname, ',' ORDER BY c.relname COLLATE "C") FROM pg_index i JOIN pg_class c ON c.oid=i.indexrelid WHERE i.indrelid='public.leagues'::regclass) IS DISTINCT FROM 'leagues_pkey,nc_f1_league_name_unique' THEN
     RAISE EXCEPTION 'Baseline mismatch: leagues index inventory';
   END IF;
   IF (SELECT relkind::text FROM pg_class WHERE oid='public.password_resets'::regclass) IS DISTINCT FROM 'r' THEN
@@ -2023,12 +2023,6 @@ BEGIN
   IF (SELECT contype::text || ':' || condeferrable::text || ':' || condeferred::text || ':' || convalidated::text FROM pg_constraint WHERE conrelid='public.league_members'::regclass AND conname='league_members_user_id_fkey') IS DISTINCT FROM 'f:false:false:true' THEN
     RAISE EXCEPTION 'Baseline mismatch: constraint flags league_members_user_id_fkey';
   END IF;
-  IF (btrim(regexp_replace(replace(replace((SELECT pg_get_constraintdef(oid,true) FROM pg_constraint WHERE conrelid='public.leagues'::regclass AND conname='leagues_name_unique'), '"', ''), 'public.', ''), E'\\s+', ' ', 'g'))) IS DISTINCT FROM 'UNIQUE (name)' THEN
-    RAISE EXCEPTION 'Baseline mismatch: constraint leagues_name_unique';
-  END IF;
-  IF (SELECT contype::text || ':' || condeferrable::text || ':' || condeferred::text || ':' || convalidated::text FROM pg_constraint WHERE conrelid='public.leagues'::regclass AND conname='leagues_name_unique') IS DISTINCT FROM 'u:false:false:true' THEN
-    RAISE EXCEPTION 'Baseline mismatch: constraint flags leagues_name_unique';
-  END IF;
   IF (btrim(regexp_replace(replace(replace((SELECT pg_get_constraintdef(oid,true) FROM pg_constraint WHERE conrelid='public.leagues'::regclass AND conname='leagues_owner_user_id_fkey'), '"', ''), 'public.', ''), E'\\s+', ' ', 'g'))) IS DISTINCT FROM 'FOREIGN KEY (owner_user_id) REFERENCES users(id)' THEN
     RAISE EXCEPTION 'Baseline mismatch: constraint leagues_owner_user_id_fkey';
   END IF;
@@ -2298,12 +2292,6 @@ BEGIN
   END IF;
   IF (SELECT indisvalid AND indisready FROM pg_index WHERE indexrelid='public.league_members_user_id_idx'::regclass) IS DISTINCT FROM true THEN
     RAISE EXCEPTION 'Baseline mismatch: index ready league_members_user_id_idx';
-  END IF;
-  IF (btrim(regexp_replace(replace(replace((SELECT pg_get_indexdef('public.leagues_name_unique'::regclass)), '"', ''), 'public.', ''), E'\\s+', ' ', 'g'))) IS DISTINCT FROM 'CREATE UNIQUE INDEX leagues_name_unique ON leagues USING btree (name)' THEN
-    RAISE EXCEPTION 'Baseline mismatch: index leagues_name_unique';
-  END IF;
-  IF (SELECT indisvalid AND indisready FROM pg_index WHERE indexrelid='public.leagues_name_unique'::regclass) IS DISTINCT FROM true THEN
-    RAISE EXCEPTION 'Baseline mismatch: index ready leagues_name_unique';
   END IF;
   IF (btrim(regexp_replace(replace(replace((SELECT pg_get_indexdef('public.leagues_pkey'::regclass)), '"', ''), 'public.', ''), E'\\s+', ' ', 'g'))) IS DISTINCT FROM 'CREATE UNIQUE INDEX leagues_pkey ON leagues USING btree (id)' THEN
     RAISE EXCEPTION 'Baseline mismatch: index leagues_pkey';
@@ -4843,4 +4831,67 @@ END;
 IF has_function_privilege('anon',f,'EXECUTE') OR has_function_privilege('authenticated',f,'EXECUTE') OR NOT has_function_privilege('service_role',f,'EXECUTE') OR EXISTS(SELECT 1 FROM pg_proc p,LATERAL aclexplode(p.proacl) a WHERE p.oid=f AND (a.grantee NOT IN ('postgres'::regrole,'service_role'::regrole) OR a.is_grantable)) THEN RAISE EXCEPTION 'Rollover ACL mismatch'; END IF;
 IF EXISTS(SELECT 1 FROM pg_class c,LATERAL aclexplode(c.relacl) a WHERE c.oid='public.season_rollover_audits'::regclass AND (a.grantee NOT IN ('postgres'::regrole,'service_role'::regrole) OR (a.grantee='service_role'::regrole AND a.privilege_type NOT IN ('SELECT','INSERT','UPDATE','DELETE')) OR a.is_grantable)) THEN RAISE EXCEPTION 'Unexpected audit ACL'; END IF;
 END $rollover_verify$;
+
+DO $f1$ DECLARE f oid:=to_regprocedure('public.normalize_league_name(text)'); BEGIN
+ IF (SELECT pg_get_userbyid(proowner)='postgres' AND NOT prosecdef AND prorettype='text'::regtype AND prolang=(SELECT oid FROM pg_language WHERE lanname='sql') AND proconfig=ARRAY['search_path=pg_catalog, public'] AND provolatile='i' AND proisstrict=true AND NOT proretset AND NOT proleakproof AND proparallel='u' AND prokind='f' FROM pg_proc WHERE oid=f) IS DISTINCT FROM true THEN RAISE EXCEPTION 'F1 function attributes mismatch: normalize_league_name'; END IF;
+ IF (SELECT md5(btrim(replace(prosrc,E'\r',''),E' \n\t')) FROM pg_proc WHERE oid=f) IS DISTINCT FROM '5d5fac87a01fc70aeb563d473e3d80b9' THEN RAISE EXCEPTION 'F1 function body mismatch: normalize_league_name'; END IF;
+ IF has_function_privilege('anon',f,'EXECUTE') OR has_function_privilege('authenticated',f,'EXECUTE') OR NOT has_function_privilege('service_role',f,'EXECUTE') THEN RAISE EXCEPTION 'F1 execute privileges mismatch'; END IF;
+ IF (SELECT count(*) FROM pg_proc p,LATERAL aclexplode(p.proacl) a WHERE p.oid=f AND (a.grantee NOT IN ('postgres'::regrole,'service_role'::regrole) OR a.privilege_type<>'EXECUTE' OR a.is_grantable))<>0 THEN RAISE EXCEPTION 'Unexpected F1 grants'; END IF;
+END $f1$;
+DO $f1$ DECLARE f oid:=to_regprocedure('public.league_name_key(text)'); BEGIN
+ IF (SELECT pg_get_userbyid(proowner)='postgres' AND NOT prosecdef AND prorettype='text'::regtype AND prolang=(SELECT oid FROM pg_language WHERE lanname='sql') AND proconfig=ARRAY['search_path=pg_catalog, public'] AND provolatile='i' AND proisstrict=true AND NOT proretset AND NOT proleakproof AND proparallel='u' AND prokind='f' FROM pg_proc WHERE oid=f) IS DISTINCT FROM true THEN RAISE EXCEPTION 'F1 function attributes mismatch: league_name_key'; END IF;
+ IF (SELECT md5(btrim(replace(prosrc,E'\r',''),E' \n\t')) FROM pg_proc WHERE oid=f) IS DISTINCT FROM '4305d1ce253c9dcf092c78d01965e406' THEN RAISE EXCEPTION 'F1 function body mismatch: league_name_key'; END IF;
+ IF has_function_privilege('anon',f,'EXECUTE') OR has_function_privilege('authenticated',f,'EXECUTE') OR NOT has_function_privilege('service_role',f,'EXECUTE') THEN RAISE EXCEPTION 'F1 execute privileges mismatch'; END IF;
+ IF (SELECT count(*) FROM pg_proc p,LATERAL aclexplode(p.proacl) a WHERE p.oid=f AND (a.grantee NOT IN ('postgres'::regrole,'service_role'::regrole) OR a.privilege_type<>'EXECUTE' OR a.is_grantable))<>0 THEN RAISE EXCEPTION 'Unexpected F1 grants'; END IF;
+END $f1$;
+DO $f1$ DECLARE f oid:=to_regprocedure('public.inspect_league_name(text,uuid)'); BEGIN
+ IF (SELECT pg_get_userbyid(proowner)='postgres' AND NOT prosecdef AND prorettype='jsonb'::regtype AND prolang=(SELECT oid FROM pg_language WHERE lanname='sql') AND proconfig=ARRAY['search_path=pg_catalog, public'] AND provolatile='s' AND proisstrict=false AND NOT proretset AND NOT proleakproof AND proparallel='u' AND prokind='f' FROM pg_proc WHERE oid=f) IS DISTINCT FROM true THEN RAISE EXCEPTION 'F1 function attributes mismatch: inspect_league_name'; END IF;
+ IF (SELECT md5(btrim(replace(prosrc,E'\r',''),E' \n\t')) FROM pg_proc WHERE oid=f) IS DISTINCT FROM 'ed8c47394d7c8946f2d2167162b94369' THEN RAISE EXCEPTION 'F1 function body mismatch: inspect_league_name'; END IF;
+ IF has_function_privilege('anon',f,'EXECUTE') OR has_function_privilege('authenticated',f,'EXECUTE') OR NOT has_function_privilege('service_role',f,'EXECUTE') THEN RAISE EXCEPTION 'F1 execute privileges mismatch'; END IF;
+ IF (SELECT count(*) FROM pg_proc p,LATERAL aclexplode(p.proacl) a WHERE p.oid=f AND (a.grantee NOT IN ('postgres'::regrole,'service_role'::regrole) OR a.privilege_type<>'EXECUTE' OR a.is_grantable))<>0 THEN RAISE EXCEPTION 'Unexpected F1 grants'; END IF;
+END $f1$;
+DO $f1$ DECLARE f oid:=to_regprocedure('public.create_league_with_owner(uuid,text,text)'); BEGIN
+ IF (SELECT pg_get_userbyid(proowner)='postgres' AND NOT prosecdef AND prorettype='jsonb'::regtype AND prolang=(SELECT oid FROM pg_language WHERE lanname='plpgsql') AND proconfig=ARRAY['search_path=pg_catalog, public'] AND provolatile='v' AND proisstrict=false AND NOT proretset AND NOT proleakproof AND proparallel='u' AND prokind='f' FROM pg_proc WHERE oid=f) IS DISTINCT FROM true THEN RAISE EXCEPTION 'F1 function attributes mismatch: create_league_with_owner'; END IF;
+ IF (SELECT md5(btrim(replace(prosrc,E'\r',''),E' \n\t')) FROM pg_proc WHERE oid=f) IS DISTINCT FROM '93a198b38cb130368dca10867c976bed' THEN RAISE EXCEPTION 'F1 function body mismatch: create_league_with_owner'; END IF;
+ IF has_function_privilege('anon',f,'EXECUTE') OR has_function_privilege('authenticated',f,'EXECUTE') OR NOT has_function_privilege('service_role',f,'EXECUTE') THEN RAISE EXCEPTION 'F1 execute privileges mismatch'; END IF;
+ IF (SELECT count(*) FROM pg_proc p,LATERAL aclexplode(p.proacl) a WHERE p.oid=f AND (a.grantee NOT IN ('postgres'::regrole,'service_role'::regrole) OR a.privilege_type<>'EXECUTE' OR a.is_grantable))<>0 THEN RAISE EXCEPTION 'Unexpected F1 grants'; END IF;
+END $f1$;
+DO $f1$ DECLARE f oid:=to_regprocedure('public.join_league_member(uuid,uuid,text)'); BEGIN
+ IF (SELECT pg_get_userbyid(proowner)='postgres' AND NOT prosecdef AND prorettype='jsonb'::regtype AND prolang=(SELECT oid FROM pg_language WHERE lanname='plpgsql') AND proconfig=ARRAY['search_path=pg_catalog, public'] AND provolatile='v' AND proisstrict=false AND NOT proretset AND NOT proleakproof AND proparallel='u' AND prokind='f' FROM pg_proc WHERE oid=f) IS DISTINCT FROM true THEN RAISE EXCEPTION 'F1 function attributes mismatch: join_league_member'; END IF;
+ IF (SELECT md5(btrim(replace(prosrc,E'\r',''),E' \n\t')) FROM pg_proc WHERE oid=f) IS DISTINCT FROM '17d4ecc2513f7a7c61b9e3d031a28885' THEN RAISE EXCEPTION 'F1 function body mismatch: join_league_member'; END IF;
+ IF has_function_privilege('anon',f,'EXECUTE') OR has_function_privilege('authenticated',f,'EXECUTE') OR NOT has_function_privilege('service_role',f,'EXECUTE') THEN RAISE EXCEPTION 'F1 execute privileges mismatch'; END IF;
+ IF (SELECT count(*) FROM pg_proc p,LATERAL aclexplode(p.proacl) a WHERE p.oid=f AND (a.grantee NOT IN ('postgres'::regrole,'service_role'::regrole) OR a.privilege_type<>'EXECUTE' OR a.is_grantable))<>0 THEN RAISE EXCEPTION 'Unexpected F1 grants'; END IF;
+END $f1$;
+DO $f1$ DECLARE f oid:=to_regprocedure('public.transfer_league_ownership(uuid,uuid,uuid)'); BEGIN
+ IF (SELECT pg_get_userbyid(proowner)='postgres' AND NOT prosecdef AND prorettype='jsonb'::regtype AND prolang=(SELECT oid FROM pg_language WHERE lanname='plpgsql') AND proconfig=ARRAY['search_path=pg_catalog, public'] AND provolatile='v' AND proisstrict=false AND NOT proretset AND NOT proleakproof AND proparallel='u' AND prokind='f' FROM pg_proc WHERE oid=f) IS DISTINCT FROM true THEN RAISE EXCEPTION 'F1 function attributes mismatch: transfer_league_ownership'; END IF;
+ IF (SELECT md5(btrim(replace(prosrc,E'\r',''),E' \n\t')) FROM pg_proc WHERE oid=f) IS DISTINCT FROM '2475b29f2083d6786ce9bb7c80abf7eb' THEN RAISE EXCEPTION 'F1 function body mismatch: transfer_league_ownership'; END IF;
+ IF has_function_privilege('anon',f,'EXECUTE') OR has_function_privilege('authenticated',f,'EXECUTE') OR NOT has_function_privilege('service_role',f,'EXECUTE') THEN RAISE EXCEPTION 'F1 execute privileges mismatch'; END IF;
+ IF (SELECT count(*) FROM pg_proc p,LATERAL aclexplode(p.proacl) a WHERE p.oid=f AND (a.grantee NOT IN ('postgres'::regrole,'service_role'::regrole) OR a.privilege_type<>'EXECUTE' OR a.is_grantable))<>0 THEN RAISE EXCEPTION 'Unexpected F1 grants'; END IF;
+END $f1$;
+DO $f1$ DECLARE f oid:=to_regprocedure('public.remove_league_membership(uuid,uuid,uuid)'); BEGIN
+ IF (SELECT pg_get_userbyid(proowner)='postgres' AND NOT prosecdef AND prorettype='jsonb'::regtype AND prolang=(SELECT oid FROM pg_language WHERE lanname='plpgsql') AND proconfig=ARRAY['search_path=pg_catalog, public'] AND provolatile='v' AND proisstrict=false AND NOT proretset AND NOT proleakproof AND proparallel='u' AND prokind='f' FROM pg_proc WHERE oid=f) IS DISTINCT FROM true THEN RAISE EXCEPTION 'F1 function attributes mismatch: remove_league_membership'; END IF;
+ IF (SELECT md5(btrim(replace(prosrc,E'\r',''),E' \n\t')) FROM pg_proc WHERE oid=f) IS DISTINCT FROM 'e9465c412d6443ab13bd3c60b866f7f8' THEN RAISE EXCEPTION 'F1 function body mismatch: remove_league_membership'; END IF;
+ IF has_function_privilege('anon',f,'EXECUTE') OR has_function_privilege('authenticated',f,'EXECUTE') OR NOT has_function_privilege('service_role',f,'EXECUTE') THEN RAISE EXCEPTION 'F1 execute privileges mismatch'; END IF;
+ IF (SELECT count(*) FROM pg_proc p,LATERAL aclexplode(p.proacl) a WHERE p.oid=f AND (a.grantee NOT IN ('postgres'::regrole,'service_role'::regrole) OR a.privilege_type<>'EXECUTE' OR a.is_grantable))<>0 THEN RAISE EXCEPTION 'Unexpected F1 grants'; END IF;
+END $f1$;
+DO $f1$ DECLARE f oid:=to_regprocedure('public.update_league_settings(uuid,uuid,text,boolean,text,text)'); BEGIN
+ IF (SELECT pg_get_userbyid(proowner)='postgres' AND NOT prosecdef AND prorettype='jsonb'::regtype AND prolang=(SELECT oid FROM pg_language WHERE lanname='plpgsql') AND proconfig=ARRAY['search_path=pg_catalog, public'] AND provolatile='v' AND proisstrict=false AND NOT proretset AND NOT proleakproof AND proparallel='u' AND prokind='f' FROM pg_proc WHERE oid=f) IS DISTINCT FROM true THEN RAISE EXCEPTION 'F1 function attributes mismatch: update_league_settings'; END IF;
+ IF (SELECT md5(btrim(replace(prosrc,E'\r',''),E' \n\t')) FROM pg_proc WHERE oid=f) IS DISTINCT FROM '92730428864e57ef383dada8366deeb7' THEN RAISE EXCEPTION 'F1 function body mismatch: update_league_settings'; END IF;
+ IF has_function_privilege('anon',f,'EXECUTE') OR has_function_privilege('authenticated',f,'EXECUTE') OR NOT has_function_privilege('service_role',f,'EXECUTE') THEN RAISE EXCEPTION 'F1 execute privileges mismatch'; END IF;
+ IF (SELECT count(*) FROM pg_proc p,LATERAL aclexplode(p.proacl) a WHERE p.oid=f AND (a.grantee NOT IN ('postgres'::regrole,'service_role'::regrole) OR a.privilege_type<>'EXECUTE' OR a.is_grantable))<>0 THEN RAISE EXCEPTION 'Unexpected F1 grants'; END IF;
+END $f1$;
+DO $f1$ DECLARE f oid:=to_regprocedure('public.delete_league_confirmed(uuid,uuid,boolean)'); BEGIN
+ IF (SELECT pg_get_userbyid(proowner)='postgres' AND NOT prosecdef AND prorettype='jsonb'::regtype AND prolang=(SELECT oid FROM pg_language WHERE lanname='plpgsql') AND proconfig=ARRAY['search_path=pg_catalog, public'] AND provolatile='v' AND proisstrict=false AND NOT proretset AND NOT proleakproof AND proparallel='u' AND prokind='f' FROM pg_proc WHERE oid=f) IS DISTINCT FROM true THEN RAISE EXCEPTION 'F1 function attributes mismatch: delete_league_confirmed'; END IF;
+ IF (SELECT md5(btrim(replace(prosrc,E'\r',''),E' \n\t')) FROM pg_proc WHERE oid=f) IS DISTINCT FROM '443c64f8bf4f2d00b9a28edf7f7af5bb' THEN RAISE EXCEPTION 'F1 function body mismatch: delete_league_confirmed'; END IF;
+ IF has_function_privilege('anon',f,'EXECUTE') OR has_function_privilege('authenticated',f,'EXECUTE') OR NOT has_function_privilege('service_role',f,'EXECUTE') THEN RAISE EXCEPTION 'F1 execute privileges mismatch'; END IF;
+ IF (SELECT count(*) FROM pg_proc p,LATERAL aclexplode(p.proacl) a WHERE p.oid=f AND (a.grantee NOT IN ('postgres'::regrole,'service_role'::regrole) OR a.privilege_type<>'EXECUTE' OR a.is_grantable))<>0 THEN RAISE EXCEPTION 'Unexpected F1 grants'; END IF;
+END $f1$;
+DO $f1$ BEGIN
+ IF (SELECT pg_get_constraintdef(oid,true) FROM pg_constraint WHERE conrelid='public.leagues'::regclass AND conname='nc_f1_owner_membership') IS DISTINCT FROM 'FOREIGN KEY (id, owner_user_id) REFERENCES league_members(league_id, user_id) DEFERRABLE INITIALLY DEFERRED' THEN RAISE EXCEPTION 'F1 owner FK mismatch'; END IF;
+ IF (SELECT contype='f' AND condeferrable AND condeferred AND convalidated FROM pg_constraint WHERE conrelid='public.leagues'::regclass AND conname='nc_f1_owner_membership') IS DISTINCT FROM true THEN RAISE EXCEPTION 'F1 owner FK flags'; END IF;
+ IF (SELECT pg_get_constraintdef(oid,true) FROM pg_constraint WHERE conrelid='public.leagues'::regclass AND conname='nc_f1_league_name_valid') IS DISTINCT FROM 'CHECK (name = normalize_league_name(name) AND char_length(name) >= 1 AND char_length(name) <= 80)' THEN RAISE EXCEPTION 'F1 name CHECK mismatch'; END IF;
+ IF (SELECT contype='c' AND NOT condeferrable AND convalidated FROM pg_constraint WHERE conrelid='public.leagues'::regclass AND conname='nc_f1_league_name_valid') IS DISTINCT FROM true THEN RAISE EXCEPTION 'F1 name CHECK flags'; END IF;
+ IF pg_get_indexdef('public.nc_f1_league_name_unique'::regclass) IS DISTINCT FROM 'CREATE UNIQUE INDEX nc_f1_league_name_unique ON public.leagues USING btree (league_name_key(name))' THEN RAISE EXCEPTION 'F1 name index mismatch'; END IF;
+ IF (SELECT indisvalid AND indisready AND indisunique FROM pg_index WHERE indexrelid='public.nc_f1_league_name_unique'::regclass) IS DISTINCT FROM true THEN RAISE EXCEPTION 'F1 index flags'; END IF;
+END $f1$;
 COMMIT;
