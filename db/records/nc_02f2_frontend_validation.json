@@ -1,0 +1,16 @@
+{
+  "global_errors": 83,
+  "global_warnings": 1,
+  "new_diagnostics": [],
+  "baseline_changed_errors": 7,
+  "current_changed_errors": 7,
+  "files": [
+    "src/api/leagues.ts",
+    "src/pages/LeagueInfoPage.tsx",
+    "src/components/leagues/LeagueHistoryPanel.tsx"
+  ],
+  "frontend_tests": 48,
+  "typescript": true,
+  "build": true,
+  "production_contact": false
+}

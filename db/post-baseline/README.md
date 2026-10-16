@@ -206,3 +206,19 @@ baseline-to-0008 chain, real name contention, owner/member rollback and all E SQ
 safety groups. The older E proof remains bound to its frozen verifier.
 See `docs/repairs/nc-02f1-league-lifecycle.md` and F1 machine evidence.
 No production contact or NC-02F2 work is authorized by this local phase.
+
+
+## NC-02F2 historical league seasons
+
+Apply `0009_nc_02f2_league_history.sql` after immutable baseline and 0001-0008.
+The frozen F1 verifier is `verify_nc_02f1_schema.sql`; current strict verification
+includes the four private F2 tables, source mapping, cutoff seals, membership
+fences and exact forward RPC extensions. No existing history backfill occurs.
+Nonempty pre-F2 final sources without internal mapping block for review.
+
+`python scripts/prove_league_history_migration.py` proves the fresh local chain,
+all-league rollback, ranking/ties, immutable trusted-only access, six real membership
+races and prior E atomic rollover protections in a removed disposable DB.
+See `docs/repairs/nc-02f2-league-history.md` and F2 evidence for transaction scopes,
+current privacy, deletion, local cleanup and separate production prerequisites.
+No production action is authorized by this local phase.

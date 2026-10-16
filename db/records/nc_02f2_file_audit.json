@@ -1,0 +1,210 @@
+{
+  "verified_at": "2026-10-16T22:13:08.423311+00:00",
+  "secret_patterns": [
+    "private_key",
+    "jwt_literal",
+    "credential_url",
+    "supabase_secret_literal",
+    "provider_token"
+  ],
+  "credential_findings": [],
+  "env_archives_raw_dumps_added": false,
+  "public_serialization_checked": true,
+  "unchanged_prior_app_functions": true,
+  "immutable_baseline_and_0001_to_0008": true,
+  "global_scoring_history_rollover_python_unchanged": true,
+  "compilation": true,
+  "baseline_import_comparison_no_new_unused": true,
+  "scoped_black": true,
+  "whitespace": "PASS; preserve existing tracked CRLF using cr-at-eol",
+  "frontend_new_lint_diagnostics": 0,
+  "production_contact": false,
+  "files": [
+    {
+      "repository": "backend",
+      "path": "app.py",
+      "bytes": 138193,
+      "sha256": "797274d62eaf5eef4c33f930ba65abf41f200e43a3dbe3c5d6b2507e2be4bb53"
+    },
+    {
+      "repository": "backend",
+      "path": "db/post-baseline/0009_nc_02f2_league_history.sql",
+      "bytes": 33724,
+      "sha256": "3658bf8d6cd3552c8b1a4f9d46f07b43a6eaa2c68382eb18172f1b952470403b"
+    },
+    {
+      "repository": "backend",
+      "path": "db/post-baseline/README.md",
+      "bytes": 13852,
+      "sha256": "d1b4a630911ad20e7c7129f8c9e10e0085e8de7e280b0e98884634593775f810"
+    },
+    {
+      "repository": "backend",
+      "path": "db/post-baseline/verify_current_schema.sql",
+      "bytes": 518863,
+      "sha256": "3c8bf7d87361436da69119bf0c0182d9e5b5e9c0d893754920a235bebd716ae0"
+    },
+    {
+      "repository": "backend",
+      "path": "db/post-baseline/verify_nc_02f1_schema.sql",
+      "bytes": 501725,
+      "sha256": "9649b4e44a313141f8ed793ab0d8b6db1084366544984b13a8e3eff352cae5e0"
+    },
+    {
+      "repository": "backend",
+      "path": "db/records/nc_02f2_cleanup_verification.json",
+      "bytes": 1385,
+      "sha256": "04b2a8edb5793c19b40a53a93f91424a81010531c3551a70d23b6a36470fd6a3"
+    },
+    {
+      "repository": "backend",
+      "path": "db/records/nc_02f2_fresh_migration_proof.json",
+      "bytes": 6216,
+      "sha256": "df0a3e5f8f11249449953b5be13867b9f6c4d8bcca1232871b17593bcc6d90ba"
+    },
+    {
+      "repository": "backend",
+      "path": "db/records/nc_02f2_frontend_validation.json",
+      "bytes": 364,
+      "sha256": "a371005bfd8900c7c123788331ff40d6d6071c6b2d19b8740bdd67b33eb95796"
+    },
+    {
+      "repository": "backend",
+      "path": "db/records/nc_02f2_lifecycle_validation.json",
+      "bytes": 3486,
+      "sha256": "0e036fecd1dea01f6a1baad1eeb69b8bb7146bb529985eac7edb176613331ced"
+    },
+    {
+      "repository": "backend",
+      "path": "db/records/nc_02f2_prechange_inventory.json",
+      "bytes": 1755,
+      "sha256": "dc33d5472225d9dfc8322cc8ba9e6d2e46f7b10cb5ebb53c2c957a5864282803"
+    },
+    {
+      "repository": "backend",
+      "path": "db/records/nc_02f2_starting_state.json",
+      "bytes": 234,
+      "sha256": "63a70fc06966c63cb82e64e852fe9e596aba760626973b3a2e6b92a8d1aaa13d"
+    },
+    {
+      "repository": "backend",
+      "path": "db/records/nc_02f2_validation.json",
+      "bytes": 512540,
+      "sha256": "4ecb43aaee7dd5e2ac04911819a9e454b539f55faf72d07fe1e61377164ba969"
+    },
+    {
+      "repository": "backend",
+      "path": "docs/repairs/nc-02f2-league-history.md",
+      "bytes": 10598,
+      "sha256": "8f56cae88ba97033f633599179b2a2ef0d4be1a46838a20c3503b50d8861ffce"
+    },
+    {
+      "repository": "backend",
+      "path": "integration_harness.py",
+      "bytes": 74984,
+      "sha256": "c9ca629135ecb3db763916892b0b99b9d81d87cd061ffc854bbc1aea1735a991"
+    },
+    {
+      "repository": "backend",
+      "path": "league_history_service.py",
+      "bytes": 3757,
+      "sha256": "fd70cab88dd419c0a768391f9481c18dee4d8258cf45e46e728f3aaa6b3a5e31"
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/local_supabase_environment.py",
+      "bytes": 12443,
+      "sha256": "2fed1aea13c30c2ca97ce3f21c86e539b934b35a7e4bbad6ee3f2b1b0097a418"
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/nc02f2_database_acceptance.py",
+      "bytes": 21078,
+      "sha256": "88e841975990e225a55ceb7c683067dcb55f8ecd31b10229e19a3d36d8da2f22"
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/prove_history_migration.py",
+      "bytes": 35140,
+      "sha256": "043dad2587c6b116b3e64e655ee16b0b697eb192f1fedc0b89a9c06ddf3134f9"
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/prove_league_history_migration.py",
+      "bytes": 39217,
+      "sha256": "ced4f4e62a9c142e24d103203d9d419fc58b6e48b48de1ed620d854b99ca6c6b"
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/prove_league_lifecycle_migration.py",
+      "bytes": 37724,
+      "sha256": "acbc11af7a4ebbfd9ca2a0dfb6f615d7f29263e70d023a46042efac3c10e47e3"
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/prove_rollover_migration.py",
+      "bytes": 36815,
+      "sha256": "eeea11b8f626e8a8c8133e19d36694a0951ce2cdba82f23f651e36c02fdc2b82"
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/reset_local_fixtures.py",
+      "bytes": 16614,
+      "sha256": "3b6fe96a00e83f713d8028b67fffe2feca8ee847e11921853a92604f8d8f43aa"
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/run_league_history_acceptance.py",
+      "bytes": 15413,
+      "sha256": "45a38f716186ec4a460721cf6cc2fe0fffb3c66ab89fb351ebe51a1f4f30e77b"
+    },
+    {
+      "repository": "backend",
+      "path": "tests/characterization/league_history.py",
+      "bytes": 12658,
+      "sha256": "58c1ac0680f135dd118ac2e1ca8680f11804e3ed338ceab288f4265b9ce73aff"
+    },
+    {
+      "repository": "backend",
+      "path": "tests/offline/test_league_history.py",
+      "bytes": 10363,
+      "sha256": "aa9e1e7731a4a7e2b5a58fb5846bd25fc68e2698b3ab93daff62266e2d28c8d1"
+    },
+    {
+      "repository": "backend",
+      "path": "tests/offline/test_league_lifecycle.py",
+      "bytes": 6466,
+      "sha256": "106095d468942e0d87f5853dc386b40fe10b19ba10b780e81d25e8a4f23c6dbc"
+    },
+    {
+      "repository": "backend",
+      "path": "tests/offline/test_rollover_rules.py",
+      "bytes": 7425,
+      "sha256": "79395831b6fabb48d94fc0bbaa3412144e0a8f440e23bf75d7c780da00524b33"
+    },
+    {
+      "repository": "frontend",
+      "path": "scripts/test-league-history.cjs",
+      "bytes": 5283,
+      "sha256": "b1d476c62874f7d445cf514d7a0511ae820bbe0ed9454edbc083f1a04cd5eab7"
+    },
+    {
+      "repository": "frontend",
+      "path": "src/api/leagues.ts",
+      "bytes": 5091,
+      "sha256": "0bcc516dba0452b044bcf093fc93722437696cb2432fd4b708d13a089dde05df"
+    },
+    {
+      "repository": "frontend",
+      "path": "src/components/leagues/LeagueHistoryPanel.tsx",
+      "bytes": 3958,
+      "sha256": "f82f0f7e460887b4242948f6a038c965f125d0c3a048a5e512bf9a8ddfa9ac52"
+    },
+    {
+      "repository": "frontend",
+      "path": "src/pages/LeagueInfoPage.tsx",
+      "bytes": 33212,
+      "sha256": "7157ae91ed916060587efae64858a3857139ae08b5104c51b30df9d29470560e"
+    }
+  ]
+}

@@ -1,0 +1,255 @@
+{
+  "phase": "NC-02F2",
+  "status": "COMPLETE_LOCAL_ONLY",
+  "verified_at": "2026-10-16T22:13:56.188908+00:00",
+  "starting_state": {
+    "backend": {
+      "branch": "main",
+      "head": "b6b8830b82678c4809bb935fc3fa54a4291759b0",
+      "status": ""
+    },
+    "frontend": {
+      "branch": "main",
+      "head": "2887277f67e8666ac1da3df2526042585793dfb8",
+      "status": ""
+    }
+  },
+  "continuation_state": {
+    "backend_head_before_commit": "b6b8830b82678c4809bb935fc3fa54a4291759b0",
+    "frontend_start_head": "2887277f67e8666ac1da3df2526042585793dfb8",
+    "branches": "main",
+    "only_expected_F2_changes": true,
+    "saved_full_suite_reused": true
+  },
+  "requirements": {
+    "L20": "immutable season league leaderboards",
+    "L20A": "only globally eligible submitted cutoff members, no placeholders",
+    "L20B": "current privacy/current active membership, no former/admin bypass",
+    "L21": "frozen composition independent of later live membership/score",
+    "L21A": "global final success then atomic all-league cutoff then cleanup",
+    "L22": "confirmed whole-league history cascade, global/user/bracket preservation"
+  },
+  "prechange": "Only current league membership/live competition; immutable global history without stable competitor mapping",
+  "model": {
+    "internal_mapping": "leaderboard_history_competitors",
+    "all_league_receipt": "league_history_cutoffs",
+    "league_season": "league_history_seasons",
+    "league_row": "league_history_rows",
+    "scores": "immutable global rows referenced, not duplicated"
+  },
+  "internal_mapping": {
+    "public_exposure": false,
+    "new_global_snapshots_only": true,
+    "backfill": false,
+    "old_nonempty_snapshot_missing_map": "fails closed for explicit review; global history unchanged"
+  },
+  "cutoff": {
+    "leave_before": "excluded",
+    "leave_after": "preserved",
+    "join_before": "included if eligible",
+    "join_after": "no retroactive inclusion",
+    "kick_after": "preserved",
+    "ownership_transfer_after": "preserved",
+    "zero_eligible_league": "no competitive header/season entry; immutable receipt still freezes decision",
+    "retry": "verify and reuse original final decision, no current membership resampling"
+  },
+  "ranking": {
+    "competitive": [
+      "total_points DESC",
+      "full_hits DESC",
+      "saved_at ASC"
+    ],
+    "ties": "competition rank 1,2,2,4",
+    "display_only": [
+      "display_name COLLATE C",
+      "global display_order",
+      "global row ID"
+    ],
+    "global_rank_reused": false
+  },
+  "atomicity": {
+    "global_scope": "final snapshot persists if subsequent league preservation fails",
+    "league_scope": "all nonempty leagues plus receipt all-or-none; failure blocks cleanup",
+    "transition_scope": "existing E destructive atomic transition; failure retains global+league history",
+    "locks": "E advisory (50405,2), canonical pointer FOR UPDATE, short EXCLUSIVE leagues; raw membership parent trigger",
+    "lock_duration": "until enclosing DB RPC commit; no network IO; plain reads continue"
+  },
+  "immutability": "final append/update/rank/source/partial-delete refused; only confirmed whole-league cascade allowed",
+  "privacy": {
+    "policy": "current league privacy, current membership only",
+    "public_anonymous": true,
+    "private_current_member_and_owner": true,
+    "former_competitor_owner_admin_nonmember_denied": true,
+    "switches_immediate": true,
+    "safe_fields_only": true
+  },
+  "endpoints": [
+    "GET /leagues/<league_id>/history",
+    "GET /leagues/<league_id>/history/<season_code>"
+  ],
+  "frontend": "minimal current/past selector, stored ranks, management hidden in history, stale response cancellation and authorization refetch",
+  "deletion": "league-specific headers/rows removed; nonidentifying aggregate receipt remains; global snapshots/maps/users/brackets/scores unchanged; name reuse unchanged",
+  "backfill": "none; old completed seasons keep global history, no inferred league membership",
+  "validation": {
+    "applicable_backend": 218,
+    "backend_failures": 0,
+    "focused_F2_after_extended_assertions": 7,
+    "offline": 317,
+    "frontend": 48,
+    "frontend_typescript_build": true,
+    "browser_e2e": "not claimed; existing Node interaction suite used",
+    "frontend_lint": {
+      "existing_errors": 83,
+      "existing_warnings": 1,
+      "new_diagnostics": 0
+    },
+    "F1_live_regressions": 8,
+    "F2_SQL_groups": 17,
+    "membership_real_lock_races": 6,
+    "F1_SQL_groups": 9,
+    "post_F2_E_SQL_groups": 21,
+    "fresh_baseline_to_0009": true,
+    "strict_semantic_security": true,
+    "Black": true,
+    "whitespace": "PASS respecting existing CRLF",
+    "compilation": true,
+    "imports_no_new_unused": true,
+    "credential_file_audit": true
+  },
+  "security": {
+    "owner": "postgres",
+    "functions": "SECURITY INVOKER, pinned pg_catalog,public; postgres/service_role execution only",
+    "tables": "RLS no policies; no PUBLIC/anon/authenticated access",
+    "service_role": "SELECT/INSERT, only is_final column UPDATE on headers/receipt; no generic UPDATE/DELETE/TRUNCATE"
+  },
+  "evidence": {
+    "full": "db/records/nc_02f2_validation.json",
+    "focused": "db/records/nc_02f2_lifecycle_validation.json",
+    "fresh": "db/records/nc_02f2_fresh_migration_proof.json",
+    "frontend": "db/records/nc_02f2_frontend_validation.json",
+    "cleanup": "db/records/nc_02f2_cleanup_verification.json",
+    "audit": "db/records/nc_02f2_file_audit.json"
+  },
+  "cleanup": {
+    "verified_at": "2026-10-16T22:12:30.139580+00:00",
+    "fixture": {
+      "identity": "PASS",
+      "marker": "PASS",
+      "email": "PASS",
+      "providers": "PASS",
+      "jobs": "PASS",
+      "fixture_reset": "PASS",
+      "harness": "UNMET",
+      "fixture_version": "nc-fixtures-v1",
+      "fixture_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "mutation_permitted": false
+    },
+    "readiness": {
+      "identity_verified": true,
+      "database_marker": "PASS",
+      "email": "PASS",
+      "providers": "PASS",
+      "external_credentials": "PASS",
+      "jobs": "PASS",
+      "jobs_enabled": false,
+      "fixture_state": "SEEDED",
+      "fixtures_reset": "PASS",
+      "integration_harness": "PASS",
+      "mutation_permitted": false,
+      "harness_state": "AVAILABLE_GUARDED",
+      "harness_scoped_mutation_permitted": false
+    },
+    "counts": {
+      "users": 4,
+      "audits": 0,
+      "f2_rows": 0,
+      "leagues": 0,
+      "brackets": 0,
+      "standings": 30,
+      "global_rows": 0,
+      "memberships": 0,
+      "advisory_locks": 0,
+      "global_headers": 0,
+      "disposable_databases": 0
+    },
+    "canonical_season": true,
+    "strict_schema": true,
+    "fixture_marker": true,
+    "flask_stopped": true,
+    "locks_released": true,
+    "disposable_database_removed": true,
+    "email_capture_empty": true,
+    "f2_tables_checked_empty_outside_unchanged_v1_checksum": true,
+    "production_contact": false
+  },
+  "immutable_migration_sha256": {
+    "db/baseline/000_current_schema.sql": "8ca7b98f54544d177de41511ed9d3d969ac4389591ec966e5730f99369de4209",
+    "db/post-baseline/0001_nc_02b3_bracket_lifecycle.sql": "e98346423a4f73690371d8f1c178347330e5da33f02b6b9f4475475d237b4376",
+    "db/post-baseline/0002_nc_02c1_canonical_season.sql": "ab38f5182351d5bbf6df0116c2af944e97401b55e8b0fea037f0c11fa11296ec",
+    "db/post-baseline/0003_nc_02c2_atomic_standings.sql": "e359e09771af5b6a4fdf94542138a6655b8e273a8b064dbfb9a54c3973968d29",
+    "db/post-baseline/0004_nc_02c3_season_transition.sql": "8e252eb6247f477c42c2e38a83b881524e058f9f707e969e4e917e2bc85a6736",
+    "db/post-baseline/0005_nc_02d1_atomic_scores.sql": "11fdf464ab393bd0e5b58e8f34537447c6e320a731f7352fa62d4a295b657433",
+    "db/post-baseline/0006_nc_02d2_final_snapshots.sql": "3e1e3e34788cf6c05cb450d0b370fe1ca55ef6314f4bbb632d81445e7558c9d7",
+    "db/post-baseline/0007_nc_02e_atomic_rollover.sql": "cd3dbfd415d9a390e434df6b74ea2030fbf5bac9ae9ad8ebb63d01445c1bc1d8",
+    "db/post-baseline/0008_nc_02f1_league_lifecycle.sql": "e4abfcf9d7093847940cd967a2f37c760f3fa2708dca4256791effa8ca6740b9"
+  },
+  "production_contact": false,
+  "production_changes": false,
+  "production_prerequisites": [
+    "backup",
+    "0009 review",
+    "pre-F2 active final snapshot mapping review",
+    "league/member integrity preflight",
+    "FK/cascade review",
+    "coordinated separately authorized backend/frontend rollout",
+    "no automatic old-season backfill"
+  ],
+  "files": {
+    "backend": [
+      "app.py",
+      "db/post-baseline/0009_nc_02f2_league_history.sql",
+      "db/post-baseline/README.md",
+      "db/post-baseline/verify_current_schema.sql",
+      "db/post-baseline/verify_nc_02f1_schema.sql",
+      "db/records/nc_02f2_cleanup_verification.json",
+      "db/records/nc_02f2_file_audit.json",
+      "db/records/nc_02f2_fresh_migration_proof.json",
+      "db/records/nc_02f2_frontend_validation.json",
+      "db/records/nc_02f2_league_history.json",
+      "db/records/nc_02f2_lifecycle_validation.json",
+      "db/records/nc_02f2_prechange_inventory.json",
+      "db/records/nc_02f2_starting_state.json",
+      "db/records/nc_02f2_validation.json",
+      "docs/repairs/nc-02f2-league-history.md",
+      "integration_harness.py",
+      "league_history_service.py",
+      "scripts/local_supabase_environment.py",
+      "scripts/nc02f2_database_acceptance.py",
+      "scripts/prove_history_migration.py",
+      "scripts/prove_league_history_migration.py",
+      "scripts/prove_league_lifecycle_migration.py",
+      "scripts/prove_rollover_migration.py",
+      "scripts/reset_local_fixtures.py",
+      "scripts/run_league_history_acceptance.py",
+      "tests/characterization/league_history.py",
+      "tests/offline/test_league_history.py",
+      "tests/offline/test_league_lifecycle.py",
+      "tests/offline/test_rollover_rules.py"
+    ],
+    "frontend": [
+      "scripts/test-league-history.cjs",
+      "src/api/leagues.ts",
+      "src/components/leagues/LeagueHistoryPanel.tsx",
+      "src/pages/LeagueInfoPage.tsx"
+    ]
+  },
+  "git": {
+    "frontend_commit": "4a5718ebeeb5557e8bb516d8b9fb77297c7435e3",
+    "backend_commit": "Reported in completing response; this evidence is included in that normal commit",
+    "amended": false,
+    "commit_message": "NC-02F2 add historical league seasons"
+  },
+  "final_NC02F_status": "F1 and F2 completed locally; production not rolled out",
+  "recommended_next_checkpoint": "Review NC-02F completion and choose next explicitly approved roadmap domain",
+  "next_domain_started": false
+}

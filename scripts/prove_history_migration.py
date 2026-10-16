@@ -108,7 +108,7 @@ def main():
         # Resolve exact original function signatures from immutable manifest/catalog,
         # never accept an arbitrary function or target argument.
         cleanup = (
-            "DROP TABLE IF EXISTS public.season_rollover_audits;\nDROP TABLE public.application_season;\nDROP TABLE "
+            "DROP TABLE IF EXISTS public.league_history_rows,public.league_history_seasons,public.league_history_cutoffs,public.leaderboard_history_competitors CASCADE;\nDROP TABLE IF EXISTS public.season_rollover_audits;\nDROP TABLE public.application_season;\nDROP TABLE "
             + tables
             + " CASCADE;\n"
         )

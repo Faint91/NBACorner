@@ -127,7 +127,7 @@ def main():
         # Resolve exact original function signatures from immutable manifest/catalog,
         # never accept an arbitrary function or target argument.
         cleanup = (
-            "DROP TABLE IF EXISTS public.season_rollover_audits;\nDROP TABLE public.application_season;\nDROP TABLE "
+            "DROP TABLE IF EXISTS public.league_history_rows,public.league_history_seasons,public.league_history_cutoffs,public.leaderboard_history_competitors CASCADE;\nDROP TABLE IF EXISTS public.season_rollover_audits;\nDROP TABLE public.application_season;\nDROP TABLE "
             + tables
             + " CASCADE;\n"
         )
@@ -573,14 +573,14 @@ ROLLBACK;
         league_findings = f1_preflight(sql, lambda: sql(migration))
         sql(migration)
         sql(
-            (ROOT / "db/post-baseline/verify_current_schema.sql").read_text(
+            (ROOT / "db/post-baseline/verify_nc_02f1_schema.sql").read_text(
                 encoding="utf-8"
             )
         )
         league_findings += f1_run(sql)
         league_findings.append(f1_contention(sql, PROOF_DB))
         sql(
-            (ROOT / "db/post-baseline/verify_current_schema.sql").read_text(
+            (ROOT / "db/post-baseline/verify_nc_02f1_schema.sql").read_text(
                 encoding="utf-8"
             )
         )

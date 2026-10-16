@@ -3975,6 +3975,53 @@ def remove_league_member(league_id, target_user_id):
     return _league_lifecycle_action("remove", league_id, target_user_id)
 
 
+def optional_league_history_auth(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        header = request.headers.get("Authorization")
+        if header:
+            if not header.startswith("Bearer "):
+                return jsonify({"error": "Invalid Authorization header"}), 401
+            payload = decode_token(header.split(" ", 1)[1])
+            if not payload:
+                return jsonify({"error": "Invalid or expired token"}), 401
+            request.user = payload
+        else:
+            request.user = {}
+        return f(*args, **kwargs)
+
+    return wrapper
+
+
+def _league_history_read(league_id, season_code=None):
+    from league_history_service import read_history
+    from league_service import LeagueError
+
+    try:
+        league, _, error = require_private_league_membership(
+            league_id, request.user or {}
+        )
+        if error:
+            return error
+        return jsonify(read_history(supabase, league, season_code)), 200
+    except LeagueError as error:
+        return jsonify({"error": str(error)}), error.status
+    except Exception:
+        return jsonify({"error": "League history unavailable"}), 503
+
+
+@app.route("/leagues/<league_id>/history", methods=["GET"])
+@optional_league_history_auth
+def league_history_seasons(league_id):
+    return _league_history_read(league_id)
+
+
+@app.route("/leagues/<league_id>/history/<season_code>", methods=["GET"])
+@optional_league_history_auth
+def league_history_season(league_id, season_code):
+    return _league_history_read(league_id, season_code)
+
+
 # --------------------------------------------------------
 # --------------------- M  A  I  N  ----------------------
 # --------------------------------------------------------

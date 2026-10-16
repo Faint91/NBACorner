@@ -100,7 +100,7 @@ class LeaguePolicy(unittest.TestCase):
 
     def test_f1_preserves_all_unrelated_e_verifier_assertions(self):
         frozen = (ROOT / "db/post-baseline/verify_nc_02e_schema.sql").read_text()
-        current = (ROOT / "db/post-baseline/verify_current_schema.sql").read_text()
+        current = (ROOT / "db/post-baseline/verify_nc_02f1_schema.sql").read_text()
 
         def assertions(text):
             return {m.group(0) for m in re.finditer(r"  IF .*?  END IF;", text, re.S)}

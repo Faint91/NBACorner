@@ -1,0 +1,12 @@
+{
+  "backend": {
+    "branch": "main",
+    "head": "b6b8830b82678c4809bb935fc3fa54a4291759b0",
+    "status": ""
+  },
+  "frontend": {
+    "branch": "main",
+    "head": "2887277f67e8666ac1da3df2526042585793dfb8",
+    "status": ""
+  }
+}

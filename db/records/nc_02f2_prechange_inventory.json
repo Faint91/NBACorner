@@ -1,0 +1,30 @@
+{
+  "existing_league_routes": [
+    "POST /leagues",
+    "GET /leagues",
+    "GET /leagues/me",
+    "POST /leagues/:id/join",
+    "DELETE /leagues/:id/membership",
+    "DELETE /leagues/:id",
+    "GET /leagues/:id/members",
+    "PATCH /leagues/:id",
+    "POST /leagues/:id/ownership",
+    "DELETE /leagues/:id/members/:user_id"
+  ],
+  "current_leaderboard": "app.leaderboard: canonical scores, current membership; preserve unchanged",
+  "global_history": "leaderboard_history_snapshots + leaderboard_history_rows, immutable final, global public APIs use safe allowlists",
+  "internal_mapping_gap": "Global rows have saved_at/display_order but no stable user reference. Add internal-only mapping only for newly published rows; no backfill.",
+  "rollover": "SQL run_season_rollover: advisory lock 50405,2; global preservation subtransaction then independent destructive-transition subtransaction. Extend preservation between them.",
+  "deletion": "delete_league_confirmed owner/strict boolean guard; existing memberships cascade; new league history will cascade without changing F1 RPC.",
+  "privacy": "Existing require_private_league_membership + F1 member helper; optional verified JWT for new public read endpoints.",
+  "frontend": "LeagueInfoPage: current membership and F1 owner controls; global PastSeasons UI exists but no league season selector.",
+  "leagues": "Persistent UUID id, owner membership FK, nullable hash privacy; league_members unique (league_id,user_id), cascades from league.",
+  "reused": [
+    "immutable global score/display truth",
+    "D1/D2 SQL rank semantics",
+    "F1 privacy/member helper",
+    "existing E lock/transition/retry",
+    "existing guarded local suite and canonical checksum"
+  ],
+  "production_contact": false
+}

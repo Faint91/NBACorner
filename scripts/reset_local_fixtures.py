@@ -36,7 +36,14 @@ from synthetic_fixtures import (
     identity,
 )
 
-VERIFIER_SHA = "9649b4e44a313141f8ed793ab0d8b6db1084366544984b13a8e3eff352cae5e0"
+F2_TABLES = (
+    "league_history_rows",
+    "league_history_seasons",
+    "league_history_cutoffs",
+    "leaderboard_history_competitors",
+)
+
+VERIFIER_SHA = "3c8bf7d87361436da69119bf0c0182d9e5b5e9c0d893754920a235bebd716ae0"
 
 
 def validate_inventory(tables, sequences, external_dependencies=()):
@@ -140,7 +147,7 @@ DO $identity$ BEGIN
    RAISE EXCEPTION 'Local marker changed before reset'; END IF;
  IF EXISTS (SELECT 1 FROM pg_constraint WHERE contype='f'
    AND confrelid IN ({','.join("'public."+t+"'::regclass" for t in TABLES)})
-   AND conrelid NOT IN ({','.join("'public."+t+"'::regclass" for t in (*TABLES, "application_season", "season_rollover_audits"))})) THEN
+   AND conrelid NOT IN ({','.join("'public."+t+"'::regclass" for t in (*TABLES, "application_season", "season_rollover_audits", *F2_TABLES))})) THEN
    RAISE EXCEPTION 'Unexpected inbound reset dependency'; END IF;
 END $identity$;
 """
@@ -157,7 +164,12 @@ END $identity$;
         "TRUNCATE TABLE "
         + ",".join(
             "public." + t
-            for t in ("season_rollover_audits", "application_season", *TABLES)
+            for t in (
+                *F2_TABLES,
+                "season_rollover_audits",
+                "application_season",
+                *TABLES,
+            )
         )
         + " RESTART IDENTITY RESTRICT;\n"
     )
@@ -169,8 +181,11 @@ END $identity$;
     sql += "SELECT setval('public.standings_id_seq',30,true);\n"
     # Both other owned sequences remain freshly restarted at (1,false).
     actual, expected = state_sql(), state_sql(data)
+    extra_empty = " OR ".join(
+        "EXISTS(SELECT 1 FROM public." + table + ")" for table in F2_TABLES
+    )
     sql += f"""DO $fixture_verify$ BEGIN
- IF EXISTS(SELECT 1 FROM public.season_rollover_audits) OR ({actual}) IS DISTINCT FROM ({expected}) THEN
+ IF {extra_empty} OR EXISTS(SELECT 1 FROM public.season_rollover_audits) OR ({actual}) IS DISTINCT FROM ({expected}) THEN
    RAISE EXCEPTION 'Complete fixture-state verification failed'; END IF;
 END $fixture_verify$;
 UPDATE nba_corner_test_control.test_environment_identity
@@ -370,7 +385,10 @@ def verify_fixture_readiness(settings):
     check_configuration()
     container_identity()
     actual, expected = state_sql(), state_sql(foundation())
-    sql = f"BEGIN READ ONLY; SET LOCAL timezone='UTC'; SET LOCAL datestyle='ISO, YMD'; SET LOCAL extra_float_digits=3; SELECT jsonb_build_object('matches',(({actual})=({expected}) AND NOT EXISTS(SELECT 1 FROM public.season_rollover_audits)),'canonical',(SELECT count(*)=1 AND bool_and(singleton AND season_id='{identity('current')}'::uuid) FROM public.application_season),'checksum',{digest_sql(actual)}); COMMIT;"
+    f2_empty = " AND ".join(
+        "NOT EXISTS(SELECT 1 FROM public." + t + ")" for t in F2_TABLES
+    )
+    sql = f"BEGIN READ ONLY; SET LOCAL timezone='UTC'; SET LOCAL datestyle='ISO, YMD'; SET LOCAL extra_float_digits=3; SELECT jsonb_build_object('matches',(({actual})=({expected}) AND NOT EXISTS(SELECT 1 FROM public.season_rollover_audits)),'canonical',({f2_empty}) AND (SELECT count(*)=1 AND bool_and(singleton AND season_id='{identity('current')}'::uuid) FROM public.application_season),'checksum',{digest_sql(actual)}); COMMIT;"
     result = subprocess.run(
         [
             "docker",

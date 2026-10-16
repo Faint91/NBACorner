@@ -1,0 +1,89 @@
+{
+  "phase": "NC-02F2",
+  "superseded_assertions": [],
+  "selected_case_ids": [
+    "nc02f2_league_history.LeagueHistoryAcceptance.test_f2_current_private_membership_and_privacy_switch",
+    "nc02f2_league_history.LeagueHistoryAcceptance.test_f2_delete_cascade_preserves_global_and_brackets",
+    "nc02f2_league_history.LeagueHistoryAcceptance.test_f2_eligible_only_A_D_no_placeholder_and_empty_season_omission",
+    "nc02f2_league_history.LeagueHistoryAcceptance.test_f2_leave_before_cutoff_excluded",
+    "nc02f2_league_history.LeagueHistoryAcceptance.test_f2_leave_join_kick_transfer_rename_after_cutoff_never_rewrite",
+    "nc02f2_league_history.LeagueHistoryAcceptance.test_f2_partial_publication_blocks_transition_and_retains_global",
+    "nc02f2_league_history.LeagueHistoryAcceptance.test_f2_transition_failure_retains_global_and_league_cutoff_retry_reuses"
+  ],
+  "failed_case_ids": [],
+  "passed": true,
+  "tests_run": 7,
+  "failures": 0,
+  "errors": 0,
+  "findings": [
+    {
+      "phase": "NC-02F2",
+      "scenario": "test_f2_current_private_membership_and_privacy_switch",
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02F2",
+      "scenario": "test_f2_delete_cascade_preserves_global_and_brackets",
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02F2",
+      "scenario": "test_f2_eligible_only_A_D_no_placeholder_and_empty_season_omission",
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02F2",
+      "scenario": "test_f2_leave_before_cutoff_excluded",
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02F2",
+      "scenario": "test_f2_leave_join_kick_transfer_rename_after_cutoff_never_rewrite",
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02F2",
+      "scenario": "test_f2_partial_publication_blocks_transition_and_retains_global",
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02F2",
+      "scenario": "test_f2_transition_failure_retains_global_and_league_cutoff_retry_reuses",
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    }
+  ],
+  "readiness": {
+    "identity_verified": true,
+    "database_marker": "PASS",
+    "email": "PASS",
+    "providers": "PASS",
+    "external_credentials": "PASS",
+    "jobs": "PASS",
+    "jobs_enabled": false,
+    "fixture_state": "SEEDED",
+    "fixtures_reset": "PASS",
+    "integration_harness": "PASS",
+    "mutation_permitted": false,
+    "harness_state": "AVAILABLE_GUARDED",
+    "harness_scoped_mutation_permitted": false
+  },
+  "canonical_cleanup": {
+    "fixture_readiness": {
+      "identity": "PASS",
+      "marker": "PASS",
+      "email": "PASS",
+      "providers": "PASS",
+      "jobs": "PASS",
+      "fixture_reset": "PASS",
+      "harness": "UNMET",
+      "fixture_version": "nc-fixtures-v1",
+      "fixture_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "mutation_permitted": false
+    },
+    "flask_stopped": true,
+    "email_capture_empty": true,
+    "app_import_removed": true
+  },
+  "production_contact": false,
+  "historical_NC01_evidence_rewritten": false
+}

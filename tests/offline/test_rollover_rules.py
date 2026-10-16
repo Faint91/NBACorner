@@ -169,7 +169,13 @@ class RolloverRoutePreservation(unittest.TestCase):
                         and deco.func.attr == "route"
                     ):
                         inventory.append([node.name, ast.dump(deco)])
-        additions = {"update_league", "transfer_league_owner", "remove_league_member"}
+        additions = {
+            "update_league",
+            "transfer_league_owner",
+            "remove_league_member",
+            "league_history_seasons",
+            "league_history_season",
+        }
         self.assertEqual({n for n, _ in inventory} & additions, additions)
         actual = hashlib.sha256(
             json.dumps(
