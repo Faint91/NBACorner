@@ -36,7 +36,7 @@ from synthetic_fixtures import (
     identity,
 )
 
-VERIFIER_SHA = "eb5833dee600b3373be66b1ec53a3d4f028720f1b204cea21bc337d70f32db8d"
+VERIFIER_SHA = "27dff44e6fe4e7556edad6aef30828500e4d95e2225293843d5ce3adeffc51d9"
 
 
 def validate_inventory(tables, sequences, external_dependencies=()):
@@ -140,7 +140,7 @@ DO $identity$ BEGIN
    RAISE EXCEPTION 'Local marker changed before reset'; END IF;
  IF EXISTS (SELECT 1 FROM pg_constraint WHERE contype='f'
    AND confrelid IN ({','.join("'public."+t+"'::regclass" for t in TABLES)})
-   AND conrelid NOT IN ({','.join("'public."+t+"'::regclass" for t in (*TABLES, "application_season"))})) THEN
+   AND conrelid NOT IN ({','.join("'public."+t+"'::regclass" for t in (*TABLES, "application_season", "season_rollover_audits"))})) THEN
    RAISE EXCEPTION 'Unexpected inbound reset dependency'; END IF;
 END $identity$;
 """
@@ -155,7 +155,10 @@ END $identity$;
     sql += marker_verify + "\n"
     sql += (
         "TRUNCATE TABLE "
-        + ",".join("public." + t for t in ("application_season", *TABLES))
+        + ",".join(
+            "public." + t
+            for t in ("season_rollover_audits", "application_season", *TABLES)
+        )
         + " RESTART IDENTITY RESTRICT;\n"
     )
     sql += "UPDATE nba_corner_test_control.test_environment_identity SET fixture_state='UNSEEDED',fixture_version=NULL,fixture_checksum=NULL WHERE singleton;\n"
@@ -167,7 +170,7 @@ END $identity$;
     # Both other owned sequences remain freshly restarted at (1,false).
     actual, expected = state_sql(), state_sql(data)
     sql += f"""DO $fixture_verify$ BEGIN
- IF ({actual}) IS DISTINCT FROM ({expected}) THEN
+ IF EXISTS(SELECT 1 FROM public.season_rollover_audits) OR ({actual}) IS DISTINCT FROM ({expected}) THEN
    RAISE EXCEPTION 'Complete fixture-state verification failed'; END IF;
 END $fixture_verify$;
 UPDATE nba_corner_test_control.test_environment_identity
@@ -367,7 +370,7 @@ def verify_fixture_readiness(settings):
     check_configuration()
     container_identity()
     actual, expected = state_sql(), state_sql(foundation())
-    sql = f"BEGIN READ ONLY; SET LOCAL timezone='UTC'; SET LOCAL datestyle='ISO, YMD'; SET LOCAL extra_float_digits=3; SELECT jsonb_build_object('matches',({actual})=({expected}),'canonical',(SELECT count(*)=1 AND bool_and(singleton AND season_id='{identity('current')}'::uuid) FROM public.application_season),'checksum',{digest_sql(actual)}); COMMIT;"
+    sql = f"BEGIN READ ONLY; SET LOCAL timezone='UTC'; SET LOCAL datestyle='ISO, YMD'; SET LOCAL extra_float_digits=3; SELECT jsonb_build_object('matches',(({actual})=({expected}) AND NOT EXISTS(SELECT 1 FROM public.season_rollover_audits)),'canonical',(SELECT count(*)=1 AND bool_and(singleton AND season_id='{identity('current')}'::uuid) FROM public.application_season),'checksum',{digest_sql(actual)}); COMMIT;"
     result = subprocess.run(
         [
             "docker",

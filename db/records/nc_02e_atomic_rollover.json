@@ -1,0 +1,241 @@
+{
+  "phase": "NC-02E",
+  "status": "COMPLETED_LOCALLY",
+  "verified_at": "2026-10-16T02:15:51Z",
+  "starting_state": {
+    "backend": {
+      "branch": "main",
+      "head": "ef8488739bc7ef3f0bb9373c3774415515d03f31",
+      "status": ""
+    },
+    "frontend": {
+      "branch": "main",
+      "head": "66c9573ce4ad0878e69f72fddab2d40cf288d11f",
+      "status": ""
+    }
+  },
+  "continuation_state": {
+    "backend_head": "ef8488739bc7ef3f0bb9373c3774415515d03f31",
+    "frontend_head": "66c9573ce4ad0878e69f72fddab2d40cf288d11f",
+    "both_branches": "main",
+    "existing_uncommitted_E_work_preserved": true,
+    "unexpected_commits": false,
+    "unrelated_user_changes": false
+  },
+  "requirements": [
+    "RR1",
+    "RR2",
+    "RR3",
+    "RR4",
+    "RR5",
+    "RR6",
+    "RR7",
+    "RR8",
+    "RR9",
+    "RR10",
+    "RR11",
+    "RR12",
+    "RR13",
+    "RR14",
+    "RR15",
+    "RR16"
+  ],
+  "revised_RR12": "Every source bracket not currently legitimately saved/submitted is physically deleted inside atomic transition; edited-unsaved/stale-save/deleted rows included.",
+  "retention": {
+    "saved_predicate": "source season; is_done IS TRUE; deleted_at IS NULL; saved_at finite/non-null",
+    "saved_bracket": "unchanged row, save timestamp, graph/winner/count/season retained; historical by canonical season movement",
+    "unsaved_master": "same RR12 predicate; snapshot master identity has no live FK",
+    "draft_dependencies": "matches/scores cascade; dependent non-FK legacy draft references removed",
+    "unrelated_users_leagues_teams_deleted": false
+  },
+  "architecture": {
+    "explicit_admin_only": true,
+    "python_preparation": "D1 calculation_only; no writes",
+    "critical_lock": "pg_try_advisory_xact_lock(50405,2)",
+    "outer_rpc": "run_season_rollover",
+    "completed_master_validator": "require_completed_rollover_master",
+    "transition_rpc": "execute_season_rollover_transition",
+    "preparation_scope": "fresh score publication plus D2 snapshot; any preparation failure rolls back both",
+    "transition_scope": "one rollback scope, no snapshot creation; drafts/scores/target/canonical/standings/completion audit atomic",
+    "snapshot_failure_survival": "returned transition failure commits existing/final snapshot plus FAILED audit; independently proved across commits and sessions",
+    "catastrophic_outer_abort": "whole outer operation may roll back; inspect canonical/audit after unknown transport outcome, then retry from beginning",
+    "target": "immediate next YYYY-YY only; both finite explicit aware timings; opening strictly before lock",
+    "legacy": "best effort after structured preservation; durable/result legacy_warning",
+    "retry": "same immutable final snapshot revalidated/reused",
+    "repeat": "already_completed with no persistent writes; canonical mismatch conflict",
+    "busy": "no audit, snapshot or cleanup mutation",
+    "errors": "fixed safe stage/message and audit ID; no exception/provider dumps"
+  },
+  "security": {
+    "owner": "postgres",
+    "function_mode": "SECURITY INVOKER",
+    "search_path": "pg_catalog,public",
+    "execute_roles": [
+      "postgres",
+      "service_role"
+    ],
+    "anon_authenticated_execute": false,
+    "audit_rls": true,
+    "audit_browser_policies": false,
+    "audit_trusted_privileges": [
+      "SELECT",
+      "INSERT",
+      "UPDATE",
+      "DELETE"
+    ],
+    "audit_browser_writes": false,
+    "prior_migrations_immutable": [
+      {
+        "path": "db/post-baseline/0001_nc_02b3_bracket_lifecycle.sql",
+        "sha256": "e98346423a4f73690371d8f1c178347330e5da33f02b6b9f4475475d237b4376"
+      },
+      {
+        "path": "db/post-baseline/0002_nc_02c1_canonical_season.sql",
+        "sha256": "ab38f5182351d5bbf6df0116c2af944e97401b55e8b0fea037f0c11fa11296ec"
+      },
+      {
+        "path": "db/post-baseline/0003_nc_02c2_atomic_standings.sql",
+        "sha256": "e359e09771af5b6a4fdf94542138a6655b8e273a8b064dbfb9a54c3973968d29"
+      },
+      {
+        "path": "db/post-baseline/0004_nc_02c3_season_transition.sql",
+        "sha256": "8e252eb6247f477c42c2e38a83b881524e058f9f707e969e4e917e2bc85a6736"
+      },
+      {
+        "path": "db/post-baseline/0005_nc_02d1_atomic_scores.sql",
+        "sha256": "11fdf464ab393bd0e5b58e8f34537447c6e320a731f7352fa62d4a295b657433"
+      },
+      {
+        "path": "db/post-baseline/0006_nc_02d2_final_snapshots.sql",
+        "sha256": "3e1e3e34788cf6c05cb450d0b370fe1ca55ef6314f4bbb632d81445e7558c9d7"
+      }
+    ],
+    "frozen_d2_verifier_sha256": "eb5833dee600b3373be66b1ec53a3d4f028720f1b204cea21bc337d70f32db8d"
+  },
+  "validation": {
+    "applicable_backend_cases": 217,
+    "initial_passed": 211,
+    "initial_findings": 6,
+    "corrective_cases_passed": 10,
+    "all_findings_resolved": true,
+    "offline_tests_passed": 300,
+    "frontend_tests_passed": 36,
+    "fresh_database_proof_groups": 21,
+    "transition_fault_points": 6,
+    "committed_failure_and_retry": true,
+    "real_contention": true,
+    "frontend_typescript_build": "PASS",
+    "frontend_lint": {
+      "existing_errors": 83,
+      "existing_warnings": 1,
+      "changed_admin_diagnostics_before": 6,
+      "changed_admin_diagnostics_after": 6,
+      "new_diagnostics": 0
+    },
+    "backend_lint": "No configured standalone linter; compilation, Black and AST unused-import comparison passed",
+    "formatting_whitespace": "PASS; original app CRLF retained",
+    "evidence": [
+      "db/records/nc_02e_validation.json",
+      "db/records/nc_02e_initial_validation.json",
+      "db/records/nc_02e_recheck_validation.json",
+      "db/records/nc_02e_lifecycle_validation.json",
+      "db/records/nc_02e_fresh_migration_proof.json",
+      "db/records/nc_02e_cleanup_verification.json"
+    ]
+  },
+  "cleanup": {
+    "fixture": {
+      "identity": "PASS",
+      "marker": "PASS",
+      "email": "PASS",
+      "providers": "PASS",
+      "jobs": "PASS",
+      "fixture_reset": "PASS",
+      "harness": "UNMET",
+      "fixture_version": "nc-fixtures-v1",
+      "fixture_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "mutation_permitted": false
+    },
+    "readiness": {
+      "identity_verified": true,
+      "database_marker": "PASS",
+      "email": "PASS",
+      "providers": "PASS",
+      "external_credentials": "PASS",
+      "jobs": "PASS",
+      "jobs_enabled": false,
+      "fixture_state": "SEEDED",
+      "fixtures_reset": "PASS",
+      "integration_harness": "PASS",
+      "mutation_permitted": false,
+      "harness_state": "AVAILABLE_GUARDED",
+      "harness_scoped_mutation_permitted": false
+    },
+    "counts": {
+      "audits": 0,
+      "scores": 0,
+      "history": 0,
+      "matches": 0,
+      "brackets": 0,
+      "standings": 30,
+      "lease_locks": 0,
+      "proof_databases": 0
+    },
+    "flask_stopped": true,
+    "email_capture_empty": true,
+    "lease_released": true,
+    "scratch_databases_removed": true,
+    "production_contact": false
+  },
+  "production": {
+    "contact": false,
+    "query": false,
+    "migration": false,
+    "deployment": false,
+    "rollover": false,
+    "preflight": "NOT RUN / NOT AUTHORIZED",
+    "readiness": "Local implementation validated; separate approved backup/catalog/master/snapshot/target/count review and coordinated migration/backend/frontend rollout required",
+    "hard_deletion_recovery": "Transaction rollback before successful commit; controlled backup restore for already-committed draft deletion",
+    "first_target_standings": "Existing authorized ESPN refresh with target season/freeze checks"
+  },
+  "files": {
+    "backend": [
+      "app.py",
+      "db/post-baseline/0007_nc_02e_atomic_rollover.sql",
+      "db/post-baseline/README.md",
+      "db/post-baseline/verify_current_schema.sql",
+      "db/post-baseline/verify_nc_02d2_schema.sql",
+      "db/records/nc_02e_atomic_rollover.json",
+      "db/records/nc_02e_cleanup_verification.json",
+      "db/records/nc_02e_fresh_migration_proof.json",
+      "db/records/nc_02e_initial_validation.json",
+      "db/records/nc_02e_lifecycle_validation.json",
+      "db/records/nc_02e_recheck_validation.json",
+      "db/records/nc_02e_starting_state.json",
+      "db/records/nc_02e_validation.json",
+      "docs/repairs/nc-02e-atomic-rollover.md",
+      "integration_harness.py",
+      "rollover_service.py",
+      "scoring_service.py",
+      "scripts/local_supabase_environment.py",
+      "scripts/nc02e_database_acceptance.py",
+      "scripts/prove_history_migration.py",
+      "scripts/prove_rollover_migration.py",
+      "scripts/reset_local_fixtures.py",
+      "scripts/run_rollover_acceptance.py",
+      "tests/characterization/rollover_atomic.py",
+      "tests/offline/test_rollover_rules.py"
+    ],
+    "frontend": [
+      "src/pages/AdminPage.tsx",
+      "scripts/test-rollover-atomic.cjs"
+    ]
+  },
+  "next_domain_started": false,
+  "next_checkpoint": "Await explicit approval for next domain; no league lifecycle work started",
+  "git": {
+    "completion_commit_message": "NC-02E make season rollover atomic",
+    "amended": false,
+    "commit_identifiers": "Reported by completing chat; this evidence is part of the normal completion commit"
+  }
+}

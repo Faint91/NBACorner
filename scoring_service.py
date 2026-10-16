@@ -92,9 +92,15 @@ def keyed_matches(rows):
 
 
 def recompute_current_scores(
-    client, *, expected_season_id=None, expected_master_id=None, snapshot_context=False
+    client,
+    *,
+    expected_season_id=None,
+    expected_master_id=None,
+    snapshot_context=False,
+    calculation_only=False,
 ):
-    guard_runtime_job("score-recompute")
+    if not calculation_only:
+        guard_runtime_job("score-recompute")
     try:
         season, master = get_current_scoring_master(
             client,
@@ -164,6 +170,10 @@ def recompute_current_scores(
         raise
     except Exception:
         raise ScoringError("calculation_failure") from None
+    if calculation_only:
+        return dict(
+            season=season, master=master, scoring_source=source, scoring_rows=rows
+        )
     try:
         result = (
             client.rpc(

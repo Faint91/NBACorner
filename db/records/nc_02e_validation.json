@@ -1,0 +1,101 @@
+{
+  "phase": "NC-02E",
+  "passed": true,
+  "tests_run": 217,
+  "unique_applicable_backend_tests": 217,
+  "failures": 0,
+  "errors": 0,
+  "validation_model": "Full applicable run plus targeted correction/recheck; original failing run retained unchanged.",
+  "initial_run": "db/records/nc_02e_initial_validation.json",
+  "initial_tests_run": 217,
+  "initial_failures": 6,
+  "initial_errors": 0,
+  "initial_failed_case_ids": [
+    "nc02e_auth_access.CurrentAuthBehavior.current_behavior__auth__duplicate_email",
+    "nc02e_auth_access.CurrentAuthBehavior.current_behavior__auth__duplicate_username",
+    "nc02e_auth_access.CurrentAuthBehavior.current_behavior__auth__password_whitespace",
+    "nc02e_auth_access.CurrentAuthBehavior.current_behavior__auth__registration_invalid_fields",
+    "nc02e_auth_access.CurrentAuthBehavior.current_behavior__auth__registration_password_policy",
+    "nc02e_scoring_static.CurrentStaticScoring.current_behavior__history__snapshot_source"
+  ],
+  "recheck_run": "db/records/nc_02e_recheck_validation.json",
+  "recheck_tests_run": 10,
+  "all_initial_findings_resolved": true,
+  "recheck_includes_final_strict_timing": true,
+  "superseded_assertions": [
+    {
+      "test": "nc02e_history_snapshot.HistoryAcceptance.test_d2_failure_is_never_zero_and_gate_stays_closed",
+      "reason": "Superseded NC-02E atomic RPC, completed-master and retention contract; replaced by E live/DB proof. Historical evidence unchanged."
+    },
+    {
+      "test": "nc02e_history_snapshot.HistoryAcceptance.test_d2_later_cleanup_failure_preserves_final_snapshot",
+      "reason": "Superseded NC-02E atomic RPC, completed-master and retention contract; replaced by E live/DB proof. Historical evidence unchanged."
+    },
+    {
+      "test": "nc02e_history_snapshot.HistoryAcceptance.test_d2_legacy_success_structured_failure_blocks_cleanup",
+      "reason": "Superseded NC-02E atomic RPC, completed-master and retention contract; replaced by E live/DB proof. Historical evidence unchanged."
+    },
+    {
+      "test": "nc02e_history_snapshot.HistoryAcceptance.test_d2_zero_participation_verified_final_repeat_and_cleanup",
+      "reason": "Superseded NC-02E atomic RPC, completed-master and retention contract; replaced by E live/DB proof. Historical evidence unchanged."
+    },
+    {
+      "test": "nc02e_season_transition.SeasonTransitionAcceptance.test_c3_existing_target_refused_before_snapshot",
+      "reason": "Superseded NC-02E atomic RPC, completed-master and retention contract; replaced by E live/DB proof. Historical evidence unchanged."
+    },
+    {
+      "test": "nc02e_season_transition.SeasonTransitionAcceptance.test_c3_finalization_failure_exposes_earlier_commits_without_split",
+      "reason": "Superseded NC-02E atomic RPC, completed-master and retention contract; replaced by E live/DB proof. Historical evidence unchanged."
+    },
+    {
+      "test": "nc02e_season_transition.SeasonTransitionAcceptance.test_c3_invalid_target_and_auth_fail_before_mutation",
+      "reason": "Superseded NC-02E atomic RPC, completed-master and retention contract; replaced by E live/DB proof. Historical evidence unchanged."
+    },
+    {
+      "test": "nc02e_season_transition.SeasonTransitionAcceptance.test_c3_season_insert_failure_preserves_pointer_and_standings",
+      "reason": "Superseded NC-02E atomic RPC, completed-master and retention contract; replaced by E live/DB proof. Historical evidence unchanged."
+    },
+    {
+      "test": "nc02e_season_transition.SeasonTransitionAcceptance.test_c3_snapshot_failure_preserves_pointer_and_standings",
+      "reason": "Superseded NC-02E atomic RPC, completed-master and retention contract; replaced by E live/DB proof. Historical evidence unchanged."
+    },
+    {
+      "test": "nc02e_season_transition.SeasonTransitionAcceptance.test_c3_source_conflict_fails_closed_before_snapshot",
+      "reason": "Superseded NC-02E atomic RPC, completed-master and retention contract; replaced by E live/DB proof. Historical evidence unchanged."
+    },
+    {
+      "test": "nc02e_season_transition.SeasonTransitionAcceptance.test_c3_success_consumers_history_refresh_freeze_and_repeat",
+      "reason": "Superseded NC-02E atomic RPC, completed-master and retention contract; replaced by E live/DB proof. Historical evidence unchanged."
+    },
+    {
+      "test": "nc02e_operations_static.CurrentStaticOperations.current_behavior__rollover__season_model",
+      "reason": "Superseded NC-02E atomic RPC, completed-master and retention contract; replaced by E live/DB proof. Historical evidence unchanged."
+    },
+    {
+      "test": "nc02e_operations_offline.CurrentOfflineOperations.current_behavior__rollover__failures",
+      "reason": "Superseded NC-02E atomic RPC, completed-master and retention contract; replaced by E live/DB proof. Historical evidence unchanged."
+    },
+    {
+      "test": "nc02e_operations_offline.CurrentOfflineOperations.current_behavior__rollover__order",
+      "reason": "Superseded NC-02E atomic RPC, completed-master and retention contract; replaced by E live/DB proof. Historical evidence unchanged."
+    },
+    {
+      "test": "nc02e_operations_offline.CurrentOfflineOperations.current_behavior__rollover__partial_snapshot",
+      "reason": "Superseded NC-02E atomic RPC, completed-master and retention contract; replaced by E live/DB proof. Historical evidence unchanged."
+    },
+    {
+      "test": "nc02e_operations_offline.CurrentOfflineOperations.current_behavior__rollover__preconditions",
+      "reason": "Superseded NC-02E atomic RPC, completed-master and retention contract; replaced by E live/DB proof. Historical evidence unchanged."
+    },
+    {
+      "test": "nc02e_operations_offline.CurrentOfflineOperations.current_behavior__rollover__repeat",
+      "reason": "Superseded NC-02E atomic RPC, completed-master and retention contract; replaced by E live/DB proof. Historical evidence unchanged."
+    },
+    {
+      "test": "nc02e_operations_offline.CurrentOfflineOperations.current_behavior__rollover__snapshot_failure",
+      "reason": "Superseded NC-02E atomic RPC, completed-master and retention contract; replaced by E live/DB proof. Historical evidence unchanged."
+    }
+  ],
+  "cleanup_verification": "db/records/nc_02e_cleanup_verification.json",
+  "production_contact": false
+}

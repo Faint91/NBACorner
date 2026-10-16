@@ -108,7 +108,7 @@ def main():
         # Resolve exact original function signatures from immutable manifest/catalog,
         # never accept an arbitrary function or target argument.
         cleanup = (
-            "DROP TABLE public.application_season;\nDROP TABLE "
+            "DROP TABLE IF EXISTS public.season_rollover_audits;\nDROP TABLE public.application_season;\nDROP TABLE "
             + tables
             + " CASCADE;\n"
         )
@@ -174,7 +174,7 @@ def main():
             )
         )
         sql(
-            (ROOT / "db/post-baseline/verify_current_schema.sql").read_text(
+            (ROOT / "db/post-baseline/verify_nc_02d2_schema.sql").read_text(
                 encoding="utf-8"
             )
         )

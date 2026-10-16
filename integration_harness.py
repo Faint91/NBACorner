@@ -430,8 +430,10 @@ class GuardedHarness:
                 for lid in lids
             }
             reads |= {"/bracket/" + bid for bid in self._brackets}
-            if self.characterization_scope == "NC-02B3":
+            if self.characterization_scope in {"NC-02B3", "NC-02D2"}:
+                # E reuses the D2 lease for post-rollover B15 read-only proof.
                 reads |= {"/history/bracket/" + bid for bid in self._brackets}
+            if self.characterization_scope == "NC-02B3":
                 if method == "DELETE" and path in {
                     "/bracket/" + bid for bid in self._brackets
                 }:

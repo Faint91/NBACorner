@@ -1,0 +1,277 @@
+{
+  "phase": "NC-02E",
+  "superseded_assertions": [],
+  "selected_case_ids": [
+    "nc02e_rollover_atomic.AtomicRolloverAcceptance.test_e_calculation_failure_is_not_zero_and_rpc_failure_sanitized",
+    "nc02e_rollover_atomic.AtomicRolloverAcceptance.test_e_full_success_history_readonly_new_refresh_and_repeat",
+    "nc02e_rollover_atomic.AtomicRolloverAcceptance.test_e_preconditions_authorization_and_complete_master_gate",
+    "nc02e_rollover_atomic.AtomicRolloverAcceptance.test_e_zero_competitors_requires_complete_master_and_reuses_snapshot",
+    "nc02e_auth_access.CurrentAuthBehavior.current_behavior__auth__duplicate_email",
+    "nc02e_auth_access.CurrentAuthBehavior.current_behavior__auth__duplicate_username",
+    "nc02e_auth_access.CurrentAuthBehavior.current_behavior__auth__password_whitespace",
+    "nc02e_auth_access.CurrentAuthBehavior.current_behavior__auth__registration_invalid_fields",
+    "nc02e_auth_access.CurrentAuthBehavior.current_behavior__auth__registration_password_policy",
+    "nc02e_scoring_static.CurrentStaticScoring.current_behavior__history__snapshot_source"
+  ],
+  "failed_case_ids": [],
+  "passed": true,
+  "tests_run": 10,
+  "failures": 0,
+  "errors": 0,
+  "findings": [
+    {
+      "phase": "NC-02E",
+      "scenario": "test_e_calculation_failure_is_not_zero_and_rpc_failure_sanitized",
+      "passed": true,
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "production_contact": false
+    },
+    {
+      "phase": "NC-02E",
+      "scenario": "test_e_full_success_history_readonly_new_refresh_and_repeat",
+      "passed": true,
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "production_contact": false
+    },
+    {
+      "phase": "NC-02E",
+      "scenario": "test_e_preconditions_authorization_and_complete_master_gate",
+      "passed": true,
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "production_contact": false
+    },
+    {
+      "phase": "NC-02E",
+      "scenario": "test_e_zero_competitors_requires_complete_master_and_reuses_snapshot",
+      "passed": true,
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "production_contact": false
+    },
+    {
+      "scenario": "current_behavior__auth__duplicate_email",
+      "group": "Registration",
+      "current_behavior": "Duplicate email is normalized to lowercase and rejected with 400.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve email normalization and duplicate response policy?",
+      "evidence_source": "Live guarded local Flask API; canonical reset per case",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/register",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__auth__duplicate_username",
+      "group": "Registration",
+      "current_behavior": "Duplicate valid username rejected with 400.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve username uniqueness and normalization?",
+      "evidence_source": "Live guarded local Flask API; canonical reset per case",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/register",
+          "status": 201,
+          "shape": [
+            "message",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/register",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__auth__password_whitespace",
+      "group": "Login/session",
+      "current_behavior": "Registration preserves password whitespace while login strips it, preventing login with that stored password.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Should password normalization be consistent?",
+      "evidence_source": "Live guarded local Flask API; canonical reset per case",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/register",
+          "status": 201,
+          "shape": [
+            "message",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__auth__registration_invalid_fields",
+      "group": "Registration",
+      "current_behavior": "Missing fields, invalid email and invalid username return 400.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "What request validation contract should be approved?",
+      "evidence_source": "Live guarded local Flask API; canonical reset per case",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/register",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/register",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/register",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__auth__registration_password_policy",
+      "group": "Registration",
+      "current_behavior": "Weak or non-string passwords rejected with 400.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve the current length/character policy?",
+      "evidence_source": "Live guarded local Flask API; canonical reset per case",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/register",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/register",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__history__snapshot_source",
+      "phase": "NC-02E",
+      "classification": "APPROVED REQUIREMENT (snapshot/history and cleanup gate only)",
+      "requirements": [
+        "SC5",
+        "SC10",
+        "SC11",
+        "SC12",
+        "SC13",
+        "SC14",
+        "SC15",
+        "SC16",
+        "SC17"
+      ],
+      "previous_metadata": {
+        "scenario": "current_behavior__history__snapshot_source",
+        "phase": "NC-02D2",
+        "classification": "APPROVED REQUIREMENT (snapshot/history and cleanup gate only)",
+        "requirements": [
+          "SC5",
+          "SC10",
+          "SC11",
+          "SC12",
+          "SC13",
+          "SC14",
+          "SC15",
+          "SC16",
+          "SC17"
+        ],
+        "previous_metadata": {
+          "scenario": "current_behavior__history__snapshot_source",
+          "group": "snapshot creation",
+          "current_behavior": "Legacy write precedes structured snapshot; structured failure is nonfatal; duplicate guard only checks legacy rows. Rollover calls snapshot but is not executed here.",
+          "approved_requirement": null,
+          "classification": "REQUIREMENT NOT YET REVIEWED",
+          "future_business_question": "Approve atomicity/recovery/snapshot scheduling?",
+          "evidence_source": "STATIC source/schema/frontend; no browser or live job claim"
+        },
+        "current_behavior": "Canonical fresh scores; complete atomic immutable structured snapshot; shared competition ranks; safe public stored-order history. Genuine zero participation is supported; failures never count as empty.",
+        "full_rollover_atomicity_claimed": false
+      },
+      "current_behavior": "Standalone snapshot preserved; rollover performs read-only preparation then locked DB snapshot gate before atomic transition. Real SQL rollback acceptance is authoritative.",
+      "full_rollover_atomicity_claimed": false
+    }
+  ],
+  "readiness": {
+    "identity_verified": true,
+    "database_marker": "PASS",
+    "email": "PASS",
+    "providers": "PASS",
+    "external_credentials": "PASS",
+    "jobs": "PASS",
+    "jobs_enabled": false,
+    "fixture_state": "SEEDED",
+    "fixtures_reset": "PASS",
+    "integration_harness": "PASS",
+    "mutation_permitted": false,
+    "harness_state": "AVAILABLE_GUARDED",
+    "harness_scoped_mutation_permitted": false
+  },
+  "canonical_cleanup": {
+    "fixture_readiness": {
+      "identity": "PASS",
+      "marker": "PASS",
+      "email": "PASS",
+      "providers": "PASS",
+      "jobs": "PASS",
+      "fixture_reset": "PASS",
+      "harness": "UNMET",
+      "fixture_version": "nc-fixtures-v1",
+      "fixture_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "mutation_permitted": false
+    },
+    "flask_stopped": true,
+    "email_capture_empty": true,
+    "app_import_removed": true
+  },
+  "production_contact": false,
+  "historical_NC01_evidence_rewritten": false
+}

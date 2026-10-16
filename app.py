@@ -893,34 +893,25 @@ def admin_season_rollover():
     if not new_code:
         return jsonify({"error": "new_season_code is required"}), 400
 
-    # Parse supplied gate datetimes; the helper requires both.
-    reg_dt = None
-    if regular_end_raw:
-        reg_dt = parse_iso8601_utc(regular_end_raw)
-        if reg_dt is None:
-            return (
-                jsonify(
-                    {
-                        "error": "Invalid regular_season_end_utc. "
-                        "Use ISO-8601 in UTC (e.g. '2026-04-15T07:00:00Z')."
-                    }
-                ),
-                400,
-            )
+    # Rollover requires explicit aware timings; do not assume UTC for naive input.
+    from canonical_season import timestamp, SeasonConfigurationError
 
-    pl_dt = None
-    if playoffs_start_raw:
-        pl_dt = parse_iso8601_utc(playoffs_start_raw)
-        if pl_dt is None:
-            return (
-                jsonify(
-                    {
-                        "error": "Invalid playoffs_start_utc. "
-                        "Use ISO-8601 in UTC (e.g. '2026-04-18T07:00:00Z')."
-                    }
-                ),
-                400,
-            )
+    try:
+        reg_dt = timestamp(regular_end_raw) if regular_end_raw else None
+        pl_dt = timestamp(playoffs_start_raw) if playoffs_start_raw else None
+    except SeasonConfigurationError:
+        return (
+            jsonify(
+                {
+                    "ok": False,
+                    "state": "failed",
+                    "status": 400,
+                    "stage": "prerequisite",
+                    "error": "Target timing must use timezone-aware ISO-8601 values.",
+                }
+            ),
+            400,
+        )
 
     try:
         result = _rollover_current_season(
@@ -1353,357 +1344,17 @@ def _rollover_current_season(
     playoffs_start_utc=None,
     created_by_user_id=None,
 ):
-    """
-    Close the CURRENT season and create a new season row.
-
-    Steps (in order):
-      1) Snapshot the current season leaderboard (or reuse existing snapshot).
-      2) Delete bracket_scores rows for the current season.
-      3) Delete matches rows for the current season.
-      4) Soft-delete all brackets for the current season.
-      5) Insert the new season row in seasons.
-
-      6) Atomically finalize canonical designation and current standings reset.
-
-    Earlier steps remain separate transactions; broader recovery is deferred.
-
-    Returns a dict with:
-      - ok: bool
-      - status: HTTP-style status code
-      - steps: list of step results (each with step, ok, message, optional details)
-      - current_season: {id, code}
-      - new_season: {id, code, regular_season_end_utc, playoffs_start_utc} on success
-      - env_next_actions: compatibility metadata; no environment selector/update
-    """
+    """Explicit admin workflow; database owns lock, snapshot gate and atomic cleanup."""
     guard_runtime_job("season-rollover")
-    from canonical_season import validate_season_row, SeasonConfigurationError
+    from rollover_service import run_rollover
 
-    source = current_season()
-    steps = []
-    fresh = get_current_season(supabase)
-    if (fresh.id, fresh.code) != (source.id, source.code):
-        return {
-            "ok": False,
-            "status": 409,
-            "error": "Canonical source season changed; rollover refused.",
-            "steps": steps,
-        }
-
-    new_code = (new_season_code or "").strip()
-    if not new_code:
-        return {
-            "ok": False,
-            "status": 400,
-            "error": "new_season_code is required.",
-            "steps": steps,
-        }
-
-    if new_code == source.code:
-        return {
-            "ok": False,
-            "status": 400,
-            "error": "new_season_code must be different from CURRENT_SEASON_CODE.",
-            "steps": steps,
-        }
-
-    # Validate required canonical configuration before any destructive work.
-    try:
-        validate_season_row(
-            {
-                "id": "proposed-target",
-                "code": new_code,
-                "regular_season_end_utc": regular_season_end_utc,
-                "playoffs_start_utc": playoffs_start_utc,
-            }
-        )
-    except SeasonConfigurationError:
-        return {
-            "ok": False,
-            "status": 400,
-            "error": "Target requires a valid season code and both ordered, timezone-aware timing values.",
-            "steps": steps,
-        }
-
-    # Step 0 – Check that the new season code does not already exist
-    try:
-        existing = (
-            supabase.table("seasons")
-            .select("id")
-            .eq("code", new_code)
-            .limit(1)
-            .execute()
-        ).data or []
-    except Exception as e:
-        safe_print("🔴 Error checking seasons for rollover:", type(e).__name__)
-        return {
-            "ok": False,
-            "status": 500,
-            "error": "Failed to check for existing season with the new code.",
-            "steps": steps,
-        }
-
-    if existing:
-        return {
-            "ok": False,
-            "status": 400,
-            "error": "A season with this code already exists. Choose a different new_season_code.",
-            "steps": steps,
-        }
-
-    # Step 1 – Snapshot current season leaderboard
-    snapshot_result = _snapshot_leaderboard_for_current_season()
-    snapshot_error = snapshot_result.get("error")
-    snapshot_ok = bool(snapshot_result.get("ok"))
-
-    # Legacy rows or duplicate text can never satisfy the structured gate.
-    if (
-        snapshot_ok
-        and snapshot_result.get("structured_complete") is True
-        and snapshot_result.get("is_final") is True
-        and snapshot_result.get("season_id") == source.id
-        and snapshot_result.get("history_snapshot_id")
-        and type(snapshot_result.get("expected_rows")) is int
-        and snapshot_result["expected_rows"] >= 0
-        and snapshot_result.get("actual_rows") == snapshot_result["expected_rows"]
-        and snapshot_result.get("history_rows_count")
-        == snapshot_result["expected_rows"]
-    ):
-        rows_snapshot = snapshot_result.get("rows_snapshot", 0)
-        steps.append(
-            {
-                "step": "snapshot",
-                "ok": True,
-                "message": f"Snapshot created for season {source.code} with {rows_snapshot} rows.",
-                "details": snapshot_result,
-            }
-        )
-    else:
-        steps.append(
-            {
-                "step": "snapshot",
-                "ok": False,
-                "message": snapshot_error or "Snapshot failed.",
-                "details": snapshot_result,
-            }
-        )
-        status = snapshot_result.get("status", 400)
-        return {
-            "ok": False,
-            "status": status,
-            "error": "Snapshot step failed; season rollover aborted.",
-            "steps": steps,
-        }
-
-    # Step 2 – Delete bracket_scores for the current season
-    try:
-        bs_res = (
-            supabase.table("bracket_scores")
-            .delete()
-            .eq("season_id", source.id)
-            .execute()
-        )
-        deleted_scores = len(getattr(bs_res, "data", None) or [])
-    except Exception as e:
-        safe_print("🔴 Error deleting bracket_scores in rollover:", type(e).__name__)
-        steps.append(
-            {
-                "step": "delete_bracket_scores",
-                "ok": False,
-                "message": "Failed to delete bracket_scores for current season.",
-            }
-        )
-        return {
-            "ok": False,
-            "status": 500,
-            "error": "Failed to delete bracket_scores; season rollover aborted after snapshot.",
-            "steps": steps,
-        }
-
-    steps.append(
-        {
-            "step": "delete_bracket_scores",
-            "ok": True,
-            "message": f"Deleted {deleted_scores} bracket_scores rows for season {source.code}.",
-        }
+    return run_rollover(
+        supabase,
+        target_code=new_season_code,
+        opening=regular_season_end_utc,
+        lock=playoffs_start_utc,
+        requested_by=created_by_user_id,
     )
-
-    # Step 3 – Delete matches for the current season
-    try:
-        m_res = supabase.table("matches").delete().eq("season_id", source.id).execute()
-        deleted_matches = len(getattr(m_res, "data", None) or [])
-    except Exception as e:
-        safe_print("🔴 Error deleting matches in rollover:", type(e).__name__)
-        steps.append(
-            {
-                "step": "delete_matches",
-                "ok": False,
-                "message": "Failed to delete matches for current season.",
-            }
-        )
-        return {
-            "ok": False,
-            "status": 500,
-            "error": "Failed to delete matches; season rollover aborted after snapshot and bracket_scores cleanup.",
-            "steps": steps,
-        }
-
-    steps.append(
-        {
-            "step": "delete_matches",
-            "ok": True,
-            "message": f"Deleted {deleted_matches} matches rows for season {source.code}.",
-        }
-    )
-
-    # Step 4 – Soft delete brackets for the current season
-    try:
-        update_payload = {"deleted_at": now_utc().isoformat()}
-        if created_by_user_id:
-            update_payload["deleted_by_user_id"] = created_by_user_id
-
-        br_res = (
-            supabase.table("brackets")
-            .update(update_payload)
-            .eq("season_id", source.id)
-            .is_("deleted_at", None)
-            .execute()
-        )
-        soft_deleted = len(getattr(br_res, "data", None) or [])
-    except Exception as e:
-        safe_print("🔴 Error soft-deleting brackets in rollover:", type(e).__name__)
-        steps.append(
-            {
-                "step": "soft_delete_brackets",
-                "ok": False,
-                "message": "Failed to soft-delete brackets for current season.",
-            }
-        )
-        return {
-            "ok": False,
-            "status": 500,
-            "error": "Failed to soft-delete brackets; season rollover aborted after data cleanup.",
-            "steps": steps,
-        }
-
-    steps.append(
-        {
-            "step": "soft_delete_brackets",
-            "ok": True,
-            "message": f"Soft-deleted {soft_deleted} brackets for season {source.code}.",
-        }
-    )
-
-    # Step 5 – Insert the new season row
-    payload = {"code": new_code}
-    if regular_season_end_utc is not None:
-        payload["regular_season_end_utc"] = regular_season_end_utc.isoformat()
-    if playoffs_start_utc is not None:
-        payload["playoffs_start_utc"] = playoffs_start_utc.isoformat()
-
-    try:
-        insert_res = supabase.table("seasons").insert(payload).execute()
-        new_rows = getattr(insert_res, "data", None) or []
-        new_season = new_rows[0] if new_rows else None
-    except Exception as e:
-        safe_print("🔴 Error inserting new season in rollover:", type(e).__name__)
-        return {
-            "ok": False,
-            "status": 500,
-            "error": "Failed to insert new season row; previous steps already applied.",
-            "steps": steps,
-        }
-
-    if not new_season:
-        return {
-            "ok": False,
-            "status": 500,
-            "error": "Insert for new season returned no row; previous steps already applied.",
-            "steps": steps,
-        }
-
-    steps.append(
-        {
-            "step": "insert_new_season",
-            "ok": True,
-            "message": f"Inserted new season '{new_season.get('code')}' with id {new_season.get('id')}.",
-            "new_season": {
-                "id": new_season.get("id"),
-                "code": new_season.get("code"),
-                "regular_season_end_utc": new_season.get("regular_season_end_utc"),
-                "playoffs_start_utc": new_season.get("playoffs_start_utc"),
-            },
-        }
-    )
-
-    # Only the final pointer/reset pair is atomic, not earlier rollover work.
-    try:
-        target = validate_season_row(new_season)
-        if target.code != new_code or target.id == source.id:
-            raise SeasonConfigurationError()
-        finalized = (
-            supabase.rpc(
-                "finalize_season_transition",
-                {
-                    "p_source_season_id": source.id,
-                    "p_new_season_id": target.id,
-                    "p_new_season_code": new_code,
-                },
-            )
-            .execute()
-            .data
-        )
-        if not isinstance(finalized, dict) or finalized.get("state") != "transitioned":
-            raise RuntimeError("Invalid finalization result")
-    except Exception as error:
-        safe_print("Season transition finalization failed:", type(error).__name__)
-        steps.append(
-            {
-                "step": "finalize_season_transition",
-                "ok": False,
-                "message": "Canonical designation and standings reset could not be confirmed. Do not retry automatically.",
-            }
-        )
-        return {
-            "ok": False,
-            "status": 500,
-            "error": "Season finalization failed; previous rollover steps already applied. Canonical designation and standings reset are atomic; controlled recovery requires review.",
-            "steps": steps,
-        }
-    if has_request_context():
-        g.pop("canonical_season", None)
-    steps.append(
-        {
-            "step": "finalize_season_transition",
-            "ok": True,
-            "message": "Canonical season activated and current standings reset atomically.",
-        }
-    )
-
-    return {
-        "ok": True,
-        "status": 200,
-        "current_season": {
-            "id": str(source.id),
-            "code": source.code,
-        },
-        "new_season": {
-            "id": new_season.get("id"),
-            "code": new_season.get("code"),
-            "regular_season_end_utc": new_season.get("regular_season_end_utc"),
-            "playoffs_start_utc": new_season.get("playoffs_start_utc"),
-        },
-        "steps": steps,
-        "env_next_actions": {
-            "message": "Canonical season activated and current standings reset. No environment changes or process restart required.",
-            "CURRENT_SEASON_CODE": new_code,
-            "REGULAR_SEASON_END_UTC": (
-                regular_season_end_utc.isoformat() if regular_season_end_utc else None
-            ),
-            "PLAYOFFS_START_UTC": (
-                playoffs_start_utc.isoformat() if playoffs_start_utc else None
-            ),
-        },
-    }
 
 
 # --------------------------------------------------------

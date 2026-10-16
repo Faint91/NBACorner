@@ -171,3 +171,17 @@ historical values are unchanged. See `docs/repairs/nc-02d2-history-snapshot.md` 
 `db/records/nc_02d2_history_snapshot.json`. No production rollout is authorized by
 this local repair. Existing unverified structured headers require review before
 being treated as final; they are never silently promoted or overwritten.
+
+
+## NC-02E atomic explicit rollover
+
+Apply 0007 after immutable baseline and 0001–0006, then the current verifier.
+The prior D2 verifier is frozen as `verify_nc_02d2_schema.sql`. E adds private
+rollover audit and trusted-only completed-master/orchestration/transition functions.
+Saved historical bracket graphs remain; every unsaved source bracket is hard deleted
+only after verified final snapshot and inside the atomic transition. Failed transition
+preserves final snapshot/audit and rolls back all cleanup/activation. Legacy output is
+best effort; repeat-success and transaction advisory lock prevent duplicate cleanup.
+See `docs/repairs/nc-02e-atomic-rollover.md` for failure proofs, fixed local commands,
+fixture digest preservation and backup/hard-deletion operational limitations.
+No production action is authorized by this local repair.
