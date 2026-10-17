@@ -1,0 +1,35 @@
+{
+  "mode": "NC-04A READ-ONLY PREFLIGHT; offline metadata comparison",
+  "source_file_sha256": "7aa3215eac8406c7101048dbf97f517d44f5343f7267197ead06e2548acaf81d",
+  "observed_at": "2026-10-17T21:43:55.787337+00:00",
+  "status": "PASS",
+  "differences": [],
+  "counts": {
+    "views": 1,
+    "columns": 122,
+    "indexes": 38,
+    "policies": 16,
+    "triggers": 3,
+    "functions": 7,
+    "constraints": 55,
+    "default_acls": 6
+  },
+  "known_release_migrations_present": [],
+  "release_migrations_pending": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+  ],
+  "production_marker_table": null,
+  "canonical_table": null,
+  "app_schema_matches_secured_baseline": true,
+  "scope": "Columns/defaults, constraints, indexes, triggers, policies, view and function definitions/modes/owners. Supplemental live SELECT covers ACL/sequence metadata. No product rows or credentials imported."
+}

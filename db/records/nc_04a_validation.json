@@ -1,0 +1,20 @@
+{
+  "mode": "OFFLINE AUDIT-ONLY VALIDATION AFTER MANDATORY STOP",
+  "passed": 7,
+  "tests": [
+    "actual_collected_catalog_matches_baseline",
+    "column_drift_detected",
+    "function_body_drift_detected",
+    "missing_constraint_detected",
+    "index_drift_detected",
+    "view_drift_detected",
+    "actual_reset_helper_and_current_route_defect_reproduced"
+  ],
+  "python_compile": "PASS",
+  "black": "two new audit scripts formatted/check required before commit",
+  "application_sources_unchanged": true,
+  "frontend_unchanged": true,
+  "production_access": false,
+  "production_mutations": 0,
+  "full_NC03_suites_rerun": false
+}

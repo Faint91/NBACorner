@@ -1,0 +1,203 @@
+{
+  "counts": {
+    "users": 53,
+    "scores": 14,
+    "leagues": 1,
+    "matches": 441,
+    "brackets": 21,
+    "standings": 30,
+    "memberships": 1,
+    "global_history_headers": 7,
+    "global_history_legacy_rows": 0,
+    "global_history_structured_rows": 140
+  },
+  "resets": {
+    "legacy_records": 13,
+    "unused_records": 10,
+    "unused_unexpired": 0,
+    "legacy_user_fields": 0,
+    "orphan_reset_users": 0
+  },
+  "history": {
+    "headers": [
+      {
+        "rows": 22,
+        "season_id": "5409aaaa-17b8-431b-b5e7-5779e138a5a1",
+        "null_ranks": 0,
+        "season_code": "2017-18"
+      },
+      {
+        "rows": 22,
+        "season_id": "609c86eb-d16a-447d-b288-0d2ad3386bc8",
+        "null_ranks": 0,
+        "season_code": "2018-19"
+      },
+      {
+        "rows": 28,
+        "season_id": "d270287b-f0e5-4a20-a572-77281d328c40",
+        "null_ranks": 0,
+        "season_code": "2019-20"
+      },
+      {
+        "rows": 14,
+        "season_id": "3fd2c273-2038-44c0-9305-97588782c8c2",
+        "null_ranks": 0,
+        "season_code": "2020-21"
+      },
+      {
+        "rows": 17,
+        "season_id": "d80869ad-9568-43ab-b692-7c7eeb20803c",
+        "null_ranks": 0,
+        "season_code": "2021-22"
+      },
+      {
+        "rows": 15,
+        "season_id": "30dfcdf0-cc29-4e8d-b87e-d0ce5a684bb9",
+        "null_ranks": 0,
+        "season_code": "2022-23"
+      },
+      {
+        "rows": 22,
+        "season_id": "59bf65b2-528c-46c1-8e49-9df5c25af4b0",
+        "null_ranks": 0,
+        "season_code": "2024-25"
+      }
+    ],
+    "orphan_rows": 0,
+    "duplicate_header_season_groups": 0
+  },
+  "leagues": {
+    "untrimmed_names": 0,
+    "owner_not_member": 0,
+    "invalid_name_rows": 0,
+    "owner_missing_user": 0,
+    "duplicate_memberships": 0,
+    "normalized_collision_groups": 0
+  },
+  "seasons": [
+    {
+      "id": "5409aaaa-17b8-431b-b5e7-5779e138a5a1",
+      "code": "2017-18",
+      "pointer_valid": null,
+      "master_bracket_id": null,
+      "playoffs_start_utc": null,
+      "active_master_count": 0,
+      "regular_season_end_utc": null,
+      "active_master_match_count": 0
+    },
+    {
+      "id": "609c86eb-d16a-447d-b288-0d2ad3386bc8",
+      "code": "2018-19",
+      "pointer_valid": null,
+      "master_bracket_id": null,
+      "playoffs_start_utc": null,
+      "active_master_count": 0,
+      "regular_season_end_utc": null,
+      "active_master_match_count": 0
+    },
+    {
+      "id": "d270287b-f0e5-4a20-a572-77281d328c40",
+      "code": "2019-20",
+      "pointer_valid": null,
+      "master_bracket_id": null,
+      "playoffs_start_utc": null,
+      "active_master_count": 0,
+      "regular_season_end_utc": null,
+      "active_master_match_count": 0
+    },
+    {
+      "id": "3fd2c273-2038-44c0-9305-97588782c8c2",
+      "code": "2020-21",
+      "pointer_valid": null,
+      "master_bracket_id": null,
+      "playoffs_start_utc": null,
+      "active_master_count": 0,
+      "regular_season_end_utc": null,
+      "active_master_match_count": 0
+    },
+    {
+      "id": "d80869ad-9568-43ab-b692-7c7eeb20803c",
+      "code": "2021-22",
+      "pointer_valid": null,
+      "master_bracket_id": null,
+      "playoffs_start_utc": null,
+      "active_master_count": 0,
+      "regular_season_end_utc": null,
+      "active_master_match_count": 0
+    },
+    {
+      "id": "30dfcdf0-cc29-4e8d-b87e-d0ce5a684bb9",
+      "code": "2022-23",
+      "pointer_valid": null,
+      "master_bracket_id": null,
+      "playoffs_start_utc": null,
+      "active_master_count": 0,
+      "regular_season_end_utc": null,
+      "active_master_match_count": 0
+    },
+    {
+      "id": "28d27287-0536-493f-8738-25ff702c49f2",
+      "code": "2023-24",
+      "pointer_valid": null,
+      "master_bracket_id": null,
+      "playoffs_start_utc": null,
+      "active_master_count": 0,
+      "regular_season_end_utc": null,
+      "active_master_match_count": 0
+    },
+    {
+      "id": "59bf65b2-528c-46c1-8e49-9df5c25af4b0",
+      "code": "2024-25",
+      "pointer_valid": null,
+      "master_bracket_id": null,
+      "playoffs_start_utc": null,
+      "active_master_count": 0,
+      "regular_season_end_utc": null,
+      "active_master_match_count": 0
+    },
+    {
+      "id": "994f58bc-bdbc-422e-9786-bb5c8559ea0f",
+      "code": "2025-26",
+      "pointer_valid": true,
+      "master_bracket_id": "080992c1-8d70-4c90-a4ce-31c314d89527",
+      "playoffs_start_utc": "2026-04-15T00:00:00+00:00",
+      "active_master_count": 1,
+      "regular_season_end_utc": "2026-04-13T03:00:00+00:00",
+      "active_master_match_count": 21
+    }
+  ],
+  "brackets": {
+    "orphan_user": 0,
+    "season_mismatch": 0,
+    "active_graph_not_21": 0,
+    "invalid_series_games": 0,
+    "winner_not_participant": 0,
+    "cross_bracket_next_match": 0,
+    "submitted_without_saved_time": 0,
+    "duplicate_active_master_groups": 0,
+    "duplicate_active_user_season_groups": 0
+  },
+  "read_only": "on",
+  "standings": {
+    "rows": 30,
+    "bad_seed": 0,
+    "bad_record": 0,
+    "last_updated": "2026-04-12T09:52:05.489838",
+    "distinct_codes": 30,
+    "conference_counts": {
+      "East": 15,
+      "West": 15
+    },
+    "missing_team_codes": 0,
+    "unknown_team_codes": 0,
+    "duplicate_code_groups": 0
+  },
+  "identities": {
+    "null_or_blank": 0,
+    "missing_password": 0,
+    "email_collision_groups": 0,
+    "username_collision_groups": 0
+  },
+  "observed_at": "2026-10-17T21:46:07.331486+00:00",
+  "advisory_lock_count": 0
+}
