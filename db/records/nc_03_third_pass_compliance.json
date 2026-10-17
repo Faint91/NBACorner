@@ -1,0 +1,183 @@
+{
+  "phase": "NC-03 third consolidated audit pass",
+  "verified_at_utc": "2026-10-17T21:34:46.199839+00:00",
+  "status": "PASS",
+  "production_readiness": "READY FOR CONTROLLED PRODUCTION PREFLIGHT",
+  "backend_start": {
+    "branch": "main",
+    "head": "9e04fbe7447f2938ccde415568b40d059d8b6339",
+    "working_tree": "clean"
+  },
+  "frontend_start": {
+    "branch": "main",
+    "head": "4fa0e9fc11d49354e3da137ee43e9d1ddbc87357",
+    "working_tree": "clean"
+  },
+  "chronology": [
+    {
+      "checkpoint": "a0587529e2d1443d846e46850b6884a6cab16f36",
+      "result": "Original FAIL SEC001; all118 blocked"
+    },
+    {
+      "checkpoint": "1f2866f8797c8bbd574c9844425a4dea3f15a91e",
+      "result": "R1 local signing configuration repair"
+    },
+    {
+      "checkpoint": "613922d4522aefe319f187a067d6de2a2e22d87e",
+      "result": "Second pass FAIL SEC002;16PASS/102BLOCKED"
+    },
+    {
+      "checkpoint": "9e04fbe7447f2938ccde415568b40d059d8b6339",
+      "result": "R2 local diagnostic repair"
+    },
+    {
+      "result": "Third pass:118PASS; both security findings reverified; no new finding"
+    }
+  ],
+  "security_findings": [
+    {
+      "id": "NC03-SEC-001",
+      "status": "PASS",
+      "evidence": "nc_03_pass3_verify_nc03r1_jwt_config.json"
+    },
+    {
+      "id": "NC03-SEC-002",
+      "status": "PASS",
+      "evidence": "nc_03_pass3_verify_nc03r2_diagnostic.json"
+    }
+  ],
+  "new_findings": [],
+  "requirement_totals": {
+    "PASS": 118,
+    "FAIL": 0,
+    "BLOCKED": 0,
+    "NOT APPLICABLE": 0
+  },
+  "domains": {
+    "P": {
+      "PASS": 10
+    },
+    "B": {
+      "PASS": 16
+    },
+    "S": {
+      "PASS": 14
+    },
+    "SC": {
+      "PASS": 17
+    },
+    "RR": {
+      "PASS": 16
+    },
+    "L": {
+      "PASS": 25
+    },
+    "A": {
+      "PASS": 20
+    }
+  },
+  "foundation": {
+    "status": "PASS",
+    "app_owned_functions": 34,
+    "tables": 19,
+    "views": 1,
+    "sequences": 3,
+    "rls_policies": 16,
+    "triggers": 16,
+    "columns": 178,
+    "constraints": 88,
+    "indexes": 51,
+    "default_acls": 6,
+    "browser_relation_privileges": 0,
+    "untrusted_mutation_execution": false,
+    "scope": "public application objects; managed extension objects excluded; full exact catalog retained",
+    "default_acl_scope": "postgres app-migration table/sequence defaults closed; function defaults require explicit revokes. Managed supabase_admin platform defaults retained; validate creator during NC-04."
+  },
+  "cross_domain": {
+    "PASS": 12,
+    "FAIL": 0,
+    "BLOCKED": 0
+  },
+  "suites": {
+    "phase": "NC-03 third pass",
+    "verified_at_utc": "2026-10-17T21:33:09.558750+00:00",
+    "backend": {
+      "passed": 226,
+      "failures": 0,
+      "errors": 0,
+      "command": "python -B scripts/audit_nc03_pass3_backend.py --config <ignored-local-config> --allow-local-mutations"
+    },
+    "offline": {
+      "passed": 350,
+      "command": "python -B -m unittest discover -s tests/offline -q"
+    },
+    "frontend": {
+      "passed": 60,
+      "command": "node --test scripts/test-*.cjs"
+    },
+    "build": {
+      "result": "PASS",
+      "command": "npm run build",
+      "checks": "TypeScript and Vite",
+      "advisories": [
+        "Existing stale browser-data warning",
+        "Existing chunk over500KB warning"
+      ]
+    },
+    "eslint": {
+      "errors": 82,
+      "warnings": 1,
+      "new": 0,
+      "status": "existing baseline; unchanged frontend"
+    },
+    "cross_domain": {
+      "passed": 12,
+      "evidence": "nc_03_pass3_cross_domain.json"
+    },
+    "migration": {
+      "result": "PASS",
+      "chain": "immutable baseline plus0001-0011",
+      "semantic_security_seed_and_fixtures": "PASS",
+      "disposable_database_removed": true
+    },
+    "static": {
+      "black": {
+        "checked": 19,
+        "unchanged": 18,
+        "preexisting_would_reformat": [
+          "app.py"
+        ],
+        "new_audit_tools": "PASS: five files",
+        "application_file_bytes_unchanged": true
+      },
+      "compilation": "145 Python files compiled in-memory",
+      "import_comparison": "Runtime unchanged; imports exercised by fresh suites",
+      "whitespace": "staged diff check required before commit",
+      "secrets": "zero strong-pattern findings; literal candidates reviewed as synthetic"
+    },
+    "tool_recoveries": [
+      "Disposable proof alias restored to fixed legacy guarded name required by reused helpers; failed first attempt removed; complete chain subsequently passed.",
+      "Windows evidence-capture decoding corrected to explicit UTF-8; no product modification."
+    ],
+    "production_contact": false
+  },
+  "cleanup_evidence": "nc_03_pass3_final_checks.json",
+  "advisories": [
+    "Legacy SECURITY DEFINER match/master helpers lack pinned search_path. Browser EXECUTE and schema CREATE are denied; trusted-only reachability and trigger direct-call denials freshly proved. Pinning remains a later hardening option, not an observed browser escalation.",
+    "Legacy trigger-only functions retain broad EXECUTE; PostgreSQL refuses ordinary direct calls and closed table/sequence/view grants prevent attaching or mutating via browser roles. Default function ACL therefore requires explicit revokes in each new migration; final new functions comply.",
+    "Baseline has equivalent indexes, distinct master indexes, nullable historical fields and no brackets.user_id FK. Preserved baseline bytes; production data review required before new constraints.",
+    "Auth version adds one intended user read per authenticated request. Bulk leaderboard/history queries have no per-competitor DB call; league history uses bounded bulk queries. Large-population PostgREST caps and scoring-source completeness need load/pagination review; no performance rewrite attempted.",
+    "Frontend User.id typing is numeric while backend identities are UUID strings; current runtime does not numerically coerce IDs and tests/build pass. Typing cleanup is advisory.",
+    "Production reset URL is source-defined; verify real hosting reaches the reset UI. This audit does not infer a production routing defect or success.",
+    "Existing ESLint 82 errors/1 warning, zero new; existing Vite chunk-size/browser-data warnings; existing Black app.py formatting difference. No baseline fixes made.",
+    "Coverage is service/HTTP/SQL/offline/Node contract testing. No end-to-end real-browser, production-provider delivery, production scheduler execution, hosting compatibility or scale benchmark was performed."
+  ],
+  "production_contact": false,
+  "product_code_changes": false,
+  "historical_evidence_rewritten": false,
+  "frontend_changed": false,
+  "one_on_one_ball_changed": false,
+  "preflight_executed_in_production": false,
+  "next_checkpoint": "NC-04 \u2014 Controlled Production Preflight & Deployment Plan (not started)",
+  "required_repair_phase": null
+}

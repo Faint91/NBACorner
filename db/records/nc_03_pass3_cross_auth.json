@@ -1,0 +1,37 @@
+{
+  "results": {
+    "CROSS-11": {
+      "passed": true,
+      "actual_non_auth_HTTP_endpoint": "PATCH /bracket/match/<synthetic-id>/games",
+      "before_reset": 200,
+      "after_committed_reset": 401,
+      "after_new_login": 200
+    },
+    "CROSS-02": {
+      "passed": true,
+      "revoked_mutation": 401,
+      "fresh_mutation": 200,
+      "nonmember_admin_private_access": 403,
+      "nonowner_mutation": 403
+    },
+    "CROSS-10": {
+      "passed": true,
+      "revoked_admin": 401,
+      "fresh_admin": 200,
+      "audit_identity_safe": true
+    },
+    "CROSS-01": {
+      "passed": true,
+      "owner_mutates_own": 200,
+      "other_user": 403,
+      "admin_arbitrary_edit": 403,
+      "revoked_owner": 401,
+      "fresh_owner": 200,
+      "historical_read": 200,
+      "historical_mutation": 403
+    }
+  },
+  "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+  "production_contact": false,
+  "auth_bridge": "Actual decorated Flask auth views within verified local lease; all non-auth product requests use existing guarded HTTP. No production/harness guard modified."
+}

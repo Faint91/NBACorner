@@ -1,0 +1,236 @@
+{
+  "phase": "NC-03 third pass",
+  "verified_at_utc": "2026-10-17T21:33:09.558750+00:00",
+  "totals": {
+    "PASS": 12,
+    "FAIL": 0,
+    "BLOCKED": 0
+  },
+  "proofs": [
+    {
+      "id": "CROSS-01",
+      "status": "PASS",
+      "assertions_verified": "Owner JWT allowed; other/admin ordinary edit denied; committed reset revokes; fresh JWT works; historical read allowed/edit refused",
+      "actual_auth_product_proof": {
+        "passed": true,
+        "owner_mutates_own": 200,
+        "other_user": 403,
+        "admin_arbitrary_edit": 403,
+        "revoked_owner": 401,
+        "fresh_owner": 200,
+        "historical_read": 200,
+        "historical_mutation": 403
+      },
+      "fresh_test_case_ids": [
+        "nc02g2_bracket_lifecycle.BracketLifecycleAcceptance.test_b3_historical_submitted_public_safe_and_immutable",
+        "nc02g2_bracket_lock.BracketLockAcceptance.test_ordinary_before_boundary_all_content_and_resave"
+      ],
+      "extra_fresh_SQL_assertions": [],
+      "evidence": [
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "db/records/nc_03_pass3_cross_auth.json"
+      ]
+    },
+    {
+      "id": "CROSS-02",
+      "status": "PASS",
+      "assertions_verified": "Revoked league mutation 401; fresh JWT 200; nonmember admin private 403; owner authorization checked server-side",
+      "actual_auth_product_proof": {
+        "passed": true,
+        "revoked_mutation": 401,
+        "fresh_mutation": 200,
+        "nonmember_admin_private_access": 403,
+        "nonowner_mutation": 403
+      },
+      "fresh_test_case_ids": [
+        "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_admin_and_nonowner_no_owner_capabilities",
+        "nc02g2_privacy_access.PrivacyAccessAcceptance.test_private_direct_api_role_matrix"
+      ],
+      "extra_fresh_SQL_assertions": [],
+      "evidence": [
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "db/records/nc_03_pass3_cross_auth.json"
+      ]
+    },
+    {
+      "id": "CROSS-03",
+      "status": "PASS",
+      "assertions_verified": "Global history safe allowlist/no internal map; league serializer excludes mapping; private current member only; former member refused",
+      "actual_auth_product_proof": null,
+      "fresh_test_case_ids": [
+        "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_current_private_membership_and_privacy_switch",
+        "nc02g2_history_snapshot.HistoryAcceptance.test_d2_fresh_scores_stored_ties_public_privacy_and_repeat"
+      ],
+      "extra_fresh_SQL_assertions": [],
+      "evidence": [
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json"
+      ]
+    },
+    {
+      "id": "CROSS-04",
+      "status": "PASS",
+      "assertions_verified": "Saved competitive; winner/count/undo edits unsave and hide all ranking surfaces; resave restores; stored draft never ranks",
+      "actual_auth_product_proof": null,
+      "fresh_test_case_ids": [
+        "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_admin_mutation_authorization_unchanged_invalidation_shared",
+        "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_games_only_edit_resave_all_surfaces",
+        "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_postlock_edits_still_allowed_but_all_invalidate",
+        "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_stored_draft_score_hidden_without_deletion",
+        "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_undo_resave_all_surfaces",
+        "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_winner_edit_resave_all_surfaces"
+      ],
+      "extra_fresh_SQL_assertions": [],
+      "evidence": [
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json"
+      ]
+    },
+    {
+      "id": "CROSS-05",
+      "status": "PASS",
+      "assertions_verified": "Snapshot recomputes canonical scores; separate +3 champion/+1 finalist bonuses; server ties/stored order; later mutations preserve history",
+      "actual_auth_product_proof": null,
+      "fresh_test_case_ids": [
+        "nc02g2_history_snapshot.HistoryAcceptance.test_d2_fresh_scores_stored_ties_public_privacy_and_repeat",
+        "nc02g2_history_snapshot.HistoryAcceptance.test_d2_history_survives_live_mutation_and_canonical_change",
+        "nc02g2_scoring_recompute.ScoringAcceptance.test_d1_live_ranks_and_stored_bonus_components"
+      ],
+      "extra_fresh_SQL_assertions": [
+        "verified_zero_snapshot_and_repeat"
+      ],
+      "evidence": [
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json"
+      ]
+    },
+    {
+      "id": "CROSS-06",
+      "status": "PASS",
+      "assertions_verified": "Live membership scopes league rank; leave removes only league entry/global score preserved; league historical ranks differ from global ranks",
+      "actual_auth_product_proof": null,
+      "fresh_test_case_ids": [
+        "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_leave_kick_delete_keep_competition_and_scope_live",
+        "nc02g2_scoring_recompute.ScoringAcceptance.test_d1_manual_complete_set_idempotence_and_eligibility"
+      ],
+      "extra_fresh_SQL_assertions": [
+        "league_rank_is_not_global_rank_and_total_hits_saved_time_ties"
+      ],
+      "evidence": [
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json"
+      ]
+    },
+    {
+      "id": "CROSS-07",
+      "status": "PASS",
+      "assertions_verified": "Real rollover retains leagues/members; immutable membership cutoff; unsaved graphs hard-delete; saved graph/history retained; next-season creation/join works",
+      "actual_auth_product_proof": null,
+      "fresh_test_case_ids": [
+        "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_transition_failure_retains_global_and_league_cutoff_retry_reuses",
+        "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_real_rollover_league_owner_membership_persistence",
+        "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_full_success_history_readonly_new_refresh_and_repeat"
+      ],
+      "extra_fresh_SQL_assertions": [
+        "cutoff_retry_and_full_league_deletion_cascade_global_preservation"
+      ],
+      "evidence": [
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json"
+      ]
+    },
+    {
+      "id": "CROSS-08",
+      "status": "PASS",
+      "assertions_verified": "League cutoff derives from finalized immutable global snapshot; league delete cascades league-only; global/brackets survive; mapping absent from API",
+      "actual_auth_product_proof": null,
+      "fresh_test_case_ids": [
+        "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_delete_cascade_preserves_global_and_brackets",
+        "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_eligible_only_A_D_no_placeholder_and_empty_season_omission"
+      ],
+      "extra_fresh_SQL_assertions": [
+        "actual_global_mapping_and_eligible_A_D_only_no_placeholders",
+        "final_append_update_delete_truncate_refused"
+      ],
+      "evidence": [
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json"
+      ]
+    },
+    {
+      "id": "CROSS-09",
+      "status": "PASS",
+      "assertions_verified": "Source standings remain before transition; successful rollover clears; injected transaction faults restore; next canonical ESPN refresh publishes 30",
+      "actual_auth_product_proof": null,
+      "fresh_test_case_ids": [
+        "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_full_success_history_readonly_new_refresh_and_repeat"
+      ],
+      "extra_fresh_SQL_assertions": [
+        "standings_clear_rollback_and_retry",
+        "first_new_season_refresh"
+      ],
+      "evidence": [
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json"
+      ]
+    },
+    {
+      "id": "CROSS-10",
+      "status": "PASS",
+      "assertions_verified": "Reset-revoked admin rollover401; new JWT rollover200; durable audit requested_by_user_id matches current admin; no credentials/email/token",
+      "actual_auth_product_proof": {
+        "passed": true,
+        "revoked_admin": 401,
+        "fresh_admin": 200,
+        "audit_identity_safe": true
+      },
+      "fresh_test_case_ids": [
+        "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_preconditions_authorization_and_complete_master_gate"
+      ],
+      "extra_fresh_SQL_assertions": [],
+      "evidence": [
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "db/records/nc_03_pass3_cross_auth.json"
+      ]
+    },
+    {
+      "id": "CROSS-11",
+      "status": "PASS",
+      "assertions_verified": "Actual PATCH bracket games HTTP 200 pre-reset; committed real reset; same JWT401; fresh login200",
+      "actual_auth_product_proof": {
+        "passed": true,
+        "actual_non_auth_HTTP_endpoint": "PATCH /bracket/match/<synthetic-id>/games",
+        "before_reset": 200,
+        "after_committed_reset": 401,
+        "after_new_login": 200
+      },
+      "fresh_test_case_ids": [
+        "nc02g2_password_reset.PasswordResetAcceptance.test_multidevice_and_legacy_revocation_new_login"
+      ],
+      "extra_fresh_SQL_assertions": [],
+      "evidence": [
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "db/records/nc_03_pass3_cross_auth.json"
+      ]
+    },
+    {
+      "id": "CROSS-12",
+      "status": "PASS",
+      "assertions_verified": "Public history200 -> private anonymous/former403/current member200 -> public safe200; frozen historical rows byte-equivalent",
+      "actual_auth_product_proof": null,
+      "fresh_test_case_ids": [
+        "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_current_private_membership_and_privacy_switch"
+      ],
+      "extra_fresh_SQL_assertions": [],
+      "evidence": [
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json"
+      ]
+    }
+  ],
+  "production_contact": false
+}

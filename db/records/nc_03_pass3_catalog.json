@@ -1,0 +1,4866 @@
+{
+  "views": [
+    {
+      "viewname": "bracket_view",
+      "viewowner": "postgres",
+      "definition": " SELECT m.id,\n    m.bracket_id,\n    m.round,\n    m.slot,\n    m.team_a,\n    m.team_b,\n    m.team_a_locked,\n    m.team_b_locked,\n    m.predicted_winner,\n    m.predicted_winner_games,\n    m.next_match_id,\n    m.next_slot,\n    m.created_at,\n    m.updated_at,\n    b.user_id\n   FROM (matches m\n     JOIN brackets b ON ((b.id = m.bracket_id)));"
+    }
+  ],
+  "columns": [
+    {
+      "data_type": "boolean",
+      "table_name": "application_season",
+      "column_name": "singleton",
+      "is_nullable": "NO",
+      "column_default": "true"
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "application_season",
+      "column_name": "season_id",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "bracket_scores",
+      "column_name": "bracket_id",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "bracket_scores",
+      "column_name": "master_bracket_id",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "integer",
+      "table_name": "bracket_scores",
+      "column_name": "total_points",
+      "is_nullable": "NO",
+      "column_default": "0"
+    },
+    {
+      "data_type": "integer",
+      "table_name": "bracket_scores",
+      "column_name": "full_hits",
+      "is_nullable": "NO",
+      "column_default": "0"
+    },
+    {
+      "data_type": "integer",
+      "table_name": "bracket_scores",
+      "column_name": "partial_hits",
+      "is_nullable": "NO",
+      "column_default": "0"
+    },
+    {
+      "data_type": "integer",
+      "table_name": "bracket_scores",
+      "column_name": "misses",
+      "is_nullable": "NO",
+      "column_default": "0"
+    },
+    {
+      "data_type": "integer",
+      "table_name": "bracket_scores",
+      "column_name": "bonus_finalists",
+      "is_nullable": "NO",
+      "column_default": "0"
+    },
+    {
+      "data_type": "integer",
+      "table_name": "bracket_scores",
+      "column_name": "bonus_champion",
+      "is_nullable": "NO",
+      "column_default": "0"
+    },
+    {
+      "data_type": "jsonb",
+      "table_name": "bracket_scores",
+      "column_name": "points_by_round",
+      "is_nullable": "NO",
+      "column_default": "'{}'::jsonb"
+    },
+    {
+      "data_type": "jsonb",
+      "table_name": "bracket_scores",
+      "column_name": "points_by_match",
+      "is_nullable": "NO",
+      "column_default": "'{}'::jsonb"
+    },
+    {
+      "data_type": "timestamp with time zone",
+      "table_name": "bracket_scores",
+      "column_name": "updated_at",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "bracket_scores",
+      "column_name": "season_id",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "bracket_view",
+      "column_name": "id",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "bracket_view",
+      "column_name": "bracket_id",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "integer",
+      "table_name": "bracket_view",
+      "column_name": "round",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "integer",
+      "table_name": "bracket_view",
+      "column_name": "slot",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "text",
+      "table_name": "bracket_view",
+      "column_name": "team_a",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "text",
+      "table_name": "bracket_view",
+      "column_name": "team_b",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "boolean",
+      "table_name": "bracket_view",
+      "column_name": "team_a_locked",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "boolean",
+      "table_name": "bracket_view",
+      "column_name": "team_b_locked",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "text",
+      "table_name": "bracket_view",
+      "column_name": "predicted_winner",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "integer",
+      "table_name": "bracket_view",
+      "column_name": "predicted_winner_games",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "bracket_view",
+      "column_name": "next_match_id",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "text",
+      "table_name": "bracket_view",
+      "column_name": "next_slot",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "timestamp with time zone",
+      "table_name": "bracket_view",
+      "column_name": "created_at",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "timestamp with time zone",
+      "table_name": "bracket_view",
+      "column_name": "updated_at",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "bracket_view",
+      "column_name": "user_id",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "brackets",
+      "column_name": "id",
+      "is_nullable": "NO",
+      "column_default": "uuid_generate_v4()"
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "brackets",
+      "column_name": "user_id",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "timestamp with time zone",
+      "table_name": "brackets",
+      "column_name": "created_at",
+      "is_nullable": "YES",
+      "column_default": "now()"
+    },
+    {
+      "data_type": "timestamp with time zone",
+      "table_name": "brackets",
+      "column_name": "updated_at",
+      "is_nullable": "YES",
+      "column_default": "now()"
+    },
+    {
+      "data_type": "boolean",
+      "table_name": "brackets",
+      "column_name": "is_done",
+      "is_nullable": "YES",
+      "column_default": "false"
+    },
+    {
+      "data_type": "timestamp with time zone",
+      "table_name": "brackets",
+      "column_name": "saved_at",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "timestamp with time zone",
+      "table_name": "brackets",
+      "column_name": "deleted_at",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "brackets",
+      "column_name": "deleted_by_user_id",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "text",
+      "table_name": "brackets",
+      "column_name": "name",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "boolean",
+      "table_name": "brackets",
+      "column_name": "is_master",
+      "is_nullable": "NO",
+      "column_default": "false"
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "brackets",
+      "column_name": "season_id",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "bigint",
+      "table_name": "leaderboard_history",
+      "column_name": "id",
+      "is_nullable": "NO",
+      "column_default": "nextval('leaderboard_history_id_seq'::regclass)"
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "leaderboard_history",
+      "column_name": "season_id",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "text",
+      "table_name": "leaderboard_history",
+      "column_name": "season_code",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "timestamp with time zone",
+      "table_name": "leaderboard_history",
+      "column_name": "snapshot_at",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "data_type": "integer",
+      "table_name": "leaderboard_history",
+      "column_name": "rank",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "text",
+      "table_name": "leaderboard_history",
+      "column_name": "bracket_name",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "text",
+      "table_name": "leaderboard_history",
+      "column_name": "username",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "integer",
+      "table_name": "leaderboard_history",
+      "column_name": "total_points",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "integer",
+      "table_name": "leaderboard_history",
+      "column_name": "full_hits",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "integer",
+      "table_name": "leaderboard_history",
+      "column_name": "partial_hits",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "integer",
+      "table_name": "leaderboard_history",
+      "column_name": "misses",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "integer",
+      "table_name": "leaderboard_history",
+      "column_name": "bonus_finalists",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "integer",
+      "table_name": "leaderboard_history",
+      "column_name": "bonus_champion",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "jsonb",
+      "table_name": "leaderboard_history",
+      "column_name": "points_by_match",
+      "is_nullable": "NO",
+      "column_default": "'{}'::jsonb"
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "leaderboard_history",
+      "column_name": "bracket_id",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "leaderboard_history",
+      "column_name": "user_id",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "leaderboard_history_competitors",
+      "column_name": "snapshot_row_id",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "leaderboard_history_competitors",
+      "column_name": "user_id",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "leaderboard_history_rows",
+      "column_name": "id",
+      "is_nullable": "NO",
+      "column_default": "uuid_generate_v4()"
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "leaderboard_history_rows",
+      "column_name": "snapshot_id",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "integer",
+      "table_name": "leaderboard_history_rows",
+      "column_name": "rank",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "text",
+      "table_name": "leaderboard_history_rows",
+      "column_name": "display_name",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "integer",
+      "table_name": "leaderboard_history_rows",
+      "column_name": "total_points",
+      "is_nullable": "NO",
+      "column_default": "0"
+    },
+    {
+      "data_type": "integer",
+      "table_name": "leaderboard_history_rows",
+      "column_name": "bonus_finalists",
+      "is_nullable": "NO",
+      "column_default": "0"
+    },
+    {
+      "data_type": "integer",
+      "table_name": "leaderboard_history_rows",
+      "column_name": "bonus_champion",
+      "is_nullable": "NO",
+      "column_default": "0"
+    },
+    {
+      "data_type": "integer",
+      "table_name": "leaderboard_history_rows",
+      "column_name": "full_hits",
+      "is_nullable": "NO",
+      "column_default": "0"
+    },
+    {
+      "data_type": "integer",
+      "table_name": "leaderboard_history_rows",
+      "column_name": "partial_hits",
+      "is_nullable": "NO",
+      "column_default": "0"
+    },
+    {
+      "data_type": "integer",
+      "table_name": "leaderboard_history_rows",
+      "column_name": "misses",
+      "is_nullable": "NO",
+      "column_default": "0"
+    },
+    {
+      "data_type": "jsonb",
+      "table_name": "leaderboard_history_rows",
+      "column_name": "per_match_points",
+      "is_nullable": "NO",
+      "column_default": "'{}'::jsonb"
+    },
+    {
+      "data_type": "timestamp with time zone",
+      "table_name": "leaderboard_history_rows",
+      "column_name": "created_at",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "data_type": "timestamp with time zone",
+      "table_name": "leaderboard_history_rows",
+      "column_name": "saved_at",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "integer",
+      "table_name": "leaderboard_history_rows",
+      "column_name": "display_order",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "integer",
+      "table_name": "leaderboard_history_rows",
+      "column_name": "base_points",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "jsonb",
+      "table_name": "leaderboard_history_rows",
+      "column_name": "points_by_round",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "leaderboard_history_snapshots",
+      "column_name": "id",
+      "is_nullable": "NO",
+      "column_default": "uuid_generate_v4()"
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "leaderboard_history_snapshots",
+      "column_name": "season_id",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "text",
+      "table_name": "leaderboard_history_snapshots",
+      "column_name": "season_code",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "timestamp with time zone",
+      "table_name": "leaderboard_history_snapshots",
+      "column_name": "snapshot_at",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "data_type": "jsonb",
+      "table_name": "leaderboard_history_snapshots",
+      "column_name": "columns",
+      "is_nullable": "NO",
+      "column_default": "'[]'::jsonb"
+    },
+    {
+      "data_type": "text",
+      "table_name": "leaderboard_history_snapshots",
+      "column_name": "note",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "leaderboard_history_snapshots",
+      "column_name": "created_by",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "timestamp with time zone",
+      "table_name": "leaderboard_history_snapshots",
+      "column_name": "created_at",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "data_type": "integer",
+      "table_name": "leaderboard_history_snapshots",
+      "column_name": "expected_rows",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "boolean",
+      "table_name": "leaderboard_history_snapshots",
+      "column_name": "is_final",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "leaderboard_history_snapshots",
+      "column_name": "master_bracket_id",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "league_history_cutoffs",
+      "column_name": "global_snapshot_id",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "integer",
+      "table_name": "league_history_cutoffs",
+      "column_name": "expected_leagues",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "integer",
+      "table_name": "league_history_cutoffs",
+      "column_name": "expected_rows",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "timestamp with time zone",
+      "table_name": "league_history_cutoffs",
+      "column_name": "finalized_at",
+      "is_nullable": "NO",
+      "column_default": "clock_timestamp()"
+    },
+    {
+      "data_type": "boolean",
+      "table_name": "league_history_cutoffs",
+      "column_name": "is_final",
+      "is_nullable": "NO",
+      "column_default": "false"
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "league_history_rows",
+      "column_name": "history_season_id",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "league_history_rows",
+      "column_name": "global_snapshot_row_id",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "integer",
+      "table_name": "league_history_rows",
+      "column_name": "rank",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "integer",
+      "table_name": "league_history_rows",
+      "column_name": "display_order",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "league_history_seasons",
+      "column_name": "id",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "league_history_seasons",
+      "column_name": "league_id",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "league_history_seasons",
+      "column_name": "season_id",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "league_history_seasons",
+      "column_name": "global_snapshot_id",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "integer",
+      "table_name": "league_history_seasons",
+      "column_name": "expected_rows",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "timestamp with time zone",
+      "table_name": "league_history_seasons",
+      "column_name": "finalized_at",
+      "is_nullable": "NO",
+      "column_default": "clock_timestamp()"
+    },
+    {
+      "data_type": "boolean",
+      "table_name": "league_history_seasons",
+      "column_name": "is_final",
+      "is_nullable": "NO",
+      "column_default": "false"
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "league_members",
+      "column_name": "id",
+      "is_nullable": "NO",
+      "column_default": "uuid_generate_v4()"
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "league_members",
+      "column_name": "league_id",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "league_members",
+      "column_name": "user_id",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "timestamp with time zone",
+      "table_name": "league_members",
+      "column_name": "joined_at",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "leagues",
+      "column_name": "id",
+      "is_nullable": "NO",
+      "column_default": "uuid_generate_v4()"
+    },
+    {
+      "data_type": "text",
+      "table_name": "leagues",
+      "column_name": "name",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "text",
+      "table_name": "leagues",
+      "column_name": "password_hash",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "leagues",
+      "column_name": "owner_user_id",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "boolean",
+      "table_name": "leagues",
+      "column_name": "is_global",
+      "is_nullable": "NO",
+      "column_default": "false"
+    },
+    {
+      "data_type": "timestamp with time zone",
+      "table_name": "leagues",
+      "column_name": "created_at",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "data_type": "timestamp with time zone",
+      "table_name": "leagues",
+      "column_name": "updated_at",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "matches",
+      "column_name": "id",
+      "is_nullable": "NO",
+      "column_default": "uuid_generate_v4()"
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "matches",
+      "column_name": "bracket_id",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "integer",
+      "table_name": "matches",
+      "column_name": "round",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "integer",
+      "table_name": "matches",
+      "column_name": "slot",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "text",
+      "table_name": "matches",
+      "column_name": "team_a",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "text",
+      "table_name": "matches",
+      "column_name": "team_b",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "boolean",
+      "table_name": "matches",
+      "column_name": "team_a_locked",
+      "is_nullable": "YES",
+      "column_default": "false"
+    },
+    {
+      "data_type": "boolean",
+      "table_name": "matches",
+      "column_name": "team_b_locked",
+      "is_nullable": "YES",
+      "column_default": "false"
+    },
+    {
+      "data_type": "text",
+      "table_name": "matches",
+      "column_name": "predicted_winner",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "integer",
+      "table_name": "matches",
+      "column_name": "predicted_winner_games",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "matches",
+      "column_name": "next_match_id",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "text",
+      "table_name": "matches",
+      "column_name": "next_slot",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "timestamp with time zone",
+      "table_name": "matches",
+      "column_name": "created_at",
+      "is_nullable": "YES",
+      "column_default": "now()"
+    },
+    {
+      "data_type": "timestamp with time zone",
+      "table_name": "matches",
+      "column_name": "updated_at",
+      "is_nullable": "YES",
+      "column_default": "now()"
+    },
+    {
+      "data_type": "text",
+      "table_name": "matches",
+      "column_name": "conference",
+      "is_nullable": "YES",
+      "column_default": "'East'::text"
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "matches",
+      "column_name": "season_id",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "integer",
+      "table_name": "password_resets",
+      "column_name": "id",
+      "is_nullable": "NO",
+      "column_default": "nextval('password_resets_id_seq'::regclass)"
+    },
+    {
+      "data_type": "text",
+      "table_name": "password_resets",
+      "column_name": "token_digest",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "timestamp with time zone",
+      "table_name": "password_resets",
+      "column_name": "expires_at",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "boolean",
+      "table_name": "password_resets",
+      "column_name": "used",
+      "is_nullable": "YES",
+      "column_default": "false"
+    },
+    {
+      "data_type": "timestamp with time zone",
+      "table_name": "password_resets",
+      "column_name": "created_at",
+      "is_nullable": "YES",
+      "column_default": "CURRENT_TIMESTAMP"
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "password_resets",
+      "column_name": "user_id",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "season_rollover_audits",
+      "column_name": "id",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "season_rollover_audits",
+      "column_name": "source_season_id",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "text",
+      "table_name": "season_rollover_audits",
+      "column_name": "source_code",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "season_rollover_audits",
+      "column_name": "target_season_id",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "text",
+      "table_name": "season_rollover_audits",
+      "column_name": "target_code",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "season_rollover_audits",
+      "column_name": "snapshot_id",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "season_rollover_audits",
+      "column_name": "requested_by_user_id",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "timestamp with time zone",
+      "table_name": "season_rollover_audits",
+      "column_name": "started_at",
+      "is_nullable": "NO",
+      "column_default": "clock_timestamp()"
+    },
+    {
+      "data_type": "timestamp with time zone",
+      "table_name": "season_rollover_audits",
+      "column_name": "completed_at",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "text",
+      "table_name": "season_rollover_audits",
+      "column_name": "status",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "text",
+      "table_name": "season_rollover_audits",
+      "column_name": "failure_stage",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "text",
+      "table_name": "season_rollover_audits",
+      "column_name": "sanitized_message",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "boolean",
+      "table_name": "season_rollover_audits",
+      "column_name": "legacy_warning",
+      "is_nullable": "NO",
+      "column_default": "false"
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "seasons",
+      "column_name": "id",
+      "is_nullable": "NO",
+      "column_default": "uuid_generate_v4()"
+    },
+    {
+      "data_type": "text",
+      "table_name": "seasons",
+      "column_name": "code",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "timestamp with time zone",
+      "table_name": "seasons",
+      "column_name": "regular_season_end_utc",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "timestamp with time zone",
+      "table_name": "seasons",
+      "column_name": "playoffs_start_utc",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "timestamp with time zone",
+      "table_name": "seasons",
+      "column_name": "created_at",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "seasons",
+      "column_name": "master_bracket_id",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "integer",
+      "table_name": "standings",
+      "column_name": "id",
+      "is_nullable": "NO",
+      "column_default": "nextval('standings_id_seq'::regclass)"
+    },
+    {
+      "data_type": "text",
+      "table_name": "standings",
+      "column_name": "name",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "text",
+      "table_name": "standings",
+      "column_name": "code",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "integer",
+      "table_name": "standings",
+      "column_name": "wins",
+      "is_nullable": "NO",
+      "column_default": "0"
+    },
+    {
+      "data_type": "integer",
+      "table_name": "standings",
+      "column_name": "losses",
+      "is_nullable": "NO",
+      "column_default": "0"
+    },
+    {
+      "data_type": "text",
+      "table_name": "standings",
+      "column_name": "conference",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "integer",
+      "table_name": "standings",
+      "column_name": "seed",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "timestamp without time zone",
+      "table_name": "standings",
+      "column_name": "updated_at",
+      "is_nullable": "YES",
+      "column_default": "now()"
+    },
+    {
+      "data_type": "double precision",
+      "table_name": "standings",
+      "column_name": "win_pct",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "text",
+      "table_name": "teams",
+      "column_name": "id",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "text",
+      "table_name": "teams",
+      "column_name": "name",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "text",
+      "table_name": "teams",
+      "column_name": "conference",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "text",
+      "table_name": "teams",
+      "column_name": "code",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "text",
+      "table_name": "teams",
+      "column_name": "logo_url",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "text",
+      "table_name": "teams",
+      "column_name": "primary_color",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "text",
+      "table_name": "teams",
+      "column_name": "secondary_color",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "users",
+      "column_name": "id",
+      "is_nullable": "NO",
+      "column_default": "uuid_generate_v4()"
+    },
+    {
+      "data_type": "text",
+      "table_name": "users",
+      "column_name": "username",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "data_type": "text",
+      "table_name": "users",
+      "column_name": "email",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "timestamp with time zone",
+      "table_name": "users",
+      "column_name": "created_at",
+      "is_nullable": "YES",
+      "column_default": "now()"
+    },
+    {
+      "data_type": "text",
+      "table_name": "users",
+      "column_name": "password",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "boolean",
+      "table_name": "users",
+      "column_name": "is_admin",
+      "is_nullable": "YES",
+      "column_default": "false"
+    },
+    {
+      "data_type": "text",
+      "table_name": "users",
+      "column_name": "reset_token",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "timestamp without time zone",
+      "table_name": "users",
+      "column_name": "reset_token_expires",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "data_type": "integer",
+      "table_name": "users",
+      "column_name": "auth_version",
+      "is_nullable": "NO",
+      "column_default": "0"
+    }
+  ],
+  "indexes": [
+    {
+      "indexdef": "CREATE UNIQUE INDEX league_history_rows_pkey ON public.league_history_rows USING btree (history_season_id, global_snapshot_row_id)",
+      "indexname": "league_history_rows_pkey",
+      "tablename": "league_history_rows"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX league_history_rows_history_season_id_display_order_key ON public.league_history_rows USING btree (history_season_id, display_order)",
+      "indexname": "league_history_rows_history_season_id_display_order_key",
+      "tablename": "league_history_rows"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX league_history_seasons_pkey ON public.league_history_seasons USING btree (id)",
+      "indexname": "league_history_seasons_pkey",
+      "tablename": "league_history_seasons"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX league_history_seasons_league_id_season_id_key ON public.league_history_seasons USING btree (league_id, season_id)",
+      "indexname": "league_history_seasons_league_id_season_id_key",
+      "tablename": "league_history_seasons"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX league_history_cutoffs_pkey ON public.league_history_cutoffs USING btree (global_snapshot_id)",
+      "indexname": "league_history_cutoffs_pkey",
+      "tablename": "league_history_cutoffs"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX leaderboard_history_competitors_pkey ON public.leaderboard_history_competitors USING btree (snapshot_row_id)",
+      "indexname": "leaderboard_history_competitors_pkey",
+      "tablename": "leaderboard_history_competitors"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX users_email_key ON public.users USING btree (email)",
+      "indexname": "users_email_key",
+      "tablename": "users"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX users_email_unique ON public.users USING btree (email)",
+      "indexname": "users_email_unique",
+      "tablename": "users"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX users_pkey ON public.users USING btree (id)",
+      "indexname": "users_pkey",
+      "tablename": "users"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX users_username_unique ON public.users USING btree (username)",
+      "indexname": "users_username_unique",
+      "tablename": "users"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX nc_g1_username_key ON public.users USING btree (auth_identity_key(username))",
+      "indexname": "nc_g1_username_key",
+      "tablename": "users"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX nc_g1_email_key ON public.users USING btree (auth_identity_key(email))",
+      "indexname": "nc_g1_email_key",
+      "tablename": "users"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX seasons_code_key ON public.seasons USING btree (code)",
+      "indexname": "seasons_code_key",
+      "tablename": "seasons"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX seasons_pkey ON public.seasons USING btree (id)",
+      "indexname": "seasons_pkey",
+      "tablename": "seasons"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX teams_code_key ON public.teams USING btree (code)",
+      "indexname": "teams_code_key",
+      "tablename": "teams"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX teams_pkey ON public.teams USING btree (id)",
+      "indexname": "teams_pkey",
+      "tablename": "teams"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX standings_pkey ON public.standings USING btree (id)",
+      "indexname": "standings_pkey",
+      "tablename": "standings"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX uniq_active_bracket_per_user_per_season ON public.brackets USING btree (user_id, season_id) WHERE (deleted_at IS NULL)",
+      "indexname": "uniq_active_bracket_per_user_per_season",
+      "tablename": "brackets"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX uq_master_per_season ON public.brackets USING btree (season_id) WHERE ((is_master IS TRUE) AND (deleted_at IS NULL))",
+      "indexname": "uq_master_per_season",
+      "tablename": "brackets"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX ux_brackets_one_master_per_season ON public.brackets USING btree (season_id) WHERE (is_master = true)",
+      "indexname": "ux_brackets_one_master_per_season",
+      "tablename": "brackets"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX brackets_pkey ON public.brackets USING btree (id)",
+      "indexname": "brackets_pkey",
+      "tablename": "brackets"
+    },
+    {
+      "indexdef": "CREATE INDEX idx_brackets_season_created ON public.brackets USING btree (season_id, created_at DESC)",
+      "indexname": "idx_brackets_season_created",
+      "tablename": "brackets"
+    },
+    {
+      "indexdef": "CREATE INDEX idx_brackets_user_id ON public.brackets USING btree (user_id)",
+      "indexname": "idx_brackets_user_id",
+      "tablename": "brackets"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX matches_pkey ON public.matches USING btree (id)",
+      "indexname": "matches_pkey",
+      "tablename": "matches"
+    },
+    {
+      "indexdef": "CREATE INDEX idx_matches_bracket ON public.matches USING btree (bracket_id, round)",
+      "indexname": "idx_matches_bracket",
+      "tablename": "matches"
+    },
+    {
+      "indexdef": "CREATE INDEX idx_matches_season_bracket ON public.matches USING btree (season_id, bracket_id)",
+      "indexname": "idx_matches_season_bracket",
+      "tablename": "matches"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX bracket_scores_pkey ON public.bracket_scores USING btree (bracket_id)",
+      "indexname": "bracket_scores_pkey",
+      "tablename": "bracket_scores"
+    },
+    {
+      "indexdef": "CREATE INDEX bracket_scores_master_idx ON public.bracket_scores USING btree (master_bracket_id)",
+      "indexname": "bracket_scores_master_idx",
+      "tablename": "bracket_scores"
+    },
+    {
+      "indexdef": "CREATE INDEX bracket_scores_total_points_idx ON public.bracket_scores USING btree (total_points)",
+      "indexname": "bracket_scores_total_points_idx",
+      "tablename": "bracket_scores"
+    },
+    {
+      "indexdef": "CREATE INDEX idx_bracket_scores_season_points ON public.bracket_scores USING btree (season_id, total_points DESC)",
+      "indexname": "idx_bracket_scores_season_points",
+      "tablename": "bracket_scores"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX leagues_pkey ON public.leagues USING btree (id)",
+      "indexname": "leagues_pkey",
+      "tablename": "leagues"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX nc_f1_league_name_unique ON public.leagues USING btree (league_name_key(name))",
+      "indexname": "nc_f1_league_name_unique",
+      "tablename": "leagues"
+    },
+    {
+      "indexdef": "CREATE INDEX league_members_league_id_idx ON public.league_members USING btree (league_id)",
+      "indexname": "league_members_league_id_idx",
+      "tablename": "league_members"
+    },
+    {
+      "indexdef": "CREATE INDEX league_members_user_id_idx ON public.league_members USING btree (user_id)",
+      "indexname": "league_members_user_id_idx",
+      "tablename": "league_members"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX league_members_league_user_unique ON public.league_members USING btree (league_id, user_id)",
+      "indexname": "league_members_league_user_unique",
+      "tablename": "league_members"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX league_members_pkey ON public.league_members USING btree (id)",
+      "indexname": "league_members_pkey",
+      "tablename": "league_members"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX password_resets_pkey ON public.password_resets USING btree (id)",
+      "indexname": "password_resets_pkey",
+      "tablename": "password_resets"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX password_resets_token_key ON public.password_resets USING btree (token_digest)",
+      "indexname": "password_resets_token_key",
+      "tablename": "password_resets"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX nc_g2_reset_user ON public.password_resets USING btree (user_id)",
+      "indexname": "nc_g2_reset_user",
+      "tablename": "password_resets"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX leaderboard_history_pkey ON public.leaderboard_history USING btree (id)",
+      "indexname": "leaderboard_history_pkey",
+      "tablename": "leaderboard_history"
+    },
+    {
+      "indexdef": "CREATE INDEX idx_leaderboard_history_season_rank ON public.leaderboard_history USING btree (season_id, rank)",
+      "indexname": "idx_leaderboard_history_season_rank",
+      "tablename": "leaderboard_history"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX nc_d2_one_final_snapshot ON public.leaderboard_history_snapshots USING btree (season_id) WHERE (is_final IS TRUE)",
+      "indexname": "nc_d2_one_final_snapshot",
+      "tablename": "leaderboard_history_snapshots"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX leaderboard_history_snapshots_pkey ON public.leaderboard_history_snapshots USING btree (id)",
+      "indexname": "leaderboard_history_snapshots_pkey",
+      "tablename": "leaderboard_history_snapshots"
+    },
+    {
+      "indexdef": "CREATE INDEX idx_leaderboard_history_snapshots_code ON public.leaderboard_history_snapshots USING btree (season_code)",
+      "indexname": "idx_leaderboard_history_snapshots_code",
+      "tablename": "leaderboard_history_snapshots"
+    },
+    {
+      "indexdef": "CREATE INDEX idx_leaderboard_history_snapshots_season ON public.leaderboard_history_snapshots USING btree (season_id)",
+      "indexname": "idx_leaderboard_history_snapshots_season",
+      "tablename": "leaderboard_history_snapshots"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX nc_d2_snapshot_display_order ON public.leaderboard_history_rows USING btree (snapshot_id, display_order)",
+      "indexname": "nc_d2_snapshot_display_order",
+      "tablename": "leaderboard_history_rows"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX leaderboard_history_rows_pkey ON public.leaderboard_history_rows USING btree (id)",
+      "indexname": "leaderboard_history_rows_pkey",
+      "tablename": "leaderboard_history_rows"
+    },
+    {
+      "indexdef": "CREATE INDEX idx_leaderboard_history_rows_snapshot ON public.leaderboard_history_rows USING btree (snapshot_id)",
+      "indexname": "idx_leaderboard_history_rows_snapshot",
+      "tablename": "leaderboard_history_rows"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX season_rollover_audits_pkey ON public.season_rollover_audits USING btree (id)",
+      "indexname": "season_rollover_audits_pkey",
+      "tablename": "season_rollover_audits"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX nc_e_one_completed_transition ON public.season_rollover_audits USING btree (source_season_id, target_code) WHERE (status = 'COMPLETED'::text)",
+      "indexname": "nc_e_one_completed_transition",
+      "tablename": "season_rollover_audits"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX application_season_pkey ON public.application_season USING btree (singleton)",
+      "indexname": "application_season_pkey",
+      "tablename": "application_season"
+    }
+  ],
+  "policies": [
+    {
+      "cmd": "ALL",
+      "qual": "(EXISTS ( SELECT 1\n   FROM users u\n  WHERE ((u.id = auth.uid()) AND (u.is_admin = true))))",
+      "roles": [
+        "public"
+      ],
+      "tablename": "brackets",
+      "permissive": "PERMISSIVE",
+      "policyname": "Admins can manage all brackets",
+      "with_check": null
+    },
+    {
+      "cmd": "ALL",
+      "qual": "(EXISTS ( SELECT 1\n   FROM users u\n  WHERE ((u.id = auth.uid()) AND (u.is_admin = true))))",
+      "roles": [
+        "public"
+      ],
+      "tablename": "matches",
+      "permissive": "PERMISSIVE",
+      "policyname": "Admins can manage all matches",
+      "with_check": null
+    },
+    {
+      "cmd": "ALL",
+      "qual": "(EXISTS ( SELECT 1\n   FROM users u\n  WHERE ((u.id = auth.uid()) AND (u.is_admin = true))))",
+      "roles": [
+        "public"
+      ],
+      "tablename": "password_resets",
+      "permissive": "PERMISSIVE",
+      "policyname": "Admins can manage all password resets",
+      "with_check": null
+    },
+    {
+      "cmd": "ALL",
+      "qual": "true",
+      "roles": [
+        "service_role"
+      ],
+      "tablename": "users",
+      "permissive": "PERMISSIVE",
+      "policyname": "Service role can manage all users",
+      "with_check": "true"
+    },
+    {
+      "cmd": "DELETE",
+      "qual": "(EXISTS ( SELECT 1\n   FROM brackets b\n  WHERE ((b.id = matches.bracket_id) AND (b.user_id = auth.uid()))))",
+      "roles": [
+        "public"
+      ],
+      "tablename": "matches",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can delete matches of their own brackets",
+      "with_check": null
+    },
+    {
+      "cmd": "DELETE",
+      "qual": "(auth.uid() = user_id)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "brackets",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can delete their own brackets",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "(auth.uid() = user_id)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "brackets",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can view their own brackets",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "(auth.uid() = id)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "users",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can view their own data",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "qual": null,
+      "roles": [
+        "public"
+      ],
+      "tablename": "matches",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can insert matches of their own brackets",
+      "with_check": "(EXISTS ( SELECT 1\n   FROM brackets b\n  WHERE ((b.id = matches.bracket_id) AND (b.user_id = auth.uid()))))"
+    },
+    {
+      "cmd": "INSERT",
+      "qual": null,
+      "roles": [
+        "public"
+      ],
+      "tablename": "brackets",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can insert their own brackets",
+      "with_check": "(auth.uid() = user_id)"
+    },
+    {
+      "cmd": "ALL",
+      "qual": null,
+      "roles": [
+        "public"
+      ],
+      "tablename": "password_resets",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can insert their own password resets",
+      "with_check": "(EXISTS ( SELECT 1\n   FROM users u\n  WHERE ((u.id = auth.uid()) AND (u.id = password_resets.user_id))))"
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "(EXISTS ( SELECT 1\n   FROM brackets b\n  WHERE ((b.id = matches.bracket_id) AND (b.user_id = auth.uid()))))",
+      "roles": [
+        "public"
+      ],
+      "tablename": "matches",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can update matches of their own brackets",
+      "with_check": null
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "(auth.uid() = user_id)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "brackets",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can update their own brackets",
+      "with_check": null
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "(auth.uid() = id)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "users",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can update their own data",
+      "with_check": "(auth.uid() = id)"
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "(EXISTS ( SELECT 1\n   FROM brackets b\n  WHERE ((b.id = matches.bracket_id) AND (b.user_id = auth.uid()))))",
+      "roles": [
+        "public"
+      ],
+      "tablename": "matches",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can view matches of their own brackets",
+      "with_check": null
+    },
+    {
+      "cmd": "ALL",
+      "qual": "(EXISTS ( SELECT 1\n   FROM users u\n  WHERE ((u.id = auth.uid()) AND (u.id = password_resets.user_id))))",
+      "roles": [
+        "public"
+      ],
+      "tablename": "password_resets",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can view their own password resets",
+      "with_check": null
+    }
+  ],
+  "triggers": [
+    {
+      "name": "nc_f2_no_app_truncate",
+      "table": "league_history_rows",
+      "definition": "CREATE TRIGGER nc_f2_no_app_truncate BEFORE TRUNCATE ON public.league_history_rows FOR EACH STATEMENT EXECUTE FUNCTION protect_league_history()"
+    },
+    {
+      "name": "nc_f2_immutable",
+      "table": "league_history_rows",
+      "definition": "CREATE TRIGGER nc_f2_immutable BEFORE INSERT OR DELETE OR UPDATE ON public.league_history_rows FOR EACH ROW EXECUTE FUNCTION protect_league_history()"
+    },
+    {
+      "name": "nc_f2_no_app_truncate",
+      "table": "league_history_seasons",
+      "definition": "CREATE TRIGGER nc_f2_no_app_truncate BEFORE TRUNCATE ON public.league_history_seasons FOR EACH STATEMENT EXECUTE FUNCTION protect_league_history()"
+    },
+    {
+      "name": "nc_f2_immutable",
+      "table": "league_history_seasons",
+      "definition": "CREATE TRIGGER nc_f2_immutable BEFORE INSERT OR DELETE OR UPDATE ON public.league_history_seasons FOR EACH ROW EXECUTE FUNCTION protect_league_history()"
+    },
+    {
+      "name": "nc_f2_no_app_truncate",
+      "table": "league_history_cutoffs",
+      "definition": "CREATE TRIGGER nc_f2_no_app_truncate BEFORE TRUNCATE ON public.league_history_cutoffs FOR EACH STATEMENT EXECUTE FUNCTION protect_league_history()"
+    },
+    {
+      "name": "nc_f2_immutable",
+      "table": "league_history_cutoffs",
+      "definition": "CREATE TRIGGER nc_f2_immutable BEFORE INSERT OR DELETE OR UPDATE ON public.league_history_cutoffs FOR EACH ROW EXECUTE FUNCTION protect_league_history()"
+    },
+    {
+      "name": "nc_f2_no_app_truncate",
+      "table": "leaderboard_history_competitors",
+      "definition": "CREATE TRIGGER nc_f2_no_app_truncate BEFORE TRUNCATE ON public.leaderboard_history_competitors FOR EACH STATEMENT EXECUTE FUNCTION protect_league_history()"
+    },
+    {
+      "name": "nc_f2_immutable",
+      "table": "leaderboard_history_competitors",
+      "definition": "CREATE TRIGGER nc_f2_immutable BEFORE INSERT OR DELETE OR UPDATE ON public.leaderboard_history_competitors FOR EACH ROW EXECUTE FUNCTION protect_league_history()"
+    },
+    {
+      "name": "trg_fix_season_master_on_bracket_soft_delete",
+      "table": "brackets",
+      "definition": "CREATE TRIGGER trg_fix_season_master_on_bracket_soft_delete BEFORE UPDATE ON public.brackets FOR EACH ROW EXECUTE FUNCTION fix_season_master_on_bracket_soft_delete()"
+    },
+    {
+      "name": "trg_matches_set_season",
+      "table": "matches",
+      "definition": "CREATE TRIGGER trg_matches_set_season BEFORE INSERT OR UPDATE OF bracket_id ON public.matches FOR EACH ROW EXECUTE FUNCTION _set_matches_season_id()"
+    },
+    {
+      "name": "trg_bracket_scores_set_season",
+      "table": "bracket_scores",
+      "definition": "CREATE TRIGGER trg_bracket_scores_set_season BEFORE INSERT OR UPDATE OF bracket_id ON public.bracket_scores FOR EACH ROW EXECUTE FUNCTION _set_bracket_scores_season_id()"
+    },
+    {
+      "name": "nc_f2_membership_cutoff",
+      "table": "league_members",
+      "definition": "CREATE TRIGGER nc_f2_membership_cutoff BEFORE INSERT OR DELETE OR UPDATE ON public.league_members FOR EACH ROW EXECUTE FUNCTION lock_league_history_membership()"
+    },
+    {
+      "name": "nc_d2_no_app_truncate",
+      "table": "leaderboard_history_snapshots",
+      "definition": "CREATE TRIGGER nc_d2_no_app_truncate BEFORE TRUNCATE ON public.leaderboard_history_snapshots FOR EACH STATEMENT EXECUTE FUNCTION protect_final_leaderboard_history()"
+    },
+    {
+      "name": "nc_d2_immutable_header",
+      "table": "leaderboard_history_snapshots",
+      "definition": "CREATE TRIGGER nc_d2_immutable_header BEFORE INSERT OR DELETE OR UPDATE ON public.leaderboard_history_snapshots FOR EACH ROW EXECUTE FUNCTION protect_final_leaderboard_history()"
+    },
+    {
+      "name": "nc_d2_no_app_truncate",
+      "table": "leaderboard_history_rows",
+      "definition": "CREATE TRIGGER nc_d2_no_app_truncate BEFORE TRUNCATE ON public.leaderboard_history_rows FOR EACH STATEMENT EXECUTE FUNCTION protect_final_leaderboard_history()"
+    },
+    {
+      "name": "nc_d2_immutable_rows",
+      "table": "leaderboard_history_rows",
+      "definition": "CREATE TRIGGER nc_d2_immutable_rows BEFORE INSERT OR DELETE OR UPDATE ON public.leaderboard_history_rows FOR EACH ROW EXECUTE FUNCTION protect_final_leaderboard_history()"
+    }
+  ],
+  "functions": [
+    {
+      "name": "set_master_bracket",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "DEFINER",
+      "arguments": "season_id uuid, bracket_id uuid",
+      "signature": "set_master_bracket(uuid,uuid)",
+      "configuration": null
+    },
+    {
+      "name": "auth_identity_key",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "sql",
+      "security": "INVOKER",
+      "arguments": "p_value text",
+      "signature": "auth_identity_key(text)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ]
+    },
+    {
+      "name": "find_auth_user",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "sql",
+      "security": "INVOKER",
+      "arguments": "p_field text, p_identity text",
+      "signature": "find_auth_user(text,text)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ]
+    },
+    {
+      "name": "issue_password_reset",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "p_user_id uuid, p_digest text",
+      "signature": "issue_password_reset(uuid,text)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ]
+    },
+    {
+      "name": "cancel_password_reset",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "p_user_id uuid, p_digest text",
+      "signature": "cancel_password_reset(uuid,text)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ]
+    },
+    {
+      "name": "complete_password_reset",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "p_digest text, p_password_hash text",
+      "signature": "complete_password_reset(text,text)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ]
+    },
+    {
+      "name": "_set_bracket_scores_season_id",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "PUBLIC",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "anon",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "authenticated",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "",
+      "signature": "_set_bracket_scores_season_id()",
+      "configuration": null
+    },
+    {
+      "name": "_set_matches_season_id",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "PUBLIC",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "anon",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "authenticated",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "",
+      "signature": "_set_matches_season_id()",
+      "configuration": null
+    },
+    {
+      "name": "atomic_update_match",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "DEFINER",
+      "arguments": "p_match_id uuid, p_action text, p_new_team text, p_games integer",
+      "signature": "atomic_update_match(uuid,text,text,integer)",
+      "configuration": null
+    },
+    {
+      "name": "fix_season_master_on_bracket_soft_delete",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "PUBLIC",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "anon",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "authenticated",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "",
+      "signature": "fix_season_master_on_bracket_soft_delete()",
+      "configuration": null
+    },
+    {
+      "name": "set_winner_atomic",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "in_match uuid, in_new_team text, in_games integer",
+      "signature": "set_winner_atomic(uuid,text,integer)",
+      "configuration": null
+    },
+    {
+      "name": "undo_prediction_atomic",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "in_match uuid",
+      "signature": "undo_prediction_atomic(uuid)",
+      "configuration": null
+    },
+    {
+      "name": "finalize_season_transition",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "p_source_season_id uuid, p_new_season_id uuid, p_new_season_code text",
+      "signature": "finalize_season_transition(uuid,uuid,text)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ]
+    },
+    {
+      "name": "create_league_with_owner",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "p_actor uuid, p_name text, p_hash text",
+      "signature": "create_league_with_owner(uuid,text,text)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ]
+    },
+    {
+      "name": "create_master_bracket_atomic",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "p_user_id uuid, p_season_id uuid, p_replace boolean, p_matches jsonb",
+      "signature": "create_master_bracket_atomic(uuid,uuid,boolean,jsonb)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ]
+    },
+    {
+      "name": "publish_current_standings",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "p_season_id uuid, p_rows jsonb",
+      "signature": "publish_current_standings(uuid,jsonb)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ]
+    },
+    {
+      "name": "publish_current_bracket_scores",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "p_season_id uuid, p_master_id uuid, p_source jsonb, p_rows jsonb",
+      "signature": "publish_current_bracket_scores(uuid,uuid,jsonb,jsonb)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ]
+    },
+    {
+      "name": "delete_league_confirmed",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "p_actor uuid, p_league uuid, p_confirm boolean",
+      "signature": "delete_league_confirmed(uuid,uuid,boolean)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ]
+    },
+    {
+      "name": "publish_leaderboard_snapshot",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "p_season_id uuid, p_master_id uuid, p_source jsonb, p_scores jsonb, p_rows jsonb, p_columns jsonb, p_created_by uuid",
+      "signature": "publish_leaderboard_snapshot(uuid,uuid,jsonb,jsonb,jsonb,jsonb,uuid)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ]
+    },
+    {
+      "name": "verify_league_history_cutoff",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "p_source uuid, p_snapshot uuid",
+      "signature": "verify_league_history_cutoff(uuid,uuid)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ]
+    },
+    {
+      "name": "protect_final_leaderboard_history",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "",
+      "signature": "protect_final_leaderboard_history()",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ]
+    },
+    {
+      "name": "require_completed_rollover_master",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "p_source uuid",
+      "signature": "require_completed_rollover_master(uuid)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ]
+    },
+    {
+      "name": "normalize_league_name",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "sql",
+      "security": "INVOKER",
+      "arguments": "p_name text",
+      "signature": "normalize_league_name(text)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ]
+    },
+    {
+      "name": "league_name_key",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "sql",
+      "security": "INVOKER",
+      "arguments": "p_name text",
+      "signature": "league_name_key(text)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ]
+    },
+    {
+      "name": "inspect_league_name",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "sql",
+      "security": "INVOKER",
+      "arguments": "p_name text, p_except uuid",
+      "signature": "inspect_league_name(text,uuid)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ]
+    },
+    {
+      "name": "join_league_member",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "p_actor uuid, p_league uuid, p_expected_hash text",
+      "signature": "join_league_member(uuid,uuid,text)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ]
+    },
+    {
+      "name": "transfer_league_ownership",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "p_actor uuid, p_league uuid, p_target uuid",
+      "signature": "transfer_league_ownership(uuid,uuid,uuid)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ]
+    },
+    {
+      "name": "remove_league_membership",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "p_actor uuid, p_league uuid, p_target uuid",
+      "signature": "remove_league_membership(uuid,uuid,uuid)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ]
+    },
+    {
+      "name": "update_league_settings",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "p_actor uuid, p_league uuid, p_name text, p_private boolean, p_hash text, p_expected_hash text",
+      "signature": "update_league_settings(uuid,uuid,text,boolean,text,text)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ]
+    },
+    {
+      "name": "execute_season_rollover_transition",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "p_audit uuid, p_source uuid, p_snapshot uuid, p_target text, p_opening timestamp with time zone, p_lock timestamp with time zone",
+      "signature": "execute_season_rollover_transition(uuid,uuid,uuid,text,timestamp with time zone,timestamp with time zone)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ]
+    },
+    {
+      "name": "run_season_rollover",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "p_target_code text, p_opening timestamp with time zone, p_lock timestamp with time zone, p_admin uuid, p_prepared jsonb",
+      "signature": "run_season_rollover(text,timestamp with time zone,timestamp with time zone,uuid,jsonb)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ]
+    },
+    {
+      "name": "lock_league_history_membership",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "",
+      "signature": "lock_league_history_membership()",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ]
+    },
+    {
+      "name": "protect_league_history",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "",
+      "signature": "protect_league_history()",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ]
+    },
+    {
+      "name": "publish_league_history_cutoff",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "p_source uuid, p_snapshot uuid",
+      "signature": "publish_league_history_cutoff(uuid,uuid)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "league_history_rows",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "MAINTAIN"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "SELECT"
+        }
+      ],
+      "force_rls": false
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "league_history_seasons",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "MAINTAIN"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "SELECT"
+        }
+      ],
+      "force_rls": false
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "league_history_cutoffs",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "MAINTAIN"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "SELECT"
+        }
+      ],
+      "force_rls": false
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "leaderboard_history_competitors",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "MAINTAIN"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "SELECT"
+        }
+      ],
+      "force_rls": false
+    },
+    {
+      "rls": false,
+      "kind": "S",
+      "name": "password_resets_id_seq",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "USAGE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "USAGE"
+        }
+      ],
+      "force_rls": false
+    },
+    {
+      "rls": false,
+      "kind": "v",
+      "name": "bracket_view",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "MAINTAIN"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "MAINTAIN"
+        }
+      ],
+      "force_rls": false
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "users",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "MAINTAIN"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "MAINTAIN"
+        }
+      ],
+      "force_rls": false
+    },
+    {
+      "rls": false,
+      "kind": "r",
+      "name": "seasons",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "MAINTAIN"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "MAINTAIN"
+        }
+      ],
+      "force_rls": false
+    },
+    {
+      "rls": false,
+      "kind": "r",
+      "name": "teams",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "MAINTAIN"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "MAINTAIN"
+        }
+      ],
+      "force_rls": false
+    },
+    {
+      "rls": false,
+      "kind": "r",
+      "name": "standings",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "MAINTAIN"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "MAINTAIN"
+        }
+      ],
+      "force_rls": false
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "brackets",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "MAINTAIN"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "MAINTAIN"
+        }
+      ],
+      "force_rls": false
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "matches",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "MAINTAIN"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "MAINTAIN"
+        }
+      ],
+      "force_rls": false
+    },
+    {
+      "rls": false,
+      "kind": "r",
+      "name": "bracket_scores",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "MAINTAIN"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "MAINTAIN"
+        }
+      ],
+      "force_rls": false
+    },
+    {
+      "rls": false,
+      "kind": "r",
+      "name": "leagues",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "MAINTAIN"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "MAINTAIN"
+        }
+      ],
+      "force_rls": false
+    },
+    {
+      "rls": false,
+      "kind": "r",
+      "name": "league_members",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "MAINTAIN"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "MAINTAIN"
+        }
+      ],
+      "force_rls": false
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "password_resets",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "MAINTAIN"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "MAINTAIN"
+        }
+      ],
+      "force_rls": false
+    },
+    {
+      "rls": false,
+      "kind": "r",
+      "name": "leaderboard_history",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "MAINTAIN"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "MAINTAIN"
+        }
+      ],
+      "force_rls": false
+    },
+    {
+      "rls": false,
+      "kind": "r",
+      "name": "leaderboard_history_snapshots",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "MAINTAIN"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "MAINTAIN"
+        }
+      ],
+      "force_rls": false
+    },
+    {
+      "rls": false,
+      "kind": "r",
+      "name": "leaderboard_history_rows",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "MAINTAIN"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "MAINTAIN"
+        }
+      ],
+      "force_rls": false
+    },
+    {
+      "rls": false,
+      "kind": "S",
+      "name": "leaderboard_history_id_seq",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "USAGE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "USAGE"
+        }
+      ],
+      "force_rls": false
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "season_rollover_audits",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "MAINTAIN"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "DELETE"
+        }
+      ],
+      "force_rls": false
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "application_season",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "MAINTAIN"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "MAINTAIN"
+        }
+      ],
+      "force_rls": false
+    },
+    {
+      "rls": false,
+      "kind": "S",
+      "name": "standings_id_seq",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "USAGE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "USAGE"
+        }
+      ],
+      "force_rls": false
+    }
+  ],
+  "constraints": [
+    {
+      "name": "leaderboard_history_competitors_pkey",
+      "type": "p",
+      "table": "leaderboard_history_competitors",
+      "definition": "PRIMARY KEY (snapshot_row_id)"
+    },
+    {
+      "name": "leaderboard_history_competitors_snapshot_row_id_fkey",
+      "type": "f",
+      "table": "leaderboard_history_competitors",
+      "definition": "FOREIGN KEY (snapshot_row_id) REFERENCES leaderboard_history_rows(id) ON DELETE CASCADE"
+    },
+    {
+      "name": "league_history_cutoffs_expected_leagues_check",
+      "type": "c",
+      "table": "league_history_cutoffs",
+      "definition": "CHECK ((expected_leagues >= 0))"
+    },
+    {
+      "name": "league_history_cutoffs_expected_rows_check",
+      "type": "c",
+      "table": "league_history_cutoffs",
+      "definition": "CHECK ((expected_rows >= 0))"
+    },
+    {
+      "name": "league_history_cutoffs_pkey",
+      "type": "p",
+      "table": "league_history_cutoffs",
+      "definition": "PRIMARY KEY (global_snapshot_id)"
+    },
+    {
+      "name": "league_history_cutoffs_global_snapshot_id_fkey",
+      "type": "f",
+      "table": "league_history_cutoffs",
+      "definition": "FOREIGN KEY (global_snapshot_id) REFERENCES leaderboard_history_snapshots(id)"
+    },
+    {
+      "name": "league_history_seasons_expected_rows_check",
+      "type": "c",
+      "table": "league_history_seasons",
+      "definition": "CHECK ((expected_rows > 0))"
+    },
+    {
+      "name": "league_history_seasons_pkey",
+      "type": "p",
+      "table": "league_history_seasons",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "league_history_seasons_league_id_season_id_key",
+      "type": "u",
+      "table": "league_history_seasons",
+      "definition": "UNIQUE (league_id, season_id)"
+    },
+    {
+      "name": "league_history_seasons_league_id_fkey",
+      "type": "f",
+      "table": "league_history_seasons",
+      "definition": "FOREIGN KEY (league_id) REFERENCES leagues(id) ON DELETE CASCADE"
+    },
+    {
+      "name": "league_history_seasons_season_id_fkey",
+      "type": "f",
+      "table": "league_history_seasons",
+      "definition": "FOREIGN KEY (season_id) REFERENCES seasons(id)"
+    },
+    {
+      "name": "league_history_seasons_global_snapshot_id_fkey",
+      "type": "f",
+      "table": "league_history_seasons",
+      "definition": "FOREIGN KEY (global_snapshot_id) REFERENCES league_history_cutoffs(global_snapshot_id)"
+    },
+    {
+      "name": "league_history_rows_rank_check",
+      "type": "c",
+      "table": "league_history_rows",
+      "definition": "CHECK ((rank > 0))"
+    },
+    {
+      "name": "league_history_rows_display_order_check",
+      "type": "c",
+      "table": "league_history_rows",
+      "definition": "CHECK ((display_order > 0))"
+    },
+    {
+      "name": "league_history_rows_pkey",
+      "type": "p",
+      "table": "league_history_rows",
+      "definition": "PRIMARY KEY (history_season_id, global_snapshot_row_id)"
+    },
+    {
+      "name": "league_history_rows_history_season_id_display_order_key",
+      "type": "u",
+      "table": "league_history_rows",
+      "definition": "UNIQUE (history_season_id, display_order)"
+    },
+    {
+      "name": "league_history_rows_history_season_id_fkey",
+      "type": "f",
+      "table": "league_history_rows",
+      "definition": "FOREIGN KEY (history_season_id) REFERENCES league_history_seasons(id) ON DELETE CASCADE"
+    },
+    {
+      "name": "league_history_rows_global_snapshot_row_id_fkey",
+      "type": "f",
+      "table": "league_history_rows",
+      "definition": "FOREIGN KEY (global_snapshot_row_id) REFERENCES leaderboard_history_competitors(snapshot_row_id)"
+    },
+    {
+      "name": "nc_g1_nonblank_identity",
+      "type": "c",
+      "table": "users",
+      "definition": "CHECK (((username IS NOT NULL) AND (email IS NOT NULL) AND (auth_identity_key(username) <> ''::text) AND (auth_identity_key(email) <> ''::text)))"
+    },
+    {
+      "name": "nc_g2_auth_version",
+      "type": "c",
+      "table": "users",
+      "definition": "CHECK ((auth_version >= 0))"
+    },
+    {
+      "name": "nc_g2_reset_digest",
+      "type": "c",
+      "table": "password_resets",
+      "definition": "CHECK ((token_digest ~ '^[0-9a-f]{64}$'::text))"
+    },
+    {
+      "name": "nc_g2_reset_user",
+      "type": "u",
+      "table": "password_resets",
+      "definition": "UNIQUE (user_id)"
+    },
+    {
+      "name": "bracket_scores_bonus_champion_check",
+      "type": "c",
+      "table": "bracket_scores",
+      "definition": "CHECK ((bonus_champion >= 0))"
+    },
+    {
+      "name": "bracket_scores_bonus_finalists_check",
+      "type": "c",
+      "table": "bracket_scores",
+      "definition": "CHECK ((bonus_finalists >= 0))"
+    },
+    {
+      "name": "bracket_scores_full_hits_check",
+      "type": "c",
+      "table": "bracket_scores",
+      "definition": "CHECK ((full_hits >= 0))"
+    },
+    {
+      "name": "bracket_scores_misses_check",
+      "type": "c",
+      "table": "bracket_scores",
+      "definition": "CHECK ((misses >= 0))"
+    },
+    {
+      "name": "bracket_scores_partial_hits_check",
+      "type": "c",
+      "table": "bracket_scores",
+      "definition": "CHECK ((partial_hits >= 0))"
+    },
+    {
+      "name": "bracket_scores_total_points_check",
+      "type": "c",
+      "table": "bracket_scores",
+      "definition": "CHECK ((total_points >= 0))"
+    },
+    {
+      "name": "matches_next_slot_check",
+      "type": "c",
+      "table": "matches",
+      "definition": "CHECK ((next_slot = ANY (ARRAY['a'::text, 'b'::text])))"
+    },
+    {
+      "name": "leaderboard_history_bonus_champion_check",
+      "type": "c",
+      "table": "leaderboard_history",
+      "definition": "CHECK ((bonus_champion >= 0))"
+    },
+    {
+      "name": "leaderboard_history_bonus_finalists_check",
+      "type": "c",
+      "table": "leaderboard_history",
+      "definition": "CHECK ((bonus_finalists >= 0))"
+    },
+    {
+      "name": "leaderboard_history_full_hits_check",
+      "type": "c",
+      "table": "leaderboard_history",
+      "definition": "CHECK ((full_hits >= 0))"
+    },
+    {
+      "name": "league_members_user_id_fkey",
+      "type": "f",
+      "table": "league_members",
+      "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+    },
+    {
+      "name": "leagues_owner_user_id_fkey",
+      "type": "f",
+      "table": "leagues",
+      "definition": "FOREIGN KEY (owner_user_id) REFERENCES users(id)"
+    },
+    {
+      "name": "matches_bracket_id_fkey",
+      "type": "f",
+      "table": "matches",
+      "definition": "FOREIGN KEY (bracket_id) REFERENCES brackets(id) ON DELETE CASCADE"
+    },
+    {
+      "name": "matches_next_match_id_fkey",
+      "type": "f",
+      "table": "matches",
+      "definition": "FOREIGN KEY (next_match_id) REFERENCES matches(id) ON DELETE SET NULL"
+    },
+    {
+      "name": "matches_predicted_winner_fkey",
+      "type": "f",
+      "table": "matches",
+      "definition": "FOREIGN KEY (predicted_winner) REFERENCES teams(id)"
+    },
+    {
+      "name": "matches_season_id_fkey",
+      "type": "f",
+      "table": "matches",
+      "definition": "FOREIGN KEY (season_id) REFERENCES seasons(id)"
+    },
+    {
+      "name": "matches_team_a_fkey",
+      "type": "f",
+      "table": "matches",
+      "definition": "FOREIGN KEY (team_a) REFERENCES teams(id)"
+    },
+    {
+      "name": "matches_team_b_fkey",
+      "type": "f",
+      "table": "matches",
+      "definition": "FOREIGN KEY (team_b) REFERENCES teams(id)"
+    },
+    {
+      "name": "leaderboard_history_misses_check",
+      "type": "c",
+      "table": "leaderboard_history",
+      "definition": "CHECK ((misses >= 0))"
+    },
+    {
+      "name": "leaderboard_history_partial_hits_check",
+      "type": "c",
+      "table": "leaderboard_history",
+      "definition": "CHECK ((partial_hits >= 0))"
+    },
+    {
+      "name": "leaderboard_history_rank_check",
+      "type": "c",
+      "table": "leaderboard_history",
+      "definition": "CHECK ((rank > 0))"
+    },
+    {
+      "name": "leaderboard_history_total_points_check",
+      "type": "c",
+      "table": "leaderboard_history",
+      "definition": "CHECK ((total_points >= 0))"
+    },
+    {
+      "name": "bracket_scores_pkey",
+      "type": "p",
+      "table": "bracket_scores",
+      "definition": "PRIMARY KEY (bracket_id)"
+    },
+    {
+      "name": "brackets_pkey",
+      "type": "p",
+      "table": "brackets",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "leaderboard_history_pkey",
+      "type": "p",
+      "table": "leaderboard_history",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "leaderboard_history_rows_pkey",
+      "type": "p",
+      "table": "leaderboard_history_rows",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "leaderboard_history_snapshots_pkey",
+      "type": "p",
+      "table": "leaderboard_history_snapshots",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "league_members_league_user_unique",
+      "type": "u",
+      "table": "league_members",
+      "definition": "UNIQUE (league_id, user_id)"
+    },
+    {
+      "name": "league_members_pkey",
+      "type": "p",
+      "table": "league_members",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "leagues_pkey",
+      "type": "p",
+      "table": "leagues",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "matches_pkey",
+      "type": "p",
+      "table": "matches",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "password_resets_pkey",
+      "type": "p",
+      "table": "password_resets",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "password_resets_token_key",
+      "type": "u",
+      "table": "password_resets",
+      "definition": "UNIQUE (token_digest)"
+    },
+    {
+      "name": "seasons_code_key",
+      "type": "u",
+      "table": "seasons",
+      "definition": "UNIQUE (code)"
+    },
+    {
+      "name": "seasons_pkey",
+      "type": "p",
+      "table": "seasons",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "standings_pkey",
+      "type": "p",
+      "table": "standings",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "teams_code_key",
+      "type": "u",
+      "table": "teams",
+      "definition": "UNIQUE (code)"
+    },
+    {
+      "name": "teams_pkey",
+      "type": "p",
+      "table": "teams",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "users_email_key",
+      "type": "u",
+      "table": "users",
+      "definition": "UNIQUE (email)"
+    },
+    {
+      "name": "users_email_unique",
+      "type": "u",
+      "table": "users",
+      "definition": "UNIQUE (email)"
+    },
+    {
+      "name": "users_pkey",
+      "type": "p",
+      "table": "users",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "users_username_unique",
+      "type": "u",
+      "table": "users",
+      "definition": "UNIQUE (username)"
+    },
+    {
+      "name": "bracket_scores_bracket_id_fkey",
+      "type": "f",
+      "table": "bracket_scores",
+      "definition": "FOREIGN KEY (bracket_id) REFERENCES brackets(id) ON DELETE CASCADE"
+    },
+    {
+      "name": "bracket_scores_master_bracket_id_fkey",
+      "type": "f",
+      "table": "bracket_scores",
+      "definition": "FOREIGN KEY (master_bracket_id) REFERENCES brackets(id) ON DELETE CASCADE"
+    },
+    {
+      "name": "bracket_scores_season_id_fkey",
+      "type": "f",
+      "table": "bracket_scores",
+      "definition": "FOREIGN KEY (season_id) REFERENCES seasons(id)"
+    },
+    {
+      "name": "brackets_season_id_fkey",
+      "type": "f",
+      "table": "brackets",
+      "definition": "FOREIGN KEY (season_id) REFERENCES seasons(id)"
+    },
+    {
+      "name": "leaderboard_history_rows_snapshot_id_fkey",
+      "type": "f",
+      "table": "leaderboard_history_rows",
+      "definition": "FOREIGN KEY (snapshot_id) REFERENCES leaderboard_history_snapshots(id) ON DELETE CASCADE"
+    },
+    {
+      "name": "leaderboard_history_season_id_fkey",
+      "type": "f",
+      "table": "leaderboard_history",
+      "definition": "FOREIGN KEY (season_id) REFERENCES seasons(id)"
+    },
+    {
+      "name": "leaderboard_history_snapshots_created_by_fkey",
+      "type": "f",
+      "table": "leaderboard_history_snapshots",
+      "definition": "FOREIGN KEY (created_by) REFERENCES users(id)"
+    },
+    {
+      "name": "leaderboard_history_snapshots_season_id_fkey",
+      "type": "f",
+      "table": "leaderboard_history_snapshots",
+      "definition": "FOREIGN KEY (season_id) REFERENCES seasons(id) ON DELETE CASCADE"
+    },
+    {
+      "name": "league_members_league_id_fkey",
+      "type": "f",
+      "table": "league_members",
+      "definition": "FOREIGN KEY (league_id) REFERENCES leagues(id) ON DELETE CASCADE"
+    },
+    {
+      "name": "password_resets_user_id_fkey",
+      "type": "f",
+      "table": "password_resets",
+      "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+    },
+    {
+      "name": "seasons_master_bracket_fk",
+      "type": "f",
+      "table": "seasons",
+      "definition": "FOREIGN KEY (master_bracket_id) REFERENCES brackets(id) ON DELETE SET NULL"
+    },
+    {
+      "name": "standings_code_fkey",
+      "type": "f",
+      "table": "standings",
+      "definition": "FOREIGN KEY (code) REFERENCES teams(code)"
+    },
+    {
+      "name": "application_season_singleton_check",
+      "type": "c",
+      "table": "application_season",
+      "definition": "CHECK (singleton)"
+    },
+    {
+      "name": "application_season_pkey",
+      "type": "p",
+      "table": "application_season",
+      "definition": "PRIMARY KEY (singleton)"
+    },
+    {
+      "name": "application_season_season_id_fkey",
+      "type": "f",
+      "table": "application_season",
+      "definition": "FOREIGN KEY (season_id) REFERENCES seasons(id) ON DELETE RESTRICT"
+    },
+    {
+      "name": "season_rollover_audits_status_check",
+      "type": "c",
+      "table": "season_rollover_audits",
+      "definition": "CHECK ((status = ANY (ARRAY['STARTED'::text, 'FAILED'::text, 'COMPLETED'::text])))"
+    },
+    {
+      "name": "season_rollover_audits_check",
+      "type": "c",
+      "table": "season_rollover_audits",
+      "definition": "CHECK ((((status = 'STARTED'::text) AND (completed_at IS NULL)) OR ((status <> 'STARTED'::text) AND (completed_at IS NOT NULL))))"
+    },
+    {
+      "name": "season_rollover_audits_pkey",
+      "type": "p",
+      "table": "season_rollover_audits",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "season_rollover_audits_source_season_id_fkey",
+      "type": "f",
+      "table": "season_rollover_audits",
+      "definition": "FOREIGN KEY (source_season_id) REFERENCES seasons(id)"
+    },
+    {
+      "name": "season_rollover_audits_target_season_id_fkey",
+      "type": "f",
+      "table": "season_rollover_audits",
+      "definition": "FOREIGN KEY (target_season_id) REFERENCES seasons(id)"
+    },
+    {
+      "name": "season_rollover_audits_snapshot_id_fkey",
+      "type": "f",
+      "table": "season_rollover_audits",
+      "definition": "FOREIGN KEY (snapshot_id) REFERENCES leaderboard_history_snapshots(id)"
+    },
+    {
+      "name": "season_rollover_audits_requested_by_user_id_fkey",
+      "type": "f",
+      "table": "season_rollover_audits",
+      "definition": "FOREIGN KEY (requested_by_user_id) REFERENCES users(id)"
+    },
+    {
+      "name": "nc_f1_league_name_valid",
+      "type": "c",
+      "table": "leagues",
+      "definition": "CHECK (((name = normalize_league_name(name)) AND ((char_length(name) >= 1) AND (char_length(name) <= 80))))"
+    },
+    {
+      "name": "nc_f1_owner_membership",
+      "type": "f",
+      "table": "leagues",
+      "definition": "FOREIGN KEY (id, owner_user_id) REFERENCES league_members(league_id, user_id) DEFERRABLE INITIALLY DEFERRED"
+    }
+  ],
+  "default_acls": [
+    {
+      "kind": "r",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "MAINTAIN"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "MAINTAIN"
+        }
+      ],
+      "schema": "public"
+    },
+    {
+      "kind": "S",
+      "owner": "supabase_admin",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "USAGE"
+        },
+        {
+          "grantee": "anon",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "anon",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "anon",
+          "privilege": "USAGE"
+        },
+        {
+          "grantee": "authenticated",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "authenticated",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "authenticated",
+          "privilege": "USAGE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "USAGE"
+        }
+      ],
+      "schema": "public"
+    },
+    {
+      "kind": "S",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "USAGE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "USAGE"
+        }
+      ],
+      "schema": "public"
+    },
+    {
+      "kind": "f",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "anon",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "authenticated",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public"
+    },
+    {
+      "kind": "f",
+      "owner": "supabase_admin",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "anon",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "authenticated",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public"
+    },
+    {
+      "kind": "r",
+      "owner": "supabase_admin",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "MAINTAIN"
+        },
+        {
+          "grantee": "anon",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "anon",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "anon",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "anon",
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "anon",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "anon",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "anon",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "anon",
+          "privilege": "MAINTAIN"
+        },
+        {
+          "grantee": "authenticated",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "authenticated",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "authenticated",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "authenticated",
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "authenticated",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "authenticated",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "authenticated",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "authenticated",
+          "privilege": "MAINTAIN"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "MAINTAIN"
+        }
+      ],
+      "schema": "public"
+    }
+  ],
+  "source": "Fresh final-source disposable baseline-through0011 proof; schema metadata only"
+}

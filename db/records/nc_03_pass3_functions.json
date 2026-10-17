@@ -1,0 +1,1049 @@
+{
+  "functions": [
+    {
+      "name": "set_master_bracket",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "DEFINER",
+      "arguments": "season_id uuid, bracket_id uuid",
+      "signature": "set_master_bracket(uuid,uuid)",
+      "configuration": null,
+      "introducing_migration": "db/baseline/000_current_schema.sql",
+      "latest_definition_migration": "db/baseline/000_current_schema.sql",
+      "purpose": "set master bracket; trusted application SQL helper; exact definition in introducing/latest migration",
+      "browser_EXECUTE": false,
+      "assessment": "PASS: trusted server roles only",
+      "advisory": "Retained baseline unpinned setting; trusted callers only",
+      "search_path": null,
+      "introducing_phase": "NC-ENV-02 preserved current-state baseline"
+    },
+    {
+      "name": "auth_identity_key",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "sql",
+      "security": "INVOKER",
+      "arguments": "p_value text",
+      "signature": "auth_identity_key(text)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "introducing_migration": "db/post-baseline/0010_nc_02g1_identity_auth.sql",
+      "latest_definition_migration": "db/post-baseline/0010_nc_02g1_identity_auth.sql",
+      "purpose": "auth identity key; trusted application SQL helper; exact definition in introducing/latest migration",
+      "browser_EXECUTE": false,
+      "assessment": "PASS: trusted server roles only",
+      "advisory": null,
+      "search_path": "pg_catalog, public",
+      "introducing_phase": "NC-02G1-IDENTITY-AUTH"
+    },
+    {
+      "name": "find_auth_user",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "sql",
+      "security": "INVOKER",
+      "arguments": "p_field text, p_identity text",
+      "signature": "find_auth_user(text,text)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "introducing_migration": "db/post-baseline/0010_nc_02g1_identity_auth.sql",
+      "latest_definition_migration": "db/post-baseline/0011_nc_02g2_password_reset_sessions.sql",
+      "purpose": "find auth user; trusted application SQL helper; exact definition in introducing/latest migration",
+      "browser_EXECUTE": false,
+      "assessment": "PASS: trusted server roles only",
+      "advisory": null,
+      "search_path": "pg_catalog, public",
+      "introducing_phase": "NC-02G1-IDENTITY-AUTH"
+    },
+    {
+      "name": "issue_password_reset",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "p_user_id uuid, p_digest text",
+      "signature": "issue_password_reset(uuid,text)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "introducing_migration": "db/post-baseline/0011_nc_02g2_password_reset_sessions.sql",
+      "latest_definition_migration": "db/post-baseline/0011_nc_02g2_password_reset_sessions.sql",
+      "purpose": "issue password reset; trusted application SQL helper; exact definition in introducing/latest migration",
+      "browser_EXECUTE": false,
+      "assessment": "PASS: trusted server roles only",
+      "advisory": null,
+      "search_path": "pg_catalog, public",
+      "introducing_phase": "NC-02G2-PASSWORD-RESET-SESSIONS"
+    },
+    {
+      "name": "cancel_password_reset",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "p_user_id uuid, p_digest text",
+      "signature": "cancel_password_reset(uuid,text)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "introducing_migration": "db/post-baseline/0011_nc_02g2_password_reset_sessions.sql",
+      "latest_definition_migration": "db/post-baseline/0011_nc_02g2_password_reset_sessions.sql",
+      "purpose": "cancel password reset; trusted application SQL helper; exact definition in introducing/latest migration",
+      "browser_EXECUTE": false,
+      "assessment": "PASS: trusted server roles only",
+      "advisory": null,
+      "search_path": "pg_catalog, public",
+      "introducing_phase": "NC-02G2-PASSWORD-RESET-SESSIONS"
+    },
+    {
+      "name": "complete_password_reset",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "p_digest text, p_password_hash text",
+      "signature": "complete_password_reset(text,text)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "introducing_migration": "db/post-baseline/0011_nc_02g2_password_reset_sessions.sql",
+      "latest_definition_migration": "db/post-baseline/0011_nc_02g2_password_reset_sessions.sql",
+      "purpose": "complete password reset; trusted application SQL helper; exact definition in introducing/latest migration",
+      "browser_EXECUTE": false,
+      "assessment": "PASS: trusted server roles only",
+      "advisory": null,
+      "search_path": "pg_catalog, public",
+      "introducing_phase": "NC-02G2-PASSWORD-RESET-SESSIONS"
+    },
+    {
+      "name": "_set_bracket_scores_season_id",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "PUBLIC",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "anon",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "authenticated",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "",
+      "signature": "_set_bracket_scores_season_id()",
+      "configuration": null,
+      "introducing_migration": "db/baseline/000_current_schema.sql",
+      "latest_definition_migration": "db/baseline/000_current_schema.sql",
+      "purpose": "set bracket scores season id; trigger-only row integrity enforcement",
+      "browser_EXECUTE": true,
+      "assessment": "PASS: trigger-only entry, direct invocation refused and no browser relation writes",
+      "advisory": "Retained baseline unpinned setting; trusted callers only",
+      "search_path": null,
+      "introducing_phase": "NC-ENV-02 preserved current-state baseline"
+    },
+    {
+      "name": "_set_matches_season_id",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "PUBLIC",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "anon",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "authenticated",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "",
+      "signature": "_set_matches_season_id()",
+      "configuration": null,
+      "introducing_migration": "db/baseline/000_current_schema.sql",
+      "latest_definition_migration": "db/baseline/000_current_schema.sql",
+      "purpose": "set matches season id; trigger-only row integrity enforcement",
+      "browser_EXECUTE": true,
+      "assessment": "PASS: trigger-only entry, direct invocation refused and no browser relation writes",
+      "advisory": "Retained baseline unpinned setting; trusted callers only",
+      "search_path": null,
+      "introducing_phase": "NC-ENV-02 preserved current-state baseline"
+    },
+    {
+      "name": "atomic_update_match",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "DEFINER",
+      "arguments": "p_match_id uuid, p_action text, p_new_team text, p_games integer",
+      "signature": "atomic_update_match(uuid,text,text,integer)",
+      "configuration": null,
+      "introducing_migration": "db/baseline/000_current_schema.sql",
+      "latest_definition_migration": "db/baseline/000_current_schema.sql",
+      "purpose": "atomic update match; trusted application SQL helper; exact definition in introducing/latest migration",
+      "browser_EXECUTE": false,
+      "assessment": "PASS: trusted server roles only",
+      "advisory": "Retained baseline unpinned setting; trusted callers only",
+      "search_path": null,
+      "introducing_phase": "NC-ENV-02 preserved current-state baseline"
+    },
+    {
+      "name": "fix_season_master_on_bracket_soft_delete",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "PUBLIC",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "anon",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "authenticated",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "",
+      "signature": "fix_season_master_on_bracket_soft_delete()",
+      "configuration": null,
+      "introducing_migration": "db/baseline/000_current_schema.sql",
+      "latest_definition_migration": "db/baseline/000_current_schema.sql",
+      "purpose": "fix season master on bracket soft delete; trigger-only row integrity enforcement",
+      "browser_EXECUTE": true,
+      "assessment": "PASS: trigger-only entry, direct invocation refused and no browser relation writes",
+      "advisory": "Retained baseline unpinned setting; trusted callers only",
+      "search_path": null,
+      "introducing_phase": "NC-ENV-02 preserved current-state baseline"
+    },
+    {
+      "name": "set_winner_atomic",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "in_match uuid, in_new_team text, in_games integer",
+      "signature": "set_winner_atomic(uuid,text,integer)",
+      "configuration": null,
+      "introducing_migration": "db/baseline/000_current_schema.sql",
+      "latest_definition_migration": "db/baseline/000_current_schema.sql",
+      "purpose": "set winner atomic; trusted application SQL helper; exact definition in introducing/latest migration",
+      "browser_EXECUTE": false,
+      "assessment": "PASS: trusted server roles only",
+      "advisory": "Retained baseline unpinned setting; trusted callers only",
+      "search_path": null,
+      "introducing_phase": "NC-ENV-02 preserved current-state baseline"
+    },
+    {
+      "name": "undo_prediction_atomic",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "in_match uuid",
+      "signature": "undo_prediction_atomic(uuid)",
+      "configuration": null,
+      "introducing_migration": "db/baseline/000_current_schema.sql",
+      "latest_definition_migration": "db/baseline/000_current_schema.sql",
+      "purpose": "undo prediction atomic; trusted application SQL helper; exact definition in introducing/latest migration",
+      "browser_EXECUTE": false,
+      "assessment": "PASS: trusted server roles only",
+      "advisory": "Retained baseline unpinned setting; trusted callers only",
+      "search_path": null,
+      "introducing_phase": "NC-ENV-02 preserved current-state baseline"
+    },
+    {
+      "name": "finalize_season_transition",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "p_source_season_id uuid, p_new_season_id uuid, p_new_season_code text",
+      "signature": "finalize_season_transition(uuid,uuid,text)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "introducing_migration": "db/post-baseline/0004_nc_02c3_season_transition.sql",
+      "latest_definition_migration": "db/post-baseline/0004_nc_02c3_season_transition.sql",
+      "purpose": "finalize season transition; trusted application SQL helper; exact definition in introducing/latest migration",
+      "browser_EXECUTE": false,
+      "assessment": "PASS: trusted server roles only",
+      "advisory": null,
+      "search_path": "pg_catalog, public",
+      "introducing_phase": "NC-02C3-SEASON-TRANSITION"
+    },
+    {
+      "name": "create_league_with_owner",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "p_actor uuid, p_name text, p_hash text",
+      "signature": "create_league_with_owner(uuid,text,text)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "introducing_migration": "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+      "latest_definition_migration": "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+      "purpose": "create league with owner; trusted application SQL helper; exact definition in introducing/latest migration",
+      "browser_EXECUTE": false,
+      "assessment": "PASS: trusted server roles only",
+      "advisory": null,
+      "search_path": "pg_catalog, public",
+      "introducing_phase": "NC-02F1-LEAGUE-LIFECYCLE"
+    },
+    {
+      "name": "create_master_bracket_atomic",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "p_user_id uuid, p_season_id uuid, p_replace boolean, p_matches jsonb",
+      "signature": "create_master_bracket_atomic(uuid,uuid,boolean,jsonb)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "introducing_migration": "db/post-baseline/0001_nc_02b3_bracket_lifecycle.sql",
+      "latest_definition_migration": "db/post-baseline/0001_nc_02b3_bracket_lifecycle.sql",
+      "purpose": "create master bracket atomic; trusted application SQL helper; exact definition in introducing/latest migration",
+      "browser_EXECUTE": false,
+      "assessment": "PASS: trusted server roles only",
+      "advisory": null,
+      "search_path": "pg_catalog, public",
+      "introducing_phase": "NC-02B3-BRACKET-LIFECYCLE"
+    },
+    {
+      "name": "publish_current_standings",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "p_season_id uuid, p_rows jsonb",
+      "signature": "publish_current_standings(uuid,jsonb)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "introducing_migration": "db/post-baseline/0003_nc_02c2_atomic_standings.sql",
+      "latest_definition_migration": "db/post-baseline/0003_nc_02c2_atomic_standings.sql",
+      "purpose": "publish current standings; trusted application SQL helper; exact definition in introducing/latest migration",
+      "browser_EXECUTE": false,
+      "assessment": "PASS: trusted server roles only",
+      "advisory": null,
+      "search_path": "pg_catalog, public",
+      "introducing_phase": "NC-02C2-ATOMIC-STANDINGS"
+    },
+    {
+      "name": "publish_current_bracket_scores",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "p_season_id uuid, p_master_id uuid, p_source jsonb, p_rows jsonb",
+      "signature": "publish_current_bracket_scores(uuid,uuid,jsonb,jsonb)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "introducing_migration": "db/post-baseline/0005_nc_02d1_atomic_scores.sql",
+      "latest_definition_migration": "db/post-baseline/0005_nc_02d1_atomic_scores.sql",
+      "purpose": "publish current bracket scores; trusted application SQL helper; exact definition in introducing/latest migration",
+      "browser_EXECUTE": false,
+      "assessment": "PASS: trusted server roles only",
+      "advisory": null,
+      "search_path": "pg_catalog, public",
+      "introducing_phase": "NC-02D1-ATOMIC-SCORES"
+    },
+    {
+      "name": "delete_league_confirmed",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "p_actor uuid, p_league uuid, p_confirm boolean",
+      "signature": "delete_league_confirmed(uuid,uuid,boolean)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "introducing_migration": "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+      "latest_definition_migration": "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+      "purpose": "delete league confirmed; trusted application SQL helper; exact definition in introducing/latest migration",
+      "browser_EXECUTE": false,
+      "assessment": "PASS: trusted server roles only",
+      "advisory": null,
+      "search_path": "pg_catalog, public",
+      "introducing_phase": "NC-02F1-LEAGUE-LIFECYCLE"
+    },
+    {
+      "name": "publish_leaderboard_snapshot",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "p_season_id uuid, p_master_id uuid, p_source jsonb, p_scores jsonb, p_rows jsonb, p_columns jsonb, p_created_by uuid",
+      "signature": "publish_leaderboard_snapshot(uuid,uuid,jsonb,jsonb,jsonb,jsonb,uuid)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "introducing_migration": "db/post-baseline/0006_nc_02d2_final_snapshots.sql",
+      "latest_definition_migration": "db/post-baseline/0009_nc_02f2_league_history.sql",
+      "purpose": "publish leaderboard snapshot; trusted application SQL helper; exact definition in introducing/latest migration",
+      "browser_EXECUTE": false,
+      "assessment": "PASS: trusted server roles only",
+      "advisory": null,
+      "search_path": "pg_catalog, public",
+      "introducing_phase": "NC-02D2-FINAL-SNAPSHOTS"
+    },
+    {
+      "name": "verify_league_history_cutoff",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "p_source uuid, p_snapshot uuid",
+      "signature": "verify_league_history_cutoff(uuid,uuid)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "introducing_migration": "db/post-baseline/0009_nc_02f2_league_history.sql",
+      "latest_definition_migration": "db/post-baseline/0009_nc_02f2_league_history.sql",
+      "purpose": "verify league history cutoff; trusted application SQL helper; exact definition in introducing/latest migration",
+      "browser_EXECUTE": false,
+      "assessment": "PASS: trusted server roles only",
+      "advisory": null,
+      "search_path": "pg_catalog, public",
+      "introducing_phase": "NC-02F2-LEAGUE-HISTORY"
+    },
+    {
+      "name": "protect_final_leaderboard_history",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "",
+      "signature": "protect_final_leaderboard_history()",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "introducing_migration": "db/post-baseline/0006_nc_02d2_final_snapshots.sql",
+      "latest_definition_migration": "db/post-baseline/0006_nc_02d2_final_snapshots.sql",
+      "purpose": "protect final leaderboard history; trigger-only row integrity enforcement",
+      "browser_EXECUTE": false,
+      "assessment": "PASS: trusted server roles only",
+      "advisory": null,
+      "search_path": "pg_catalog, public",
+      "introducing_phase": "NC-02D2-FINAL-SNAPSHOTS"
+    },
+    {
+      "name": "require_completed_rollover_master",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "p_source uuid",
+      "signature": "require_completed_rollover_master(uuid)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "introducing_migration": "db/post-baseline/0007_nc_02e_atomic_rollover.sql",
+      "latest_definition_migration": "db/post-baseline/0007_nc_02e_atomic_rollover.sql",
+      "purpose": "require completed rollover master; trusted application SQL helper; exact definition in introducing/latest migration",
+      "browser_EXECUTE": false,
+      "assessment": "PASS: trusted server roles only",
+      "advisory": null,
+      "search_path": "pg_catalog, public",
+      "introducing_phase": "NC-02E-ATOMIC-ROLLOVER"
+    },
+    {
+      "name": "normalize_league_name",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "sql",
+      "security": "INVOKER",
+      "arguments": "p_name text",
+      "signature": "normalize_league_name(text)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "introducing_migration": "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+      "latest_definition_migration": "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+      "purpose": "normalize league name; trusted application SQL helper; exact definition in introducing/latest migration",
+      "browser_EXECUTE": false,
+      "assessment": "PASS: trusted server roles only",
+      "advisory": null,
+      "search_path": "pg_catalog, public",
+      "introducing_phase": "NC-02F1-LEAGUE-LIFECYCLE"
+    },
+    {
+      "name": "league_name_key",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "sql",
+      "security": "INVOKER",
+      "arguments": "p_name text",
+      "signature": "league_name_key(text)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "introducing_migration": "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+      "latest_definition_migration": "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+      "purpose": "league name key; trusted application SQL helper; exact definition in introducing/latest migration",
+      "browser_EXECUTE": false,
+      "assessment": "PASS: trusted server roles only",
+      "advisory": null,
+      "search_path": "pg_catalog, public",
+      "introducing_phase": "NC-02F1-LEAGUE-LIFECYCLE"
+    },
+    {
+      "name": "inspect_league_name",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "sql",
+      "security": "INVOKER",
+      "arguments": "p_name text, p_except uuid",
+      "signature": "inspect_league_name(text,uuid)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "introducing_migration": "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+      "latest_definition_migration": "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+      "purpose": "inspect league name; trusted application SQL helper; exact definition in introducing/latest migration",
+      "browser_EXECUTE": false,
+      "assessment": "PASS: trusted server roles only",
+      "advisory": null,
+      "search_path": "pg_catalog, public",
+      "introducing_phase": "NC-02F1-LEAGUE-LIFECYCLE"
+    },
+    {
+      "name": "join_league_member",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "p_actor uuid, p_league uuid, p_expected_hash text",
+      "signature": "join_league_member(uuid,uuid,text)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "introducing_migration": "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+      "latest_definition_migration": "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+      "purpose": "join league member; trusted application SQL helper; exact definition in introducing/latest migration",
+      "browser_EXECUTE": false,
+      "assessment": "PASS: trusted server roles only",
+      "advisory": null,
+      "search_path": "pg_catalog, public",
+      "introducing_phase": "NC-02F1-LEAGUE-LIFECYCLE"
+    },
+    {
+      "name": "transfer_league_ownership",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "p_actor uuid, p_league uuid, p_target uuid",
+      "signature": "transfer_league_ownership(uuid,uuid,uuid)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "introducing_migration": "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+      "latest_definition_migration": "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+      "purpose": "transfer league ownership; trusted application SQL helper; exact definition in introducing/latest migration",
+      "browser_EXECUTE": false,
+      "assessment": "PASS: trusted server roles only",
+      "advisory": null,
+      "search_path": "pg_catalog, public",
+      "introducing_phase": "NC-02F1-LEAGUE-LIFECYCLE"
+    },
+    {
+      "name": "remove_league_membership",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "p_actor uuid, p_league uuid, p_target uuid",
+      "signature": "remove_league_membership(uuid,uuid,uuid)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "introducing_migration": "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+      "latest_definition_migration": "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+      "purpose": "remove league membership; trusted application SQL helper; exact definition in introducing/latest migration",
+      "browser_EXECUTE": false,
+      "assessment": "PASS: trusted server roles only",
+      "advisory": null,
+      "search_path": "pg_catalog, public",
+      "introducing_phase": "NC-02F1-LEAGUE-LIFECYCLE"
+    },
+    {
+      "name": "update_league_settings",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "p_actor uuid, p_league uuid, p_name text, p_private boolean, p_hash text, p_expected_hash text",
+      "signature": "update_league_settings(uuid,uuid,text,boolean,text,text)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "introducing_migration": "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+      "latest_definition_migration": "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+      "purpose": "update league settings; trusted application SQL helper; exact definition in introducing/latest migration",
+      "browser_EXECUTE": false,
+      "assessment": "PASS: trusted server roles only",
+      "advisory": null,
+      "search_path": "pg_catalog, public",
+      "introducing_phase": "NC-02F1-LEAGUE-LIFECYCLE"
+    },
+    {
+      "name": "execute_season_rollover_transition",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "p_audit uuid, p_source uuid, p_snapshot uuid, p_target text, p_opening timestamp with time zone, p_lock timestamp with time zone",
+      "signature": "execute_season_rollover_transition(uuid,uuid,uuid,text,timestamp with time zone,timestamp with time zone)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "introducing_migration": "db/post-baseline/0007_nc_02e_atomic_rollover.sql",
+      "latest_definition_migration": "db/post-baseline/0009_nc_02f2_league_history.sql",
+      "purpose": "execute season rollover transition; trusted application SQL helper; exact definition in introducing/latest migration",
+      "browser_EXECUTE": false,
+      "assessment": "PASS: trusted server roles only",
+      "advisory": null,
+      "search_path": "pg_catalog, public",
+      "introducing_phase": "NC-02E-ATOMIC-ROLLOVER"
+    },
+    {
+      "name": "run_season_rollover",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "p_target_code text, p_opening timestamp with time zone, p_lock timestamp with time zone, p_admin uuid, p_prepared jsonb",
+      "signature": "run_season_rollover(text,timestamp with time zone,timestamp with time zone,uuid,jsonb)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "introducing_migration": "db/post-baseline/0007_nc_02e_atomic_rollover.sql",
+      "latest_definition_migration": "db/post-baseline/0009_nc_02f2_league_history.sql",
+      "purpose": "run season rollover; trusted application SQL helper; exact definition in introducing/latest migration",
+      "browser_EXECUTE": false,
+      "assessment": "PASS: trusted server roles only",
+      "advisory": null,
+      "search_path": "pg_catalog, public",
+      "introducing_phase": "NC-02E-ATOMIC-ROLLOVER"
+    },
+    {
+      "name": "lock_league_history_membership",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "",
+      "signature": "lock_league_history_membership()",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "introducing_migration": "db/post-baseline/0009_nc_02f2_league_history.sql",
+      "latest_definition_migration": "db/post-baseline/0009_nc_02f2_league_history.sql",
+      "purpose": "lock league history membership; trigger-only row integrity enforcement",
+      "browser_EXECUTE": false,
+      "assessment": "PASS: trusted server roles only",
+      "advisory": null,
+      "search_path": "pg_catalog, public",
+      "introducing_phase": "NC-02F2-LEAGUE-HISTORY"
+    },
+    {
+      "name": "protect_league_history",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "",
+      "signature": "protect_league_history()",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "introducing_migration": "db/post-baseline/0009_nc_02f2_league_history.sql",
+      "latest_definition_migration": "db/post-baseline/0009_nc_02f2_league_history.sql",
+      "purpose": "protect league history; trigger-only row integrity enforcement",
+      "browser_EXECUTE": false,
+      "assessment": "PASS: trusted server roles only",
+      "advisory": null,
+      "search_path": "pg_catalog, public",
+      "introducing_phase": "NC-02F2-LEAGUE-HISTORY"
+    },
+    {
+      "name": "publish_league_history_cutoff",
+      "owner": "postgres",
+      "grants": [
+        {
+          "grantee": "postgres",
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "service_role",
+          "privilege": "EXECUTE"
+        }
+      ],
+      "schema": "public",
+      "language": "plpgsql",
+      "security": "INVOKER",
+      "arguments": "p_source uuid, p_snapshot uuid",
+      "signature": "publish_league_history_cutoff(uuid,uuid)",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "introducing_migration": "db/post-baseline/0009_nc_02f2_league_history.sql",
+      "latest_definition_migration": "db/post-baseline/0009_nc_02f2_league_history.sql",
+      "purpose": "publish league history cutoff; trusted application SQL helper; exact definition in introducing/latest migration",
+      "browser_EXECUTE": false,
+      "assessment": "PASS: trusted server roles only",
+      "advisory": null,
+      "search_path": "pg_catalog, public",
+      "introducing_phase": "NC-02F2-LEAGUE-HISTORY"
+    }
+  ],
+  "count": 34,
+  "managed_extension_functions_excluded": true,
+  "untrusted_mutation_execution": false
+}

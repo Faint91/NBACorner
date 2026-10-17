@@ -1,0 +1,37 @@
+{
+  "finding": "NC03-SEC-001",
+  "status": "REPAIRED LOCALLY / pending NC-03 re-audit",
+  "unsafe_startup_cases": {
+    "missing": "REJECTED_BEFORE_AUTH_OR_CLIENT_CREATION",
+    "empty": "REJECTED_BEFORE_AUTH_OR_CLIENT_CREATION",
+    "whitespace": "REJECTED_BEFORE_AUTH_OR_CLIENT_CREATION",
+    "too_short": "REJECTED_BEFORE_AUTH_OR_CLIENT_CREATION",
+    "known_source_fallback": "REJECTED_BEFORE_AUTH_OR_CLIENT_CREATION",
+    "placeholder_secret": "REJECTED_BEFORE_AUTH_OR_CLIENT_CREATION",
+    "placeholder_changeme": "REJECTED_BEFORE_AUTH_OR_CLIENT_CREATION"
+  },
+  "actual_current_route_statuses": {
+    "valid_explicit_key": 200,
+    "no_token": 401,
+    "forged_old_source_fallback": 401,
+    "wrong_key": 401,
+    "nonexistent_user": 401,
+    "malformed": 401,
+    "wrong_algorithm": 401,
+    "missing_expiry": 401,
+    "expired": 401,
+    "pre_g2_missing_av_version_zero": 200,
+    "revoked_av_after_version_increment": 401,
+    "legacy_after_version_increment": 401,
+    "new_av_after_version_increment": 200,
+    "existing_token_same_config": 200
+  },
+  "actual_generation_claims_and_seven_day_expiry_unchanged": true,
+  "explicit_config_preserved_exactly": true,
+  "minimum_characters": 32,
+  "database": "Synthetic in-memory user/version read double; live G1/G2 tested separately",
+  "production_contact": false,
+  "network_used": false,
+  "secret_or_token_values_emitted": false,
+  "third_pass_status": "PASS"
+}

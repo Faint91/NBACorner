@@ -1,0 +1,63 @@
+{
+  "phase": "NC-03 third pass",
+  "verified_at_utc": "2026-10-17T21:33:09.558750+00:00",
+  "backend": {
+    "passed": 226,
+    "failures": 0,
+    "errors": 0,
+    "command": "python -B scripts/audit_nc03_pass3_backend.py --config <ignored-local-config> --allow-local-mutations"
+  },
+  "offline": {
+    "passed": 350,
+    "command": "python -B -m unittest discover -s tests/offline -q"
+  },
+  "frontend": {
+    "passed": 60,
+    "command": "node --test scripts/test-*.cjs"
+  },
+  "build": {
+    "result": "PASS",
+    "command": "npm run build",
+    "checks": "TypeScript and Vite",
+    "advisories": [
+      "Existing stale browser-data warning",
+      "Existing chunk over500KB warning"
+    ]
+  },
+  "eslint": {
+    "errors": 82,
+    "warnings": 1,
+    "new": 0,
+    "status": "existing baseline; unchanged frontend"
+  },
+  "cross_domain": {
+    "passed": 12,
+    "evidence": "nc_03_pass3_cross_domain.json"
+  },
+  "migration": {
+    "result": "PASS",
+    "chain": "immutable baseline plus0001-0011",
+    "semantic_security_seed_and_fixtures": "PASS",
+    "disposable_database_removed": true
+  },
+  "static": {
+    "black": {
+      "checked": 19,
+      "unchanged": 18,
+      "preexisting_would_reformat": [
+        "app.py"
+      ],
+      "new_audit_tools": "PASS: five files",
+      "application_file_bytes_unchanged": true
+    },
+    "compilation": "145 Python files compiled in-memory",
+    "import_comparison": "Runtime unchanged; imports exercised by fresh suites",
+    "whitespace": "staged diff check required before commit",
+    "secrets": "zero strong-pattern findings; literal candidates reviewed as synthetic"
+  },
+  "tool_recoveries": [
+    "Disposable proof alias restored to fixed legacy guarded name required by reused helpers; failed first attempt removed; complete chain subsequently passed.",
+    "Windows evidence-capture decoding corrected to explicit UTF-8; no product modification."
+  ],
+  "production_contact": false
+}

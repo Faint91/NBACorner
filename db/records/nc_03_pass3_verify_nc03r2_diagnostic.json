@@ -1,0 +1,385 @@
+{
+  "finding": "NC03-SEC-002",
+  "status": "REPAIRED LOCALLY / pending NC-03 re-audit",
+  "scenarios": 46,
+  "outcomes": [
+    {
+      "environment": "production",
+      "role": "anonymous",
+      "scenario": "healthy",
+      "status": 401,
+      "diagnostic_reads": 0,
+      "sanitized": true
+    },
+    {
+      "environment": "production",
+      "role": "anonymous",
+      "scenario": "generic_failure",
+      "status": 401,
+      "diagnostic_reads": 0,
+      "sanitized": true
+    },
+    {
+      "environment": "production",
+      "role": "anonymous",
+      "scenario": "missing_column_failure",
+      "status": 401,
+      "diagnostic_reads": 0,
+      "sanitized": true
+    },
+    {
+      "environment": "production",
+      "role": "anonymous",
+      "scenario": "malformed_season",
+      "status": 401,
+      "diagnostic_reads": 0,
+      "sanitized": true
+    },
+    {
+      "environment": "production",
+      "role": "ordinary",
+      "scenario": "healthy",
+      "status": 403,
+      "diagnostic_reads": 0,
+      "sanitized": true
+    },
+    {
+      "environment": "production",
+      "role": "ordinary",
+      "scenario": "generic_failure",
+      "status": 403,
+      "diagnostic_reads": 0,
+      "sanitized": true
+    },
+    {
+      "environment": "production",
+      "role": "forged_admin_claim",
+      "scenario": "healthy",
+      "status": 403,
+      "diagnostic_reads": 0,
+      "sanitized": true
+    },
+    {
+      "environment": "production",
+      "role": "admin",
+      "scenario": "healthy",
+      "status": 200,
+      "diagnostic_reads": 2,
+      "sanitized": true
+    },
+    {
+      "environment": "production",
+      "role": "admin",
+      "scenario": "null_master",
+      "status": 200,
+      "diagnostic_reads": 2,
+      "sanitized": true
+    },
+    {
+      "environment": "production",
+      "role": "admin",
+      "scenario": "different_master",
+      "status": 200,
+      "diagnostic_reads": 2,
+      "sanitized": true
+    },
+    {
+      "environment": "production",
+      "role": "admin",
+      "scenario": "generic_failure",
+      "status": 503,
+      "diagnostic_reads": 2,
+      "sanitized": true
+    },
+    {
+      "environment": "production",
+      "role": "admin",
+      "scenario": "missing_column_failure",
+      "status": 503,
+      "diagnostic_reads": 2,
+      "sanitized": true
+    },
+    {
+      "environment": "production",
+      "role": "admin",
+      "scenario": "bracket_failure",
+      "status": 503,
+      "diagnostic_reads": 1,
+      "sanitized": true
+    },
+    {
+      "environment": "production",
+      "role": "admin",
+      "scenario": "admin_failure",
+      "status": 503,
+      "diagnostic_reads": 0,
+      "sanitized": true
+    },
+    {
+      "environment": "production",
+      "role": "admin",
+      "scenario": "error_field",
+      "status": 503,
+      "diagnostic_reads": 2,
+      "sanitized": true
+    },
+    {
+      "environment": "production",
+      "role": "admin",
+      "scenario": "malformed_bracket",
+      "status": 503,
+      "diagnostic_reads": 1,
+      "sanitized": true
+    },
+    {
+      "environment": "production",
+      "role": "admin",
+      "scenario": "missing_season",
+      "status": 503,
+      "diagnostic_reads": 1,
+      "sanitized": true
+    },
+    {
+      "environment": "production",
+      "role": "admin",
+      "scenario": "malformed_season",
+      "status": 503,
+      "diagnostic_reads": 2,
+      "sanitized": true
+    },
+    {
+      "environment": "production",
+      "role": "admin",
+      "scenario": "absent_column",
+      "status": 503,
+      "diagnostic_reads": 2,
+      "sanitized": true
+    },
+    {
+      "environment": "production",
+      "role": "admin",
+      "scenario": "malformed_master",
+      "status": 503,
+      "diagnostic_reads": 2,
+      "sanitized": true
+    },
+    {
+      "environment": "production",
+      "role": "admin",
+      "scenario": "missing_bracket",
+      "status": 404,
+      "diagnostic_reads": 1,
+      "sanitized": true
+    },
+    {
+      "environment": "production",
+      "role": "admin",
+      "scenario": "invalid_id",
+      "status": 400,
+      "diagnostic_reads": 0,
+      "sanitized": true
+    },
+    {
+      "environment": "production",
+      "role": "admin",
+      "scenario": "missing_id",
+      "status": 400,
+      "diagnostic_reads": 0,
+      "sanitized": true
+    },
+    {
+      "environment": "test",
+      "role": "anonymous",
+      "scenario": "healthy",
+      "status": 401,
+      "diagnostic_reads": 0,
+      "sanitized": true
+    },
+    {
+      "environment": "test",
+      "role": "anonymous",
+      "scenario": "generic_failure",
+      "status": 401,
+      "diagnostic_reads": 0,
+      "sanitized": true
+    },
+    {
+      "environment": "test",
+      "role": "anonymous",
+      "scenario": "missing_column_failure",
+      "status": 401,
+      "diagnostic_reads": 0,
+      "sanitized": true
+    },
+    {
+      "environment": "test",
+      "role": "anonymous",
+      "scenario": "malformed_season",
+      "status": 401,
+      "diagnostic_reads": 0,
+      "sanitized": true
+    },
+    {
+      "environment": "test",
+      "role": "ordinary",
+      "scenario": "healthy",
+      "status": 403,
+      "diagnostic_reads": 0,
+      "sanitized": true
+    },
+    {
+      "environment": "test",
+      "role": "ordinary",
+      "scenario": "generic_failure",
+      "status": 403,
+      "diagnostic_reads": 0,
+      "sanitized": true
+    },
+    {
+      "environment": "test",
+      "role": "forged_admin_claim",
+      "scenario": "healthy",
+      "status": 403,
+      "diagnostic_reads": 0,
+      "sanitized": true
+    },
+    {
+      "environment": "test",
+      "role": "admin",
+      "scenario": "healthy",
+      "status": 200,
+      "diagnostic_reads": 2,
+      "sanitized": true
+    },
+    {
+      "environment": "test",
+      "role": "admin",
+      "scenario": "null_master",
+      "status": 200,
+      "diagnostic_reads": 2,
+      "sanitized": true
+    },
+    {
+      "environment": "test",
+      "role": "admin",
+      "scenario": "different_master",
+      "status": 200,
+      "diagnostic_reads": 2,
+      "sanitized": true
+    },
+    {
+      "environment": "test",
+      "role": "admin",
+      "scenario": "generic_failure",
+      "status": 503,
+      "diagnostic_reads": 2,
+      "sanitized": true
+    },
+    {
+      "environment": "test",
+      "role": "admin",
+      "scenario": "missing_column_failure",
+      "status": 503,
+      "diagnostic_reads": 2,
+      "sanitized": true
+    },
+    {
+      "environment": "test",
+      "role": "admin",
+      "scenario": "bracket_failure",
+      "status": 503,
+      "diagnostic_reads": 1,
+      "sanitized": true
+    },
+    {
+      "environment": "test",
+      "role": "admin",
+      "scenario": "admin_failure",
+      "status": 503,
+      "diagnostic_reads": 0,
+      "sanitized": true
+    },
+    {
+      "environment": "test",
+      "role": "admin",
+      "scenario": "error_field",
+      "status": 503,
+      "diagnostic_reads": 2,
+      "sanitized": true
+    },
+    {
+      "environment": "test",
+      "role": "admin",
+      "scenario": "malformed_bracket",
+      "status": 503,
+      "diagnostic_reads": 1,
+      "sanitized": true
+    },
+    {
+      "environment": "test",
+      "role": "admin",
+      "scenario": "missing_season",
+      "status": 503,
+      "diagnostic_reads": 1,
+      "sanitized": true
+    },
+    {
+      "environment": "test",
+      "role": "admin",
+      "scenario": "malformed_season",
+      "status": 503,
+      "diagnostic_reads": 2,
+      "sanitized": true
+    },
+    {
+      "environment": "test",
+      "role": "admin",
+      "scenario": "absent_column",
+      "status": 503,
+      "diagnostic_reads": 2,
+      "sanitized": true
+    },
+    {
+      "environment": "test",
+      "role": "admin",
+      "scenario": "malformed_master",
+      "status": 503,
+      "diagnostic_reads": 2,
+      "sanitized": true
+    },
+    {
+      "environment": "test",
+      "role": "admin",
+      "scenario": "missing_bracket",
+      "status": 404,
+      "diagnostic_reads": 1,
+      "sanitized": true
+    },
+    {
+      "environment": "test",
+      "role": "admin",
+      "scenario": "invalid_id",
+      "status": 400,
+      "diagnostic_reads": 0,
+      "sanitized": true
+    },
+    {
+      "environment": "test",
+      "role": "admin",
+      "scenario": "missing_id",
+      "status": 400,
+      "diagnostic_reads": 0,
+      "sanitized": true
+    }
+  ],
+  "provider_markers_exposed": false,
+  "repair_SQL_exposed": false,
+  "identifiers_exposed": false,
+  "logs_empty": true,
+  "actual_route_auth_helpers_and_season_hook_used": true,
+  "limitation": "Offline actual-code proof with synthetic read doubles and canonical success; not a production observation or full deployed startup.",
+  "production_contact": false,
+  "database_mutations": 0,
+  "network_used": false,
+  "third_pass_status": "PASS"
+}

@@ -1,0 +1,60 @@
+{
+  "verified_at_utc": "2026-10-17T21:35:06.134847+00:00",
+  "fixture": {
+    "identity": "PASS",
+    "marker": "PASS",
+    "email": "PASS",
+    "providers": "PASS",
+    "jobs": "PASS",
+    "fixture_reset": "PASS",
+    "harness": "UNMET",
+    "fixture_version": "nc-fixtures-v1",
+    "fixture_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+    "mutation_permitted": false
+  },
+  "marker_state": "SEEDED",
+  "readiness": {
+    "identity_verified": true,
+    "database_marker": "PASS",
+    "email": "PASS",
+    "providers": "PASS",
+    "external_credentials": "PASS",
+    "jobs": "PASS",
+    "jobs_enabled": false,
+    "fixture_state": "SEEDED",
+    "fixtures_reset": "PASS",
+    "integration_harness": "PASS",
+    "mutation_permitted": false,
+    "harness_state": "AVAILABLE_GUARDED",
+    "harness_scoped_mutation_permitted": false
+  },
+  "counts": {
+    "users": 4,
+    "standings": 30,
+    "reset_rows": 0,
+    "history_rows": 0,
+    "advisory_locks": 0,
+    "history_headers": 0,
+    "proof_databases": 0,
+    "rollover_audits": 0,
+    "nonzero_auth_versions": 0
+  },
+  "flask_stopped": true,
+  "mail_empty": true,
+  "proof_database_removed": true,
+  "secret_pattern_findings": [],
+  "scanned_file_counts": {
+    "backend": 396,
+    "frontend": 91
+  },
+  "python_sources_compiled": 145,
+  "application_import_comparison": "PASS: all tracked runtime source unchanged from repaired HEAD; actual imports exercised by 226-case suite and cross proof",
+  "historical_evidence_unchanged": true,
+  "frontend_unchanged": true,
+  "production_contact": false,
+  "notes": [
+    "Literal account-password candidates confined to explicit synthetic test identities; no production account credential found.",
+    "Removed fallback historical references are evidence, not an active signing authority.",
+    "Raw reset verifier exists only ephemerally in delivery; committed evidence contains no captured verifier; digest-only DB verified by G2 suites."
+  ]
+}

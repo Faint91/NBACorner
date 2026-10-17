@@ -1,0 +1,234 @@
+{
+  "configuration": [
+    {
+      "name": "JWT_SECRET",
+      "classification": "REQUIRED",
+      "authority": "jwt_configuration.py",
+      "note": "Backend-only explicit runtime secret, minimum32 characters. Preserve same valid key; no value recorded or rotation performed."
+    },
+    {
+      "name": "JWT_ALGORITHM",
+      "classification": "OPTIONAL",
+      "authority": "app.py",
+      "note": "Retain approved algorithm and deployed compatibility; do not silently change during rollout."
+    },
+    {
+      "name": "SUPABASE_URL",
+      "classification": "REQUIRED",
+      "authority": "app.py; scripts/update_standings.py",
+      "note": "Must identify authorized NBA Corner project; never a test or1on1ball target."
+    },
+    {
+      "name": "SUPABASE_KEY",
+      "classification": "REQUIRED",
+      "authority": "app.py",
+      "note": "Backend app uses this variable for its trusted server credential. Verify role securely, not from variable name."
+    },
+    {
+      "name": "SUPABASE_SERVICE_ROLE_KEY",
+      "classification": "REQUIRED",
+      "authority": "scripts/update_standings.py; workflow",
+      "note": "Standalone standings job uses this variable; do not assume setting it also configures app SUPABASE_KEY."
+    },
+    {
+      "name": "BREVO_API_KEY",
+      "classification": "REQUIRED",
+      "authority": "app.py production email transport",
+      "note": "Required for operational reset delivery; never browser configuration or audit output."
+    },
+    {
+      "name": "BREVO_SENDER_EMAIL",
+      "classification": "OPTIONAL",
+      "authority": "app.py production email transport",
+      "note": "Existing source default retained; preflight provider-approved sender and delivery."
+    },
+    {
+      "name": "reset frontend origin/path",
+      "classification": "REQUIRED",
+      "authority": "email_transport.py:reset_link_for_settings",
+      "note": "Production reset URL is source-defined, not a new env override. Preflight hosting routes email URL to current frontend /reset-password; browser cleanup cannot erase initial infrastructure logs."
+    },
+    {
+      "name": "VITE_API_URL",
+      "classification": "REQUIRED",
+      "authority": "frontend/src/api/client.ts; season/useCurrentSeason.ts",
+      "note": "Public API origin only; verify CORS and deployment pairing."
+    },
+    {
+      "name": "FLASK_ENV",
+      "classification": "REQUIRED",
+      "authority": "app.py CORS selection",
+      "note": "Production CORS branch requires production classification here in addition to NBA_CORNER_ENV."
+    },
+    {
+      "name": "FRONTEND_ORIGIN",
+      "classification": "REQUIRED",
+      "authority": "app.py CORS selection",
+      "note": "Approved public frontend origin; no wildcard test origin as production policy."
+    },
+    {
+      "name": "NBA_CORNER_ENV",
+      "classification": "REQUIRED",
+      "authority": "environment_safety.py",
+      "note": "Explicit production classification required by release plan; legacy unspecified mode is supported in current code, not recommended as production operating practice."
+    },
+    {
+      "name": "STANDINGS_CRON_TOKEN",
+      "classification": "OPTIONAL",
+      "authority": "app.py internal standings routes",
+      "note": "Required when using internal HTTP refresh. Missing token fails closed; standalone scheduled job instead uses trusted DB key."
+    },
+    {
+      "name": "HEALTHCHECK_TOKEN",
+      "classification": "OPTIONAL",
+      "authority": "app.py:health",
+      "note": "When configured changes health access contract; verify without exposing value or placing it in audit logs."
+    },
+    {
+      "name": "BCRYPT_ROUNDS",
+      "classification": "OPTIONAL",
+      "authority": "app.py",
+      "note": "Retain approved cost. Lower test work factors must not be adopted for production."
+    },
+    {
+      "name": "ENABLE_DEBUG_LOGS",
+      "classification": "OPTIONAL",
+      "authority": "app.py",
+      "note": "Production plan keeps verbose debug output disabled. Reviewed reset sender logs status/class only."
+    },
+    {
+      "name": "FLASK_DEBUG",
+      "classification": "FORBIDDEN",
+      "authority": "app.py __main__",
+      "note": "Do not enable debugger in production."
+    },
+    {
+      "name": "DISABLE_RATE_LIMITS",
+      "classification": "FORBIDDEN",
+      "authority": "app.py",
+      "note": "Do not enable production rate-limit bypass; tests use scoped in-memory injection."
+    },
+    {
+      "name": "NBA_CORNER_TEST_CONFIG",
+      "classification": "TEST-ONLY",
+      "authority": "environment_safety.py; integration_harness.py",
+      "note": "Must be absent from production operating configuration. Test jobs flag is not a production kill switch; pause external scheduler explicitly during release."
+    },
+    {
+      "name": "NBA_CORNER_ALLOW_MUTATING_TESTS",
+      "classification": "TEST-ONLY",
+      "authority": "environment_safety.py; integration_harness.py",
+      "note": "Must be absent from production operating configuration. Test jobs flag is not a production kill switch; pause external scheduler explicitly during release."
+    },
+    {
+      "name": "NBA_CORNER_TEST_TARGET",
+      "classification": "TEST-ONLY",
+      "authority": "environment_safety.py; integration_harness.py",
+      "note": "Must be absent from production operating configuration. Test jobs flag is not a production kill switch; pause external scheduler explicitly during release."
+    },
+    {
+      "name": "NBA_CORNER_EXPECTED_PROJECT_REF",
+      "classification": "TEST-ONLY",
+      "authority": "environment_safety.py; integration_harness.py",
+      "note": "Must be absent from production operating configuration. Test jobs flag is not a production kill switch; pause external scheduler explicitly during release."
+    },
+    {
+      "name": "NBACORNER_BASE_URL",
+      "classification": "TEST-ONLY",
+      "authority": "environment_safety.py; integration_harness.py",
+      "note": "Must be absent from production operating configuration. Test jobs flag is not a production kill switch; pause external scheduler explicitly during release."
+    },
+    {
+      "name": "NBA_CORNER_EMAIL_MODE",
+      "classification": "TEST-ONLY",
+      "authority": "environment_safety.py; integration_harness.py",
+      "note": "Must be absent from production operating configuration. Test jobs flag is not a production kill switch; pause external scheduler explicitly during release."
+    },
+    {
+      "name": "NBA_CORNER_PROVIDER_MODE",
+      "classification": "TEST-ONLY",
+      "authority": "environment_safety.py; integration_harness.py",
+      "note": "Must be absent from production operating configuration. Test jobs flag is not a production kill switch; pause external scheduler explicitly during release."
+    },
+    {
+      "name": "NBA_CORNER_JOBS_ENABLED",
+      "classification": "TEST-ONLY",
+      "authority": "environment_safety.py; integration_harness.py",
+      "note": "Must be absent from production operating configuration. Test jobs flag is not a production kill switch; pause external scheduler explicitly during release."
+    },
+    {
+      "name": "NBA_CORNER_RESET_LINK_ORIGIN",
+      "classification": "TEST-ONLY",
+      "authority": "environment_safety.py; integration_harness.py",
+      "note": "Must be absent from production operating configuration. Test jobs flag is not a production kill switch; pause external scheduler explicitly during release."
+    },
+    {
+      "name": "CURRENT_SEASON_CODE",
+      "classification": "DEPRECATED",
+      "authority": "canonical_season.py; app.py; workflow; legacy allowlist",
+      "note": "Not an active production season/standings/database authority. Retained constants/parser/diagnostic references do not drive current decisions."
+    },
+    {
+      "name": "REGULAR_SEASON_END_UTC",
+      "classification": "DEPRECATED",
+      "authority": "canonical_season.py; app.py; workflow; legacy allowlist",
+      "note": "Not an active production season/standings/database authority. Retained constants/parser/diagnostic references do not drive current decisions."
+    },
+    {
+      "name": "PLAYOFFS_START_UTC",
+      "classification": "DEPRECATED",
+      "authority": "canonical_season.py; app.py; workflow; legacy allowlist",
+      "note": "Not an active production season/standings/database authority. Retained constants/parser/diagnostic references do not drive current decisions."
+    },
+    {
+      "name": "NBA_STANDINGS_SEASON",
+      "classification": "DEPRECATED",
+      "authority": "canonical_season.py; app.py; workflow; legacy allowlist",
+      "note": "Not an active production season/standings/database authority. Retained constants/parser/diagnostic references do not drive current decisions."
+    },
+    {
+      "name": "NBA_SEASON_YEAR",
+      "classification": "DEPRECATED",
+      "authority": "canonical_season.py; app.py; workflow; legacy allowlist",
+      "note": "Not an active production season/standings/database authority. Retained constants/parser/diagnostic references do not drive current decisions."
+    },
+    {
+      "name": "BALLDONTLIE_API_KEY",
+      "classification": "DEPRECATED",
+      "authority": "canonical_season.py; app.py; workflow; legacy allowlist",
+      "note": "Not an active production season/standings/database authority. Retained constants/parser/diagnostic references do not drive current decisions."
+    },
+    {
+      "name": "NBA_STATS_SEASON_TYPE",
+      "classification": "DEPRECATED",
+      "authority": "canonical_season.py; app.py; workflow; legacy allowlist",
+      "note": "Not an active production season/standings/database authority. Retained constants/parser/diagnostic references do not drive current decisions."
+    },
+    {
+      "name": "SUPABASE_ANON_KEY",
+      "classification": "DEPRECATED",
+      "authority": "canonical_season.py; app.py; workflow; legacy allowlist",
+      "note": "Not an active production season/standings/database authority. Retained constants/parser/diagnostic references do not drive current decisions."
+    },
+    {
+      "name": "canonical application_season designation",
+      "classification": "REQUIRED",
+      "authority": "database application_season + seasons",
+      "note": "Exactly one explicit verified source season and valid timing/master state. Migration0002 intentionally leaves it unconfigured; never infer latest/date as authority."
+    },
+    {
+      "name": "ESPN authority",
+      "classification": "REQUIRED",
+      "authority": "standings_service.py; canonical_season.espn_season_year",
+      "note": "Fixed provider path; year derives from canonical season, complete30-team mapping and freeze are rechecked atomically."
+    },
+    {
+      "name": "external daily standings scheduler",
+      "classification": "REQUIRED",
+      "authority": " .github/workflows/standings-cron.yml",
+      "note": "Source schedule daily09UTC. Production enablement/secrets state not inspected. Pause outside app for deployment; no rollover schedule exists."
+    }
+  ],
+  "production_values_read": false,
+  "production_state_verified": false
+}

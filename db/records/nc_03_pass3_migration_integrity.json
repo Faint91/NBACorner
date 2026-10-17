@@ -1,0 +1,80 @@
+{
+  "protected_sources": [
+    {
+      "path": "db/baseline/000_current_schema.sql",
+      "introduced_commit": "2e9d6752ce0a5f559673b99221d88c7f51c9d8ea",
+      "sha256": "8ca7b98f54544d177de41511ed9d3d969ac4389591ec966e5730f99369de4209",
+      "unchanged_since_introduction": true
+    },
+    {
+      "path": "db/post-baseline/0001_nc_02b3_bracket_lifecycle.sql",
+      "introduced_commit": "3546d175ef9c21ca160e8d0d64e7a3cec5f8f14b",
+      "sha256": "e98346423a4f73690371d8f1c178347330e5da33f02b6b9f4475475d237b4376",
+      "unchanged_since_introduction": true
+    },
+    {
+      "path": "db/post-baseline/0002_nc_02c1_canonical_season.sql",
+      "introduced_commit": "6f05efbf13a77101d752666cc5193107d2edff7c",
+      "sha256": "ab38f5182351d5bbf6df0116c2af944e97401b55e8b0fea037f0c11fa11296ec",
+      "unchanged_since_introduction": true
+    },
+    {
+      "path": "db/post-baseline/0003_nc_02c2_atomic_standings.sql",
+      "introduced_commit": "dc476ca28e8263c1e6ef3c347f8be87a5c0f643b",
+      "sha256": "e359e09771af5b6a4fdf94542138a6655b8e273a8b064dbfb9a54c3973968d29",
+      "unchanged_since_introduction": true
+    },
+    {
+      "path": "db/post-baseline/0004_nc_02c3_season_transition.sql",
+      "introduced_commit": "410507ad6948ec14e67dc68b0cea9838e714588d",
+      "sha256": "8e252eb6247f477c42c2e38a83b881524e058f9f707e969e4e917e2bc85a6736",
+      "unchanged_since_introduction": true
+    },
+    {
+      "path": "db/post-baseline/0005_nc_02d1_atomic_scores.sql",
+      "introduced_commit": "4f61f0964a8e534b0b5ab9fe5cbcbdd6293c182e",
+      "sha256": "11fdf464ab393bd0e5b58e8f34537447c6e320a731f7352fa62d4a295b657433",
+      "unchanged_since_introduction": true
+    },
+    {
+      "path": "db/post-baseline/0006_nc_02d2_final_snapshots.sql",
+      "introduced_commit": "ef8488739bc7ef3f0bb9373c3774415515d03f31",
+      "sha256": "3e1e3e34788cf6c05cb450d0b370fe1ca55ef6314f4bbb632d81445e7558c9d7",
+      "unchanged_since_introduction": true
+    },
+    {
+      "path": "db/post-baseline/0007_nc_02e_atomic_rollover.sql",
+      "introduced_commit": "78d75564b89bad41e75992a60435ff2436a231e7",
+      "sha256": "cd3dbfd415d9a390e434df6b74ea2030fbf5bac9ae9ad8ebb63d01445c1bc1d8",
+      "unchanged_since_introduction": true
+    },
+    {
+      "path": "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+      "introduced_commit": "b6b8830b82678c4809bb935fc3fa54a4291759b0",
+      "sha256": "e4abfcf9d7093847940cd967a2f37c760f3fa2708dca4256791effa8ca6740b9",
+      "unchanged_since_introduction": true
+    },
+    {
+      "path": "db/post-baseline/0009_nc_02f2_league_history.sql",
+      "introduced_commit": "e28a5231fe2e435f93ff2af7804de298fb1a2893",
+      "sha256": "3658bf8d6cd3552c8b1a4f9d46f07b43a6eaa2c68382eb18172f1b952470403b",
+      "unchanged_since_introduction": true
+    },
+    {
+      "path": "db/post-baseline/0010_nc_02g1_identity_auth.sql",
+      "introduced_commit": "6eb31070c55b2a8b2c789fafcf90adea55f017b8",
+      "sha256": "158967feebad44df173f8b72ed1fb1aab88e5c740ebb5f2fbb8b46c154b37be5",
+      "unchanged_since_introduction": true
+    },
+    {
+      "path": "db/post-baseline/0011_nc_02g2_password_reset_sessions.sql",
+      "introduced_commit": "c5f24396f7387e250982bf2c124ba9753ad9550a",
+      "sha256": "250a4abf4a789ad64d6dbe8b9e5569e763b8a5d9492ee2071a3865f9517810b6",
+      "unchanged_since_introduction": true
+    }
+  ],
+  "baseline_validator": "PASS",
+  "forward_migrations": 11,
+  "fresh_chain_evidence": "db/records/nc_03_pass3_migration_proof.json",
+  "initial_audit_copy_failure": "Changed proof DB alias rejected by existing fixed-name helper; disposable DB removed. Reused original fixed name without guard changes; complete rerun passed."
+}

@@ -1,0 +1,42 @@
+{
+  "checks": [
+    {
+      "role": "anon",
+      "function": "atomic_update_match",
+      "expected_denial": true
+    },
+    {
+      "role": "anon",
+      "function": "set_master_bracket",
+      "expected_denial": true
+    },
+    {
+      "role": "anon",
+      "function": "trigger_direct_call",
+      "expected_denial": true
+    },
+    {
+      "role": "authenticated",
+      "function": "atomic_update_match",
+      "expected_denial": true
+    },
+    {
+      "role": "authenticated",
+      "function": "set_master_bracket",
+      "expected_denial": true
+    },
+    {
+      "role": "authenticated",
+      "function": "trigger_direct_call",
+      "expected_denial": true
+    }
+  ],
+  "schema_create": {
+    "anon_public_create": false,
+    "authenticated_public_create": false
+  },
+  "legacy_definers": "Trusted-only EXECUTE; retained unpinned search_path advisory, not browser-reachable escalation.",
+  "trigger_execute": "Legacy broad trigger EXECUTE cannot be invoked as normal RPC function; relation ACLs deny browser mutation.",
+  "production_contact": false,
+  "database_writes": 0
+}

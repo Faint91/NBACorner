@@ -1,0 +1,115 @@
+{
+  "phase": "NC-03 third pass",
+  "diagnostic_routes": [
+    {
+      "path": "/",
+      "intended_access": "public-safe",
+      "assessment": "PASS",
+      "contract": "Fixed application message"
+    },
+    {
+      "path": "/health",
+      "intended_access": "public-safe / optional health token",
+      "assessment": "PASS",
+      "contract": "Sanitized status, no connection values"
+    },
+    {
+      "path": "/season",
+      "intended_access": "public-safe",
+      "assessment": "PASS",
+      "contract": "Canonical season public status, no raw diagnostics"
+    },
+    {
+      "path": "/admin/env-check",
+      "intended_access": "admin-only",
+      "assessment": "PASS",
+      "contract": "Current DB admin plus JWT; configuration presence only"
+    },
+    {
+      "path": "/__debug/master-status",
+      "intended_access": "admin-only",
+      "assessment": "PASS",
+      "contract": "R2 46-case proof; 401/403/400/404/503 and minimal safe booleans"
+    },
+    {
+      "path": "/test-email",
+      "intended_access": "admin-only",
+      "assessment": "PASS",
+      "contract": "Operational email side effect; not invoked against production"
+    },
+    {
+      "path": "/internal/standings/refresh",
+      "intended_access": "authenticated operational caller",
+      "assessment": "PASS",
+      "contract": "Dedicated operational token; failure generic; no browser service credential"
+    },
+    {
+      "path": "/admin/insert_test_teams",
+      "intended_access": "admin-only",
+      "assessment": "PASS",
+      "contract": "Retained team metadata helper; synthetic standings seed blocked409; excluded from production smoke"
+    }
+  ],
+  "error_sanitization": {
+    "status": "PASS",
+    "surfaces": [
+      "registration",
+      "login",
+      "forgot/reset",
+      "private league authorization",
+      "duplicate league",
+      "bracket lock",
+      "standings failure",
+      "score/snapshot failure",
+      "rollover busy/failure",
+      "diagnostic failure"
+    ],
+    "evidence": [
+      "226-case current acceptance/regression suite",
+      "350-case offline suite",
+      "46-scenario R2 proof",
+      "fresh SQL transaction fault and concurrency proofs"
+    ],
+    "no_raw_exception_SQL_constraint_provider_credentials_or_verifier_in_public_errors": true
+  },
+  "frontend_contracts": {
+    "status": "PASS",
+    "surfaces": [
+      "register",
+      "login",
+      "forgot/reset",
+      "season",
+      "brackets",
+      "global leaderboard",
+      "global history",
+      "leagues",
+      "league history",
+      "admin rollover"
+    ],
+    "verified": [
+      "paths and response fields",
+      "server ranks/eligibility",
+      "401 clears session",
+      "403/404/conflict handling",
+      "canonical season refetch",
+      "no client-side authorization authority"
+    ],
+    "evidence": "60 Node tests, TypeScript/Vite build, actual backend suite, direct source comparison"
+  },
+  "deprecated_authority": {
+    "status": "PASS",
+    "active_conflicts": [],
+    "retired": [
+      "source JWT fallback",
+      "raw reset-token storage",
+      "Balldontlie standings",
+      "legacy environment season authority",
+      "arbitrary scoring master",
+      "client authoritative league rank",
+      "browser mutation RPC grants",
+      "public diagnostic SQL"
+    ],
+    "notes": "Legacy source constants/evidence retained but do not select active authorities. Trusted baseline match helpers remain behind Flask/service boundary."
+  },
+  "production_contact": false
+}

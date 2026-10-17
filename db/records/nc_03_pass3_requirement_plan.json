@@ -1,0 +1,468 @@
+{
+  "source_files": {
+    "P": [
+      "app.py",
+      "history_service.py",
+      "league_history_service.py"
+    ],
+    "B": [
+      "app.py",
+      "bracket_rules.py",
+      "db/post-baseline/0001_nc_02b3_bracket_lifecycle.sql"
+    ],
+    "S": [
+      "canonical_season.py",
+      "standings_service.py",
+      "app.py",
+      ".github/workflows/standings-cron.yml",
+      "db/post-baseline/0002_nc_02c1_canonical_season.sql",
+      "db/post-baseline/0003_nc_02c2_atomic_standings.sql",
+      "db/post-baseline/0004_nc_02c3_season_transition.sql"
+    ],
+    "SC": [
+      "scoring_engine.py",
+      "scoring_service.py",
+      "history_service.py",
+      "db/post-baseline/0005_nc_02d1_atomic_scores.sql",
+      "db/post-baseline/0006_nc_02d2_final_snapshots.sql"
+    ],
+    "RR": [
+      "rollover_service.py",
+      "app.py",
+      "db/post-baseline/0007_nc_02e_atomic_rollover.sql",
+      "db/post-baseline/0009_nc_02f2_league_history.sql"
+    ],
+    "L": [
+      "league_service.py",
+      "league_history_service.py",
+      "app.py",
+      "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+      "db/post-baseline/0009_nc_02f2_league_history.sql"
+    ],
+    "A": [
+      "app.py",
+      "identity_auth_service.py",
+      "password_reset_service.py",
+      "jwt_configuration.py",
+      "db/post-baseline/0010_nc_02g1_identity_auth.sql",
+      "db/post-baseline/0011_nc_02g2_password_reset_sessions.sql"
+    ]
+  },
+  "coverage_selectors": {
+    "P1": [
+      "privacy_access",
+      "email_serialization",
+      "member_email"
+    ],
+    "P2": [
+      "privacy_access",
+      "current_private_membership"
+    ],
+    "P3": [
+      "discovery"
+    ],
+    "P4": [
+      "competitive_eligibility",
+      "draft_visibility"
+    ],
+    "P5": [
+      "competitive_eligibility",
+      "manual_complete_set"
+    ],
+    "P6": [
+      "privacy_access",
+      "nonowner_and_admin"
+    ],
+    "P7": [
+      "privacy_access",
+      "competitive_eligibility",
+      "current_private_membership"
+    ],
+    "P8": [
+      "public_user_allowlist",
+      "email_serialization",
+      "discovery_and_boolean"
+    ],
+    "P9": [
+      "competitive_eligibility",
+      "public_access_and_general"
+    ],
+    "P10": [
+      "private_direct_api_role_matrix",
+      "current_private_membership",
+      "discovery_minimal"
+    ],
+    "B1": [
+      "bracket_lock"
+    ],
+    "B2": [
+      "nonadmin_master_owner",
+      "admin_own_ordinary",
+      "nonowner_and_admin"
+    ],
+    "B3": [
+      "ordinary_before_boundary",
+      "undo_recursive"
+    ],
+    "B4": [
+      "competitive_eligibility"
+    ],
+    "B5": [
+      "creation_windows",
+      "predeadline_delete_recreate",
+      "hard_lock"
+    ],
+    "B6": [
+      "submission_rejects_faults"
+    ],
+    "B7": [
+      "counts_both_routes",
+      "game_count_values"
+    ],
+    "B8": [
+      "ordinary_participants",
+      "master_participants"
+    ],
+    "B9": [
+      "recursive",
+      "playin_dual_feed",
+      "finals_dependency"
+    ],
+    "B10": [
+      "predeadline_delete_recreate"
+    ],
+    "B11": [
+      "submitted_delete_at",
+      "postlock_draft_delete"
+    ],
+    "B12": [
+      "cross_season_and_same_season"
+    ],
+    "B13": [
+      "master_create_explicit_replace"
+    ],
+    "B14": [
+      "master_create_explicit_replace",
+      "master_delete"
+    ],
+    "B15": [
+      "historical_submitted_public_safe",
+      "full_success_history_readonly"
+    ],
+    "B16": [
+      "draft_at_boundary",
+      "draft_after_boundary"
+    ],
+    "S1": [
+      "canonical_source"
+    ],
+    "S2": [
+      "canonical_source",
+      "canonical_season"
+    ],
+    "S3": [
+      "standings_refresh",
+      "standings_service"
+    ],
+    "S4": [
+      "success_scheduled_admin_cron_equivalent"
+    ],
+    "S5": [
+      "freeze_at_after"
+    ],
+    "S6": [
+      "freeze_at_after"
+    ],
+    "S7": [
+      "invalid_data_and_provider",
+      "success_scheduled"
+    ],
+    "S8": [
+      "invalid_data_and_provider"
+    ],
+    "S9": [
+      "standings_refresh",
+      "first_new_season"
+    ],
+    "S10": [
+      "explicit_switch_visible",
+      "full_success_history_readonly"
+    ],
+    "S11": [
+      "full_success_history_readonly",
+      "transition_failure"
+    ],
+    "S12": [
+      "freeze_distinct_from_bracket_lock"
+    ],
+    "S13": [
+      "invalid_data_and_provider_failures"
+    ],
+    "S14": [
+      "status_and_bracket_share",
+      "explicit_switch_visible"
+    ],
+    "SC1": [
+      "scoring_offline",
+      "scoring_recompute"
+    ],
+    "SC2": [
+      "live_ranks_and_stored_bonus"
+    ],
+    "SC3": [
+      "live_ranks_and_stored_bonus"
+    ],
+    "SC4": [
+      "live_ranks_and_stored_bonus"
+    ],
+    "SC5": [
+      "fresh_scores_stored_ties"
+    ],
+    "SC6": [
+      "fresh_scores_stored_ties",
+      "live_ranks"
+    ],
+    "SC7": [
+      "canonical_master_spoofs"
+    ],
+    "SC8": [
+      "auto_winner_undo_count",
+      "master_replacement_recomputes"
+    ],
+    "SC9": [
+      "changed_source_rejects_entire",
+      "committed_master_recompute_failure"
+    ],
+    "SC10": [
+      "fresh_scores_stored_ties"
+    ],
+    "SC11": [
+      "fresh_scores_stored_ties",
+      "partial_publication_blocks"
+    ],
+    "SC12": [
+      "partial_publication_blocks",
+      "changed_source_during_snapshot"
+    ],
+    "SC13": [
+      "partial_publication_blocks",
+      "calculation_failure_is_not_zero"
+    ],
+    "SC14": [
+      "history_survives_live_mutation",
+      "leave_join_kick_transfer"
+    ],
+    "SC15": [
+      "fresh_scores_stored_ties",
+      "current_private_membership"
+    ],
+    "SC16": [
+      "fresh_scores_stored_ties"
+    ],
+    "SC17": [
+      "zero_competitors_requires_complete_master",
+      "calculation_failure_is_not_zero"
+    ],
+    "RR1": [
+      "preconditions_authorization"
+    ],
+    "RR2": [
+      "preconditions_authorization"
+    ],
+    "RR3": [
+      "zero_competitors",
+      "partial_publication_blocks"
+    ],
+    "RR4": [
+      "full_success_history_readonly"
+    ],
+    "RR5": [
+      "partial_publication_blocks"
+    ],
+    "RR6": [
+      "transition_failure_retains_global"
+    ],
+    "RR7": [
+      "transition_failure_retains_global"
+    ],
+    "RR8": [
+      "full_success_history_readonly"
+    ],
+    "RR9": [
+      "rollover_atomic"
+    ],
+    "RR10": [
+      "preconditions_authorization"
+    ],
+    "RR11": [
+      "full_success_history_readonly"
+    ],
+    "RR12": [
+      "full_success_history_readonly"
+    ],
+    "RR13": [
+      "full_success_history_readonly"
+    ],
+    "RR14": [
+      "rollover_atomic"
+    ],
+    "RR15": [
+      "rollover_atomic"
+    ],
+    "RR16": [
+      "calculation_failure_is_not_zero"
+    ],
+    "L1": [
+      "real_rollover_league_owner_membership"
+    ],
+    "L2": [
+      "create_join_all_timing"
+    ],
+    "L3": [
+      "create_join_all_timing"
+    ],
+    "L4": [
+      "owner_transfer_leave_and_rejections"
+    ],
+    "L5": [
+      "owner_transfer_leave_and_rejections"
+    ],
+    "L6": [
+      "owner_transfer_leave_and_rejections"
+    ],
+    "L7": [
+      "leave_kick_delete_keep"
+    ],
+    "L8": [
+      "admin_and_nonowner",
+      "leave_kick_delete_keep"
+    ],
+    "L9": [
+      "admin_and_nonowner"
+    ],
+    "L10": [
+      "delete_cascade_preserves_global",
+      "leave_kick_delete_keep"
+    ],
+    "L11": [
+      "password_privacy_switches"
+    ],
+    "L12": [
+      "password_privacy_switches"
+    ],
+    "L13": [
+      "password_privacy_switches"
+    ],
+    "L14": [
+      "names_uniqueness",
+      "leave_join_kick_transfer_rename"
+    ],
+    "L15": [
+      "names_uniqueness"
+    ],
+    "L16": [
+      "create_join_all_timing"
+    ],
+    "L17": [
+      "discovery_minimal"
+    ],
+    "L18": [
+      "discovery_minimal"
+    ],
+    "L19": [
+      "leave_kick_delete_keep"
+    ],
+    "L20": [
+      "eligible_only_A_D"
+    ],
+    "L20A": [
+      "eligible_only_A_D"
+    ],
+    "L20B": [
+      "current_private_membership_and_privacy_switch"
+    ],
+    "L21": [
+      "leave_join_kick_transfer_rename"
+    ],
+    "L21A": [
+      "leave_before_cutoff",
+      "transition_failure_retains_global"
+    ],
+    "L22": [
+      "delete_cascade_preserves_global"
+    ],
+    "A1": [
+      "request_shapes_and_field_types"
+    ],
+    "A2": [
+      "identity_normalization_display"
+    ],
+    "A3": [
+      "identity_normalization_display",
+      "unicode_email_uses"
+    ],
+    "A4": [
+      "outer_password_whitespace",
+      "password_exactness"
+    ],
+    "A5": [
+      "password_boundaries",
+      "long_shared_prefix"
+    ],
+    "A6": [
+      "identity_normalization_display"
+    ],
+    "A7": [
+      "legacy_and_generic_login"
+    ],
+    "A8": [
+      "enumeration_digest_entropy",
+      "delivery_failure_conditional"
+    ],
+    "A9": [
+      "enumeration_digest_entropy",
+      "expired_invalid"
+    ],
+    "A10": [
+      "supersession_success"
+    ],
+    "A11": [
+      "supersession_success"
+    ],
+    "A12": [
+      "multidevice_and_legacy"
+    ],
+    "A13": [
+      "jwt_bad_versions",
+      "multidevice_and_legacy"
+    ],
+    "A14": [
+      "legacy_and_generic_login",
+      "login_metadata"
+    ],
+    "A15": [
+      "frontend_reset_request_only"
+    ],
+    "A16": [
+      "enumeration_digest_entropy",
+      "expired_invalid"
+    ],
+    "A17": [
+      "email_serialization",
+      "cross_user_saved_owner_display"
+    ],
+    "A18": [
+      "admin_claim_db_recheck",
+      "jwt_bad_versions"
+    ],
+    "A19": [
+      "account_route_absence"
+    ],
+    "A20": [
+      "valid_registration",
+      "legacy_and_generic_login"
+    ]
+  },
+  "headings_source": "db/records/nc_03_resume_contract_headings.json",
+  "note": "Audit mapping plan only; classifications require completed final evidence."
+}

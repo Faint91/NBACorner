@@ -1,0 +1,3944 @@
+{
+  "phase": "NC-03 third pass",
+  "verified_at_utc": "2026-10-17T21:33:09.558750+00:00",
+  "audited_backend_head": "9e04fbe7447f2938ccde415568b40d059d8b6339",
+  "frontend_head": "4fa0e9fc11d49354e3da137ee43e9d1ddbc87357",
+  "status": "PASS",
+  "previous_totals": {
+    "PASS": 16,
+    "BLOCKED": 102
+  },
+  "totals": {
+    "PASS": 118,
+    "FAIL": 0,
+    "BLOCKED": 0,
+    "NOT APPLICABLE": 0
+  },
+  "requirements": [
+    {
+      "requirement_id": "P1",
+      "summary": "Email privacy",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "app.py",
+        "history_service.py",
+        "league_history_service.py"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "nc02g2_bracket_access.CurrentBracketBehavior.current_behavior__bracket__email_serialization",
+        "nc02g2_league_access.CurrentLeagueBehavior.current_behavior__league__member_email",
+        "nc02g2_privacy_access.PrivacyAccessAcceptance.test_discovery_and_boolean_password_state",
+        "nc02g2_privacy_access.PrivacyAccessAcceptance.test_membership_removal_takes_effect_without_new_token",
+        "nc02g2_privacy_access.PrivacyAccessAcceptance.test_private_direct_api_role_matrix",
+        "nc02g2_privacy_access.PrivacyAccessAcceptance.test_public_access_and_general_saved_visibility_preserved",
+        "nc02g2_privacy_access.PrivacyAccessAcceptance.test_public_user_allowlist_and_nested_bracket_payloads",
+        "nc02g2_privacy_access.PrivacyAccessAcceptance.test_scoped_error_contracts"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_bracket_access.CurrentBracketBehavior.current_behavior__bracket__email_serialization",
+          "nc02g2_league_access.CurrentLeagueBehavior.current_behavior__league__member_email",
+          "nc02g2_privacy_access.PrivacyAccessAcceptance.test_discovery_and_boolean_password_state",
+          "nc02g2_privacy_access.PrivacyAccessAcceptance.test_membership_removal_takes_effect_without_new_token",
+          "nc02g2_privacy_access.PrivacyAccessAcceptance.test_private_direct_api_role_matrix",
+          "nc02g2_privacy_access.PrivacyAccessAcceptance.test_public_access_and_general_saved_visibility_preserved",
+          "nc02g2_privacy_access.PrivacyAccessAcceptance.test_public_user_allowlist_and_nested_bracket_payloads",
+          "nc02g2_privacy_access.PrivacyAccessAcceptance.test_scoped_error_contracts"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "P2",
+      "summary": "Private-league boundary",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "app.py",
+        "history_service.py",
+        "league_history_service.py"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_current_private_membership_and_privacy_switch",
+        "nc02g2_privacy_access.PrivacyAccessAcceptance.test_discovery_and_boolean_password_state",
+        "nc02g2_privacy_access.PrivacyAccessAcceptance.test_membership_removal_takes_effect_without_new_token",
+        "nc02g2_privacy_access.PrivacyAccessAcceptance.test_private_direct_api_role_matrix",
+        "nc02g2_privacy_access.PrivacyAccessAcceptance.test_public_access_and_general_saved_visibility_preserved",
+        "nc02g2_privacy_access.PrivacyAccessAcceptance.test_public_user_allowlist_and_nested_bracket_payloads",
+        "nc02g2_privacy_access.PrivacyAccessAcceptance.test_scoped_error_contracts"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_current_private_membership_and_privacy_switch",
+          "nc02g2_privacy_access.PrivacyAccessAcceptance.test_discovery_and_boolean_password_state",
+          "nc02g2_privacy_access.PrivacyAccessAcceptance.test_membership_removal_takes_effect_without_new_token",
+          "nc02g2_privacy_access.PrivacyAccessAcceptance.test_private_direct_api_role_matrix",
+          "nc02g2_privacy_access.PrivacyAccessAcceptance.test_public_access_and_general_saved_visibility_preserved",
+          "nc02g2_privacy_access.PrivacyAccessAcceptance.test_public_user_allowlist_and_nested_bracket_payloads",
+          "nc02g2_privacy_access.PrivacyAccessAcceptance.test_scoped_error_contracts"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "P3",
+      "summary": "Private-league discovery",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "app.py",
+        "history_service.py",
+        "league_history_service.py"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_discovery_minimal_and_private_member_access",
+        "nc02g2_league_access.CurrentLeagueBehavior.current_behavior__league__discovery",
+        "nc02g2_privacy_access.PrivacyAccessAcceptance.test_discovery_and_boolean_password_state"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_discovery_minimal_and_private_member_access",
+          "nc02g2_league_access.CurrentLeagueBehavior.current_behavior__league__discovery",
+          "nc02g2_privacy_access.PrivacyAccessAcceptance.test_discovery_and_boolean_password_state"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "P6",
+      "summary": "Admin privacy bypass",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "app.py",
+        "history_service.py",
+        "league_history_service.py"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "nc02g2_bracket_lifecycle.BracketLifecycleAcceptance.test_b3_nonowner_and_admin_arbitrary_delete_denied",
+        "nc02g2_bracket_lock.BracketLockAcceptance.test_nonowner_and_admin_ordinary_content_denied",
+        "nc02g2_privacy_access.PrivacyAccessAcceptance.test_discovery_and_boolean_password_state",
+        "nc02g2_privacy_access.PrivacyAccessAcceptance.test_membership_removal_takes_effect_without_new_token",
+        "nc02g2_privacy_access.PrivacyAccessAcceptance.test_private_direct_api_role_matrix",
+        "nc02g2_privacy_access.PrivacyAccessAcceptance.test_public_access_and_general_saved_visibility_preserved",
+        "nc02g2_privacy_access.PrivacyAccessAcceptance.test_public_user_allowlist_and_nested_bracket_payloads",
+        "nc02g2_privacy_access.PrivacyAccessAcceptance.test_scoped_error_contracts"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_bracket_lifecycle.BracketLifecycleAcceptance.test_b3_nonowner_and_admin_arbitrary_delete_denied",
+          "nc02g2_bracket_lock.BracketLockAcceptance.test_nonowner_and_admin_ordinary_content_denied",
+          "nc02g2_privacy_access.PrivacyAccessAcceptance.test_discovery_and_boolean_password_state",
+          "nc02g2_privacy_access.PrivacyAccessAcceptance.test_membership_removal_takes_effect_without_new_token",
+          "nc02g2_privacy_access.PrivacyAccessAcceptance.test_private_direct_api_role_matrix",
+          "nc02g2_privacy_access.PrivacyAccessAcceptance.test_public_access_and_general_saved_visibility_preserved",
+          "nc02g2_privacy_access.PrivacyAccessAcceptance.test_public_user_allowlist_and_nested_bracket_payloads",
+          "nc02g2_privacy_access.PrivacyAccessAcceptance.test_scoped_error_contracts"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "P7",
+      "summary": "Server-side enforcement",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "app.py",
+        "history_service.py",
+        "league_history_service.py"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_current_private_membership_and_privacy_switch",
+        "nc02g2_privacy_access.PrivacyAccessAcceptance.test_discovery_and_boolean_password_state",
+        "nc02g2_privacy_access.PrivacyAccessAcceptance.test_membership_removal_takes_effect_without_new_token",
+        "nc02g2_privacy_access.PrivacyAccessAcceptance.test_private_direct_api_role_matrix",
+        "nc02g2_privacy_access.PrivacyAccessAcceptance.test_public_access_and_general_saved_visibility_preserved",
+        "nc02g2_privacy_access.PrivacyAccessAcceptance.test_public_user_allowlist_and_nested_bracket_payloads",
+        "nc02g2_privacy_access.PrivacyAccessAcceptance.test_scoped_error_contracts",
+        "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_admin_mutation_authorization_unchanged_invalidation_shared",
+        "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_games_only_edit_resave_all_surfaces",
+        "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_postlock_edits_still_allowed_but_all_invalidate",
+        "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_stored_draft_score_hidden_without_deletion",
+        "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_undo_resave_all_surfaces",
+        "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_winner_edit_resave_all_surfaces"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_current_private_membership_and_privacy_switch",
+          "nc02g2_privacy_access.PrivacyAccessAcceptance.test_discovery_and_boolean_password_state",
+          "nc02g2_privacy_access.PrivacyAccessAcceptance.test_membership_removal_takes_effect_without_new_token",
+          "nc02g2_privacy_access.PrivacyAccessAcceptance.test_private_direct_api_role_matrix",
+          "nc02g2_privacy_access.PrivacyAccessAcceptance.test_public_access_and_general_saved_visibility_preserved",
+          "nc02g2_privacy_access.PrivacyAccessAcceptance.test_public_user_allowlist_and_nested_bracket_payloads",
+          "nc02g2_privacy_access.PrivacyAccessAcceptance.test_scoped_error_contracts",
+          "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_admin_mutation_authorization_unchanged_invalidation_shared",
+          "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_games_only_edit_resave_all_surfaces",
+          "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_postlock_edits_still_allowed_but_all_invalidate",
+          "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_stored_draft_score_hidden_without_deletion",
+          "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_undo_resave_all_surfaces",
+          "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_winner_edit_resave_all_surfaces"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "P8",
+      "summary": "Sensitive stored fields",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "app.py",
+        "history_service.py",
+        "league_history_service.py"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "nc02g2_bracket_access.CurrentBracketBehavior.current_behavior__bracket__email_serialization",
+        "nc02g2_privacy_access.PrivacyAccessAcceptance.test_discovery_and_boolean_password_state",
+        "nc02g2_privacy_access.PrivacyAccessAcceptance.test_public_user_allowlist_and_nested_bracket_payloads"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_bracket_access.CurrentBracketBehavior.current_behavior__bracket__email_serialization",
+          "nc02g2_privacy_access.PrivacyAccessAcceptance.test_discovery_and_boolean_password_state",
+          "nc02g2_privacy_access.PrivacyAccessAcceptance.test_public_user_allowlist_and_nested_bracket_payloads"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "P10",
+      "summary": "Membership remains authoritative",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "app.py",
+        "history_service.py",
+        "league_history_service.py"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_current_private_membership_and_privacy_switch",
+        "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_discovery_minimal_and_private_member_access",
+        "nc02g2_privacy_access.PrivacyAccessAcceptance.test_private_direct_api_role_matrix"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_current_private_membership_and_privacy_switch",
+          "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_discovery_minimal_and_private_member_access",
+          "nc02g2_privacy_access.PrivacyAccessAcceptance.test_private_direct_api_role_matrix"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "P4",
+      "summary": "Draft / unsaved competitive privacy",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "app.py",
+        "history_service.py",
+        "league_history_service.py"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "nc02g2_bracket_access.CurrentBracketBehavior.current_behavior__bracket__admin_draft_visibility",
+        "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_admin_mutation_authorization_unchanged_invalidation_shared",
+        "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_games_only_edit_resave_all_surfaces",
+        "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_postlock_edits_still_allowed_but_all_invalidate",
+        "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_stored_draft_score_hidden_without_deletion",
+        "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_undo_resave_all_surfaces",
+        "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_winner_edit_resave_all_surfaces"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_bracket_access.CurrentBracketBehavior.current_behavior__bracket__admin_draft_visibility",
+          "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_admin_mutation_authorization_unchanged_invalidation_shared",
+          "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_games_only_edit_resave_all_surfaces",
+          "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_postlock_edits_still_allowed_but_all_invalidate",
+          "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_stored_draft_score_hidden_without_deletion",
+          "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_undo_resave_all_surfaces",
+          "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_winner_edit_resave_all_surfaces"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "P5",
+      "summary": "Competitive eligibility requires current saved state",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "app.py",
+        "history_service.py",
+        "league_history_service.py"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "nc02g2_scoring_recompute.ScoringAcceptance.test_d1_manual_complete_set_idempotence_and_eligibility",
+        "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_admin_mutation_authorization_unchanged_invalidation_shared",
+        "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_games_only_edit_resave_all_surfaces",
+        "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_postlock_edits_still_allowed_but_all_invalidate",
+        "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_stored_draft_score_hidden_without_deletion",
+        "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_undo_resave_all_surfaces",
+        "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_winner_edit_resave_all_surfaces"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_scoring_recompute.ScoringAcceptance.test_d1_manual_complete_set_idempotence_and_eligibility",
+          "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_admin_mutation_authorization_unchanged_invalidation_shared",
+          "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_games_only_edit_resave_all_surfaces",
+          "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_postlock_edits_still_allowed_but_all_invalidate",
+          "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_stored_draft_score_hidden_without_deletion",
+          "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_undo_resave_all_surfaces",
+          "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_winner_edit_resave_all_surfaces"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "P9",
+      "summary": "Public league competition visibility",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "app.py",
+        "history_service.py",
+        "league_history_service.py"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "nc02g2_privacy_access.PrivacyAccessAcceptance.test_public_access_and_general_saved_visibility_preserved",
+        "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_admin_mutation_authorization_unchanged_invalidation_shared",
+        "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_games_only_edit_resave_all_surfaces",
+        "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_postlock_edits_still_allowed_but_all_invalidate",
+        "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_stored_draft_score_hidden_without_deletion",
+        "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_undo_resave_all_surfaces",
+        "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_winner_edit_resave_all_surfaces"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_privacy_access.PrivacyAccessAcceptance.test_public_access_and_general_saved_visibility_preserved",
+          "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_admin_mutation_authorization_unchanged_invalidation_shared",
+          "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_games_only_edit_resave_all_surfaces",
+          "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_postlock_edits_still_allowed_but_all_invalidate",
+          "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_stored_draft_score_hidden_without_deletion",
+          "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_undo_resave_all_surfaces",
+          "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_winner_edit_resave_all_surfaces"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "B1",
+      "summary": "Final bracket deadline",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "app.py",
+        "bracket_rules.py",
+        "db/post-baseline/0001_nc_02b3_bracket_lifecycle.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_standings_refresh.StandingsAcceptance.test_c2_freeze_distinct_from_bracket_lock",
+        "nc02g2_bracket_lock.BracketLockAcceptance.test_admin_own_ordinary_denied",
+        "nc02g2_bracket_lock.BracketLockAcceptance.test_create_hard_lock_overrides_inconsistent_open_window",
+        "nc02g2_bracket_lock.BracketLockAcceptance.test_draft_after_boundary_frozen_readable_ineligible",
+        "nc02g2_bracket_lock.BracketLockAcceptance.test_draft_at_boundary_frozen_readable_ineligible",
+        "nc02g2_bracket_lock.BracketLockAcceptance.test_nonadmin_master_owner_denied_admin_postlock_permitted",
+        "nc02g2_bracket_lock.BracketLockAcceptance.test_nonowner_and_admin_ordinary_content_denied",
+        "nc02g2_bracket_lock.BracketLockAcceptance.test_ordinary_before_boundary_all_content_and_resave",
+        "nc02g2_bracket_lock.BracketLockAcceptance.test_saved_at_boundary_no_mutation_or_invalidation"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_standings_refresh.StandingsAcceptance.test_c2_freeze_distinct_from_bracket_lock",
+          "nc02g2_bracket_lock.BracketLockAcceptance.test_admin_own_ordinary_denied",
+          "nc02g2_bracket_lock.BracketLockAcceptance.test_create_hard_lock_overrides_inconsistent_open_window",
+          "nc02g2_bracket_lock.BracketLockAcceptance.test_draft_after_boundary_frozen_readable_ineligible",
+          "nc02g2_bracket_lock.BracketLockAcceptance.test_draft_at_boundary_frozen_readable_ineligible",
+          "nc02g2_bracket_lock.BracketLockAcceptance.test_nonadmin_master_owner_denied_admin_postlock_permitted",
+          "nc02g2_bracket_lock.BracketLockAcceptance.test_nonowner_and_admin_ordinary_content_denied",
+          "nc02g2_bracket_lock.BracketLockAcceptance.test_ordinary_before_boundary_all_content_and_resave",
+          "nc02g2_bracket_lock.BracketLockAcceptance.test_saved_at_boundary_no_mutation_or_invalidation"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "B2",
+      "summary": "Admin bracket editing",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "app.py",
+        "bracket_rules.py",
+        "db/post-baseline/0001_nc_02b3_bracket_lifecycle.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_bracket_lifecycle.BracketLifecycleAcceptance.test_b3_nonowner_and_admin_arbitrary_delete_denied",
+        "nc02g2_bracket_lock.BracketLockAcceptance.test_admin_own_ordinary_denied",
+        "nc02g2_bracket_lock.BracketLockAcceptance.test_nonadmin_master_owner_denied_admin_postlock_permitted",
+        "nc02g2_bracket_lock.BracketLockAcceptance.test_nonowner_and_admin_ordinary_content_denied"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_bracket_lifecycle.BracketLifecycleAcceptance.test_b3_nonowner_and_admin_arbitrary_delete_denied",
+          "nc02g2_bracket_lock.BracketLockAcceptance.test_admin_own_ordinary_denied",
+          "nc02g2_bracket_lock.BracketLockAcceptance.test_nonadmin_master_owner_denied_admin_postlock_permitted",
+          "nc02g2_bracket_lock.BracketLockAcceptance.test_nonowner_and_admin_ordinary_content_denied"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "B3",
+      "summary": "Ordinary-owner undo",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "app.py",
+        "bracket_rules.py",
+        "db/post-baseline/0001_nc_02b3_bracket_lifecycle.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_bracket_validity.BracketValidityAcceptance.test_b2_undo_recursive_opponent_dependency",
+        "nc02g2_bracket_lock.BracketLockAcceptance.test_ordinary_before_boundary_all_content_and_resave"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_bracket_validity.BracketValidityAcceptance.test_b2_undo_recursive_opponent_dependency",
+          "nc02g2_bracket_lock.BracketLockAcceptance.test_ordinary_before_boundary_all_content_and_resave"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "B4",
+      "summary": "Submitted bracket edits",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "app.py",
+        "bracket_rules.py",
+        "db/post-baseline/0001_nc_02b3_bracket_lifecycle.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_admin_mutation_authorization_unchanged_invalidation_shared",
+        "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_games_only_edit_resave_all_surfaces",
+        "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_postlock_edits_still_allowed_but_all_invalidate",
+        "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_stored_draft_score_hidden_without_deletion",
+        "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_undo_resave_all_surfaces",
+        "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_winner_edit_resave_all_surfaces"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_admin_mutation_authorization_unchanged_invalidation_shared",
+          "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_games_only_edit_resave_all_surfaces",
+          "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_postlock_edits_still_allowed_but_all_invalidate",
+          "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_stored_draft_score_hidden_without_deletion",
+          "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_undo_resave_all_surfaces",
+          "nc02g2_competitive_eligibility.CompetitiveEligibilityAcceptance.test_winner_edit_resave_all_surfaces"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "B5",
+      "summary": "Ordinary creation window",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "app.py",
+        "bracket_rules.py",
+        "db/post-baseline/0001_nc_02b3_bracket_lifecycle.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_bracket_lifecycle.BracketLifecycleAcceptance.test_b3_predeadline_delete_recreate_and_closed_window",
+        "nc02g2_bracket_lock.BracketLockAcceptance.test_create_hard_lock_overrides_inconsistent_open_window",
+        "nc02g2_bracket_access.CurrentBracketBehavior.current_behavior__bracket__creation_windows"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_bracket_lifecycle.BracketLifecycleAcceptance.test_b3_predeadline_delete_recreate_and_closed_window",
+          "nc02g2_bracket_lock.BracketLockAcceptance.test_create_hard_lock_overrides_inconsistent_open_window",
+          "nc02g2_bracket_access.CurrentBracketBehavior.current_behavior__bracket__creation_windows"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "B16",
+      "summary": "Draft at deadline",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "app.py",
+        "bracket_rules.py",
+        "db/post-baseline/0001_nc_02b3_bracket_lifecycle.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_bracket_lock.BracketLockAcceptance.test_draft_after_boundary_frozen_readable_ineligible",
+        "nc02g2_bracket_lock.BracketLockAcceptance.test_draft_at_boundary_frozen_readable_ineligible"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_bracket_lock.BracketLockAcceptance.test_draft_after_boundary_frozen_readable_ineligible",
+          "nc02g2_bracket_lock.BracketLockAcceptance.test_draft_at_boundary_frozen_readable_ineligible"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "B6",
+      "summary": "Complete bracket required for ordinary submission",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "app.py",
+        "bracket_rules.py",
+        "db/post-baseline/0001_nc_02b3_bracket_lifecycle.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_bracket_validity.BracketValidityAcceptance.test_b2_submission_rejects_faults_and_accepts_only_complete"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_bracket_validity.BracketValidityAcceptance.test_b2_submission_rejects_faults_and_accepts_only_complete"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "B7",
+      "summary": "Series game-count validation",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "app.py",
+        "bracket_rules.py",
+        "db/post-baseline/0001_nc_02b3_bracket_lifecycle.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_bracket_validity.BracketValidityAcceptance.test_b2_counts_both_routes_and_playin",
+        "nc02g2_bracket_access.CurrentBracketBehavior.current_behavior__bracket__game_count_values"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_bracket_validity.BracketValidityAcceptance.test_b2_counts_both_routes_and_playin",
+          "nc02g2_bracket_access.CurrentBracketBehavior.current_behavior__bracket__game_count_values"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "B8",
+      "summary": "Both participants required before prediction",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "app.py",
+        "bracket_rules.py",
+        "db/post-baseline/0001_nc_02b3_bracket_lifecycle.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_bracket_validity.BracketValidityAcceptance.test_b2_master_participants_and_incremental_save",
+        "nc02g2_bracket_validity.BracketValidityAcceptance.test_b2_ordinary_participants_and_draft_progression"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_bracket_validity.BracketValidityAcceptance.test_b2_master_participants_and_incremental_save",
+          "nc02g2_bracket_validity.BracketValidityAcceptance.test_b2_ordinary_participants_and_draft_progression"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "B9",
+      "summary": "Dependency-aware downstream clearing",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "app.py",
+        "bracket_rules.py",
+        "db/post-baseline/0001_nc_02b3_bracket_lifecycle.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_bracket_validity.BracketValidityAcceptance.test_b2_finals_dependency",
+        "nc02g2_bracket_validity.BracketValidityAcceptance.test_b2_master_recursive_change",
+        "nc02g2_bracket_validity.BracketValidityAcceptance.test_b2_master_recursive_undo",
+        "nc02g2_bracket_validity.BracketValidityAcceptance.test_b2_playin_dual_feed",
+        "nc02g2_bracket_validity.BracketValidityAcceptance.test_b2_undo_recursive_opponent_dependency",
+        "nc02g2_bracket_validity.BracketValidityAcceptance.test_b2_winner_change_recursive_opponent_dependency"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_bracket_validity.BracketValidityAcceptance.test_b2_finals_dependency",
+          "nc02g2_bracket_validity.BracketValidityAcceptance.test_b2_master_recursive_change",
+          "nc02g2_bracket_validity.BracketValidityAcceptance.test_b2_master_recursive_undo",
+          "nc02g2_bracket_validity.BracketValidityAcceptance.test_b2_playin_dual_feed",
+          "nc02g2_bracket_validity.BracketValidityAcceptance.test_b2_undo_recursive_opponent_dependency",
+          "nc02g2_bracket_validity.BracketValidityAcceptance.test_b2_winner_change_recursive_opponent_dependency"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "B10",
+      "summary": "Owner deletion before deadline",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "app.py",
+        "bracket_rules.py",
+        "db/post-baseline/0001_nc_02b3_bracket_lifecycle.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_bracket_lifecycle.BracketLifecycleAcceptance.test_b3_predeadline_delete_recreate_and_closed_window"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_bracket_lifecycle.BracketLifecycleAcceptance.test_b3_predeadline_delete_recreate_and_closed_window"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "B11",
+      "summary": "Deletion after deadline",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "app.py",
+        "bracket_rules.py",
+        "db/post-baseline/0001_nc_02b3_bracket_lifecycle.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_bracket_lifecycle.BracketLifecycleAcceptance.test_b3_postlock_draft_delete_and_no_recreation",
+        "nc02g2_bracket_lifecycle.BracketLifecycleAcceptance.test_b3_submitted_delete_at_and_after_deadline_preserves_all_data"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_bracket_lifecycle.BracketLifecycleAcceptance.test_b3_postlock_draft_delete_and_no_recreation",
+          "nc02g2_bracket_lifecycle.BracketLifecycleAcceptance.test_b3_submitted_delete_at_and_after_deadline_preserves_all_data"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "B12",
+      "summary": "One active bracket per user per season",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "app.py",
+        "bracket_rules.py",
+        "db/post-baseline/0001_nc_02b3_bracket_lifecycle.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_bracket_lifecycle.BracketLifecycleAcceptance.test_b3_cross_season_and_same_season_uniqueness"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_bracket_lifecycle.BracketLifecycleAcceptance.test_b3_cross_season_and_same_season_uniqueness"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "B13",
+      "summary": "Explicit master replacement",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "app.py",
+        "bracket_rules.py",
+        "db/post-baseline/0001_nc_02b3_bracket_lifecycle.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_bracket_lifecycle.BracketLifecycleAcceptance.test_b3_master_create_explicit_replace_and_delete_protection"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_bracket_lifecycle.BracketLifecycleAcceptance.test_b3_master_create_explicit_replace_and_delete_protection"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "B14",
+      "summary": "Active master protection",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "app.py",
+        "bracket_rules.py",
+        "db/post-baseline/0001_nc_02b3_bracket_lifecycle.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_bracket_lifecycle.BracketLifecycleAcceptance.test_b3_master_create_explicit_replace_and_delete_protection",
+        "nc02g2_bracket_access.CurrentBracketBehavior.current_behavior__bracket__master_delete"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_bracket_lifecycle.BracketLifecycleAcceptance.test_b3_master_create_explicit_replace_and_delete_protection",
+          "nc02g2_bracket_access.CurrentBracketBehavior.current_behavior__bracket__master_delete"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "B15",
+      "summary": "Historical bracket access",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "app.py",
+        "bracket_rules.py",
+        "db/post-baseline/0001_nc_02b3_bracket_lifecycle.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_full_success_history_readonly_new_refresh_and_repeat",
+        "nc02g2_bracket_lifecycle.BracketLifecycleAcceptance.test_b3_historical_submitted_public_safe_and_immutable"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_full_success_history_readonly_new_refresh_and_repeat",
+          "nc02g2_bracket_lifecycle.BracketLifecycleAcceptance.test_b3_historical_submitted_public_safe_and_immutable"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "S1",
+      "summary": "One canonical current season",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "canonical_season.py",
+        "standings_service.py",
+        "app.py",
+        ".github/workflows/standings-cron.yml",
+        "db/post-baseline/0002_nc_02c1_canonical_season.sql",
+        "db/post-baseline/0003_nc_02c2_atomic_standings.sql",
+        "db/post-baseline/0004_nc_02c3_season_transition.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_canonical_source.CanonicalAcceptance.test_c1_explicit_switch_visible_without_restart",
+        "nc02g2_canonical_source.CanonicalAcceptance.test_c1_missing_state_503_and_restored_next_request",
+        "nc02g2_canonical_source.CanonicalAcceptance.test_c1_status_and_bracket_share_canonical_identity"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_canonical_source.CanonicalAcceptance.test_c1_explicit_switch_visible_without_restart",
+          "nc02g2_canonical_source.CanonicalAcceptance.test_c1_missing_state_503_and_restored_next_request",
+          "nc02g2_canonical_source.CanonicalAcceptance.test_c1_status_and_bracket_share_canonical_identity"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "S2",
+      "summary": "No independent production season overrides",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "canonical_season.py",
+        "standings_service.py",
+        "app.py",
+        ".github/workflows/standings-cron.yml",
+        "db/post-baseline/0002_nc_02c1_canonical_season.sql",
+        "db/post-baseline/0003_nc_02c2_atomic_standings.sql",
+        "db/post-baseline/0004_nc_02c3_season_transition.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_canonical_source.CanonicalAcceptance.test_c1_explicit_switch_visible_without_restart",
+        "nc02g2_canonical_source.CanonicalAcceptance.test_c1_missing_state_503_and_restored_next_request",
+        "nc02g2_canonical_source.CanonicalAcceptance.test_c1_status_and_bracket_share_canonical_identity"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_canonical_source.CanonicalAcceptance.test_c1_explicit_switch_visible_without_restart",
+          "nc02g2_canonical_source.CanonicalAcceptance.test_c1_missing_state_503_and_restored_next_request",
+          "nc02g2_canonical_source.CanonicalAcceptance.test_c1_status_and_bracket_share_canonical_identity"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "S12",
+      "summary": "Distinct timing concepts",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "canonical_season.py",
+        "standings_service.py",
+        "app.py",
+        ".github/workflows/standings-cron.yml",
+        "db/post-baseline/0002_nc_02c1_canonical_season.sql",
+        "db/post-baseline/0003_nc_02c2_atomic_standings.sql",
+        "db/post-baseline/0004_nc_02c3_season_transition.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_standings_refresh.StandingsAcceptance.test_c2_freeze_distinct_from_bracket_lock"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_standings_refresh.StandingsAcceptance.test_c2_freeze_distinct_from_bracket_lock"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "S14",
+      "summary": "Backend season/status authority",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "canonical_season.py",
+        "standings_service.py",
+        "app.py",
+        ".github/workflows/standings-cron.yml",
+        "db/post-baseline/0002_nc_02c1_canonical_season.sql",
+        "db/post-baseline/0003_nc_02c2_atomic_standings.sql",
+        "db/post-baseline/0004_nc_02c3_season_transition.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_canonical_source.CanonicalAcceptance.test_c1_explicit_switch_visible_without_restart",
+        "nc02g2_canonical_source.CanonicalAcceptance.test_c1_status_and_bracket_share_canonical_identity"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_canonical_source.CanonicalAcceptance.test_c1_explicit_switch_visible_without_restart",
+          "nc02g2_canonical_source.CanonicalAcceptance.test_c1_status_and_bracket_share_canonical_identity"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "S3",
+      "summary": "ESPN is the standings authority",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "canonical_season.py",
+        "standings_service.py",
+        "app.py",
+        ".github/workflows/standings-cron.yml",
+        "db/post-baseline/0002_nc_02c1_canonical_season.sql",
+        "db/post-baseline/0003_nc_02c2_atomic_standings.sql",
+        "db/post-baseline/0004_nc_02c3_season_transition.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_standings_refresh.StandingsAcceptance.test_c2_authorization_and_retired_bypasses",
+        "nc02g2_standings_refresh.StandingsAcceptance.test_c2_freeze_at_after_all_paths_no_fetch",
+        "nc02g2_standings_refresh.StandingsAcceptance.test_c2_freeze_distinct_from_bracket_lock",
+        "nc02g2_standings_refresh.StandingsAcceptance.test_c2_invalid_data_and_provider_failures_preserve_rows",
+        "nc02g2_standings_refresh.StandingsAcceptance.test_c2_success_scheduled_admin_cron_equivalent"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_standings_refresh.StandingsAcceptance.test_c2_authorization_and_retired_bypasses",
+          "nc02g2_standings_refresh.StandingsAcceptance.test_c2_freeze_at_after_all_paths_no_fetch",
+          "nc02g2_standings_refresh.StandingsAcceptance.test_c2_freeze_distinct_from_bracket_lock",
+          "nc02g2_standings_refresh.StandingsAcceptance.test_c2_invalid_data_and_provider_failures_preserve_rows",
+          "nc02g2_standings_refresh.StandingsAcceptance.test_c2_success_scheduled_admin_cron_equivalent"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "S4",
+      "summary": "Daily regular-season refresh",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "canonical_season.py",
+        "standings_service.py",
+        "app.py",
+        ".github/workflows/standings-cron.yml",
+        "db/post-baseline/0002_nc_02c1_canonical_season.sql",
+        "db/post-baseline/0003_nc_02c2_atomic_standings.sql",
+        "db/post-baseline/0004_nc_02c3_season_transition.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_standings_refresh.StandingsAcceptance.test_c2_success_scheduled_admin_cron_equivalent"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_standings_refresh.StandingsAcceptance.test_c2_success_scheduled_admin_cron_equivalent"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten. Daily registration verified from workflow; equivalent guarded refresh paths tested. Actual production scheduler execution is outside this audit."
+    },
+    {
+      "requirement_id": "S5",
+      "summary": "Standings freeze",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "canonical_season.py",
+        "standings_service.py",
+        "app.py",
+        ".github/workflows/standings-cron.yml",
+        "db/post-baseline/0002_nc_02c1_canonical_season.sql",
+        "db/post-baseline/0003_nc_02c2_atomic_standings.sql",
+        "db/post-baseline/0004_nc_02c3_season_transition.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_standings_refresh.StandingsAcceptance.test_c2_freeze_at_after_all_paths_no_fetch"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_standings_refresh.StandingsAcceptance.test_c2_freeze_at_after_all_paths_no_fetch"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "S6",
+      "summary": "Admin/manual freeze",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "canonical_season.py",
+        "standings_service.py",
+        "app.py",
+        ".github/workflows/standings-cron.yml",
+        "db/post-baseline/0002_nc_02c1_canonical_season.sql",
+        "db/post-baseline/0003_nc_02c2_atomic_standings.sql",
+        "db/post-baseline/0004_nc_02c3_season_transition.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_standings_refresh.StandingsAcceptance.test_c2_freeze_at_after_all_paths_no_fetch"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_standings_refresh.StandingsAcceptance.test_c2_freeze_at_after_all_paths_no_fetch"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "S7",
+      "summary": "Atomic standings replacement",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "canonical_season.py",
+        "standings_service.py",
+        "app.py",
+        ".github/workflows/standings-cron.yml",
+        "db/post-baseline/0002_nc_02c1_canonical_season.sql",
+        "db/post-baseline/0003_nc_02c2_atomic_standings.sql",
+        "db/post-baseline/0004_nc_02c3_season_transition.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_standings_refresh.StandingsAcceptance.test_c2_invalid_data_and_provider_failures_preserve_rows",
+        "nc02g2_standings_refresh.StandingsAcceptance.test_c2_success_scheduled_admin_cron_equivalent"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_standings_refresh.StandingsAcceptance.test_c2_invalid_data_and_provider_failures_preserve_rows",
+          "nc02g2_standings_refresh.StandingsAcceptance.test_c2_success_scheduled_admin_cron_equivalent"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "S8",
+      "summary": "Complete dataset validation",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "canonical_season.py",
+        "standings_service.py",
+        "app.py",
+        ".github/workflows/standings-cron.yml",
+        "db/post-baseline/0002_nc_02c1_canonical_season.sql",
+        "db/post-baseline/0003_nc_02c2_atomic_standings.sql",
+        "db/post-baseline/0004_nc_02c3_season_transition.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_standings_refresh.StandingsAcceptance.test_c2_invalid_data_and_provider_failures_preserve_rows"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_standings_refresh.StandingsAcceptance.test_c2_invalid_data_and_provider_failures_preserve_rows"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "S9",
+      "summary": "Current-state standings table",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "canonical_season.py",
+        "standings_service.py",
+        "app.py",
+        ".github/workflows/standings-cron.yml",
+        "db/post-baseline/0002_nc_02c1_canonical_season.sql",
+        "db/post-baseline/0003_nc_02c2_atomic_standings.sql",
+        "db/post-baseline/0004_nc_02c3_season_transition.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_standings_refresh.StandingsAcceptance.test_c2_authorization_and_retired_bypasses",
+        "nc02g2_standings_refresh.StandingsAcceptance.test_c2_freeze_at_after_all_paths_no_fetch",
+        "nc02g2_standings_refresh.StandingsAcceptance.test_c2_freeze_distinct_from_bracket_lock",
+        "nc02g2_standings_refresh.StandingsAcceptance.test_c2_invalid_data_and_provider_failures_preserve_rows",
+        "nc02g2_standings_refresh.StandingsAcceptance.test_c2_success_scheduled_admin_cron_equivalent"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_standings_refresh.StandingsAcceptance.test_c2_authorization_and_retired_bypasses",
+          "nc02g2_standings_refresh.StandingsAcceptance.test_c2_freeze_at_after_all_paths_no_fetch",
+          "nc02g2_standings_refresh.StandingsAcceptance.test_c2_freeze_distinct_from_bracket_lock",
+          "nc02g2_standings_refresh.StandingsAcceptance.test_c2_invalid_data_and_provider_failures_preserve_rows",
+          "nc02g2_standings_refresh.StandingsAcceptance.test_c2_success_scheduled_admin_cron_equivalent"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "S13",
+      "summary": "Failure preserves last good state",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "canonical_season.py",
+        "standings_service.py",
+        "app.py",
+        ".github/workflows/standings-cron.yml",
+        "db/post-baseline/0002_nc_02c1_canonical_season.sql",
+        "db/post-baseline/0003_nc_02c2_atomic_standings.sql",
+        "db/post-baseline/0004_nc_02c3_season_transition.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_standings_refresh.StandingsAcceptance.test_c2_invalid_data_and_provider_failures_preserve_rows"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_standings_refresh.StandingsAcceptance.test_c2_invalid_data_and_provider_failures_preserve_rows"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "S10",
+      "summary": "Canonical season advancement",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "canonical_season.py",
+        "standings_service.py",
+        "app.py",
+        ".github/workflows/standings-cron.yml",
+        "db/post-baseline/0002_nc_02c1_canonical_season.sql",
+        "db/post-baseline/0003_nc_02c2_atomic_standings.sql",
+        "db/post-baseline/0004_nc_02c3_season_transition.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_full_success_history_readonly_new_refresh_and_repeat",
+        "nc02g2_canonical_source.CanonicalAcceptance.test_c1_explicit_switch_visible_without_restart"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_full_success_history_readonly_new_refresh_and_repeat",
+          "nc02g2_canonical_source.CanonicalAcceptance.test_c1_explicit_switch_visible_without_restart"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "S11",
+      "summary": "Current standings reset on season transition",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "canonical_season.py",
+        "standings_service.py",
+        "app.py",
+        ".github/workflows/standings-cron.yml",
+        "db/post-baseline/0002_nc_02c1_canonical_season.sql",
+        "db/post-baseline/0003_nc_02c2_atomic_standings.sql",
+        "db/post-baseline/0004_nc_02c3_season_transition.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_transition_failure_retains_global_and_league_cutoff_retry_reuses",
+        "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_full_success_history_readonly_new_refresh_and_repeat"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_transition_failure_retains_global_and_league_cutoff_retry_reuses",
+          "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_full_success_history_readonly_new_refresh_and_repeat"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "SC1",
+      "summary": "Base series scoring",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "scoring_engine.py",
+        "scoring_service.py",
+        "history_service.py",
+        "db/post-baseline/0005_nc_02d1_atomic_scores.sql",
+        "db/post-baseline/0006_nc_02d2_final_snapshots.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_scoring_recompute.ScoringAcceptance.test_d1_auto_winner_undo_count_and_failed_ordinary_no_recompute",
+        "nc02g2_scoring_recompute.ScoringAcceptance.test_d1_canonical_master_spoofs_and_invalid_pointers_preserve_scores",
+        "nc02g2_scoring_recompute.ScoringAcceptance.test_d1_changed_source_rejects_entire_publication",
+        "nc02g2_scoring_recompute.ScoringAcceptance.test_d1_committed_master_recompute_failure_last_good_then_manual_recovery",
+        "nc02g2_scoring_recompute.ScoringAcceptance.test_d1_live_ranks_and_stored_bonus_components",
+        "nc02g2_scoring_recompute.ScoringAcceptance.test_d1_manual_complete_set_idempotence_and_eligibility",
+        "nc02g2_scoring_recompute.ScoringAcceptance.test_d1_master_replacement_recomputes_new_truth_and_failure_recovers",
+        "nc02g2_scoring_offline.CurrentOfflineScoring.current_behavior__history__snapshot_empty",
+        "nc02g2_scoring_offline.CurrentOfflineScoring.current_behavior__history__snapshot_repeat",
+        "nc02g2_scoring_offline.CurrentOfflineScoring.current_behavior__history__snapshot_tie",
+        "nc02g2_scoring_offline.CurrentOfflineScoring.current_behavior__scoring__base_points",
+        "nc02g2_scoring_offline.CurrentOfflineScoring.current_behavior__scoring__champion_bonus",
+        "nc02g2_scoring_offline.CurrentOfflineScoring.current_behavior__scoring__counts",
+        "nc02g2_scoring_offline.CurrentOfflineScoring.current_behavior__scoring__edges",
+        "nc02g2_scoring_offline.CurrentOfflineScoring.current_behavior__scoring__finalist_bonus",
+        "nc02g2_scoring_offline.CurrentOfflineScoring.current_behavior__scoring__upsert"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_scoring_recompute.ScoringAcceptance.test_d1_auto_winner_undo_count_and_failed_ordinary_no_recompute",
+          "nc02g2_scoring_recompute.ScoringAcceptance.test_d1_canonical_master_spoofs_and_invalid_pointers_preserve_scores",
+          "nc02g2_scoring_recompute.ScoringAcceptance.test_d1_changed_source_rejects_entire_publication",
+          "nc02g2_scoring_recompute.ScoringAcceptance.test_d1_committed_master_recompute_failure_last_good_then_manual_recovery",
+          "nc02g2_scoring_recompute.ScoringAcceptance.test_d1_live_ranks_and_stored_bonus_components",
+          "nc02g2_scoring_recompute.ScoringAcceptance.test_d1_manual_complete_set_idempotence_and_eligibility",
+          "nc02g2_scoring_recompute.ScoringAcceptance.test_d1_master_replacement_recomputes_new_truth_and_failure_recovers",
+          "nc02g2_scoring_offline.CurrentOfflineScoring.current_behavior__history__snapshot_empty",
+          "nc02g2_scoring_offline.CurrentOfflineScoring.current_behavior__history__snapshot_repeat",
+          "nc02g2_scoring_offline.CurrentOfflineScoring.current_behavior__history__snapshot_tie",
+          "nc02g2_scoring_offline.CurrentOfflineScoring.current_behavior__scoring__base_points",
+          "nc02g2_scoring_offline.CurrentOfflineScoring.current_behavior__scoring__champion_bonus",
+          "nc02g2_scoring_offline.CurrentOfflineScoring.current_behavior__scoring__counts",
+          "nc02g2_scoring_offline.CurrentOfflineScoring.current_behavior__scoring__edges",
+          "nc02g2_scoring_offline.CurrentOfflineScoring.current_behavior__scoring__finalist_bonus",
+          "nc02g2_scoring_offline.CurrentOfflineScoring.current_behavior__scoring__upsert"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "SC2",
+      "summary": "Champion bonus",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "scoring_engine.py",
+        "scoring_service.py",
+        "history_service.py",
+        "db/post-baseline/0005_nc_02d1_atomic_scores.sql",
+        "db/post-baseline/0006_nc_02d2_final_snapshots.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_scoring_recompute.ScoringAcceptance.test_d1_live_ranks_and_stored_bonus_components"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_scoring_recompute.ScoringAcceptance.test_d1_live_ranks_and_stored_bonus_components"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "SC3",
+      "summary": "Both-Finalists bonus",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "scoring_engine.py",
+        "scoring_service.py",
+        "history_service.py",
+        "db/post-baseline/0005_nc_02d1_atomic_scores.sql",
+        "db/post-baseline/0006_nc_02d2_final_snapshots.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_scoring_recompute.ScoringAcceptance.test_d1_live_ranks_and_stored_bonus_components"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_scoring_recompute.ScoringAcceptance.test_d1_live_ranks_and_stored_bonus_components"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "SC4",
+      "summary": "Live leaderboard ordering",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "scoring_engine.py",
+        "scoring_service.py",
+        "history_service.py",
+        "db/post-baseline/0005_nc_02d1_atomic_scores.sql",
+        "db/post-baseline/0006_nc_02d2_final_snapshots.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_scoring_recompute.ScoringAcceptance.test_d1_live_ranks_and_stored_bonus_components"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_scoring_recompute.ScoringAcceptance.test_d1_live_ranks_and_stored_bonus_components"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "SC6",
+      "summary": "True ties",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "scoring_engine.py",
+        "scoring_service.py",
+        "history_service.py",
+        "db/post-baseline/0005_nc_02d1_atomic_scores.sql",
+        "db/post-baseline/0006_nc_02d2_final_snapshots.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_history_snapshot.HistoryAcceptance.test_d2_fresh_scores_stored_ties_public_privacy_and_repeat",
+        "nc02g2_scoring_recompute.ScoringAcceptance.test_d1_live_ranks_and_stored_bonus_components"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_history_snapshot.HistoryAcceptance.test_d2_fresh_scores_stored_ties_public_privacy_and_repeat",
+          "nc02g2_scoring_recompute.ScoringAcceptance.test_d1_live_ranks_and_stored_bonus_components"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "SC7",
+      "summary": "Canonical master ground truth",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "scoring_engine.py",
+        "scoring_service.py",
+        "history_service.py",
+        "db/post-baseline/0005_nc_02d1_atomic_scores.sql",
+        "db/post-baseline/0006_nc_02d2_final_snapshots.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_scoring_recompute.ScoringAcceptance.test_d1_canonical_master_spoofs_and_invalid_pointers_preserve_scores"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_scoring_recompute.ScoringAcceptance.test_d1_canonical_master_spoofs_and_invalid_pointers_preserve_scores"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "SC8",
+      "summary": "Automatic score recomputation",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "scoring_engine.py",
+        "scoring_service.py",
+        "history_service.py",
+        "db/post-baseline/0005_nc_02d1_atomic_scores.sql",
+        "db/post-baseline/0006_nc_02d2_final_snapshots.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_scoring_recompute.ScoringAcceptance.test_d1_auto_winner_undo_count_and_failed_ordinary_no_recompute",
+        "nc02g2_scoring_recompute.ScoringAcceptance.test_d1_master_replacement_recomputes_new_truth_and_failure_recovers"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_scoring_recompute.ScoringAcceptance.test_d1_auto_winner_undo_count_and_failed_ordinary_no_recompute",
+          "nc02g2_scoring_recompute.ScoringAcceptance.test_d1_master_replacement_recomputes_new_truth_and_failure_recovers"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "SC9",
+      "summary": "Atomic recomputation",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "scoring_engine.py",
+        "scoring_service.py",
+        "history_service.py",
+        "db/post-baseline/0005_nc_02d1_atomic_scores.sql",
+        "db/post-baseline/0006_nc_02d2_final_snapshots.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_scoring_recompute.ScoringAcceptance.test_d1_changed_source_rejects_entire_publication",
+        "nc02g2_scoring_recompute.ScoringAcceptance.test_d1_committed_master_recompute_failure_last_good_then_manual_recovery"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_scoring_recompute.ScoringAcceptance.test_d1_changed_source_rejects_entire_publication",
+          "nc02g2_scoring_recompute.ScoringAcceptance.test_d1_committed_master_recompute_failure_last_good_then_manual_recovery"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "SC5",
+      "summary": "Historical competitive ordering",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "scoring_engine.py",
+        "scoring_service.py",
+        "history_service.py",
+        "db/post-baseline/0005_nc_02d1_atomic_scores.sql",
+        "db/post-baseline/0006_nc_02d2_final_snapshots.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_history_snapshot.HistoryAcceptance.test_d2_fresh_scores_stored_ties_public_privacy_and_repeat"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_history_snapshot.HistoryAcceptance.test_d2_fresh_scores_stored_ties_public_privacy_and_repeat"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "SC10",
+      "summary": "Fresh canonical scoring before final snapshot",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "scoring_engine.py",
+        "scoring_service.py",
+        "history_service.py",
+        "db/post-baseline/0005_nc_02d1_atomic_scores.sql",
+        "db/post-baseline/0006_nc_02d2_final_snapshots.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_history_snapshot.HistoryAcceptance.test_d2_fresh_scores_stored_ties_public_privacy_and_repeat"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_history_snapshot.HistoryAcceptance.test_d2_fresh_scores_stored_ties_public_privacy_and_repeat"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "SC11",
+      "summary": "Structured snapshot defines success",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "scoring_engine.py",
+        "scoring_service.py",
+        "history_service.py",
+        "db/post-baseline/0005_nc_02d1_atomic_scores.sql",
+        "db/post-baseline/0006_nc_02d2_final_snapshots.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_partial_publication_blocks_transition_and_retains_global",
+        "nc02g2_history_snapshot.HistoryAcceptance.test_d2_fresh_scores_stored_ties_public_privacy_and_repeat"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_partial_publication_blocks_transition_and_retains_global",
+          "nc02g2_history_snapshot.HistoryAcceptance.test_d2_fresh_scores_stored_ties_public_privacy_and_repeat"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "SC12",
+      "summary": "Atomic structured snapshot",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "scoring_engine.py",
+        "scoring_service.py",
+        "history_service.py",
+        "db/post-baseline/0005_nc_02d1_atomic_scores.sql",
+        "db/post-baseline/0006_nc_02d2_final_snapshots.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_partial_publication_blocks_transition_and_retains_global",
+        "nc02g2_history_snapshot.HistoryAcceptance.test_d2_changed_source_during_snapshot_is_refused"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_partial_publication_blocks_transition_and_retains_global",
+          "nc02g2_history_snapshot.HistoryAcceptance.test_d2_changed_source_during_snapshot_is_refused"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "SC13",
+      "summary": "Rollover snapshot gate",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "scoring_engine.py",
+        "scoring_service.py",
+        "history_service.py",
+        "db/post-baseline/0005_nc_02d1_atomic_scores.sql",
+        "db/post-baseline/0006_nc_02d2_final_snapshots.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_partial_publication_blocks_transition_and_retains_global",
+        "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_calculation_failure_is_not_zero_and_rpc_failure_sanitized"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_partial_publication_blocks_transition_and_retains_global",
+          "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_calculation_failure_is_not_zero_and_rpc_failure_sanitized"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "SC14",
+      "summary": "Historical snapshot immutability",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "scoring_engine.py",
+        "scoring_service.py",
+        "history_service.py",
+        "db/post-baseline/0005_nc_02d1_atomic_scores.sql",
+        "db/post-baseline/0006_nc_02d2_final_snapshots.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_leave_join_kick_transfer_rename_after_cutoff_never_rewrite",
+        "nc02g2_history_snapshot.HistoryAcceptance.test_d2_history_survives_live_mutation_and_canonical_change"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_leave_join_kick_transfer_rename_after_cutoff_never_rewrite",
+          "nc02g2_history_snapshot.HistoryAcceptance.test_d2_history_survives_live_mutation_and_canonical_change"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "SC15",
+      "summary": "Historical privacy",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "scoring_engine.py",
+        "scoring_service.py",
+        "history_service.py",
+        "db/post-baseline/0005_nc_02d1_atomic_scores.sql",
+        "db/post-baseline/0006_nc_02d2_final_snapshots.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_current_private_membership_and_privacy_switch",
+        "nc02g2_history_snapshot.HistoryAcceptance.test_d2_fresh_scores_stored_ties_public_privacy_and_repeat"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_current_private_membership_and_privacy_switch",
+          "nc02g2_history_snapshot.HistoryAcceptance.test_d2_fresh_scores_stored_ties_public_privacy_and_repeat"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "SC16",
+      "summary": "Historical response ordering",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "scoring_engine.py",
+        "scoring_service.py",
+        "history_service.py",
+        "db/post-baseline/0005_nc_02d1_atomic_scores.sql",
+        "db/post-baseline/0006_nc_02d2_final_snapshots.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_history_snapshot.HistoryAcceptance.test_d2_fresh_scores_stored_ties_public_privacy_and_repeat"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_history_snapshot.HistoryAcceptance.test_d2_fresh_scores_stored_ties_public_privacy_and_repeat"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "RR1",
+      "summary": "Explicit admin rollover",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "rollover_service.py",
+        "app.py",
+        "db/post-baseline/0007_nc_02e_atomic_rollover.sql",
+        "db/post-baseline/0009_nc_02f2_league_history.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_preconditions_authorization_and_complete_master_gate"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_preconditions_authorization_and_complete_master_gate"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "RR2",
+      "summary": "Completed master prerequisite",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "rollover_service.py",
+        "app.py",
+        "db/post-baseline/0007_nc_02e_atomic_rollover.sql",
+        "db/post-baseline/0009_nc_02f2_league_history.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_preconditions_authorization_and_complete_master_gate"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_preconditions_authorization_and_complete_master_gate"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "RR3",
+      "summary": "Verified structured snapshot prerequisite",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "rollover_service.py",
+        "app.py",
+        "db/post-baseline/0007_nc_02e_atomic_rollover.sql",
+        "db/post-baseline/0009_nc_02f2_league_history.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_partial_publication_blocks_transition_and_retains_global",
+        "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_zero_competitors_requires_complete_master_and_reuses_snapshot"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_partial_publication_blocks_transition_and_retains_global",
+          "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_zero_competitors_requires_complete_master_and_reuses_snapshot"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "RR4",
+      "summary": "Atomic post-snapshot transition",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "rollover_service.py",
+        "app.py",
+        "db/post-baseline/0007_nc_02e_atomic_rollover.sql",
+        "db/post-baseline/0009_nc_02f2_league_history.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_full_success_history_readonly_new_refresh_and_repeat"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_full_success_history_readonly_new_refresh_and_repeat"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "RR5",
+      "summary": "Failure before transition",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "rollover_service.py",
+        "app.py",
+        "db/post-baseline/0007_nc_02e_atomic_rollover.sql",
+        "db/post-baseline/0009_nc_02f2_league_history.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_partial_publication_blocks_transition_and_retains_global"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_partial_publication_blocks_transition_and_retains_global"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "RR6",
+      "summary": "Failure during transition",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "rollover_service.py",
+        "app.py",
+        "db/post-baseline/0007_nc_02e_atomic_rollover.sql",
+        "db/post-baseline/0009_nc_02f2_league_history.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_transition_failure_retains_global_and_league_cutoff_retry_reuses"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_transition_failure_retains_global_and_league_cutoff_retry_reuses"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "RR7",
+      "summary": "Retry model",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "rollover_service.py",
+        "app.py",
+        "db/post-baseline/0007_nc_02e_atomic_rollover.sql",
+        "db/post-baseline/0009_nc_02f2_league_history.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_transition_failure_retains_global_and_league_cutoff_retry_reuses"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_transition_failure_retains_global_and_league_cutoff_retry_reuses"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "RR8",
+      "summary": "Repeated successful rollover",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "rollover_service.py",
+        "app.py",
+        "db/post-baseline/0007_nc_02e_atomic_rollover.sql",
+        "db/post-baseline/0009_nc_02f2_league_history.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_full_success_history_readonly_new_refresh_and_repeat"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_full_success_history_readonly_new_refresh_and_repeat"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "RR9",
+      "summary": "One rollover at a time",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "rollover_service.py",
+        "app.py",
+        "db/post-baseline/0007_nc_02e_atomic_rollover.sql",
+        "db/post-baseline/0009_nc_02f2_league_history.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_calculation_failure_is_not_zero_and_rpc_failure_sanitized",
+        "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_full_success_history_readonly_new_refresh_and_repeat",
+        "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_preconditions_authorization_and_complete_master_gate",
+        "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_zero_competitors_requires_complete_master_and_reuses_snapshot"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_calculation_failure_is_not_zero_and_rpc_failure_sanitized",
+          "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_full_success_history_readonly_new_refresh_and_repeat",
+          "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_preconditions_authorization_and_complete_master_gate",
+          "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_zero_competitors_requires_complete_master_and_reuses_snapshot"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "RR10",
+      "summary": "Immediate next season only",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "rollover_service.py",
+        "app.py",
+        "db/post-baseline/0007_nc_02e_atomic_rollover.sql",
+        "db/post-baseline/0009_nc_02f2_league_history.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_preconditions_authorization_and_complete_master_gate"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_preconditions_authorization_and_complete_master_gate"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "RR11",
+      "summary": "Preserve saved historical bracket experience",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "rollover_service.py",
+        "app.py",
+        "db/post-baseline/0007_nc_02e_atomic_rollover.sql",
+        "db/post-baseline/0009_nc_02f2_league_history.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_full_success_history_readonly_new_refresh_and_repeat"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_full_success_history_readonly_new_refresh_and_repeat"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "RR12",
+      "summary": "HARD DELETE UNSAVED SOURCE-SEASON BRACKETS",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "rollover_service.py",
+        "app.py",
+        "db/post-baseline/0007_nc_02e_atomic_rollover.sql",
+        "db/post-baseline/0009_nc_02f2_league_history.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_full_success_history_readonly_new_refresh_and_repeat"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_full_success_history_readonly_new_refresh_and_repeat"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "RR13",
+      "summary": "Current score cleanup",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "rollover_service.py",
+        "app.py",
+        "db/post-baseline/0007_nc_02e_atomic_rollover.sql",
+        "db/post-baseline/0009_nc_02f2_league_history.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_full_success_history_readonly_new_refresh_and_repeat"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_full_success_history_readonly_new_refresh_and_repeat"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "RR14",
+      "summary": "Legacy history compatibility",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "rollover_service.py",
+        "app.py",
+        "db/post-baseline/0007_nc_02e_atomic_rollover.sql",
+        "db/post-baseline/0009_nc_02f2_league_history.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_calculation_failure_is_not_zero_and_rpc_failure_sanitized",
+        "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_full_success_history_readonly_new_refresh_and_repeat",
+        "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_preconditions_authorization_and_complete_master_gate",
+        "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_zero_competitors_requires_complete_master_and_reuses_snapshot"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_calculation_failure_is_not_zero_and_rpc_failure_sanitized",
+          "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_full_success_history_readonly_new_refresh_and_repeat",
+          "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_preconditions_authorization_and_complete_master_gate",
+          "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_zero_competitors_requires_complete_master_and_reuses_snapshot"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "RR15",
+      "summary": "Durable rollover audit",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "rollover_service.py",
+        "app.py",
+        "db/post-baseline/0007_nc_02e_atomic_rollover.sql",
+        "db/post-baseline/0009_nc_02f2_league_history.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_calculation_failure_is_not_zero_and_rpc_failure_sanitized",
+        "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_full_success_history_readonly_new_refresh_and_repeat",
+        "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_preconditions_authorization_and_complete_master_gate",
+        "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_zero_competitors_requires_complete_master_and_reuses_snapshot"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_calculation_failure_is_not_zero_and_rpc_failure_sanitized",
+          "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_full_success_history_readonly_new_refresh_and_repeat",
+          "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_preconditions_authorization_and_complete_master_gate",
+          "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_zero_competitors_requires_complete_master_and_reuses_snapshot"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "RR16",
+      "summary": "Safe operational errors",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "rollover_service.py",
+        "app.py",
+        "db/post-baseline/0007_nc_02e_atomic_rollover.sql",
+        "db/post-baseline/0009_nc_02f2_league_history.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_calculation_failure_is_not_zero_and_rpc_failure_sanitized"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_calculation_failure_is_not_zero_and_rpc_failure_sanitized"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "L1",
+      "summary": "LEAGUES PERSIST ACROSS SEASONS",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "league_service.py",
+        "league_history_service.py",
+        "app.py",
+        "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+        "db/post-baseline/0009_nc_02f2_league_history.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_real_rollover_league_owner_membership_persistence"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_real_rollover_league_owner_membership_persistence"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "L2",
+      "summary": "CREATE LEAGUES AT ANY TIME",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "league_service.py",
+        "league_history_service.py",
+        "app.py",
+        "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+        "db/post-baseline/0009_nc_02f2_league_history.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_create_join_all_timing_windows_and_idempotency"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_create_join_all_timing_windows_and_idempotency"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "L3",
+      "summary": "JOIN LEAGUES AT ANY TIME",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "league_service.py",
+        "league_history_service.py",
+        "app.py",
+        "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+        "db/post-baseline/0009_nc_02f2_league_history.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_create_join_all_timing_windows_and_idempotency"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_create_join_all_timing_windows_and_idempotency"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "L4",
+      "summary": "EXACTLY ONE OWNER",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "league_service.py",
+        "league_history_service.py",
+        "app.py",
+        "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+        "db/post-baseline/0009_nc_02f2_league_history.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_owner_transfer_leave_and_rejections"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_owner_transfer_leave_and_rejections"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "L5",
+      "summary": "OWNER LEAVING",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "league_service.py",
+        "league_history_service.py",
+        "app.py",
+        "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+        "db/post-baseline/0009_nc_02f2_league_history.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_owner_transfer_leave_and_rejections"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_owner_transfer_leave_and_rejections"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "L6",
+      "summary": "EXPLICIT OWNERSHIP TRANSFER",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "league_service.py",
+        "league_history_service.py",
+        "app.py",
+        "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+        "db/post-baseline/0009_nc_02f2_league_history.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_owner_transfer_leave_and_rejections"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_owner_transfer_leave_and_rejections"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "L7",
+      "summary": "MEMBER LEAVING",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "league_service.py",
+        "league_history_service.py",
+        "app.py",
+        "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+        "db/post-baseline/0009_nc_02f2_league_history.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_leave_kick_delete_keep_competition_and_scope_live"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_leave_kick_delete_keep_competition_and_scope_live"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "L8",
+      "summary": "OWNER REMOVING MEMBERS",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "league_service.py",
+        "league_history_service.py",
+        "app.py",
+        "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+        "db/post-baseline/0009_nc_02f2_league_history.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_admin_and_nonowner_no_owner_capabilities",
+        "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_leave_kick_delete_keep_competition_and_scope_live"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_admin_and_nonowner_no_owner_capabilities",
+          "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_leave_kick_delete_keep_competition_and_scope_live"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "L9",
+      "summary": "ADMIN HAS NO ROUTINE LEAGUE-OWNER POWERS",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "league_service.py",
+        "league_history_service.py",
+        "app.py",
+        "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+        "db/post-baseline/0009_nc_02f2_league_history.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_admin_and_nonowner_no_owner_capabilities"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_admin_and_nonowner_no_owner_capabilities"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "L10",
+      "summary": "OWNER-ONLY LEAGUE DELETION",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "league_service.py",
+        "league_history_service.py",
+        "app.py",
+        "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+        "db/post-baseline/0009_nc_02f2_league_history.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_delete_cascade_preserves_global_and_brackets",
+        "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_leave_kick_delete_keep_competition_and_scope_live"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_delete_cascade_preserves_global_and_brackets",
+          "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_leave_kick_delete_keep_competition_and_scope_live"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "L11",
+      "summary": "PUBLIC VS PRIVATE",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "league_service.py",
+        "league_history_service.py",
+        "app.py",
+        "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+        "db/post-baseline/0009_nc_02f2_league_history.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_password_privacy_switches_members_and_long_passwords"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_password_privacy_switches_members_and_long_passwords"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "L12",
+      "summary": "OWNER MAY CHANGE PRIVACY / PASSWORD",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "league_service.py",
+        "league_history_service.py",
+        "app.py",
+        "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+        "db/post-baseline/0009_nc_02f2_league_history.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_password_privacy_switches_members_and_long_passwords"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_password_privacy_switches_members_and_long_passwords"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "L13",
+      "summary": "PASSWORD HANDLING",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "league_service.py",
+        "league_history_service.py",
+        "app.py",
+        "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+        "db/post-baseline/0009_nc_02f2_league_history.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_password_privacy_switches_members_and_long_passwords"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_password_privacy_switches_members_and_long_passwords"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "L14",
+      "summary": "LEAGUE RENAME",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "league_service.py",
+        "league_history_service.py",
+        "app.py",
+        "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+        "db/post-baseline/0009_nc_02f2_league_history.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_leave_join_kick_transfer_rename_after_cutoff_never_rewrite",
+        "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_names_uniqueness_normalization_reuse_and_validation"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_leave_join_kick_transfer_rename_after_cutoff_never_rewrite",
+          "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_names_uniqueness_normalization_reuse_and_validation"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "L15",
+      "summary": "GLOBAL CASE-INSENSITIVE TRIMMED NAME UNIQUENESS",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "league_service.py",
+        "league_history_service.py",
+        "app.py",
+        "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+        "db/post-baseline/0009_nc_02f2_league_history.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_names_uniqueness_normalization_reuse_and_validation"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_names_uniqueness_normalization_reuse_and_validation"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "L16",
+      "summary": "UNIQUE MEMBERSHIP",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "league_service.py",
+        "league_history_service.py",
+        "app.py",
+        "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+        "db/post-baseline/0009_nc_02f2_league_history.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_create_join_all_timing_windows_and_idempotency"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_create_join_all_timing_windows_and_idempotency"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "L17",
+      "summary": "PUBLIC DISCOVERY",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "league_service.py",
+        "league_history_service.py",
+        "app.py",
+        "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+        "db/post-baseline/0009_nc_02f2_league_history.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_discovery_minimal_and_private_member_access"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_discovery_minimal_and_private_member_access"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "L18",
+      "summary": "PRIVATE DISCOVERY",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "league_service.py",
+        "league_history_service.py",
+        "app.py",
+        "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+        "db/post-baseline/0009_nc_02f2_league_history.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_discovery_minimal_and_private_member_access"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_discovery_minimal_and_private_member_access"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "L19",
+      "summary": "SERVER-SCOPED LEAGUE LEADERBOARD",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "league_service.py",
+        "league_history_service.py",
+        "app.py",
+        "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+        "db/post-baseline/0009_nc_02f2_league_history.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_leave_kick_delete_keep_competition_and_scope_live"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_league_lifecycle.LeagueLifecycleAcceptance.test_f1_leave_kick_delete_keep_competition_and_scope_live"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "L20A",
+      "summary": "ONLY ELIGIBLE SUBMITTED MEMBERS RECEIVE ROWS",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "league_service.py",
+        "league_history_service.py",
+        "app.py",
+        "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+        "db/post-baseline/0009_nc_02f2_league_history.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_eligible_only_A_D_no_placeholder_and_empty_season_omission"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_eligible_only_A_D_no_placeholder_and_empty_season_omission"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "L20B",
+      "summary": "CURRENT PRIVACY CONTROLS ALL HISTORY",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "league_service.py",
+        "league_history_service.py",
+        "app.py",
+        "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+        "db/post-baseline/0009_nc_02f2_league_history.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_current_private_membership_and_privacy_switch"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_current_private_membership_and_privacy_switch"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "L21A",
+      "summary": "FINAL ROLLOVER CUTOFF",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "league_service.py",
+        "league_history_service.py",
+        "app.py",
+        "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+        "db/post-baseline/0009_nc_02f2_league_history.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_leave_before_cutoff_excluded",
+        "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_transition_failure_retains_global_and_league_cutoff_retry_reuses"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_leave_before_cutoff_excluded",
+          "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_transition_failure_retains_global_and_league_cutoff_retry_reuses"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "L20",
+      "summary": "HISTORICAL LEAGUE SEASONS",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "league_service.py",
+        "league_history_service.py",
+        "app.py",
+        "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+        "db/post-baseline/0009_nc_02f2_league_history.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_eligible_only_A_D_no_placeholder_and_empty_season_omission"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_eligible_only_A_D_no_placeholder_and_empty_season_omission"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "L21",
+      "summary": "HISTORICAL LEAGUE COMPETITION MUST NOT FOLLOW TODAY'S MEMBERSHIP",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "league_service.py",
+        "league_history_service.py",
+        "app.py",
+        "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+        "db/post-baseline/0009_nc_02f2_league_history.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_leave_join_kick_transfer_rename_after_cutoff_never_rewrite"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_leave_join_kick_transfer_rename_after_cutoff_never_rewrite"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "L22",
+      "summary": "DELETING A LEAGUE DELETES LEAGUE-SPECIFIC HISTORY",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "league_service.py",
+        "league_history_service.py",
+        "app.py",
+        "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+        "db/post-baseline/0009_nc_02f2_league_history.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_delete_cascade_preserves_global_and_brackets"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_league_history.LeagueHistoryAcceptance.test_f2_delete_cascade_preserves_global_and_brackets"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "A1",
+      "summary": "MALFORMED REGISTRATION MUST NEVER 500",
+      "classification": "PASS",
+      "previous_classification": "PASS",
+      "implementation_locations": [
+        "app.py",
+        "identity_auth_service.py",
+        "password_reset_service.py",
+        "jwt_configuration.py",
+        "db/post-baseline/0010_nc_02g1_identity_auth.sql",
+        "db/post-baseline/0011_nc_02g2_password_reset_sessions.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_identity_auth_g2.IdentityAuthAcceptance.test_request_shapes_and_field_types"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_identity_auth_g2.IdentityAuthAcceptance.test_request_shapes_and_field_types"
+        ],
+        "uncovered": false
+      },
+      "notes": "Revalidated preserved PASS after R1/R2."
+    },
+    {
+      "requirement_id": "A2",
+      "summary": "USERNAME NORMALIZATION AND UNIQUENESS",
+      "classification": "PASS",
+      "previous_classification": "PASS",
+      "implementation_locations": [
+        "app.py",
+        "identity_auth_service.py",
+        "password_reset_service.py",
+        "jwt_configuration.py",
+        "db/post-baseline/0010_nc_02g1_identity_auth.sql",
+        "db/post-baseline/0011_nc_02g2_password_reset_sessions.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_identity_auth_g2.IdentityAuthAcceptance.test_identity_normalization_display_and_conflicts"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_identity_auth_g2.IdentityAuthAcceptance.test_identity_normalization_display_and_conflicts"
+        ],
+        "uncovered": false
+      },
+      "notes": "Revalidated preserved PASS after R1/R2."
+    },
+    {
+      "requirement_id": "A3",
+      "summary": "EMAIL NORMALIZATION AND UNIQUENESS",
+      "classification": "PASS",
+      "previous_classification": "PASS",
+      "implementation_locations": [
+        "app.py",
+        "identity_auth_service.py",
+        "password_reset_service.py",
+        "jwt_configuration.py",
+        "db/post-baseline/0010_nc_02g1_identity_auth.sql",
+        "db/post-baseline/0011_nc_02g2_password_reset_sessions.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_identity_auth_g2.IdentityAuthAcceptance.test_identity_normalization_display_and_conflicts",
+        "nc02g2_identity_auth_g2.IdentityAuthAcceptance.test_unicode_email_uses_database_normalization"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_identity_auth_g2.IdentityAuthAcceptance.test_identity_normalization_display_and_conflicts",
+          "nc02g2_identity_auth_g2.IdentityAuthAcceptance.test_unicode_email_uses_database_normalization"
+        ],
+        "uncovered": false
+      },
+      "notes": "Revalidated preserved PASS after R1/R2."
+    },
+    {
+      "requirement_id": "A4",
+      "summary": "PASSWORDS ARE EXACT STRINGS",
+      "classification": "PASS",
+      "previous_classification": "PASS",
+      "implementation_locations": [
+        "app.py",
+        "identity_auth_service.py",
+        "password_reset_service.py",
+        "jwt_configuration.py",
+        "db/post-baseline/0010_nc_02g1_identity_auth.sql",
+        "db/post-baseline/0011_nc_02g2_password_reset_sessions.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_password_reset.PasswordResetAcceptance.test_password_exactness_unicode_long_and_boundaries",
+        "nc02g2_identity_auth_g2.IdentityAuthAcceptance.test_outer_password_whitespace_is_exact"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_password_reset.PasswordResetAcceptance.test_password_exactness_unicode_long_and_boundaries",
+          "nc02g2_identity_auth_g2.IdentityAuthAcceptance.test_outer_password_whitespace_is_exact"
+        ],
+        "uncovered": false
+      },
+      "notes": "Revalidated preserved PASS after R1/R2."
+    },
+    {
+      "requirement_id": "A5",
+      "summary": "PASSWORD POLICY",
+      "classification": "PASS",
+      "previous_classification": "PASS",
+      "implementation_locations": [
+        "app.py",
+        "identity_auth_service.py",
+        "password_reset_service.py",
+        "jwt_configuration.py",
+        "db/post-baseline/0010_nc_02g1_identity_auth.sql",
+        "db/post-baseline/0011_nc_02g2_password_reset_sessions.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_identity_auth_g2.IdentityAuthAcceptance.test_long_shared_prefix_never_authenticates",
+        "nc02g2_identity_auth_g2.IdentityAuthAcceptance.test_password_boundaries_and_no_complexity"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_identity_auth_g2.IdentityAuthAcceptance.test_long_shared_prefix_never_authenticates",
+          "nc02g2_identity_auth_g2.IdentityAuthAcceptance.test_password_boundaries_and_no_complexity"
+        ],
+        "uncovered": false
+      },
+      "notes": "Revalidated preserved PASS after R1/R2."
+    },
+    {
+      "requirement_id": "A6",
+      "summary": "ATOMIC REGISTRATION / DB UNIQUENESS",
+      "classification": "PASS",
+      "previous_classification": "PASS",
+      "implementation_locations": [
+        "app.py",
+        "identity_auth_service.py",
+        "password_reset_service.py",
+        "jwt_configuration.py",
+        "db/post-baseline/0010_nc_02g1_identity_auth.sql",
+        "db/post-baseline/0011_nc_02g2_password_reset_sessions.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_identity_auth_g2.IdentityAuthAcceptance.test_identity_normalization_display_and_conflicts"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_identity_auth_g2.IdentityAuthAcceptance.test_identity_normalization_display_and_conflicts"
+        ],
+        "uncovered": false
+      },
+      "notes": "Revalidated preserved PASS after R1/R2."
+    },
+    {
+      "requirement_id": "A7",
+      "summary": "GENERIC LOGIN FAILURE",
+      "classification": "PASS",
+      "previous_classification": "PASS",
+      "implementation_locations": [
+        "app.py",
+        "identity_auth_service.py",
+        "password_reset_service.py",
+        "jwt_configuration.py",
+        "db/post-baseline/0010_nc_02g1_identity_auth.sql",
+        "db/post-baseline/0011_nc_02g2_password_reset_sessions.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_identity_auth_g2.IdentityAuthAcceptance.test_legacy_and_generic_login_and_jwt"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_identity_auth_g2.IdentityAuthAcceptance.test_legacy_and_generic_login_and_jwt"
+        ],
+        "uncovered": false
+      },
+      "notes": "Revalidated preserved PASS after R1/R2."
+    },
+    {
+      "requirement_id": "A17",
+      "summary": "ACCOUNT EMAIL PRIVACY",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "app.py",
+        "identity_auth_service.py",
+        "password_reset_service.py",
+        "jwt_configuration.py",
+        "db/post-baseline/0010_nc_02g1_identity_auth.sql",
+        "db/post-baseline/0011_nc_02g2_password_reset_sessions.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_auth_access.CurrentAuthBehavior.current_behavior__auth__cross_user_saved_owner_display",
+        "nc02g2_bracket_access.CurrentBracketBehavior.current_behavior__bracket__email_serialization"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_auth_access.CurrentAuthBehavior.current_behavior__auth__cross_user_saved_owner_display",
+          "nc02g2_bracket_access.CurrentBracketBehavior.current_behavior__bracket__email_serialization"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "A18",
+      "summary": "ADMIN HAS NO CREDENTIAL/AUTH BYPASS",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "app.py",
+        "identity_auth_service.py",
+        "password_reset_service.py",
+        "jwt_configuration.py",
+        "db/post-baseline/0010_nc_02g1_identity_auth.sql",
+        "db/post-baseline/0011_nc_02g2_password_reset_sessions.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_password_reset.PasswordResetAcceptance.test_jwt_bad_versions_missing_subject_and_admin_nonbypass",
+        "nc02g2_auth_access.CurrentAuthBehavior.current_behavior__auth__admin_claim_db_recheck"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_password_reset.PasswordResetAcceptance.test_jwt_bad_versions_missing_subject_and_admin_nonbypass",
+          "nc02g2_auth_access.CurrentAuthBehavior.current_behavior__auth__admin_claim_db_recheck"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "A19",
+      "summary": "NO USERNAME/EMAIL EDITING IN THIS PHASE",
+      "classification": "PASS",
+      "previous_classification": "PASS",
+      "implementation_locations": [
+        "app.py",
+        "identity_auth_service.py",
+        "password_reset_service.py",
+        "jwt_configuration.py",
+        "db/post-baseline/0010_nc_02g1_identity_auth.sql",
+        "db/post-baseline/0011_nc_02g2_password_reset_sessions.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_auth_static.CurrentStaticAuthBehavior.current_behavior__auth__account_route_absence"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_auth_static.CurrentStaticAuthBehavior.current_behavior__auth__account_route_absence"
+        ],
+        "uncovered": false
+      },
+      "notes": "Revalidated preserved PASS after R1/R2."
+    },
+    {
+      "requirement_id": "A20",
+      "summary": "NO NEW MANDATORY EMAIL VERIFICATION",
+      "classification": "PASS",
+      "previous_classification": "PASS",
+      "implementation_locations": [
+        "app.py",
+        "identity_auth_service.py",
+        "password_reset_service.py",
+        "jwt_configuration.py",
+        "db/post-baseline/0010_nc_02g1_identity_auth.sql",
+        "db/post-baseline/0011_nc_02g2_password_reset_sessions.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_identity_auth_g2.IdentityAuthAcceptance.test_legacy_and_generic_login_and_jwt",
+        "nc02g2_auth_access.CurrentAuthBehavior.current_behavior__auth__valid_registration"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_identity_auth_g2.IdentityAuthAcceptance.test_legacy_and_generic_login_and_jwt",
+          "nc02g2_auth_access.CurrentAuthBehavior.current_behavior__auth__valid_registration"
+        ],
+        "uncovered": false
+      },
+      "notes": "Revalidated preserved PASS after R1/R2."
+    },
+    {
+      "requirement_id": "A8",
+      "summary": "RESET REQUEST MUST NOT ENUMERATE ACCOUNTS",
+      "classification": "PASS",
+      "previous_classification": "PASS",
+      "implementation_locations": [
+        "app.py",
+        "identity_auth_service.py",
+        "password_reset_service.py",
+        "jwt_configuration.py",
+        "db/post-baseline/0010_nc_02g1_identity_auth.sql",
+        "db/post-baseline/0011_nc_02g2_password_reset_sessions.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_password_reset.PasswordResetAcceptance.test_delivery_failure_conditional_cleanup_and_generic_response",
+        "nc02g2_password_reset.PasswordResetAcceptance.test_enumeration_digest_entropy_capture_ttl"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_password_reset.PasswordResetAcceptance.test_delivery_failure_conditional_cleanup_and_generic_response",
+          "nc02g2_password_reset.PasswordResetAcceptance.test_enumeration_digest_entropy_capture_ttl"
+        ],
+        "uncovered": false
+      },
+      "notes": "Revalidated preserved PASS after R1/R2."
+    },
+    {
+      "requirement_id": "A9",
+      "summary": "RESET TOKENS",
+      "classification": "PASS",
+      "previous_classification": "PASS",
+      "implementation_locations": [
+        "app.py",
+        "identity_auth_service.py",
+        "password_reset_service.py",
+        "jwt_configuration.py",
+        "db/post-baseline/0010_nc_02g1_identity_auth.sql",
+        "db/post-baseline/0011_nc_02g2_password_reset_sessions.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_password_reset.PasswordResetAcceptance.test_enumeration_digest_entropy_capture_ttl",
+        "nc02g2_password_reset.PasswordResetAcceptance.test_expired_invalid_and_malformed"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_password_reset.PasswordResetAcceptance.test_enumeration_digest_entropy_capture_ttl",
+          "nc02g2_password_reset.PasswordResetAcceptance.test_expired_invalid_and_malformed"
+        ],
+        "uncovered": false
+      },
+      "notes": "Revalidated preserved PASS after R1/R2."
+    },
+    {
+      "requirement_id": "A10",
+      "summary": "NEW RESET INVALIDATES PRIOR OUTSTANDING TOKENS",
+      "classification": "PASS",
+      "previous_classification": "PASS",
+      "implementation_locations": [
+        "app.py",
+        "identity_auth_service.py",
+        "password_reset_service.py",
+        "jwt_configuration.py",
+        "db/post-baseline/0010_nc_02g1_identity_auth.sql",
+        "db/post-baseline/0011_nc_02g2_password_reset_sessions.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_password_reset.PasswordResetAcceptance.test_supersession_success_replay_and_single_increment"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_password_reset.PasswordResetAcceptance.test_supersession_success_replay_and_single_increment"
+        ],
+        "uncovered": false
+      },
+      "notes": "Revalidated preserved PASS after R1/R2."
+    },
+    {
+      "requirement_id": "A11",
+      "summary": "SUCCESSFUL RESET INVALIDATES ALL RESET TOKENS",
+      "classification": "PASS",
+      "previous_classification": "PASS",
+      "implementation_locations": [
+        "app.py",
+        "identity_auth_service.py",
+        "password_reset_service.py",
+        "jwt_configuration.py",
+        "db/post-baseline/0010_nc_02g1_identity_auth.sql",
+        "db/post-baseline/0011_nc_02g2_password_reset_sessions.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_password_reset.PasswordResetAcceptance.test_supersession_success_replay_and_single_increment"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_password_reset.PasswordResetAcceptance.test_supersession_success_replay_and_single_increment"
+        ],
+        "uncovered": false
+      },
+      "notes": "Revalidated preserved PASS after R1/R2."
+    },
+    {
+      "requirement_id": "A12",
+      "summary": "PASSWORD RESET REVOKES EXISTING JWTs",
+      "classification": "PASS",
+      "previous_classification": "PASS",
+      "implementation_locations": [
+        "app.py",
+        "identity_auth_service.py",
+        "password_reset_service.py",
+        "jwt_configuration.py",
+        "db/post-baseline/0010_nc_02g1_identity_auth.sql",
+        "db/post-baseline/0011_nc_02g2_password_reset_sessions.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_password_reset.PasswordResetAcceptance.test_multidevice_and_legacy_revocation_new_login"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_password_reset.PasswordResetAcceptance.test_multidevice_and_legacy_revocation_new_login"
+        ],
+        "uncovered": false
+      },
+      "notes": "Revalidated preserved PASS after R1/R2."
+    },
+    {
+      "requirement_id": "A13",
+      "summary": "TOKEN/SESSION VERSIONING",
+      "classification": "PASS",
+      "previous_classification": "PASS",
+      "implementation_locations": [
+        "app.py",
+        "identity_auth_service.py",
+        "password_reset_service.py",
+        "jwt_configuration.py",
+        "db/post-baseline/0010_nc_02g1_identity_auth.sql",
+        "db/post-baseline/0011_nc_02g2_password_reset_sessions.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_password_reset.PasswordResetAcceptance.test_jwt_bad_versions_missing_subject_and_admin_nonbypass",
+        "nc02g2_password_reset.PasswordResetAcceptance.test_multidevice_and_legacy_revocation_new_login"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_password_reset.PasswordResetAcceptance.test_jwt_bad_versions_missing_subject_and_admin_nonbypass",
+          "nc02g2_password_reset.PasswordResetAcceptance.test_multidevice_and_legacy_revocation_new_login"
+        ],
+        "uncovered": false
+      },
+      "notes": "Revalidated preserved PASS after R1/R2."
+    },
+    {
+      "requirement_id": "A14",
+      "summary": "KEEP NORMAL JWT MODEL LIGHTWEIGHT",
+      "classification": "PASS",
+      "previous_classification": "PASS",
+      "implementation_locations": [
+        "app.py",
+        "identity_auth_service.py",
+        "password_reset_service.py",
+        "jwt_configuration.py",
+        "db/post-baseline/0010_nc_02g1_identity_auth.sql",
+        "db/post-baseline/0011_nc_02g2_password_reset_sessions.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_identity_auth_g2.IdentityAuthAcceptance.test_legacy_and_generic_login_and_jwt",
+        "nc02g2_auth_access.CurrentAuthBehavior.current_behavior__auth__login_metadata"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_identity_auth_g2.IdentityAuthAcceptance.test_legacy_and_generic_login_and_jwt",
+          "nc02g2_auth_access.CurrentAuthBehavior.current_behavior__auth__login_metadata"
+        ],
+        "uncovered": false
+      },
+      "notes": "Revalidated preserved PASS after R1/R2."
+    },
+    {
+      "requirement_id": "A15",
+      "summary": "RESET COMPLETION UI",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "app.py",
+        "identity_auth_service.py",
+        "password_reset_service.py",
+        "jwt_configuration.py",
+        "db/post-baseline/0010_nc_02g1_identity_auth.sql",
+        "db/post-baseline/0011_nc_02g2_password_reset_sessions.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_auth_static.CurrentStaticAuthBehavior.current_behavior__auth__frontend_reset_request_only"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_auth_static.CurrentStaticAuthBehavior.current_behavior__auth__frontend_reset_request_only"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "A16",
+      "summary": "RESET TOKEN SECRECY",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "app.py",
+        "identity_auth_service.py",
+        "password_reset_service.py",
+        "jwt_configuration.py",
+        "db/post-baseline/0010_nc_02g1_identity_auth.sql",
+        "db/post-baseline/0011_nc_02g2_password_reset_sessions.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_password_reset.PasswordResetAcceptance.test_enumeration_digest_entropy_capture_ttl",
+        "nc02g2_password_reset.PasswordResetAcceptance.test_expired_invalid_and_malformed"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_password_reset.PasswordResetAcceptance.test_enumeration_digest_entropy_capture_ttl",
+          "nc02g2_password_reset.PasswordResetAcceptance.test_expired_invalid_and_malformed"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten."
+    },
+    {
+      "requirement_id": "SC17",
+      "summary": "Zero-competitor final snapshot after successful canonical evaluation; failure must not masquerade as empty",
+      "classification": "PASS",
+      "previous_classification": "BLOCKED",
+      "implementation_locations": [
+        "scoring_engine.py",
+        "scoring_service.py",
+        "history_service.py",
+        "db/post-baseline/0005_nc_02d1_atomic_scores.sql",
+        "db/post-baseline/0006_nc_02d2_final_snapshots.sql"
+      ],
+      "evidence": [
+        "Current repaired source inspected against approved contract heading",
+        "db/records/nc_03_pass3_validation.json",
+        "db/records/nc_03_pass3_migration_proof.json",
+        "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_calculation_failure_is_not_zero_and_rpc_failure_sanitized",
+        "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_zero_competitors_requires_complete_master_and_reuses_snapshot"
+      ],
+      "automated_coverage": {
+        "classification": [
+          "automated",
+          "direct audit",
+          "static verifier"
+        ],
+        "fresh_case_ids": [
+          "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_calculation_failure_is_not_zero_and_rpc_failure_sanitized",
+          "nc02g2_rollover_atomic.AtomicRolloverAcceptance.test_e_zero_competitors_requires_complete_master_and_reuses_snapshot"
+        ],
+        "uncovered": false
+      },
+      "notes": "Previously blocked requirement evaluated in this pass against current source and fresh applicable cases; no historical failure rewritten. Canonical complete-master/recompute success establishes zero competitors; final zero-row header verified, reused without rewrite; calculation/source/publication failure cannot masquerade as zero."
+    }
+  ],
+  "coverage_advisories": [
+    "Automation is route/service/SQL/static/Node contract coverage, not a full browser E2E suite.",
+    "No production-hosting/provider/scheduler observation; those are NC-04 preflight dependencies.",
+    "No scale/load benchmark; static query review only."
+  ]
+}
