@@ -69,6 +69,17 @@ def startup_settings(settings):
     return dict(permit.settings)
 
 
+def startup_jwt_secret():
+    """Explicit ephemeral test injection, never an unguarded application default."""
+    permit = _ACTIVE
+    if permit is None or not permit._starting:
+        raise safety.SafetyError("Verified harness JWT startup context required.")
+    permit._require_lease()
+    if threading.get_ident() != permit._owner:
+        raise safety.SafetyError("Harness JWT startup identity mismatch.")
+    return permit._jwt_secret
+
+
 def require_harness_startup(target):
     permit = _ACTIVE
     if permit is None or not permit._starting:
@@ -141,6 +152,7 @@ class GuardedHarness:
         # Canonical season is designated by guarded fixture reset, never environment.
         self._owner = threading.get_ident()
         self._starting = False
+        self._jwt_secret = None
         self._ready = False
         self._closed = False
         self._admission = secrets.token_urlsafe(32)
@@ -199,6 +211,8 @@ class GuardedHarness:
                 raise safety.SafetyError(
                     "Existing application import is not a harness startup."
                 )
+            # Explicit synthetic fixture injection before auth configuration is read.
+            self._jwt_secret = secrets.token_urlsafe(48)
             self._starting = True
             module = importlib.import_module("app")
             self._starting = False
@@ -211,9 +225,6 @@ class GuardedHarness:
                 != self.target.supabase_origin
             ):
                 raise safety.SafetyError("Actual backend database identity mismatch.")
-            module.JWT_SECRET = secrets.token_urlsafe(
-                48
-            )  # In-memory test-only signing key.
             module.ENABLE_DEBUG_LOGS = False
             app = module.app
             self.stack.enter_context(patch.object(app.logger, "disabled", True))
@@ -1797,6 +1808,7 @@ class GuardedHarness:
             if self.lease is not None:
                 self.lease.close()
             self._tokens.clear()
+            self._jwt_secret = None
             self._admission = ""
             self._closed = True
             from email_transport import test_mailbox

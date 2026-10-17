@@ -20,6 +20,7 @@ from scripts.nc02c2_acceptance_metadata import mark_standings_acceptance
 from scripts.nc02c3_acceptance_metadata import mark_transition_acceptance
 from scripts.nc02d1_acceptance_metadata import mark_scoring_acceptance
 from scripts.nc02d2_acceptance_metadata import mark_history_acceptance
+from scripts.nc03r1_acceptance_metadata import mark_signing_config_acceptance
 
 
 class SanitizedResult(unittest.TextTestResult):
@@ -306,6 +307,7 @@ def main():
                 current_behavior="Original signing/expiry/default assertions preserved; password hashing now delegates to G1 shared hasher",
             )
             klass.current_behavior__auth__implementation_defaults = replacement
+            mark_signing_config_acceptance(klass)
             old_reset_ui = klass.current_behavior__auth__frontend_reset_request_only
 
             def completion_ui(self):

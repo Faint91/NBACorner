@@ -20,6 +20,7 @@ from flask import Flask, request, jsonify, make_response, send_from_directory, g
 from flask_cors import CORS
 from supabase import create_client
 from environment_safety import prepare_runtime_environment
+from jwt_configuration import runtime_jwt_secret
 from email_transport import deliver_email, build_reset_link
 from job_safety import guard_runtime_job
 from collections import defaultdict
@@ -46,7 +47,7 @@ prepare_runtime_environment()
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
-JWT_SECRET = os.getenv("JWT_SECRET", "dev_secret")
+JWT_SECRET = runtime_jwt_secret()
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 DISABLE_RATE_LIMITS = os.getenv("DISABLE_RATE_LIMITS", "0") == "1"
 STANDINGS_CRON_TOKEN = os.getenv("STANDINGS_CRON_TOKEN")

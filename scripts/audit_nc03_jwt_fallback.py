@@ -160,4 +160,12 @@ def run():
 
 
 if __name__ == "__main__":
-    print(json.dumps(run(), indent=2))
+    # Preserve the original vulnerable proof above and its committed evidence.
+    # The same command now exercises the repaired startup/forgery scenario.
+    from verify_nc03r1_jwt_config import run as verify_repaired_scenario
+
+    try:
+        print(json.dumps(verify_repaired_scenario(), indent=2))
+    except Exception:
+        print("NC-03R1 proof failed; sensitive diagnostics withheld", file=sys.stderr)
+        raise SystemExit(1) from None

@@ -1,0 +1,160 @@
+{
+  "phase": "NC-03R1",
+  "original_finding": "NC03-SEC-001",
+  "status": "REPAIRED LOCALLY / pending NC-03 re-audit",
+  "verified_at_utc": "2026-10-17T16:19:36.995396+00:00",
+  "starting_repositories": {
+    "backend": {
+      "head": "a0587529e2d1443d846e46850b6884a6cab16f36",
+      "branch": "main",
+      "clean": true
+    },
+    "frontend": {
+      "head": "4fa0e9fc11d49354e3da137ee43e9d1ddbc87357",
+      "branch": "main",
+      "clean": true
+    }
+  },
+  "root_cause": {
+    "configuration": "app.py read JWT_SECRET with a nonempty source default after prepare_runtime_environment; that environment guard did not validate signing configuration.",
+    "issuance": "app.py:generate_token",
+    "validation": "app.py:decode_token and require_auth",
+    "condition": "Absent runtime JWT_SECRET; real production configuration was not inspected."
+  },
+  "repair": {
+    "module": "jwt_configuration.py",
+    "runtime_entry": "app.py:JWT_SECRET = runtime_jwt_secret()",
+    "validation": "Non-string/missing/empty/whitespace-only rejected; minimum 32 characters; exact supplied value retained, no trimming/entropy estimate/key generation.",
+    "early_failure": "Before Supabase client creation, Flask app creation or serving auth traffic.",
+    "harness": "integration_harness.py:startup_jwt_secret; explicit ephemeral synthetic fixture injection before import, guarded by active exclusive lease, startup context and owner thread; cleared at cleanup. Ambient operational-key prohibition unchanged.",
+    "static_acceptance": "Original NC-01 fallback expectation preserved historically; current G2 runner uses narrow NC-03R1 metadata adapter."
+  },
+  "JR_requirements": {
+    "JR1": "PASS",
+    "JR2": "PASS",
+    "JR3": "PASS",
+    "JR4": "PASS",
+    "JR5": "PASS",
+    "JR6": "PASS",
+    "JR7": "PASS",
+    "JR8": "PASS",
+    "JR9": "PASS"
+  },
+  "offline_reproduction": {
+    "finding": "NC03-SEC-001",
+    "status": "REPAIRED LOCALLY / pending NC-03 re-audit",
+    "unsafe_startup_cases": {
+      "missing": "REJECTED_BEFORE_AUTH_OR_CLIENT_CREATION",
+      "empty": "REJECTED_BEFORE_AUTH_OR_CLIENT_CREATION",
+      "whitespace": "REJECTED_BEFORE_AUTH_OR_CLIENT_CREATION",
+      "too_short": "REJECTED_BEFORE_AUTH_OR_CLIENT_CREATION",
+      "known_source_fallback": "REJECTED_BEFORE_AUTH_OR_CLIENT_CREATION",
+      "placeholder_secret": "REJECTED_BEFORE_AUTH_OR_CLIENT_CREATION",
+      "placeholder_changeme": "REJECTED_BEFORE_AUTH_OR_CLIENT_CREATION"
+    },
+    "actual_current_route_statuses": {
+      "valid_explicit_key": 200,
+      "no_token": 401,
+      "forged_old_source_fallback": 401,
+      "wrong_key": 401,
+      "nonexistent_user": 401,
+      "malformed": 401,
+      "wrong_algorithm": 401,
+      "missing_expiry": 401,
+      "expired": 401,
+      "pre_g2_missing_av_version_zero": 200,
+      "revoked_av_after_version_increment": 401,
+      "legacy_after_version_increment": 401,
+      "new_av_after_version_increment": 200,
+      "existing_token_same_config": 200
+    },
+    "actual_generation_claims_and_seven_day_expiry_unchanged": true,
+    "explicit_config_preserved_exactly": true,
+    "minimum_characters": 32,
+    "database": "Synthetic in-memory user/version read double; live G1/G2 tested separately",
+    "production_contact": false,
+    "network_used": false,
+    "secret_or_token_values_emitted": false
+  },
+  "validation": {
+    "offline_safety_suite": {
+      "tests": 345,
+      "failures": 0,
+      "errors": 0,
+      "passed": true
+    },
+    "focused_live_auth": {
+      "tests": 25,
+      "failures": 0,
+      "errors": 0,
+      "passed": true,
+      "evidence": "db/records/nc_03r1_auth_validation.json"
+    },
+    "schema_current_and_fixture_marker": "PASS; existing enrolled local schema and marker verification only; no fresh migration DB necessary because schema/migrations unchanged.",
+    "black": "PASS on all changed/new Python modules other than legacy app.py; its two changed statements checked separately.",
+    "compilation": "PASS; compile in memory without bytecode files.",
+    "import_comparison": "One new app import: jwt_configuration.runtime_jwt_secret; zero removed imports. All 86 existing top-level application functions/classes AST-identical.",
+    "static_audit": "No active source JWT signing fallback or alternate default read; no frontend signing-secret configuration; no credential patterns in repair files. Runtime secrets not printed or included in evidence.",
+    "whitespace": "Checked on final staged diff with existing CRLF recognized.",
+    "full_domain_suite": "Not run: narrow config repair, environment_safety unchanged, actual guarded startup covered by focused live suite and full offline safety; full NC-03 not resumed."
+  },
+  "cleanup": {
+    "counts": {
+      "standings": 30,
+      "reset_rows": 0,
+      "advisory_locks": 0,
+      "canonical_users": 4,
+      "proof_databases": 0,
+      "rollover_audits": 0,
+      "all_auth_version_zero": true
+    },
+    "fixture": {
+      "identity": "PASS",
+      "marker": "PASS",
+      "email": "PASS",
+      "providers": "PASS",
+      "jobs": "PASS",
+      "fixture_reset": "PASS",
+      "harness": "UNMET",
+      "fixture_version": "nc-fixtures-v1",
+      "fixture_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "mutation_permitted": false
+    },
+    "readiness": {
+      "identity_verified": true,
+      "database_marker": "PASS",
+      "email": "PASS",
+      "providers": "PASS",
+      "external_credentials": "PASS",
+      "jobs": "PASS",
+      "jobs_enabled": false,
+      "fixture_state": "SEEDED",
+      "fixtures_reset": "PASS",
+      "integration_harness": "PASS",
+      "mutation_permitted": false,
+      "harness_state": "AVAILABLE_GUARDED",
+      "harness_scoped_mutation_permitted": false
+    }
+  },
+  "preserved": {
+    "PyJWT": true,
+    "JWT_algorithm_and_claim_semantics": true,
+    "seven_day_expiry": true,
+    "auth_version_and_reset_revocation": true,
+    "login_response_and_token_storage": true,
+    "database_architecture": true,
+    "frontend": true,
+    "migrations_and_schema": true,
+    "original_nc03_evidence_and_118_unverified_requirements": true,
+    "original_reproducer_function": true
+  },
+  "production": {
+    "contacted": false,
+    "deployed": false,
+    "key_generated_or_rotated": false,
+    "configuration_inspected": false,
+    "prerequisite": "Before separately authorized preflight/deployment, confirm explicit valid backend JWT_SECRET. Same valid configured key preserves signatures; reliance on removed fallback or any sub-32-character key would intentionally block startup until valid configuration is supplied. No production state is assumed."
+  },
+  "NC_03_status": "Historical FAIL unchanged; re-audit pending, all 118 product requirements remain unverified.",
+  "next_step": "Resume NC-03 consolidated compliance audit from repaired backend HEAD only on explicit instruction; do not begin automatically."
+}
