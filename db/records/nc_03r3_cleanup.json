@@ -1,0 +1,42 @@
+{
+  "phase": "NC-03R3",
+  "verified_utc": "2026-10-17T22:07:48.792330+00:00",
+  "marker_state": "SEEDED",
+  "fixture": {
+    "identity": "PASS",
+    "marker": "PASS",
+    "email": "PASS",
+    "providers": "PASS",
+    "jobs": "PASS",
+    "fixture_reset": "PASS",
+    "harness": "UNMET",
+    "fixture_version": "nc-fixtures-v1",
+    "fixture_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+    "mutation_permitted": false
+  },
+  "readiness": {
+    "identity_verified": true,
+    "database_marker": "PASS",
+    "email": "PASS",
+    "providers": "PASS",
+    "external_credentials": "PASS",
+    "jobs": "PASS",
+    "jobs_enabled": false,
+    "fixture_state": "SEEDED",
+    "fixtures_reset": "PASS",
+    "integration_harness": "PASS",
+    "mutation_permitted": false,
+    "harness_state": "AVAILABLE_GUARDED",
+    "harness_scoped_mutation_permitted": false
+  },
+  "counts": {
+    "users": 4,
+    "reset_rows": 0,
+    "advisory_locks": 0,
+    "proof_databases": 0,
+    "nonzero_auth_versions": 0
+  },
+  "flask_stopped": true,
+  "mailbox_empty": true,
+  "production_contact": false
+}

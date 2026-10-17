@@ -1,0 +1,20 @@
+{
+  "finding": "NC04A-CODE-001",
+  "status": "REPAIRED LOCALLY / pending NC-04A re-verification",
+  "configuration_variable": "FRONTEND_ORIGIN",
+  "synthetic_config_check": {
+    "frontend_origin_present": true,
+    "frontend_origin_valid": true,
+    "api_origin_valid": true,
+    "frontend_distinct_from_api": true,
+    "route": "/reset-password",
+    "token_location": "query",
+    "token_parameter": "token",
+    "routing_contract_valid": true
+  },
+  "backend_reset_UI_or_redirect_added": false,
+  "frontend_route_unchanged": true,
+  "missing_or_API_origin_blocks_preflight": true,
+  "production_contact": false,
+  "no_tokens_or_full_reset_URLs_recorded": true
+}

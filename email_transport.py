@@ -3,7 +3,7 @@
 import os
 from dataclasses import dataclass
 from threading import Lock
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlsplit, urlunsplit
 
 from environment_safety import (
     SafetyError,
@@ -97,7 +97,10 @@ def runtime_email_settings():
         return load_test_config(filename)
     if identity not in {None, "production"}:
         raise SafetyError("Unrecognized email environment identity.")
-    return {"NBA_CORNER_ENV": identity}
+    return {
+        "NBA_CORNER_ENV": identity,
+        "FRONTEND_ORIGIN": os.environ.get("FRONTEND_ORIGIN"),
+    }
 
 
 def deliver_email(production_sender, recipient, subject, body):
@@ -106,21 +109,70 @@ def deliver_email(production_sender, recipient, subject, body):
     )
 
 
+def frontend_reset_origin(settings):
+    """Validate the explicit public frontend origin; never infer it from API config."""
+    value = settings.get("FRONTEND_ORIGIN")
+    message = "Frontend reset origin is unavailable or invalid."
+    if (
+        not isinstance(value, str)
+        or not value
+        or value != value.strip()
+        or any(c.isspace() or ord(c) < 32 for c in value)
+        or any(c in value for c in "\\\"'<>`")
+    ):
+        raise SafetyError(message)
+    try:
+        parsed = urlsplit(value)
+        host = parsed.hostname
+        port = parsed.port
+        if (
+            parsed.scheme != "https"
+            or not host
+            or parsed.username is not None
+            or parsed.password is not None
+            or "%" in parsed.netloc
+            or parsed.netloc.endswith(":")
+            or parsed.path not in {"", "/"}
+            or parsed.query
+            or parsed.fragment
+            or "?" in value
+            or "#" in value
+            or port == 0
+        ):
+            raise ValueError()
+        ascii_host = host.encode("idna").decode("ascii").rstrip(".")
+        if ":" not in ascii_host and any(
+            not label
+            or label.startswith("-")
+            or label.endswith("-")
+            or not all(c.isascii() and (c.isalnum() or c == "-") for c in label)
+            for label in ascii_host.split(".")
+        ):
+            raise ValueError()
+        # This is an origin, not a configurable route or arbitrary URL template.
+        return urlunsplit((parsed.scheme, parsed.netloc, "", "", ""))
+    except (ValueError, UnicodeError):
+        raise SafetyError(message) from None
+
+
 def reset_link_for_settings(token, settings, enrollments=None, ambient=None):
     if settings.get("NBA_CORNER_ENV") in {None, "production"}:
         if settings.get("NBA_CORNER_TEST_CONFIG") is not None:
             raise SafetyError("Production reset link cannot use test configuration.")
-        # Preserve exact effective production URL/string construction.
-        return f"https://nbacorner.onrender.com/reset-password?token={token}"
-    if settings.get("NBA_CORNER_ENV") != "test":
-        raise SafetyError("Unrecognized reset-link environment identity.")
-    target = validate_test_target(
-        settings,
-        load_enrollments() if enrollments is None else enrollments,
-        identity_only=True,
+        origin = frontend_reset_origin(settings)
+    else:
+        if settings.get("NBA_CORNER_ENV") != "test":
+            raise SafetyError("Unrecognized reset-link environment identity.")
+        target = validate_test_target(
+            settings,
+            load_enrollments() if enrollments is None else enrollments,
+            identity_only=True,
+        )
+        # Preserve the independently enrolled capture-only origin and all gates.
+        origin = validate_test_email_settings(settings, target, ambient=ambient)
+    return urlunsplit(
+        (*urlsplit(origin)[:2], "/reset-password", urlencode({"token": token}), "")
     )
-    origin = validate_test_email_settings(settings, target, ambient=ambient)
-    return origin + "/reset-password?" + urlencode({"token": token})
 
 
 def build_reset_link(token):

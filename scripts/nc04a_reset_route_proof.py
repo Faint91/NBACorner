@@ -13,7 +13,7 @@ sys.path.insert(0, str(ROOT))
 from email_transport import reset_link_for_settings
 
 
-def run():
+def original_finding_proof():
     tree = ast.parse((ROOT / "app.py").read_text(encoding="utf-8-sig"))
     rules = []
     for node in ast.walk(tree):
@@ -93,9 +93,17 @@ def run():
     )
 
 
+def run():
+    # The original finding record is immutable. Current re-verification must
+    # evaluate the repaired builder, not require its old defective behavior.
+    from scripts.verify_nc03r3_reset_routing import run as verify_current
+
+    return verify_current()
+
+
 if __name__ == "__main__":
     value = run()
-    (ROOT / "db/records/nc_04a_reset_route_finding.json").write_text(
+    (ROOT / "db/records/nc_03r3_routing_contract.json").write_text(
         json.dumps(value, indent=2) + "\n", encoding="utf-8", newline="\n"
     )
     print(json.dumps(value, indent=2))

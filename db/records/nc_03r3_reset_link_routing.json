@@ -1,0 +1,130 @@
+{
+  "phase": "NC-03R3",
+  "verified_at_utc": "2026-10-17T22:10:47.168156+00:00",
+  "status": "PASS \u2014 REPAIRED LOCALLY",
+  "finding": "NC04A-CODE-001",
+  "finding_status": "REPAIRED LOCALLY / pending NC-04A re-verification",
+  "starting_repositories": {
+    "backend": {
+      "branch": "main",
+      "head": "6f7fb5110cf5de95293b763ee61b86040c3ff7a3",
+      "tree": "clean"
+    },
+    "frontend": {
+      "branch": "main",
+      "head": "4fa0e9fc11d49354e3da137ee43e9d1ddbc87357",
+      "tree": "clean"
+    }
+  },
+  "original_finding_record": "db/records/nc_04a_reset_route_finding.json (unchanged)",
+  "root_cause": "Production link helper hardcoded the API origin; the separate frontend owns the reset UI.",
+  "configuration_inventory": {
+    "FRONTEND_ORIGIN": "Existing backend public frontend/CORS origin; reused as authoritative real-email destination",
+    "NBA_CORNER_RESET_LINK_ORIGIN": "Existing guarded capture-only setting; enrollment constraints unchanged",
+    "NBACORNER_BASE_URL": "Guarded test API origin, not a public frontend authority",
+    "BACKEND_BASE_URL": "API/tool reference only, never consulted by reset-link builder",
+    "VITE_API_URL": "Frontend API destination, not browser UI authority",
+    "new_variables": []
+  },
+  "frontend_contract": {
+    "route": "/reset-password",
+    "component": "src/pages/ResetPasswordPage.tsx",
+    "router": "src/main.tsx",
+    "token_location": "query",
+    "token_parameter": "token",
+    "bootstrap": "index.html capture/scrub before analytics; src/auth/resetLink.ts memory-only",
+    "completion_API": "POST /auth/reset-password",
+    "payload_fields": [
+      "token",
+      "new_password"
+    ],
+    "frontend_changes": false
+  },
+  "implementation": {
+    "file": "email_transport.py",
+    "single_builder": "build_reset_link -> reset_link_for_settings",
+    "origin_validator": "frontend_reset_origin",
+    "production_source": "Explicit runtime FRONTEND_ORIGIN only; no API/calendar/source-host fallback",
+    "HTTPS": "Required for production and legacy real-email mode",
+    "URL_joining": "urlsplit/urlunsplit with fixed frontend route; urlencode single token parameter",
+    "root_trailing_slash": "Accepted and normalized",
+    "invalid_config": "Generic client response; no email; existing G2 conditional cancellation removes only issued digest; no supplied URL/config detail emitted",
+    "validation": "Nonempty explicit string,HTTPS/hostname,valid optional port/root path;reject relative URL,HTTP production,credentials,query/fragment,markup/backslashes,whitespace and malformed host/port"
+  },
+  "guarded_test_separation": {
+    "unchanged_capture_origin_gate": true,
+    "test_mode_origin": "Explicit enrolled loopback capture stand-in; no production URL reuse",
+    "R3_flow": "Inject explicit synthetic HTTPS frontend configuration into actual production-mode helper; actual guarded API,local DB and capture transport unchanged",
+    "real_frontend_or_provider_contact": false
+  },
+  "preserved_semantics": [
+    "256-bit random reset verifier",
+    "digest-only DB storage",
+    "60-minute expiry",
+    "supersession",
+    "one-use/replay protection",
+    "atomic password/auth_version update",
+    "old session revocation",
+    "conditional delivery-failure cancellation",
+    "memory-only frontend token and pre-analytics URL cleanup"
+  ],
+  "tests": {
+    "offline_safety": {
+      "passed": 359
+    },
+    "new_offline_R3_methods": 9,
+    "negative_origin_subcases": 28,
+    "guarded_acceptance": {
+      "G2_reset": 8,
+      "G1_auth": 8,
+      "R3": 3,
+      "total": 19,
+      "failures": 0,
+      "errors": 0
+    },
+    "frontend_reset_Node": {
+      "passed": 6
+    },
+    "TypeScript_Vite": "PASS; existing browser-data and chunk-size warnings only",
+    "R1_JWT": "PASS; seven unsafe startup cases and current auth/version outcomes",
+    "R2_diagnostic": {
+      "passed_scenarios": 46
+    },
+    "Black": "PASS on7changed/newPython files",
+    "Python_compilation": 151,
+    "imports": "Only standard-library urllib.parse helpers added; no new dependencies",
+    "static_scope": "Only email settings/link functions changed; token/auth/guard/runtime API source and frontend byte-preserved",
+    "whitespace_and_secret_token_scan": "Reviewed before commit; no generated full verifier links or credentials in evidence"
+  },
+  "cleanup": {
+    "fixture_state": "SEEDED",
+    "version": "nc-fixtures-v1",
+    "checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+    "users": 4,
+    "auth_version": 0,
+    "reset_rows": 0,
+    "Flask_stopped": true,
+    "mailbox_empty": true,
+    "jobs_disabled": true,
+    "mutation_admission_disabled": true,
+    "proof_databases": 0,
+    "locks": 0
+  },
+  "preflight_tooling": {
+    "updated_entrypoint": "scripts/nc04a_reset_route_proof.py",
+    "current_check": "scripts/verify_nc03r3_reset_routing.py",
+    "capabilities": "Pure no-network config inspection;presence,HTTPS validity,origin distinction (including default ports),exact route/parameter contract; output only booleans/names/route",
+    "later_command": "python -B scripts/verify_nc03r3_reset_routing.py --check-runtime-config --api-origin <explicit-public-api-origin>",
+    "limitations": "Syntax/host distinction do not prove hosting/provider readiness. Real production configuration not read or changed in R3.",
+    "historical_NC04A_finding_and_evidence": "Preserved unchanged; former proof body retained for chronology,CLI now checks repaired contract and writes separate R3 record"
+  },
+  "production_contact": false,
+  "production_configuration_changed": false,
+  "deployments": 0,
+  "migrations": 0,
+  "real_emails": 0,
+  "backend_GET_reset_UI_added": false,
+  "NC03_status": "PASS \u2014 unchanged",
+  "NC04A_status": "BLOCKED \u2014 pending resumed read-only production re-verification and other prerequisites",
+  "next_step": "Resume NC-04A read-only production preflight from repaired local HEAD only after explicit instruction. Verify actual FRONTEND_ORIGIN targets intended frontend and differs from API;missing/invalid/API-origin setting is deployment NO-GO. No automatic resume/NC-04B."
+}

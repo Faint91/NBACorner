@@ -1,0 +1,39 @@
+{
+  "phase": "NC-03R3",
+  "python_files_compiled": 151,
+  "compile": "PASS",
+  "email_functions_changed": [
+    "runtime_email_settings",
+    "reset_link_for_settings"
+  ],
+  "email_functions_added": [
+    "frontend_reset_origin"
+  ],
+  "unchanged_email_helpers_and_classes": [
+    "BrevoTransport",
+    "CaptureMailbox",
+    "CapturedEmail",
+    "build_reset_link",
+    "deliver_email",
+    "select_email_transport",
+    "test_mailbox"
+  ],
+  "preserved_byte_identical_runtime_files": [
+    "app.py",
+    "password_reset_service.py",
+    "identity_auth_service.py",
+    "jwt_configuration.py",
+    "environment_safety.py",
+    "integration_harness.py",
+    "provider_transport.py",
+    "job_safety.py"
+  ],
+  "new_dependencies": false,
+  "import_change": "urllib.parse.urlsplit/urlunsplit standard library only",
+  "frontend_unchanged": true,
+  "active_reset_builders": 1,
+  "active_API_hostname_or_source_frontend_hostname_fallback": false,
+  "changed_file_secret_or_full_verifier_URL_findings": 0,
+  "negative_origin_subcases": 28,
+  "production_contact": false
+}

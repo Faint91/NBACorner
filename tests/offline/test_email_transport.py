@@ -260,10 +260,15 @@ class EmailTests(unittest.TestCase):
         self.assertEqual(output.getvalue(), "")
         self.assertEqual(log.getvalue(), "")
 
-    def test_production_reset_effective_url_unchanged(self):
-        self.assertTrue(
+    def test_production_reset_requires_explicit_frontend_origin(self):
+        with self.assertRaises(safety.SafetyError):
             email.reset_link_for_settings("synthetic-reset-token", {})
-            == "https://nbacorner.onrender.com/reset-password?token=synthetic-reset-token"
+        link = email.reset_link_for_settings(
+            "synthetic-reset-token",
+            {"FRONTEND_ORIGIN": "https://frontend.example.invalid"},
+        )
+        self.assertTrue(
+            link.startswith("https://frontend.example.invalid/reset-password?")
         )
 
     def test_test_runtime_requires_controlled_config(self):
