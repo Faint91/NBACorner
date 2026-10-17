@@ -3497,73 +3497,77 @@ def leaderboard_history_season(season_code):
 
 
 @app.get("/__debug/master-status")
+@require_auth
 def debug_master_status():
-    bid = request.args.get("bracket_id")
-    if not bid:
-        return jsonify({"error": "missing bracket_id"}), 400
-
-    b_res = (
-        supabase.table("brackets")
-        .select("id, season_id, deleted_at")
-        .eq("id", bid)
-        .single()
-        .execute()
-    )
-    b = getattr(b_res, "data", None) or {}
-    if not b:
-        return jsonify({"error": "bracket not found"}), 404
-
-    sid = b.get("season_id")
-    if not sid:
-        return jsonify({"error": "bracket has no season_id"}), 400
-
-    # Try select with master_bracket_id; if the column doesn't exist, return a helpful message.
+    """Operational admin diagnostic; return booleans and fixed errors only."""
+    user = request.user or {}
+    if user.get("is_admin") is not True:
+        return jsonify({"error": "Forbidden"}), 403
     try:
+        admins = (
+            supabase.table("users")
+            .select("is_admin")
+            .eq("id", user.get("user_id"))
+            .limit(1)
+            .execute()
+            .data
+        )
+        if not isinstance(admins, list):
+            raise ValueError("Invalid diagnostic state")
+        if not admins or admins[0].get("is_admin") is not True:
+            return jsonify({"error": "Forbidden"}), 403
+        bid = request.args.get("bracket_id")
+        if not bid or not is_uuid(bid):
+            return jsonify({"ok": False, "error": "Invalid bracket id"}), 400
+        b_res = (
+            supabase.table("brackets")
+            .select("id, season_id, deleted_at")
+            .eq("id", bid)
+            .single()
+            .execute()
+        )
+        if getattr(b_res, "error", None):
+            raise ValueError("Diagnostic read failed")
+        bracket = b_res.data
+        if bracket is None or bracket == {}:
+            return jsonify({"ok": False, "error": "Diagnostic target not found"}), 404
+        if not isinstance(bracket, dict) or bracket.get("id") != bid:
+            raise ValueError("Invalid diagnostic state")
+        sid = bracket.get("season_id")
+        if not is_uuid(sid):
+            raise ValueError("Invalid diagnostic state")
         s_res = (
             supabase.table("seasons")
-            .select("id, code, master_bracket_id")
+            .select("id, master_bracket_id")
             .eq("id", sid)
             .single()
             .execute()
         )
-        s_err = getattr(s_res, "error", None)
-        if s_err and "master_bracket_id" in str(s_err):
-            return jsonify({
-                "error": "seasons.master_bracket_id is missing",
-                "fix_sql": [
-                    "ALTER TABLE public.seasons ADD COLUMN IF NOT EXISTS master_bracket_id uuid;",
-                    "ALTER TABLE public.seasons ADD CONSTRAINT seasons_master_bracket_fk "
-                    "FOREIGN KEY (master_bracket_id) REFERENCES public.brackets(id) ON DELETE SET NULL;",
-                    "CREATE INDEX IF NOT EXISTS idx_seasons_master_bracket_id ON public.seasons(master_bracket_id);"
-                ]
-            }), 500
-
-        s = getattr(s_res, "data", None) or {}
-        mid = s.get("master_bracket_id")
-        return jsonify({
-            "bracket_id": b["id"],
-            "season_id": sid,
-            "season_code": s.get("code"),
-            "season.master_bracket_id": mid,
-            "bracket_deleted": bool(b.get("deleted_at")),
-            "is_master_computed": (mid == b["id"]),
-        }), 200
-
-    except Exception as e:
-        # If the supabase client throws instead of returning an error field.
-        msg = str(e)
-        if "master_bracket_id" in msg:
-            return jsonify({
-                "error": "seasons.master_bracket_id is missing",
-                "exception": msg,
-                "fix_sql": [
-                    "ALTER TABLE public.seasons ADD COLUMN IF NOT EXISTS master_bracket_id uuid;",
-                    "ALTER TABLE public.seasons ADD CONSTRAINT seasons_master_bracket_fk "
-                    "FOREIGN KEY (master_bracket_id) REFERENCES public.brackets(id) ON DELETE SET NULL;",
-                    "CREATE INDEX IF NOT EXISTS idx_seasons_master_bracket_id ON public.seasons(master_bracket_id);"
-                ]
-            }), 500
-        return jsonify({"error": "unexpected", "exception": msg}), 500
+        if getattr(s_res, "error", None):
+            raise ValueError("Diagnostic read failed")
+        season = s_res.data
+        if (
+            not isinstance(season, dict)
+            or season.get("id") != sid
+            or "master_bracket_id" not in season
+        ):
+            raise ValueError("Invalid diagnostic state")
+        master_id = season["master_bracket_id"]
+        if master_id is not None and not is_uuid(master_id):
+            raise ValueError("Invalid diagnostic state")
+        return (
+            jsonify(
+                {
+                    "ok": True,
+                    "bracket_deleted": bool(bracket.get("deleted_at")),
+                    "is_master_computed": master_id == bid,
+                }
+            ),
+            200,
+        )
+    except Exception:
+        # Never log or return raw provider exceptions, SQL or connection details.
+        return jsonify({"ok": False, "error": "Diagnostic check failed."}), 503
 
 
 # --------------------------------------------------------

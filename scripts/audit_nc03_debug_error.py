@@ -135,4 +135,7 @@ def run():
 
 
 if __name__ == "__main__":
-    print(json.dumps(run(), indent=2))
+    # Original vulnerable proof above and committed failure evidence are retained.
+    from verify_nc03r2_diagnostic import run as verify_repaired_scenario
+
+    print(json.dumps(verify_repaired_scenario(), indent=2))

@@ -1,0 +1,180 @@
+{
+  "phase": "NC-03R2",
+  "finding": "NC03-SEC-002",
+  "status": "REPAIRED LOCALLY / pending NC-03 re-audit",
+  "verified_at_utc": "2026-10-17T20:57:21.781950+00:00",
+  "starting_repositories": {
+    "backend": {
+      "branch": "main",
+      "head": "613922d4522aefe319f187a067d6de2a2e22d87e",
+      "clean": true
+    },
+    "frontend": {
+      "branch": "main",
+      "head": "4fa0e9fc11d49354e3da137ee43e9d1ddbc87357",
+      "clean": true
+    }
+  },
+  "root_cause": "Unauthenticated diagnostic serialized raw provider exception messages and repair guidance; success also returned internal identifiers.",
+  "route": "GET /__debug/master-status",
+  "intended_purpose_evidence": {
+    "introducing_commit": "b1b96fa80b2b4d25367a10133de5e00e56b01bf8",
+    "commit_subject": "added endpoint to test master bracket",
+    "callers": "No frontend or operational script caller found; historical characterization inventories it as diagnostic only.",
+    "decision": "Operational admin diagnostic, following existing JWT + current database-admin authorization pattern. This is an explicit security decision based on internal master-linkage purpose, not a claim the old public access was intentional."
+  },
+  "access": "All modes: existing require_auth plus is_admin=True in signed claims AND current users record. No new environment flag. Canonical global season bootstrap remains unchanged.",
+  "response_contract": {
+    "success": {
+      "status": 200,
+      "fields": {
+        "ok": "boolean true",
+        "bracket_deleted": "boolean",
+        "is_master_computed": "boolean"
+      }
+    },
+    "missing_invalid_input": {
+      "status": 400,
+      "body": {
+        "ok": false,
+        "error": "Invalid bracket id"
+      }
+    },
+    "missing_target": {
+      "status": 404,
+      "body": {
+        "ok": false,
+        "error": "Diagnostic target not found"
+      }
+    },
+    "read_or_state_failure": {
+      "status": 503,
+      "body": {
+        "ok": false,
+        "error": "Diagnostic check failed."
+      }
+    },
+    "unauthenticated": {
+      "status": 401,
+      "body": "Existing fixed require_auth error contract"
+    },
+    "not_current_admin": {
+      "status": 403,
+      "body": {
+        "error": "Forbidden"
+      }
+    }
+  },
+  "DR_requirements": {
+    "DR1": "PASS",
+    "DR2": "PASS",
+    "DR3": "PASS",
+    "DR4": "PASS",
+    "DR5": "PASS",
+    "DR6": "PASS"
+  },
+  "logging": "No raw exceptions, repair guidance, credentials, query content or new logs emitted by the route; proof captures empty logs.",
+  "related_static_audit": [
+    {
+      "route": "/__debug/master-status",
+      "result": "Only debug-prefix route; repaired."
+    },
+    {
+      "route": "/health",
+      "result": "Fixed text response; no DB/provider diagnostic payload."
+    },
+    {
+      "route": "/admin/env-check",
+      "result": "JWT plus DB-admin check; config presence only, generic DB errors."
+    },
+    {
+      "route": "/season",
+      "result": "Canonical season status; fixed bootstrap configuration failure, unchanged approved fields."
+    },
+    {
+      "pattern": "str(error) in service routes",
+      "result": "Reviewed controlled ScoringError/SnapshotError/StandingsRefreshError stage messages and fixed LeagueError policy messages; unexpected exceptions sanitized. No second raw-provider diagnostic-response pattern confirmed."
+    },
+    {
+      "pattern": "Existing debug logs outside route",
+      "result": "Existing conditional/error logging outside repaired function left unchanged; no new raw logging introduced. Not a full NC-03 logging audit."
+    }
+  ],
+  "additional_same_class_findings": [],
+  "validation": {
+    "offline_safety_suite": {
+      "passed": true,
+      "tests": 350,
+      "failures": 0,
+      "errors": 0
+    },
+    "diagnostic_proof": {
+      "scenarios": 46,
+      "evidence": "db/records/nc_03r2_diagnostic_validation.json",
+      "passed": true
+    },
+    "representative_errors": "Full offline suite covers identity/password-reset/standings/league/rollover service safety; auth and private authorization/standings/rollover route bodies and shared error handlers AST-identical to starting source, with focused static review. No live all-domain suite claimed.",
+    "JWT_R1_regression": {
+      "passed": true,
+      "unsafe_configuration_cases": 7,
+      "actual_route_cases": 14,
+      "forged_old_fallback_status": 401
+    },
+    "black": "PASS, new modules plus scoped changed route only; no whole legacy app reformat.",
+    "compilation": "PASS, in-memory compilation, no bytecode output.",
+    "import_comparison": "No application imports changed; only debug_master_status changed among86 existing top-level functions/classes.",
+    "whitespace": "Final staged check recognizes existing CRLF.",
+    "secret_static_scan": "Repair files scanned; runtime JWT fallback validation and frontend/reset secrecy paths preserved. No values printed.",
+    "original_reproducer": "Original run function and historical audit records preserved; same CLI command now invokes repaired proof."
+  },
+  "cleanup": {
+    "fixture": {
+      "identity": "PASS",
+      "marker": "PASS",
+      "email": "PASS",
+      "providers": "PASS",
+      "jobs": "PASS",
+      "fixture_reset": "PASS",
+      "harness": "UNMET",
+      "fixture_version": "nc-fixtures-v1",
+      "fixture_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "mutation_permitted": false
+    },
+    "readiness": {
+      "identity_verified": true,
+      "database_marker": "PASS",
+      "email": "PASS",
+      "providers": "PASS",
+      "external_credentials": "PASS",
+      "jobs": "PASS",
+      "jobs_enabled": false,
+      "fixture_state": "SEEDED",
+      "fixtures_reset": "PASS",
+      "integration_harness": "PASS",
+      "mutation_permitted": false,
+      "harness_state": "AVAILABLE_GUARDED",
+      "harness_scoped_mutation_permitted": false
+    },
+    "flask_stopped": true,
+    "database_mutations_in_R2": 0,
+    "new_listeners": 0,
+    "mail_sent": 0,
+    "temporary_failure_triggers_created": 0,
+    "scratch_databases_created": 0,
+    "raw_exceptions_or_repair_SQL_in_new_evidence": false
+  },
+  "production": {
+    "contacted": false,
+    "deployed": false,
+    "configuration_changed": false,
+    "rollout_implication": "Route now requires authenticated current admin; payload intentionally reduced. No new config flag. Operators use trusted offline schema tooling. Production exposure not inspected."
+  },
+  "preservation": {
+    "frontend_unchanged": true,
+    "schema_migrations_unchanged": true,
+    "JWT_auth_reset_privacy_standings_rollover_logic_unchanged": true,
+    "NC03_history_and_16_PASS_102_BLOCKED_matrix_unchanged": true
+  },
+  "NC03_status": "Historical FAIL unchanged; consolidated re-audit pending.",
+  "next_step": "Resume NC-03 consolidated compliance audit from repaired backend HEAD only when explicitly requested; do not begin automatically."
+}
