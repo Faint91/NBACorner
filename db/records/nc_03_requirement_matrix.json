@@ -1,0 +1,1789 @@
+{
+  "phase": "NC-03",
+  "status": "FAIL",
+  "matrix_complete": false,
+  "registry_ids_complete": true,
+  "verified_at_utc": "2026-10-17T16:06:00.716979+00:00",
+  "totals": {
+    "PASS": 0,
+    "FAIL": 0,
+    "BLOCKED": 118,
+    "NOT APPLICABLE": 0
+  },
+  "foundational_failures": [
+    "NC03-SEC-001"
+  ],
+  "scope_note": "All 118 IDs are retained as unverified. No phase completion was converted to PASS; precise per-ID mappings remain unfinished due to mandatory stop.",
+  "requirements": [
+    {
+      "requirement_id": "P1",
+      "domain": "Privacy / access",
+      "summary": "Approved P1 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "P2",
+      "domain": "Privacy / access",
+      "summary": "Approved P2 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "P3",
+      "domain": "Privacy / access",
+      "summary": "Approved P3 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "P4",
+      "domain": "Privacy / access",
+      "summary": "Approved P4 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "P5",
+      "domain": "Privacy / access",
+      "summary": "Approved P5 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "P6",
+      "domain": "Privacy / access",
+      "summary": "Approved P6 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "P7",
+      "domain": "Privacy / access",
+      "summary": "Approved P7 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "P8",
+      "domain": "Privacy / access",
+      "summary": "Approved P8 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "P9",
+      "domain": "Privacy / access",
+      "summary": "Approved P9 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "P10",
+      "domain": "Privacy / access",
+      "summary": "Approved P10 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "B1",
+      "domain": "Brackets",
+      "summary": "Approved B1 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "B2",
+      "domain": "Brackets",
+      "summary": "Approved B2 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "B3",
+      "domain": "Brackets",
+      "summary": "Approved B3 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "B4",
+      "domain": "Brackets",
+      "summary": "Approved B4 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "B5",
+      "domain": "Brackets",
+      "summary": "Approved B5 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "B6",
+      "domain": "Brackets",
+      "summary": "Approved B6 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "B7",
+      "domain": "Brackets",
+      "summary": "Approved B7 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "B8",
+      "domain": "Brackets",
+      "summary": "Approved B8 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "B9",
+      "domain": "Brackets",
+      "summary": "Approved B9 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "B10",
+      "domain": "Brackets",
+      "summary": "Approved B10 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "B11",
+      "domain": "Brackets",
+      "summary": "Approved B11 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "B12",
+      "domain": "Brackets",
+      "summary": "Approved B12 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "B13",
+      "domain": "Brackets",
+      "summary": "Approved B13 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "B14",
+      "domain": "Brackets",
+      "summary": "Approved B14 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "B15",
+      "domain": "Brackets",
+      "summary": "Approved B15 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "B16",
+      "domain": "Brackets",
+      "summary": "Approved B16 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "S1",
+      "domain": "Season / standings",
+      "summary": "Approved S1 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "S2",
+      "domain": "Season / standings",
+      "summary": "Approved S2 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "S3",
+      "domain": "Season / standings",
+      "summary": "Approved S3 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "S4",
+      "domain": "Season / standings",
+      "summary": "Approved S4 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "S5",
+      "domain": "Season / standings",
+      "summary": "Approved S5 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "S6",
+      "domain": "Season / standings",
+      "summary": "Approved S6 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "S7",
+      "domain": "Season / standings",
+      "summary": "Approved S7 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "S8",
+      "domain": "Season / standings",
+      "summary": "Approved S8 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "S9",
+      "domain": "Season / standings",
+      "summary": "Approved S9 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "S10",
+      "domain": "Season / standings",
+      "summary": "Approved S10 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "S11",
+      "domain": "Season / standings",
+      "summary": "Approved S11 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "S12",
+      "domain": "Season / standings",
+      "summary": "Approved S12 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "S13",
+      "domain": "Season / standings",
+      "summary": "Approved S13 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "S14",
+      "domain": "Season / standings",
+      "summary": "Approved S14 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "SC1",
+      "domain": "Scoring / history",
+      "summary": "Approved SC1 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "SC2",
+      "domain": "Scoring / history",
+      "summary": "Approved SC2 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "SC3",
+      "domain": "Scoring / history",
+      "summary": "Approved SC3 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "SC4",
+      "domain": "Scoring / history",
+      "summary": "Approved SC4 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "SC5",
+      "domain": "Scoring / history",
+      "summary": "Approved SC5 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "SC6",
+      "domain": "Scoring / history",
+      "summary": "Approved SC6 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "SC7",
+      "domain": "Scoring / history",
+      "summary": "Approved SC7 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "SC8",
+      "domain": "Scoring / history",
+      "summary": "Approved SC8 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "SC9",
+      "domain": "Scoring / history",
+      "summary": "Approved SC9 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "SC10",
+      "domain": "Scoring / history",
+      "summary": "Approved SC10 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "SC11",
+      "domain": "Scoring / history",
+      "summary": "Approved SC11 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "SC12",
+      "domain": "Scoring / history",
+      "summary": "Approved SC12 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "SC13",
+      "domain": "Scoring / history",
+      "summary": "Approved SC13 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "SC14",
+      "domain": "Scoring / history",
+      "summary": "Approved SC14 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "SC15",
+      "domain": "Scoring / history",
+      "summary": "Approved SC15 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "SC16",
+      "domain": "Scoring / history",
+      "summary": "Approved SC16 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "SC17",
+      "domain": "Scoring / history",
+      "summary": "Approved SC17 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "RR1",
+      "domain": "Rollover",
+      "summary": "Approved RR1 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "RR2",
+      "domain": "Rollover",
+      "summary": "Approved RR2 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "RR3",
+      "domain": "Rollover",
+      "summary": "Approved RR3 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "RR4",
+      "domain": "Rollover",
+      "summary": "Approved RR4 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "RR5",
+      "domain": "Rollover",
+      "summary": "Approved RR5 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "RR6",
+      "domain": "Rollover",
+      "summary": "Approved RR6 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "RR7",
+      "domain": "Rollover",
+      "summary": "Approved RR7 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "RR8",
+      "domain": "Rollover",
+      "summary": "Approved RR8 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "RR9",
+      "domain": "Rollover",
+      "summary": "Approved RR9 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "RR10",
+      "domain": "Rollover",
+      "summary": "Approved RR10 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "RR11",
+      "domain": "Rollover",
+      "summary": "Approved RR11 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "RR12",
+      "domain": "Rollover",
+      "summary": "Approved RR12 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "RR13",
+      "domain": "Rollover",
+      "summary": "Approved RR13 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "RR14",
+      "domain": "Rollover",
+      "summary": "Approved RR14 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "RR15",
+      "domain": "Rollover",
+      "summary": "Approved RR15 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "RR16",
+      "domain": "Rollover",
+      "summary": "Approved RR16 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "L1",
+      "domain": "Leagues",
+      "summary": "Approved L1 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "L2",
+      "domain": "Leagues",
+      "summary": "Approved L2 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "L3",
+      "domain": "Leagues",
+      "summary": "Approved L3 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "L4",
+      "domain": "Leagues",
+      "summary": "Approved L4 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "L5",
+      "domain": "Leagues",
+      "summary": "Approved L5 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "L6",
+      "domain": "Leagues",
+      "summary": "Approved L6 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "L7",
+      "domain": "Leagues",
+      "summary": "Approved L7 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "L8",
+      "domain": "Leagues",
+      "summary": "Approved L8 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "L9",
+      "domain": "Leagues",
+      "summary": "Approved L9 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "L10",
+      "domain": "Leagues",
+      "summary": "Approved L10 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "L11",
+      "domain": "Leagues",
+      "summary": "Approved L11 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "L12",
+      "domain": "Leagues",
+      "summary": "Approved L12 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "L13",
+      "domain": "Leagues",
+      "summary": "Approved L13 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "L14",
+      "domain": "Leagues",
+      "summary": "Approved L14 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "L15",
+      "domain": "Leagues",
+      "summary": "Approved L15 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "L16",
+      "domain": "Leagues",
+      "summary": "Approved L16 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "L17",
+      "domain": "Leagues",
+      "summary": "Approved L17 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "L18",
+      "domain": "Leagues",
+      "summary": "Approved L18 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "L19",
+      "domain": "Leagues",
+      "summary": "Approved L19 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "L20",
+      "domain": "Leagues",
+      "summary": "Approved L20 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "L21",
+      "domain": "Leagues",
+      "summary": "Approved L21 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "L22",
+      "domain": "Leagues",
+      "summary": "Approved L22 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "L20A",
+      "domain": "Leagues",
+      "summary": "Approved L20A product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "L20B",
+      "domain": "Leagues",
+      "summary": "Approved L20B product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "L21A",
+      "domain": "Leagues",
+      "summary": "Approved L21A product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "A1",
+      "domain": "Auth / account",
+      "summary": "Approved A1 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "A2",
+      "domain": "Auth / account",
+      "summary": "Approved A2 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "A3",
+      "domain": "Auth / account",
+      "summary": "Approved A3 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "A4",
+      "domain": "Auth / account",
+      "summary": "Approved A4 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "A5",
+      "domain": "Auth / account",
+      "summary": "Approved A5 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "A6",
+      "domain": "Auth / account",
+      "summary": "Approved A6 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "A7",
+      "domain": "Auth / account",
+      "summary": "Approved A7 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "A8",
+      "domain": "Auth / account",
+      "summary": "Approved A8 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "A9",
+      "domain": "Auth / account",
+      "summary": "Approved A9 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "A10",
+      "domain": "Auth / account",
+      "summary": "Approved A10 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "A11",
+      "domain": "Auth / account",
+      "summary": "Approved A11 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "A12",
+      "domain": "Auth / account",
+      "summary": "Approved A12 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "A13",
+      "domain": "Auth / account",
+      "summary": "Approved A13 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "A14",
+      "domain": "Auth / account",
+      "summary": "Approved A14 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "A15",
+      "domain": "Auth / account",
+      "summary": "Approved A15 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "A16",
+      "domain": "Auth / account",
+      "summary": "Approved A16 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "A17",
+      "domain": "Auth / account",
+      "summary": "Approved A17 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "A18",
+      "domain": "Auth / account",
+      "summary": "Approved A18 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "A19",
+      "domain": "Auth / account",
+      "summary": "Approved A19 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    },
+    {
+      "requirement_id": "A20",
+      "domain": "Auth / account",
+      "summary": "Approved A20 product rule; detailed contract mapping not completed before mandatory stop.",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-001: foundational audit stop; not an individual product-rule failure finding."
+      ],
+      "automated_coverage": {
+        "fresh_nc03": "Not run following stop rule",
+        "prior_phase_coverage": "Not independently mapped or certified in NC-03"
+      },
+      "notes": "Required combined-system evidence not collected because reproducible foundational auth defect triggered stop. This is an incomplete audit, not a claim of a new business ambiguity or failure of this individual rule."
+    }
+  ]
+}

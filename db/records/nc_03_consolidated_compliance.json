@@ -1,0 +1,137 @@
+{
+  "phase": "NC-03",
+  "status": "FAIL",
+  "production_readiness": "NOT READY",
+  "verified_at_utc": "2026-10-17T16:06:00.716979+00:00",
+  "starting_repositories": {
+    "backend": {
+      "head": "c5f24396f7387e250982bf2c124ba9753ad9550a",
+      "branch": "main",
+      "clean": true
+    },
+    "frontend": {
+      "head": "4fa0e9fc11d49354e3da137ee43e9d1ddbc87357",
+      "branch": "main",
+      "clean": true
+    }
+  },
+  "finding": {
+    "id": "NC03-SEC-001",
+    "classification": "FAIL",
+    "scope": "Foundational authentication / JWT signing configuration / static secret audit",
+    "summary": "Missing JWT_SECRET is accepted in explicit production mode and selects a nonempty signing fallback stored in source. A token signed using that source fallback authenticates as a synthetic existing version-0 user through the actual auth helper/decorator/route.",
+    "affected_locations": [
+      "app.py:49",
+      "app.py:527",
+      "app.py:539",
+      "environment_safety.py:482"
+    ],
+    "precondition": "JWT_SECRET absent after ordinary environment loading; attacker knows an existing user identifier and valid auth_version.",
+    "production_exposure": "Not determined; production was not contacted and deployed secret configuration was not inspected.",
+    "prior_phase_context": "G1/G2 intentionally preserved signing-key configuration. Finding is pre-existing; no claim it was introduced by G2. Existing-user and auth_version checks continue to work and do not compensate for a known signing key.",
+    "reproduction_command": "python -B scripts/audit_nc03_jwt_fallback.py",
+    "reproduction": {
+      "finding": "NC03-SEC-001",
+      "classification": "FAIL",
+      "reproduction_completed": true,
+      "explicit_production_mode_accepts_missing_jwt_secret": true,
+      "nonempty_source_signing_fallback_present": true,
+      "actual_current_auth_route_statuses": {
+        "no_token": 401,
+        "source_fallback_signed_token": 200,
+        "wrong_key_token": 401,
+        "nonexistent_user_token": 401
+      },
+      "database": "in-memory synthetic existing-user/version read double only",
+      "limitation": "Not a full application startup or real DB integration; no inference about deployed configuration.",
+      "controls": 3,
+      "exploit_cases": 1,
+      "production_contact": false,
+      "network_used": false,
+      "database_mutations": 0,
+      "credentials_or_tokens_emitted": false
+    },
+    "individual_product_rules_failed": [],
+    "repair_performed": false
+  },
+  "migration_file_inventory": [
+    {
+      "path": "db/post-baseline/0001_nc_02b3_bracket_lifecycle.sql",
+      "sha256": "e98346423a4f73690371d8f1c178347330e5da33f02b6b9f4475475d237b4376"
+    },
+    {
+      "path": "db/post-baseline/0002_nc_02c1_canonical_season.sql",
+      "sha256": "ab38f5182351d5bbf6df0116c2af944e97401b55e8b0fea037f0c11fa11296ec"
+    },
+    {
+      "path": "db/post-baseline/0003_nc_02c2_atomic_standings.sql",
+      "sha256": "e359e09771af5b6a4fdf94542138a6655b8e273a8b064dbfb9a54c3973968d29"
+    },
+    {
+      "path": "db/post-baseline/0004_nc_02c3_season_transition.sql",
+      "sha256": "8e252eb6247f477c42c2e38a83b881524e058f9f707e969e4e917e2bc85a6736"
+    },
+    {
+      "path": "db/post-baseline/0005_nc_02d1_atomic_scores.sql",
+      "sha256": "11fdf464ab393bd0e5b58e8f34537447c6e320a731f7352fa62d4a295b657433"
+    },
+    {
+      "path": "db/post-baseline/0006_nc_02d2_final_snapshots.sql",
+      "sha256": "3e1e3e34788cf6c05cb450d0b370fe1ca55ef6314f4bbb632d81445e7558c9d7"
+    },
+    {
+      "path": "db/post-baseline/0007_nc_02e_atomic_rollover.sql",
+      "sha256": "cd3dbfd415d9a390e434df6b74ea2030fbf5bac9ae9ad8ebb63d01445c1bc1d8"
+    },
+    {
+      "path": "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+      "sha256": "e4abfcf9d7093847940cd967a2f37c760f3fa2708dca4256791effa8ca6740b9"
+    },
+    {
+      "path": "db/post-baseline/0009_nc_02f2_league_history.sql",
+      "sha256": "3658bf8d6cd3552c8b1a4f9d46f07b43a6eaa2c68382eb18172f1b952470403b"
+    },
+    {
+      "path": "db/post-baseline/0010_nc_02g1_identity_auth.sql",
+      "sha256": "158967feebad44df173f8b72ed1fb1aab88e5c740ebb5f2fbb8b46c154b37be5"
+    },
+    {
+      "path": "db/post-baseline/0011_nc_02g2_password_reset_sessions.sql",
+      "sha256": "250a4abf4a789ad64d6dbe8b9e5569e763b8a5d9492ee2071a3865f9517810b6"
+    }
+  ],
+  "migration_integrity_scope": "Eleven ordered files present and current hashes recorded only; historical protected-hash comparison, fresh apply, portability and final catalog/security verification not completed.",
+  "matrix_totals": {
+    "PASS": 0,
+    "FAIL": 0,
+    "BLOCKED": 118,
+    "NOT APPLICABLE": 0
+  },
+  "validation": {
+    "offline_reproduction": "PASS: defect reproduced with three rejecting controls",
+    "audit_script_black": "PASS",
+    "consolidated_backend_suite": "BLOCKED: stopped after confirmed defect",
+    "offline_safety_suite": "BLOCKED: not run",
+    "frontend_tests_build_lint": "BLOCKED: not run",
+    "fresh_migration_proof": "BLOCKED: not run",
+    "schema_security_verifier": "BLOCKED: not run",
+    "fixture_reset_verifier": "BLOCKED: not run",
+    "CROSS-01_through_CROSS-12": "BLOCKED: not run",
+    "full_secret_privacy_scan": "BLOCKED: not completed; JWT fallback presence confirmed without value output in audit artifacts"
+  },
+  "local_mutations": {
+    "application_code": false,
+    "database": false,
+    "fixtures": false,
+    "server_started": false,
+    "disposable_database_created": false,
+    "audit_files_only": true
+  },
+  "cleanup": {
+    "fixture_state_freshly_verified": false,
+    "note": "No DB, fixtures, mail, locks, jobs or Flask server touched. Prior fixture evidence is not represented as fresh NC-03 cleanup proof."
+  },
+  "production_contact": false,
+  "one_on_one_project_modified": false,
+  "next_checkpoint": "Separately authorize narrow JWT signing-configuration hardening, then resume NC-03 from retained state. Do not begin NC-04."
+}
