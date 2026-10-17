@@ -1,0 +1,592 @@
+{
+  "P1": {
+    "summary": "Email privacy",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\ba42fb2e-606e-4aa4-b5b6-c2e4f02db39b\\Pasted text.txt",
+    "heading": "## P1 \u2014 Email privacy"
+  },
+  "P2": {
+    "summary": "Private-league boundary",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\ba42fb2e-606e-4aa4-b5b6-c2e4f02db39b\\Pasted text.txt",
+    "heading": "## P2 \u2014 Private-league boundary"
+  },
+  "P3": {
+    "summary": "Private-league discovery",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\ba42fb2e-606e-4aa4-b5b6-c2e4f02db39b\\Pasted text.txt",
+    "heading": "## P3 \u2014 Private-league discovery"
+  },
+  "P6": {
+    "summary": "Admin privacy bypass",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\ba42fb2e-606e-4aa4-b5b6-c2e4f02db39b\\Pasted text.txt",
+    "heading": "## P6 \u2014 Admin privacy bypass"
+  },
+  "P7": {
+    "summary": "Server-side enforcement",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\ba42fb2e-606e-4aa4-b5b6-c2e4f02db39b\\Pasted text.txt",
+    "heading": "## P7 \u2014 Server-side enforcement"
+  },
+  "P8": {
+    "summary": "Sensitive stored fields",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\ba42fb2e-606e-4aa4-b5b6-c2e4f02db39b\\Pasted text.txt",
+    "heading": "## P8 \u2014 Sensitive stored fields"
+  },
+  "P10": {
+    "summary": "Membership remains authoritative",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\ba42fb2e-606e-4aa4-b5b6-c2e4f02db39b\\Pasted text.txt",
+    "heading": "## P10 \u2014 Membership remains authoritative"
+  },
+  "P4": {
+    "summary": "Draft / unsaved competitive privacy",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\0f962297-2e50-4d2a-807b-7f936ad84ecf\\Pasted text.txt",
+    "heading": "## P4 \u2014 Draft / unsaved competitive privacy"
+  },
+  "P5": {
+    "summary": "Competitive eligibility requires current saved state",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\0f962297-2e50-4d2a-807b-7f936ad84ecf\\Pasted text.txt",
+    "heading": "## P5 \u2014 Competitive eligibility requires current saved state"
+  },
+  "P9": {
+    "summary": "Public league competition visibility",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\0f962297-2e50-4d2a-807b-7f936ad84ecf\\Pasted text.txt",
+    "heading": "## P9 \u2014 Public league competition visibility"
+  },
+  "B1": {
+    "summary": "Final bracket deadline",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\97e5e13e-79cc-4904-bcf8-8f6024549153\\Pasted text.txt",
+    "heading": "## B1 \u2014 Final bracket deadline"
+  },
+  "B2": {
+    "summary": "Admin bracket editing",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\97e5e13e-79cc-4904-bcf8-8f6024549153\\Pasted text.txt",
+    "heading": "## B2 \u2014 Admin bracket editing"
+  },
+  "B3": {
+    "summary": "Ordinary-owner undo",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\97e5e13e-79cc-4904-bcf8-8f6024549153\\Pasted text.txt",
+    "heading": "## B3 \u2014 Ordinary-owner undo"
+  },
+  "B4": {
+    "summary": "Submitted bracket edits",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\97e5e13e-79cc-4904-bcf8-8f6024549153\\Pasted text.txt",
+    "heading": "## B4 \u2014 Submitted bracket edits"
+  },
+  "B5": {
+    "summary": "Ordinary creation window",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\97e5e13e-79cc-4904-bcf8-8f6024549153\\Pasted text.txt",
+    "heading": "## B5 \u2014 Ordinary creation window"
+  },
+  "B16": {
+    "summary": "Draft at deadline",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\97e5e13e-79cc-4904-bcf8-8f6024549153\\Pasted text.txt",
+    "heading": "## B16 \u2014 Draft at deadline"
+  },
+  "B6": {
+    "summary": "Complete bracket required for ordinary submission",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\2d3fa034-404b-4d71-b236-fcf76608d808\\Pasted text.txt",
+    "heading": "## B6 \u2014 Complete bracket required for ordinary submission"
+  },
+  "B7": {
+    "summary": "Series game-count validation",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\2d3fa034-404b-4d71-b236-fcf76608d808\\Pasted text.txt",
+    "heading": "## B7 \u2014 Series game-count validation"
+  },
+  "B8": {
+    "summary": "Both participants required before prediction",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\2d3fa034-404b-4d71-b236-fcf76608d808\\Pasted text.txt",
+    "heading": "## B8 \u2014 Both participants required before prediction"
+  },
+  "B9": {
+    "summary": "Dependency-aware downstream clearing",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\2d3fa034-404b-4d71-b236-fcf76608d808\\Pasted text.txt",
+    "heading": "## B9 \u2014 Dependency-aware downstream clearing"
+  },
+  "B10": {
+    "summary": "Owner deletion before deadline",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\3a0437a8-9c3a-4817-ad37-64c687609b7a\\Pasted text.txt",
+    "heading": "## B10 \u2014 Owner deletion before deadline"
+  },
+  "B11": {
+    "summary": "Deletion after deadline",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\3a0437a8-9c3a-4817-ad37-64c687609b7a\\Pasted text.txt",
+    "heading": "## B11 \u2014 Deletion after deadline"
+  },
+  "B12": {
+    "summary": "One active bracket per user per season",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\3a0437a8-9c3a-4817-ad37-64c687609b7a\\Pasted text.txt",
+    "heading": "## B12 \u2014 One active bracket per user per season"
+  },
+  "B13": {
+    "summary": "Explicit master replacement",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\3a0437a8-9c3a-4817-ad37-64c687609b7a\\Pasted text.txt",
+    "heading": "## B13 \u2014 Explicit master replacement"
+  },
+  "B14": {
+    "summary": "Active master protection",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\3a0437a8-9c3a-4817-ad37-64c687609b7a\\Pasted text.txt",
+    "heading": "## B14 \u2014 Active master protection"
+  },
+  "B15": {
+    "summary": "Historical bracket access",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\3a0437a8-9c3a-4817-ad37-64c687609b7a\\Pasted text.txt",
+    "heading": "## B15 \u2014 Historical bracket access"
+  },
+  "S1": {
+    "summary": "One canonical current season",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\8b445ec7-814a-4ee7-aea9-8258d7edca38\\Pasted text.txt",
+    "heading": "## S1 \u2014 One canonical current season"
+  },
+  "S2": {
+    "summary": "No independent production season overrides",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\8b445ec7-814a-4ee7-aea9-8258d7edca38\\Pasted text.txt",
+    "heading": "## S2 \u2014 No independent production season overrides"
+  },
+  "S12": {
+    "summary": "Distinct timing concepts",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\8b445ec7-814a-4ee7-aea9-8258d7edca38\\Pasted text.txt",
+    "heading": "## S12 \u2014 Distinct timing concepts"
+  },
+  "S14": {
+    "summary": "Backend season/status authority",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\8b445ec7-814a-4ee7-aea9-8258d7edca38\\Pasted text.txt",
+    "heading": "## S14 \u2014 Backend season/status authority"
+  },
+  "S3": {
+    "summary": "ESPN is the standings authority",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\ecdc9e13-a080-457c-ba72-4ef6d6708d69\\Pasted text.txt",
+    "heading": "## S3 \u2014 ESPN is the standings authority"
+  },
+  "S4": {
+    "summary": "Daily regular-season refresh",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\ecdc9e13-a080-457c-ba72-4ef6d6708d69\\Pasted text.txt",
+    "heading": "## S4 \u2014 Daily regular-season refresh"
+  },
+  "S5": {
+    "summary": "Standings freeze",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\ecdc9e13-a080-457c-ba72-4ef6d6708d69\\Pasted text.txt",
+    "heading": "## S5 \u2014 Standings freeze"
+  },
+  "S6": {
+    "summary": "Admin/manual freeze",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\ecdc9e13-a080-457c-ba72-4ef6d6708d69\\Pasted text.txt",
+    "heading": "## S6 \u2014 Admin/manual freeze"
+  },
+  "S7": {
+    "summary": "Atomic standings replacement",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\ecdc9e13-a080-457c-ba72-4ef6d6708d69\\Pasted text.txt",
+    "heading": "## S7 \u2014 Atomic standings replacement"
+  },
+  "S8": {
+    "summary": "Complete dataset validation",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\ecdc9e13-a080-457c-ba72-4ef6d6708d69\\Pasted text.txt",
+    "heading": "## S8 \u2014 Complete dataset validation"
+  },
+  "S9": {
+    "summary": "Current-state standings table",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\ecdc9e13-a080-457c-ba72-4ef6d6708d69\\Pasted text.txt",
+    "heading": "## S9 \u2014 Current-state standings table"
+  },
+  "S13": {
+    "summary": "Failure preserves last good state",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\ecdc9e13-a080-457c-ba72-4ef6d6708d69\\Pasted text.txt",
+    "heading": "## S13 \u2014 Failure preserves last good state"
+  },
+  "S10": {
+    "summary": "Canonical season advancement",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\29bdc6e5-f98b-4315-9b89-cbe00561e834\\Pasted text.txt",
+    "heading": "## S10 \u2014 Canonical season advancement"
+  },
+  "S11": {
+    "summary": "Current standings reset on season transition",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\29bdc6e5-f98b-4315-9b89-cbe00561e834\\Pasted text.txt",
+    "heading": "## S11 \u2014 Current standings reset on season transition"
+  },
+  "SC1": {
+    "summary": "Base series scoring",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\bac6a1b8-e296-448b-9506-a133d6ec28f6\\Pasted text.txt",
+    "heading": "## SC1 \u2014 Base series scoring"
+  },
+  "SC2": {
+    "summary": "Champion bonus",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\bac6a1b8-e296-448b-9506-a133d6ec28f6\\Pasted text.txt",
+    "heading": "## SC2 \u2014 Champion bonus"
+  },
+  "SC3": {
+    "summary": "Both-Finalists bonus",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\bac6a1b8-e296-448b-9506-a133d6ec28f6\\Pasted text.txt",
+    "heading": "## SC3 \u2014 Both-Finalists bonus"
+  },
+  "SC4": {
+    "summary": "Live leaderboard ordering",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\bac6a1b8-e296-448b-9506-a133d6ec28f6\\Pasted text.txt",
+    "heading": "## SC4 \u2014 Live leaderboard ordering"
+  },
+  "SC6": {
+    "summary": "True ties",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\bac6a1b8-e296-448b-9506-a133d6ec28f6\\Pasted text.txt",
+    "heading": "## SC6 \u2014 True ties"
+  },
+  "SC7": {
+    "summary": "Canonical master ground truth",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\bac6a1b8-e296-448b-9506-a133d6ec28f6\\Pasted text.txt",
+    "heading": "## SC7 \u2014 Canonical master ground truth"
+  },
+  "SC8": {
+    "summary": "Automatic score recomputation",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\bac6a1b8-e296-448b-9506-a133d6ec28f6\\Pasted text.txt",
+    "heading": "## SC8 \u2014 Automatic score recomputation"
+  },
+  "SC9": {
+    "summary": "Atomic recomputation",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\bac6a1b8-e296-448b-9506-a133d6ec28f6\\Pasted text.txt",
+    "heading": "## SC9 \u2014 Atomic recomputation"
+  },
+  "SC5": {
+    "summary": "Historical competitive ordering",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\4ad4166e-eb31-44dc-8431-e173e637877d\\Pasted text.txt",
+    "heading": "## SC5 \u2014 Historical competitive ordering"
+  },
+  "SC10": {
+    "summary": "Fresh canonical scoring before final snapshot",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\4ad4166e-eb31-44dc-8431-e173e637877d\\Pasted text.txt",
+    "heading": "## SC10 \u2014 Fresh canonical scoring before final snapshot"
+  },
+  "SC11": {
+    "summary": "Structured snapshot defines success",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\4ad4166e-eb31-44dc-8431-e173e637877d\\Pasted text.txt",
+    "heading": "## SC11 \u2014 Structured snapshot defines success"
+  },
+  "SC12": {
+    "summary": "Atomic structured snapshot",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\4ad4166e-eb31-44dc-8431-e173e637877d\\Pasted text.txt",
+    "heading": "## SC12 \u2014 Atomic structured snapshot"
+  },
+  "SC13": {
+    "summary": "Rollover snapshot gate",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\4ad4166e-eb31-44dc-8431-e173e637877d\\Pasted text.txt",
+    "heading": "## SC13 \u2014 Rollover snapshot gate"
+  },
+  "SC14": {
+    "summary": "Historical snapshot immutability",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\4ad4166e-eb31-44dc-8431-e173e637877d\\Pasted text.txt",
+    "heading": "## SC14 \u2014 Historical snapshot immutability"
+  },
+  "SC15": {
+    "summary": "Historical privacy",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\4ad4166e-eb31-44dc-8431-e173e637877d\\Pasted text.txt",
+    "heading": "## SC15 \u2014 Historical privacy"
+  },
+  "SC16": {
+    "summary": "Historical response ordering",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\4ad4166e-eb31-44dc-8431-e173e637877d\\Pasted text.txt",
+    "heading": "## SC16 \u2014 Historical response ordering"
+  },
+  "RR1": {
+    "summary": "Explicit admin rollover",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\8e40cb2e-e324-48e1-99c3-7fc16c5220dc\\Pasted text.txt",
+    "heading": "## RR1 \u2014 Explicit admin rollover"
+  },
+  "RR2": {
+    "summary": "Completed master prerequisite",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\8e40cb2e-e324-48e1-99c3-7fc16c5220dc\\Pasted text.txt",
+    "heading": "## RR2 \u2014 Completed master prerequisite"
+  },
+  "RR3": {
+    "summary": "Verified structured snapshot prerequisite",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\8e40cb2e-e324-48e1-99c3-7fc16c5220dc\\Pasted text.txt",
+    "heading": "## RR3 \u2014 Verified structured snapshot prerequisite"
+  },
+  "RR4": {
+    "summary": "Atomic post-snapshot transition",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\8e40cb2e-e324-48e1-99c3-7fc16c5220dc\\Pasted text.txt",
+    "heading": "## RR4 \u2014 Atomic post-snapshot transition"
+  },
+  "RR5": {
+    "summary": "Failure before transition",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\8e40cb2e-e324-48e1-99c3-7fc16c5220dc\\Pasted text.txt",
+    "heading": "## RR5 \u2014 Failure before transition"
+  },
+  "RR6": {
+    "summary": "Failure during transition",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\8e40cb2e-e324-48e1-99c3-7fc16c5220dc\\Pasted text.txt",
+    "heading": "## RR6 \u2014 Failure during transition"
+  },
+  "RR7": {
+    "summary": "Retry model",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\8e40cb2e-e324-48e1-99c3-7fc16c5220dc\\Pasted text.txt",
+    "heading": "## RR7 \u2014 Retry model"
+  },
+  "RR8": {
+    "summary": "Repeated successful rollover",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\8e40cb2e-e324-48e1-99c3-7fc16c5220dc\\Pasted text.txt",
+    "heading": "## RR8 \u2014 Repeated successful rollover"
+  },
+  "RR9": {
+    "summary": "One rollover at a time",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\8e40cb2e-e324-48e1-99c3-7fc16c5220dc\\Pasted text.txt",
+    "heading": "## RR9 \u2014 One rollover at a time"
+  },
+  "RR10": {
+    "summary": "Immediate next season only",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\8e40cb2e-e324-48e1-99c3-7fc16c5220dc\\Pasted text.txt",
+    "heading": "## RR10 \u2014 Immediate next season only"
+  },
+  "RR11": {
+    "summary": "Preserve saved historical bracket experience",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\8e40cb2e-e324-48e1-99c3-7fc16c5220dc\\Pasted text.txt",
+    "heading": "## RR11 \u2014 Preserve saved historical bracket experience"
+  },
+  "RR12": {
+    "summary": "HARD DELETE UNSAVED SOURCE-SEASON BRACKETS",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\8e40cb2e-e324-48e1-99c3-7fc16c5220dc\\Pasted text.txt",
+    "heading": "## RR12 \u2014 HARD DELETE UNSAVED SOURCE-SEASON BRACKETS"
+  },
+  "RR13": {
+    "summary": "Current score cleanup",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\8e40cb2e-e324-48e1-99c3-7fc16c5220dc\\Pasted text.txt",
+    "heading": "## RR13 \u2014 Current score cleanup"
+  },
+  "RR14": {
+    "summary": "Legacy history compatibility",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\8e40cb2e-e324-48e1-99c3-7fc16c5220dc\\Pasted text.txt",
+    "heading": "## RR14 \u2014 Legacy history compatibility"
+  },
+  "RR15": {
+    "summary": "Durable rollover audit",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\8e40cb2e-e324-48e1-99c3-7fc16c5220dc\\Pasted text.txt",
+    "heading": "## RR15 \u2014 Durable rollover audit"
+  },
+  "RR16": {
+    "summary": "Safe operational errors",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\8e40cb2e-e324-48e1-99c3-7fc16c5220dc\\Pasted text.txt",
+    "heading": "## RR16 \u2014 Safe operational errors"
+  },
+  "L1": {
+    "summary": "LEAGUES PERSIST ACROSS SEASONS",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\e9452d6d-7818-4847-9a53-247d0a857b8c\\Pasted text.txt",
+    "heading": "# L1 \u2014 LEAGUES PERSIST ACROSS SEASONS"
+  },
+  "L2": {
+    "summary": "CREATE LEAGUES AT ANY TIME",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\e9452d6d-7818-4847-9a53-247d0a857b8c\\Pasted text.txt",
+    "heading": "# L2 \u2014 CREATE LEAGUES AT ANY TIME"
+  },
+  "L3": {
+    "summary": "JOIN LEAGUES AT ANY TIME",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\e9452d6d-7818-4847-9a53-247d0a857b8c\\Pasted text.txt",
+    "heading": "# L3 \u2014 JOIN LEAGUES AT ANY TIME"
+  },
+  "L4": {
+    "summary": "EXACTLY ONE OWNER",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\e9452d6d-7818-4847-9a53-247d0a857b8c\\Pasted text.txt",
+    "heading": "# L4 \u2014 EXACTLY ONE OWNER"
+  },
+  "L5": {
+    "summary": "OWNER LEAVING",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\e9452d6d-7818-4847-9a53-247d0a857b8c\\Pasted text.txt",
+    "heading": "# L5 \u2014 OWNER LEAVING"
+  },
+  "L6": {
+    "summary": "EXPLICIT OWNERSHIP TRANSFER",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\e9452d6d-7818-4847-9a53-247d0a857b8c\\Pasted text.txt",
+    "heading": "# L6 \u2014 EXPLICIT OWNERSHIP TRANSFER"
+  },
+  "L7": {
+    "summary": "MEMBER LEAVING",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\e9452d6d-7818-4847-9a53-247d0a857b8c\\Pasted text.txt",
+    "heading": "# L7 \u2014 MEMBER LEAVING"
+  },
+  "L8": {
+    "summary": "OWNER REMOVING MEMBERS",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\e9452d6d-7818-4847-9a53-247d0a857b8c\\Pasted text.txt",
+    "heading": "# L8 \u2014 OWNER REMOVING MEMBERS"
+  },
+  "L9": {
+    "summary": "ADMIN HAS NO ROUTINE LEAGUE-OWNER POWERS",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\e9452d6d-7818-4847-9a53-247d0a857b8c\\Pasted text.txt",
+    "heading": "# L9 \u2014 ADMIN HAS NO ROUTINE LEAGUE-OWNER POWERS"
+  },
+  "L10": {
+    "summary": "OWNER-ONLY LEAGUE DELETION",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\e9452d6d-7818-4847-9a53-247d0a857b8c\\Pasted text.txt",
+    "heading": "# L10 \u2014 OWNER-ONLY LEAGUE DELETION"
+  },
+  "L11": {
+    "summary": "PUBLIC VS PRIVATE",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\e9452d6d-7818-4847-9a53-247d0a857b8c\\Pasted text.txt",
+    "heading": "# L11 \u2014 PUBLIC VS PRIVATE"
+  },
+  "L12": {
+    "summary": "OWNER MAY CHANGE PRIVACY / PASSWORD",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\e9452d6d-7818-4847-9a53-247d0a857b8c\\Pasted text.txt",
+    "heading": "# L12 \u2014 OWNER MAY CHANGE PRIVACY / PASSWORD"
+  },
+  "L13": {
+    "summary": "PASSWORD HANDLING",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\e9452d6d-7818-4847-9a53-247d0a857b8c\\Pasted text.txt",
+    "heading": "# L13 \u2014 PASSWORD HANDLING"
+  },
+  "L14": {
+    "summary": "LEAGUE RENAME",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\e9452d6d-7818-4847-9a53-247d0a857b8c\\Pasted text.txt",
+    "heading": "# L14 \u2014 LEAGUE RENAME"
+  },
+  "L15": {
+    "summary": "GLOBAL CASE-INSENSITIVE TRIMMED NAME UNIQUENESS",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\e9452d6d-7818-4847-9a53-247d0a857b8c\\Pasted text.txt",
+    "heading": "# L15 \u2014 GLOBAL CASE-INSENSITIVE TRIMMED NAME UNIQUENESS"
+  },
+  "L16": {
+    "summary": "UNIQUE MEMBERSHIP",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\e9452d6d-7818-4847-9a53-247d0a857b8c\\Pasted text.txt",
+    "heading": "# L16 \u2014 UNIQUE MEMBERSHIP"
+  },
+  "L17": {
+    "summary": "PUBLIC DISCOVERY",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\e9452d6d-7818-4847-9a53-247d0a857b8c\\Pasted text.txt",
+    "heading": "# L17 \u2014 PUBLIC DISCOVERY"
+  },
+  "L18": {
+    "summary": "PRIVATE DISCOVERY",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\e9452d6d-7818-4847-9a53-247d0a857b8c\\Pasted text.txt",
+    "heading": "# L18 \u2014 PRIVATE DISCOVERY"
+  },
+  "L19": {
+    "summary": "SERVER-SCOPED LEAGUE LEADERBOARD",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\e9452d6d-7818-4847-9a53-247d0a857b8c\\Pasted text.txt",
+    "heading": "# L19 \u2014 SERVER-SCOPED LEAGUE LEADERBOARD"
+  },
+  "L20A": {
+    "summary": "ONLY ELIGIBLE SUBMITTED MEMBERS RECEIVE ROWS",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\953b925a-e637-4542-afb0-98394644ab43\\Pasted text.txt",
+    "heading": "# L20A \u2014 ONLY ELIGIBLE SUBMITTED MEMBERS RECEIVE ROWS"
+  },
+  "L20B": {
+    "summary": "CURRENT PRIVACY CONTROLS ALL HISTORY",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\953b925a-e637-4542-afb0-98394644ab43\\Pasted text.txt",
+    "heading": "# L20B \u2014 CURRENT PRIVACY CONTROLS ALL HISTORY"
+  },
+  "L21A": {
+    "summary": "FINAL ROLLOVER CUTOFF",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\953b925a-e637-4542-afb0-98394644ab43\\Pasted text.txt",
+    "heading": "# L21A \u2014 FINAL ROLLOVER CUTOFF"
+  },
+  "L20": {
+    "summary": "HISTORICAL LEAGUE SEASONS",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\953b925a-e637-4542-afb0-98394644ab43\\Pasted text.txt",
+    "heading": "# L20 \u2014 HISTORICAL LEAGUE SEASONS"
+  },
+  "L21": {
+    "summary": "HISTORICAL LEAGUE COMPETITION MUST NOT FOLLOW TODAY'S MEMBERSHIP",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\953b925a-e637-4542-afb0-98394644ab43\\Pasted text.txt",
+    "heading": "# L21 \u2014 HISTORICAL LEAGUE COMPETITION MUST NOT FOLLOW TODAY'S MEMBERSHIP"
+  },
+  "L22": {
+    "summary": "DELETING A LEAGUE DELETES LEAGUE-SPECIFIC HISTORY",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\953b925a-e637-4542-afb0-98394644ab43\\Pasted text.txt",
+    "heading": "# L22 \u2014 DELETING A LEAGUE DELETES LEAGUE-SPECIFIC HISTORY"
+  },
+  "A1": {
+    "summary": "MALFORMED REGISTRATION MUST NEVER 500",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\1fe9a353-216c-41c9-80fb-1ec938599879\\Pasted text.txt",
+    "heading": "## A1 \u2014 MALFORMED REGISTRATION MUST NEVER 500"
+  },
+  "A2": {
+    "summary": "USERNAME NORMALIZATION AND UNIQUENESS",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\1fe9a353-216c-41c9-80fb-1ec938599879\\Pasted text.txt",
+    "heading": "# A2 \u2014 USERNAME NORMALIZATION AND UNIQUENESS"
+  },
+  "A3": {
+    "summary": "EMAIL NORMALIZATION AND UNIQUENESS",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\1fe9a353-216c-41c9-80fb-1ec938599879\\Pasted text.txt",
+    "heading": "# A3 \u2014 EMAIL NORMALIZATION AND UNIQUENESS"
+  },
+  "A4": {
+    "summary": "PASSWORDS ARE EXACT STRINGS",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\1fe9a353-216c-41c9-80fb-1ec938599879\\Pasted text.txt",
+    "heading": "# A4 \u2014 PASSWORDS ARE EXACT STRINGS"
+  },
+  "A5": {
+    "summary": "PASSWORD POLICY",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\1fe9a353-216c-41c9-80fb-1ec938599879\\Pasted text.txt",
+    "heading": "# A5 \u2014 PASSWORD POLICY"
+  },
+  "A6": {
+    "summary": "ATOMIC REGISTRATION / DB UNIQUENESS",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\1fe9a353-216c-41c9-80fb-1ec938599879\\Pasted text.txt",
+    "heading": "# A6 \u2014 ATOMIC REGISTRATION / DB UNIQUENESS"
+  },
+  "A7": {
+    "summary": "GENERIC LOGIN FAILURE",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\1fe9a353-216c-41c9-80fb-1ec938599879\\Pasted text.txt",
+    "heading": "# A7 \u2014 GENERIC LOGIN FAILURE"
+  },
+  "A17": {
+    "summary": "ACCOUNT EMAIL PRIVACY",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\1fe9a353-216c-41c9-80fb-1ec938599879\\Pasted text.txt",
+    "heading": "# A17 \u2014 ACCOUNT EMAIL PRIVACY"
+  },
+  "A18": {
+    "summary": "ADMIN HAS NO CREDENTIAL/AUTH BYPASS",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\1fe9a353-216c-41c9-80fb-1ec938599879\\Pasted text.txt",
+    "heading": "# A18 \u2014 ADMIN HAS NO CREDENTIAL/AUTH BYPASS"
+  },
+  "A19": {
+    "summary": "NO USERNAME/EMAIL EDITING IN THIS PHASE",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\1fe9a353-216c-41c9-80fb-1ec938599879\\Pasted text.txt",
+    "heading": "# A19 \u2014 NO USERNAME/EMAIL EDITING IN THIS PHASE"
+  },
+  "A20": {
+    "summary": "NO NEW MANDATORY EMAIL VERIFICATION",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\1fe9a353-216c-41c9-80fb-1ec938599879\\Pasted text.txt",
+    "heading": "# A20 \u2014 NO NEW MANDATORY EMAIL VERIFICATION"
+  },
+  "A8": {
+    "summary": "RESET REQUEST MUST NOT ENUMERATE ACCOUNTS",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\9459a6e5-427d-4a2e-8432-091f4b19ef45\\Pasted text.txt",
+    "heading": "## A8 \u2014 RESET REQUEST MUST NOT ENUMERATE ACCOUNTS"
+  },
+  "A9": {
+    "summary": "RESET TOKENS",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\9459a6e5-427d-4a2e-8432-091f4b19ef45\\Pasted text.txt",
+    "heading": "# A9 \u2014 RESET TOKENS"
+  },
+  "A10": {
+    "summary": "NEW RESET INVALIDATES PRIOR OUTSTANDING TOKENS",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\9459a6e5-427d-4a2e-8432-091f4b19ef45\\Pasted text.txt",
+    "heading": "# A10 \u2014 NEW RESET INVALIDATES PRIOR OUTSTANDING TOKENS"
+  },
+  "A11": {
+    "summary": "SUCCESSFUL RESET INVALIDATES ALL RESET TOKENS",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\9459a6e5-427d-4a2e-8432-091f4b19ef45\\Pasted text.txt",
+    "heading": "# A11 \u2014 SUCCESSFUL RESET INVALIDATES ALL RESET TOKENS"
+  },
+  "A12": {
+    "summary": "PASSWORD RESET REVOKES EXISTING JWTs",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\9459a6e5-427d-4a2e-8432-091f4b19ef45\\Pasted text.txt",
+    "heading": "# A12 \u2014 PASSWORD RESET REVOKES EXISTING JWTs"
+  },
+  "A13": {
+    "summary": "TOKEN/SESSION VERSIONING",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\9459a6e5-427d-4a2e-8432-091f4b19ef45\\Pasted text.txt",
+    "heading": "# A13 \u2014 TOKEN/SESSION VERSIONING"
+  },
+  "A14": {
+    "summary": "KEEP NORMAL JWT MODEL LIGHTWEIGHT",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\9459a6e5-427d-4a2e-8432-091f4b19ef45\\Pasted text.txt",
+    "heading": "# A14 \u2014 KEEP NORMAL JWT MODEL LIGHTWEIGHT"
+  },
+  "A15": {
+    "summary": "RESET COMPLETION UI",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\9459a6e5-427d-4a2e-8432-091f4b19ef45\\Pasted text.txt",
+    "heading": "# A15 \u2014 RESET COMPLETION UI"
+  },
+  "A16": {
+    "summary": "RESET TOKEN SECRECY",
+    "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\9459a6e5-427d-4a2e-8432-091f4b19ef45\\Pasted text.txt",
+    "heading": "# A16 \u2014 RESET TOKEN SECRECY"
+  },
+  "SC17": {
+    "summary": "Zero-competitor final snapshot after successful canonical evaluation; failure must not masquerade as empty",
+    "contract_source": "User SC17 business decision in this conversation; docs/repairs/nc-02d2-history-snapshot.md",
+    "heading": "SC17 \u2014 Zero-competitor final snapshot"
+  }
+}

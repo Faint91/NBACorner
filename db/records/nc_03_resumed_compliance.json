@@ -1,0 +1,223 @@
+{
+  "phase": "NC-03-resumed",
+  "status": "FAIL",
+  "production_readiness": "NOT READY",
+  "verified_at_utc": "2026-10-17T20:00:09.782838+00:00",
+  "audit_complete": false,
+  "starting_repositories": {
+    "backend": {
+      "head": "1f2866f8797c8bbd574c9844425a4dea3f15a91e",
+      "branch": "main",
+      "clean": true
+    },
+    "frontend": {
+      "head": "4fa0e9fc11d49354e3da137ee43e9d1ddbc87357",
+      "branch": "main",
+      "clean": true
+    }
+  },
+  "history_preserved": [
+    "a0587529e2d1443d846e46850b6884a6cab16f36 original NC-03 failure",
+    "1f2866f8797c8bbd574c9844425a4dea3f15a91e local JWT repair",
+    "Original NC-03 artifacts, NC-03R1 records, migrations and characterization sources unchanged"
+  ],
+  "NC03_SEC_001": {
+    "classification": "PASS",
+    "status": "repaired and reverified",
+    "offline_proof": {
+      "finding": "NC03-SEC-001",
+      "status": "REPAIRED LOCALLY / pending NC-03 re-audit",
+      "unsafe_startup_cases": {
+        "missing": "REJECTED_BEFORE_AUTH_OR_CLIENT_CREATION",
+        "empty": "REJECTED_BEFORE_AUTH_OR_CLIENT_CREATION",
+        "whitespace": "REJECTED_BEFORE_AUTH_OR_CLIENT_CREATION",
+        "too_short": "REJECTED_BEFORE_AUTH_OR_CLIENT_CREATION",
+        "known_source_fallback": "REJECTED_BEFORE_AUTH_OR_CLIENT_CREATION",
+        "placeholder_secret": "REJECTED_BEFORE_AUTH_OR_CLIENT_CREATION",
+        "placeholder_changeme": "REJECTED_BEFORE_AUTH_OR_CLIENT_CREATION"
+      },
+      "actual_current_route_statuses": {
+        "valid_explicit_key": 200,
+        "no_token": 401,
+        "forged_old_source_fallback": 401,
+        "wrong_key": 401,
+        "nonexistent_user": 401,
+        "malformed": 401,
+        "wrong_algorithm": 401,
+        "missing_expiry": 401,
+        "expired": 401,
+        "pre_g2_missing_av_version_zero": 200,
+        "revoked_av_after_version_increment": 401,
+        "legacy_after_version_increment": 401,
+        "new_av_after_version_increment": 200,
+        "existing_token_same_config": 200
+      },
+      "actual_generation_claims_and_seven_day_expiry_unchanged": true,
+      "explicit_config_preserved_exactly": true,
+      "minimum_characters": 32,
+      "database": "Synthetic in-memory user/version read double; live G1/G2 tested separately",
+      "production_contact": false,
+      "network_used": false,
+      "secret_or_token_values_emitted": false
+    },
+    "fresh_real_reset_and_auth_validation": "db/records/nc_03_resume_auth_validation.json"
+  },
+  "NC03_SEC_002": {
+    "finding": "NC03-SEC-002",
+    "classification": "FAIL",
+    "affected_contract": "NC-03 resumed section16: no raw DB/provider internals or SQL in user-facing responses",
+    "route": "GET /__debug/master-status",
+    "source_line": 3500,
+    "observations": {
+      "healthy": {
+        "status": 200,
+        "no_authorization_header": true,
+        "raw_provider_marker_returned": false,
+        "exception_field_present": false,
+        "SQL_fix_in_response": false,
+        "supplied_existing_bracket_linkage_returned": true
+      },
+      "generic_failure": {
+        "status": 500,
+        "no_authorization_header": true,
+        "raw_provider_marker_returned": true,
+        "exception_field_present": true,
+        "SQL_fix_in_response": false,
+        "supplied_existing_bracket_linkage_returned": false
+      },
+      "missing_column_failure": {
+        "status": 500,
+        "no_authorization_header": true,
+        "raw_provider_marker_returned": true,
+        "exception_field_present": true,
+        "SQL_fix_in_response": true,
+        "supplied_existing_bracket_linkage_returned": false
+      }
+    },
+    "control_missing_id_status": 400,
+    "actual_current_route_and_global_hook_compiled": true,
+    "database": "Synthetic read double; one valid canonical-season precondition supplied",
+    "raw_fault_details_or_SQL_printed": false,
+    "database_mutations": 0,
+    "network_used": false,
+    "production_contact": false,
+    "limitation": "Not a production observation; no real stored credential leakage claimed.",
+    "product_requirement_ids_failed": []
+  },
+  "matrix_totals": {
+    "PASS": 16,
+    "FAIL": 0,
+    "BLOCKED": 102,
+    "NOT APPLICABLE": 0
+  },
+  "migration_inventory": [
+    {
+      "path": "db/post-baseline/0001_nc_02b3_bracket_lifecycle.sql",
+      "sha256": "e98346423a4f73690371d8f1c178347330e5da33f02b6b9f4475475d237b4376"
+    },
+    {
+      "path": "db/post-baseline/0002_nc_02c1_canonical_season.sql",
+      "sha256": "ab38f5182351d5bbf6df0116c2af944e97401b55e8b0fea037f0c11fa11296ec"
+    },
+    {
+      "path": "db/post-baseline/0003_nc_02c2_atomic_standings.sql",
+      "sha256": "e359e09771af5b6a4fdf94542138a6655b8e273a8b064dbfb9a54c3973968d29"
+    },
+    {
+      "path": "db/post-baseline/0004_nc_02c3_season_transition.sql",
+      "sha256": "8e252eb6247f477c42c2e38a83b881524e058f9f707e969e4e917e2bc85a6736"
+    },
+    {
+      "path": "db/post-baseline/0005_nc_02d1_atomic_scores.sql",
+      "sha256": "11fdf464ab393bd0e5b58e8f34537447c6e320a731f7352fa62d4a295b657433"
+    },
+    {
+      "path": "db/post-baseline/0006_nc_02d2_final_snapshots.sql",
+      "sha256": "3e1e3e34788cf6c05cb450d0b370fe1ca55ef6314f4bbb632d81445e7558c9d7"
+    },
+    {
+      "path": "db/post-baseline/0007_nc_02e_atomic_rollover.sql",
+      "sha256": "cd3dbfd415d9a390e434df6b74ea2030fbf5bac9ae9ad8ebb63d01445c1bc1d8"
+    },
+    {
+      "path": "db/post-baseline/0008_nc_02f1_league_lifecycle.sql",
+      "sha256": "e4abfcf9d7093847940cd967a2f37c760f3fa2708dca4256791effa8ca6740b9"
+    },
+    {
+      "path": "db/post-baseline/0009_nc_02f2_league_history.sql",
+      "sha256": "3658bf8d6cd3552c8b1a4f9d46f07b43a6eaa2c68382eb18172f1b952470403b"
+    },
+    {
+      "path": "db/post-baseline/0010_nc_02g1_identity_auth.sql",
+      "sha256": "158967feebad44df173f8b72ed1fb1aab88e5c740ebb5f2fbb8b46c154b37be5"
+    },
+    {
+      "path": "db/post-baseline/0011_nc_02g2_password_reset_sessions.sql",
+      "sha256": "250a4abf4a789ad64d6dbe8b9e5569e763b8a5d9492ee2071a3865f9517810b6"
+    }
+  ],
+  "validation": {
+    "focused_auth_live": {
+      "passed": true,
+      "tests": 25,
+      "failures": 0,
+      "errors": 0
+    },
+    "full_backend_suite": "BLOCKED: not initiated after new confirmed defect",
+    "full_offline_suite": "BLOCKED: not run in resumed audit; prior repair totals not substituted",
+    "frontend_tests_build_lint": "BLOCKED: not run; zero frontend edits but no fresh lint baseline comparison claimed",
+    "fresh_migration_chain_and_security_catalog": "BLOCKED: not run after new confirmed defect",
+    "CROSS01_through_CROSS12": "BLOCKED: no complete fresh CROSS sequence certified",
+    "audit_tool_format_compile_json_whitespace_secret_pattern_review": "PASS; limited to new audit artifacts"
+  },
+  "cleanup": {
+    "counts": {
+      "users": 4,
+      "standings": 30,
+      "reset_rows": 0,
+      "advisory_locks": 0,
+      "proof_databases": 0,
+      "rollover_audits": 0,
+      "all_auth_version_zero": true
+    },
+    "fixture": {
+      "identity": "PASS",
+      "marker": "PASS",
+      "email": "PASS",
+      "providers": "PASS",
+      "jobs": "PASS",
+      "fixture_reset": "PASS",
+      "harness": "UNMET",
+      "fixture_version": "nc-fixtures-v1",
+      "fixture_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "mutation_permitted": false
+    },
+    "readiness": {
+      "identity_verified": true,
+      "database_marker": "PASS",
+      "email": "PASS",
+      "providers": "PASS",
+      "external_credentials": "PASS",
+      "jobs": "PASS",
+      "jobs_enabled": false,
+      "fixture_state": "SEEDED",
+      "fixtures_reset": "PASS",
+      "integration_harness": "PASS",
+      "mutation_permitted": false,
+      "harness_state": "AVAILABLE_GUARDED",
+      "harness_scoped_mutation_permitted": false
+    },
+    "flask_stopped": true,
+    "mail_capture_empty_in_completed_live_runner": true
+  },
+  "limits": {
+    "real_stored_secret_leakage_claimed": false,
+    "deployed_exposure_verified": false,
+    "individual_118_requirement_failure_inferred": false,
+    "new_product_repair_performed": false
+  },
+  "production_contact": false,
+  "deployment": false,
+  "one_on_one_modified": false,
+  "next_checkpoint": "Separately authorize NC-03R2 diagnostic error-response sanitization, then resume NC-03. No NC-04."
+}

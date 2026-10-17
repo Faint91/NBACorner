@@ -1,0 +1,2012 @@
+{
+  "phase": "NC-03-resumed",
+  "audited_backend_head": "1f2866f8797c8bbd574c9844425a4dea3f15a91e",
+  "verified_at_utc": "2026-10-17T20:00:09.782838+00:00",
+  "status": "FAIL",
+  "registry_complete": true,
+  "consolidated_audit_complete": false,
+  "totals": {
+    "PASS": 16,
+    "FAIL": 0,
+    "BLOCKED": 102,
+    "NOT APPLICABLE": 0
+  },
+  "foundational_contract_findings": {
+    "NC03-SEC-001": "PASS / repaired and reverified",
+    "NC03-SEC-002": "FAIL / resumed section16 error sanitization"
+  },
+  "requirements": [
+    {
+      "requirement_id": "P1",
+      "domain": "Privacy / access",
+      "summary": "Email privacy",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\ba42fb2e-606e-4aa4-b5b6-c2e4f02db39b\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "P2",
+      "domain": "Privacy / access",
+      "summary": "Private-league boundary",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\ba42fb2e-606e-4aa4-b5b6-c2e4f02db39b\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "P3",
+      "domain": "Privacy / access",
+      "summary": "Private-league discovery",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\ba42fb2e-606e-4aa4-b5b6-c2e4f02db39b\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "P4",
+      "domain": "Privacy / access",
+      "summary": "Draft / unsaved competitive privacy",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\0f962297-2e50-4d2a-807b-7f936ad84ecf\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "P5",
+      "domain": "Privacy / access",
+      "summary": "Competitive eligibility requires current saved state",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\0f962297-2e50-4d2a-807b-7f936ad84ecf\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "P6",
+      "domain": "Privacy / access",
+      "summary": "Admin privacy bypass",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\ba42fb2e-606e-4aa4-b5b6-c2e4f02db39b\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "P7",
+      "domain": "Privacy / access",
+      "summary": "Server-side enforcement",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\ba42fb2e-606e-4aa4-b5b6-c2e4f02db39b\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "P8",
+      "domain": "Privacy / access",
+      "summary": "Sensitive stored fields",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\ba42fb2e-606e-4aa4-b5b6-c2e4f02db39b\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "P9",
+      "domain": "Privacy / access",
+      "summary": "Public league competition visibility",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\0f962297-2e50-4d2a-807b-7f936ad84ecf\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "P10",
+      "domain": "Privacy / access",
+      "summary": "Membership remains authoritative",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\ba42fb2e-606e-4aa4-b5b6-c2e4f02db39b\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "B1",
+      "domain": "Brackets",
+      "summary": "Final bracket deadline",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\97e5e13e-79cc-4904-bcf8-8f6024549153\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "B2",
+      "domain": "Brackets",
+      "summary": "Admin bracket editing",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\97e5e13e-79cc-4904-bcf8-8f6024549153\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "B3",
+      "domain": "Brackets",
+      "summary": "Ordinary-owner undo",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\97e5e13e-79cc-4904-bcf8-8f6024549153\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "B4",
+      "domain": "Brackets",
+      "summary": "Submitted bracket edits",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\97e5e13e-79cc-4904-bcf8-8f6024549153\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "B5",
+      "domain": "Brackets",
+      "summary": "Ordinary creation window",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\97e5e13e-79cc-4904-bcf8-8f6024549153\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "B6",
+      "domain": "Brackets",
+      "summary": "Complete bracket required for ordinary submission",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\2d3fa034-404b-4d71-b236-fcf76608d808\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "B7",
+      "domain": "Brackets",
+      "summary": "Series game-count validation",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\2d3fa034-404b-4d71-b236-fcf76608d808\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "B8",
+      "domain": "Brackets",
+      "summary": "Both participants required before prediction",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\2d3fa034-404b-4d71-b236-fcf76608d808\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "B9",
+      "domain": "Brackets",
+      "summary": "Dependency-aware downstream clearing",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\2d3fa034-404b-4d71-b236-fcf76608d808\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "B10",
+      "domain": "Brackets",
+      "summary": "Owner deletion before deadline",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\3a0437a8-9c3a-4817-ad37-64c687609b7a\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "B11",
+      "domain": "Brackets",
+      "summary": "Deletion after deadline",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\3a0437a8-9c3a-4817-ad37-64c687609b7a\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "B12",
+      "domain": "Brackets",
+      "summary": "One active bracket per user per season",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\3a0437a8-9c3a-4817-ad37-64c687609b7a\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "B13",
+      "domain": "Brackets",
+      "summary": "Explicit master replacement",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\3a0437a8-9c3a-4817-ad37-64c687609b7a\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "B14",
+      "domain": "Brackets",
+      "summary": "Active master protection",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\3a0437a8-9c3a-4817-ad37-64c687609b7a\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "B15",
+      "domain": "Brackets",
+      "summary": "Historical bracket access",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\3a0437a8-9c3a-4817-ad37-64c687609b7a\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "B16",
+      "domain": "Brackets",
+      "summary": "Draft at deadline",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\97e5e13e-79cc-4904-bcf8-8f6024549153\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "S1",
+      "domain": "Season / standings",
+      "summary": "One canonical current season",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\8b445ec7-814a-4ee7-aea9-8258d7edca38\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "S2",
+      "domain": "Season / standings",
+      "summary": "No independent production season overrides",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\8b445ec7-814a-4ee7-aea9-8258d7edca38\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "S3",
+      "domain": "Season / standings",
+      "summary": "ESPN is the standings authority",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\ecdc9e13-a080-457c-ba72-4ef6d6708d69\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "S4",
+      "domain": "Season / standings",
+      "summary": "Daily regular-season refresh",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\ecdc9e13-a080-457c-ba72-4ef6d6708d69\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "S5",
+      "domain": "Season / standings",
+      "summary": "Standings freeze",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\ecdc9e13-a080-457c-ba72-4ef6d6708d69\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "S6",
+      "domain": "Season / standings",
+      "summary": "Admin/manual freeze",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\ecdc9e13-a080-457c-ba72-4ef6d6708d69\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "S7",
+      "domain": "Season / standings",
+      "summary": "Atomic standings replacement",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\ecdc9e13-a080-457c-ba72-4ef6d6708d69\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "S8",
+      "domain": "Season / standings",
+      "summary": "Complete dataset validation",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\ecdc9e13-a080-457c-ba72-4ef6d6708d69\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "S9",
+      "domain": "Season / standings",
+      "summary": "Current-state standings table",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\ecdc9e13-a080-457c-ba72-4ef6d6708d69\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "S10",
+      "domain": "Season / standings",
+      "summary": "Canonical season advancement",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\29bdc6e5-f98b-4315-9b89-cbe00561e834\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "S11",
+      "domain": "Season / standings",
+      "summary": "Current standings reset on season transition",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\29bdc6e5-f98b-4315-9b89-cbe00561e834\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "S12",
+      "domain": "Season / standings",
+      "summary": "Distinct timing concepts",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\8b445ec7-814a-4ee7-aea9-8258d7edca38\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "S13",
+      "domain": "Season / standings",
+      "summary": "Failure preserves last good state",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\ecdc9e13-a080-457c-ba72-4ef6d6708d69\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "S14",
+      "domain": "Season / standings",
+      "summary": "Backend season/status authority",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\8b445ec7-814a-4ee7-aea9-8258d7edca38\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "SC1",
+      "domain": "Scoring / history",
+      "summary": "Base series scoring",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\bac6a1b8-e296-448b-9506-a133d6ec28f6\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "SC2",
+      "domain": "Scoring / history",
+      "summary": "Champion bonus",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\bac6a1b8-e296-448b-9506-a133d6ec28f6\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "SC3",
+      "domain": "Scoring / history",
+      "summary": "Both-Finalists bonus",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\bac6a1b8-e296-448b-9506-a133d6ec28f6\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "SC4",
+      "domain": "Scoring / history",
+      "summary": "Live leaderboard ordering",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\bac6a1b8-e296-448b-9506-a133d6ec28f6\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "SC5",
+      "domain": "Scoring / history",
+      "summary": "Historical competitive ordering",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\4ad4166e-eb31-44dc-8431-e173e637877d\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "SC6",
+      "domain": "Scoring / history",
+      "summary": "True ties",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\bac6a1b8-e296-448b-9506-a133d6ec28f6\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "SC7",
+      "domain": "Scoring / history",
+      "summary": "Canonical master ground truth",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\bac6a1b8-e296-448b-9506-a133d6ec28f6\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "SC8",
+      "domain": "Scoring / history",
+      "summary": "Automatic score recomputation",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\bac6a1b8-e296-448b-9506-a133d6ec28f6\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "SC9",
+      "domain": "Scoring / history",
+      "summary": "Atomic recomputation",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\bac6a1b8-e296-448b-9506-a133d6ec28f6\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "SC10",
+      "domain": "Scoring / history",
+      "summary": "Fresh canonical scoring before final snapshot",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\4ad4166e-eb31-44dc-8431-e173e637877d\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "SC11",
+      "domain": "Scoring / history",
+      "summary": "Structured snapshot defines success",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\4ad4166e-eb31-44dc-8431-e173e637877d\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "SC12",
+      "domain": "Scoring / history",
+      "summary": "Atomic structured snapshot",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\4ad4166e-eb31-44dc-8431-e173e637877d\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "SC13",
+      "domain": "Scoring / history",
+      "summary": "Rollover snapshot gate",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\4ad4166e-eb31-44dc-8431-e173e637877d\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "SC14",
+      "domain": "Scoring / history",
+      "summary": "Historical snapshot immutability",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\4ad4166e-eb31-44dc-8431-e173e637877d\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "SC15",
+      "domain": "Scoring / history",
+      "summary": "Historical privacy",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\4ad4166e-eb31-44dc-8431-e173e637877d\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "SC16",
+      "domain": "Scoring / history",
+      "summary": "Historical response ordering",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\4ad4166e-eb31-44dc-8431-e173e637877d\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "SC17",
+      "domain": "Scoring / history",
+      "summary": "Zero-competitor final snapshot after successful canonical evaluation; failure must not masquerade as empty",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "User SC17 business decision in this conversation; docs/repairs/nc-02d2-history-snapshot.md"
+    },
+    {
+      "requirement_id": "RR1",
+      "domain": "Rollover",
+      "summary": "Explicit admin rollover",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\8e40cb2e-e324-48e1-99c3-7fc16c5220dc\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "RR2",
+      "domain": "Rollover",
+      "summary": "Completed master prerequisite",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\8e40cb2e-e324-48e1-99c3-7fc16c5220dc\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "RR3",
+      "domain": "Rollover",
+      "summary": "Verified structured snapshot prerequisite",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\8e40cb2e-e324-48e1-99c3-7fc16c5220dc\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "RR4",
+      "domain": "Rollover",
+      "summary": "Atomic post-snapshot transition",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\8e40cb2e-e324-48e1-99c3-7fc16c5220dc\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "RR5",
+      "domain": "Rollover",
+      "summary": "Failure before transition",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\8e40cb2e-e324-48e1-99c3-7fc16c5220dc\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "RR6",
+      "domain": "Rollover",
+      "summary": "Failure during transition",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\8e40cb2e-e324-48e1-99c3-7fc16c5220dc\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "RR7",
+      "domain": "Rollover",
+      "summary": "Retry model",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\8e40cb2e-e324-48e1-99c3-7fc16c5220dc\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "RR8",
+      "domain": "Rollover",
+      "summary": "Repeated successful rollover",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\8e40cb2e-e324-48e1-99c3-7fc16c5220dc\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "RR9",
+      "domain": "Rollover",
+      "summary": "One rollover at a time",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\8e40cb2e-e324-48e1-99c3-7fc16c5220dc\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "RR10",
+      "domain": "Rollover",
+      "summary": "Immediate next season only",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\8e40cb2e-e324-48e1-99c3-7fc16c5220dc\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "RR11",
+      "domain": "Rollover",
+      "summary": "Preserve saved historical bracket experience",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\8e40cb2e-e324-48e1-99c3-7fc16c5220dc\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "RR12",
+      "domain": "Rollover",
+      "summary": "HARD DELETE UNSAVED SOURCE-SEASON BRACKETS",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\8e40cb2e-e324-48e1-99c3-7fc16c5220dc\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "RR13",
+      "domain": "Rollover",
+      "summary": "Current score cleanup",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\8e40cb2e-e324-48e1-99c3-7fc16c5220dc\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "RR14",
+      "domain": "Rollover",
+      "summary": "Legacy history compatibility",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\8e40cb2e-e324-48e1-99c3-7fc16c5220dc\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "RR15",
+      "domain": "Rollover",
+      "summary": "Durable rollover audit",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\8e40cb2e-e324-48e1-99c3-7fc16c5220dc\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "RR16",
+      "domain": "Rollover",
+      "summary": "Safe operational errors",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\8e40cb2e-e324-48e1-99c3-7fc16c5220dc\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "L1",
+      "domain": "Leagues",
+      "summary": "LEAGUES PERSIST ACROSS SEASONS",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\e9452d6d-7818-4847-9a53-247d0a857b8c\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "L2",
+      "domain": "Leagues",
+      "summary": "CREATE LEAGUES AT ANY TIME",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\e9452d6d-7818-4847-9a53-247d0a857b8c\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "L3",
+      "domain": "Leagues",
+      "summary": "JOIN LEAGUES AT ANY TIME",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\e9452d6d-7818-4847-9a53-247d0a857b8c\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "L4",
+      "domain": "Leagues",
+      "summary": "EXACTLY ONE OWNER",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\e9452d6d-7818-4847-9a53-247d0a857b8c\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "L5",
+      "domain": "Leagues",
+      "summary": "OWNER LEAVING",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\e9452d6d-7818-4847-9a53-247d0a857b8c\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "L6",
+      "domain": "Leagues",
+      "summary": "EXPLICIT OWNERSHIP TRANSFER",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\e9452d6d-7818-4847-9a53-247d0a857b8c\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "L7",
+      "domain": "Leagues",
+      "summary": "MEMBER LEAVING",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\e9452d6d-7818-4847-9a53-247d0a857b8c\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "L8",
+      "domain": "Leagues",
+      "summary": "OWNER REMOVING MEMBERS",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\e9452d6d-7818-4847-9a53-247d0a857b8c\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "L9",
+      "domain": "Leagues",
+      "summary": "ADMIN HAS NO ROUTINE LEAGUE-OWNER POWERS",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\e9452d6d-7818-4847-9a53-247d0a857b8c\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "L10",
+      "domain": "Leagues",
+      "summary": "OWNER-ONLY LEAGUE DELETION",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\e9452d6d-7818-4847-9a53-247d0a857b8c\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "L11",
+      "domain": "Leagues",
+      "summary": "PUBLIC VS PRIVATE",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\e9452d6d-7818-4847-9a53-247d0a857b8c\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "L12",
+      "domain": "Leagues",
+      "summary": "OWNER MAY CHANGE PRIVACY / PASSWORD",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\e9452d6d-7818-4847-9a53-247d0a857b8c\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "L13",
+      "domain": "Leagues",
+      "summary": "PASSWORD HANDLING",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\e9452d6d-7818-4847-9a53-247d0a857b8c\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "L14",
+      "domain": "Leagues",
+      "summary": "LEAGUE RENAME",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\e9452d6d-7818-4847-9a53-247d0a857b8c\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "L15",
+      "domain": "Leagues",
+      "summary": "GLOBAL CASE-INSENSITIVE TRIMMED NAME UNIQUENESS",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\e9452d6d-7818-4847-9a53-247d0a857b8c\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "L16",
+      "domain": "Leagues",
+      "summary": "UNIQUE MEMBERSHIP",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\e9452d6d-7818-4847-9a53-247d0a857b8c\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "L17",
+      "domain": "Leagues",
+      "summary": "PUBLIC DISCOVERY",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\e9452d6d-7818-4847-9a53-247d0a857b8c\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "L18",
+      "domain": "Leagues",
+      "summary": "PRIVATE DISCOVERY",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\e9452d6d-7818-4847-9a53-247d0a857b8c\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "L19",
+      "domain": "Leagues",
+      "summary": "SERVER-SCOPED LEAGUE LEADERBOARD",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\e9452d6d-7818-4847-9a53-247d0a857b8c\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "L20",
+      "domain": "Leagues",
+      "summary": "HISTORICAL LEAGUE SEASONS",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\953b925a-e637-4542-afb0-98394644ab43\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "L21",
+      "domain": "Leagues",
+      "summary": "HISTORICAL LEAGUE COMPETITION MUST NOT FOLLOW TODAY'S MEMBERSHIP",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\953b925a-e637-4542-afb0-98394644ab43\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "L22",
+      "domain": "Leagues",
+      "summary": "DELETING A LEAGUE DELETES LEAGUE-SPECIFIC HISTORY",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\953b925a-e637-4542-afb0-98394644ab43\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "L20A",
+      "domain": "Leagues",
+      "summary": "ONLY ELIGIBLE SUBMITTED MEMBERS RECEIVE ROWS",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\953b925a-e637-4542-afb0-98394644ab43\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "L20B",
+      "domain": "Leagues",
+      "summary": "CURRENT PRIVACY CONTROLS ALL HISTORY",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\953b925a-e637-4542-afb0-98394644ab43\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "L21A",
+      "domain": "Leagues",
+      "summary": "FINAL ROLLOVER CUTOFF",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\953b925a-e637-4542-afb0-98394644ab43\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "A1",
+      "domain": "Auth / account",
+      "summary": "MALFORMED REGISTRATION MUST NEVER 500",
+      "classification": "PASS",
+      "implementation_locations": [
+        "app.py:register"
+      ],
+      "evidence": [
+        "db/records/nc_03_resume_auth_validation.json",
+        "Current auth/source inspection during resumed NC-03"
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [
+          "nc03r1_identity_auth_g2.IdentityAuthAcceptance.test_request_shapes_and_field_types"
+        ],
+        "coverage_kind": "fresh automated + current source"
+      },
+      "notes": "Verified individually using fresh focused auth acceptance and current implementation; not inferred from phase completion.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\1fe9a353-216c-41c9-80fb-1ec938599879\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "A2",
+      "domain": "Auth / account",
+      "summary": "USERNAME NORMALIZATION AND UNIQUENESS",
+      "classification": "PASS",
+      "implementation_locations": [
+        "app.py:register",
+        "identity_auth_service.py:normalize_username_key",
+        "db/post-baseline/0010_nc_02g1_identity_auth.sql"
+      ],
+      "evidence": [
+        "db/records/nc_03_resume_auth_validation.json",
+        "Current auth/source inspection during resumed NC-03"
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [
+          "nc03r1_identity_auth_g2.IdentityAuthAcceptance.test_identity_normalization_display_and_conflicts"
+        ],
+        "coverage_kind": "fresh automated + current source"
+      },
+      "notes": "Verified individually using fresh focused auth acceptance and current implementation; not inferred from phase completion.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\1fe9a353-216c-41c9-80fb-1ec938599879\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "A3",
+      "domain": "Auth / account",
+      "summary": "EMAIL NORMALIZATION AND UNIQUENESS",
+      "classification": "PASS",
+      "implementation_locations": [
+        "identity_auth_service.py:normalize_email",
+        "db/post-baseline/0010_nc_02g1_identity_auth.sql"
+      ],
+      "evidence": [
+        "db/records/nc_03_resume_auth_validation.json",
+        "Current auth/source inspection during resumed NC-03"
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [
+          "nc03r1_identity_auth_g2.IdentityAuthAcceptance.test_identity_normalization_display_and_conflicts",
+          "nc03r1_identity_auth_g2.IdentityAuthAcceptance.test_unicode_email_uses_database_normalization"
+        ],
+        "coverage_kind": "fresh automated + current source"
+      },
+      "notes": "Verified individually using fresh focused auth acceptance and current implementation; not inferred from phase completion.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\1fe9a353-216c-41c9-80fb-1ec938599879\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "A4",
+      "domain": "Auth / account",
+      "summary": "PASSWORDS ARE EXACT STRINGS",
+      "classification": "PASS",
+      "implementation_locations": [
+        "identity_auth_service.py:validate_password",
+        "identity_auth_service.py:verify_password",
+        "app.py:login"
+      ],
+      "evidence": [
+        "db/records/nc_03_resume_auth_validation.json",
+        "Current auth/source inspection during resumed NC-03"
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [
+          "nc03r1_identity_auth_g2.IdentityAuthAcceptance.test_outer_password_whitespace_is_exact",
+          "nc03r1_password_reset.PasswordResetAcceptance.test_password_exactness_unicode_long_and_boundaries"
+        ],
+        "coverage_kind": "fresh automated + current source"
+      },
+      "notes": "Verified individually using fresh focused auth acceptance and current implementation; not inferred from phase completion.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\1fe9a353-216c-41c9-80fb-1ec938599879\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "A5",
+      "domain": "Auth / account",
+      "summary": "PASSWORD POLICY",
+      "classification": "PASS",
+      "implementation_locations": [
+        "identity_auth_service.py:validate_password",
+        "identity_auth_service.py:hash_password"
+      ],
+      "evidence": [
+        "db/records/nc_03_resume_auth_validation.json",
+        "Current auth/source inspection during resumed NC-03"
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [
+          "nc03r1_identity_auth_g2.IdentityAuthAcceptance.test_long_shared_prefix_never_authenticates",
+          "nc03r1_identity_auth_g2.IdentityAuthAcceptance.test_password_boundaries_and_no_complexity"
+        ],
+        "coverage_kind": "fresh automated + current source"
+      },
+      "notes": "Verified individually using fresh focused auth acceptance and current implementation; not inferred from phase completion.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\1fe9a353-216c-41c9-80fb-1ec938599879\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "A6",
+      "domain": "Auth / account",
+      "summary": "ATOMIC REGISTRATION / DB UNIQUENESS",
+      "classification": "PASS",
+      "implementation_locations": [
+        "app.py:register",
+        "db/post-baseline/0010_nc_02g1_identity_auth.sql"
+      ],
+      "evidence": [
+        "db/records/nc_03_resume_auth_validation.json",
+        "Current auth/source inspection during resumed NC-03",
+        "db/records/nc_02g2_fresh_migration_proof.json: identity race proof and semantic verifier (prior trustworthy evidence)",
+        "Current register/login functions and migrations0010/0011 byte/AST-matched original G2 proof source"
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [
+          "nc03r1_identity_auth_g2.IdentityAuthAcceptance.test_identity_normalization_display_and_conflicts"
+        ],
+        "coverage_kind": "fresh automated + current source"
+      },
+      "notes": "Verified individually using fresh focused auth acceptance and current implementation; not inferred from phase completion. Current single INSERT and normalized unique indexes inspected; fresh race proof not rerun in stopped audit.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\1fe9a353-216c-41c9-80fb-1ec938599879\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "A7",
+      "domain": "Auth / account",
+      "summary": "GENERIC LOGIN FAILURE",
+      "classification": "PASS",
+      "implementation_locations": [
+        "app.py:login"
+      ],
+      "evidence": [
+        "db/records/nc_03_resume_auth_validation.json",
+        "Current auth/source inspection during resumed NC-03"
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [
+          "nc03r1_identity_auth_g2.IdentityAuthAcceptance.test_legacy_and_generic_login_and_jwt",
+          "nc03r1_auth_access.CurrentAuthBehavior.current_behavior__auth__login_failures"
+        ],
+        "coverage_kind": "fresh automated + current source"
+      },
+      "notes": "Verified individually using fresh focused auth acceptance and current implementation; not inferred from phase completion.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\1fe9a353-216c-41c9-80fb-1ec938599879\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "A8",
+      "domain": "Auth / account",
+      "summary": "RESET REQUEST MUST NOT ENUMERATE ACCOUNTS",
+      "classification": "PASS",
+      "implementation_locations": [
+        "app.py:forgot_password",
+        "password_reset_service.py:issue_reset"
+      ],
+      "evidence": [
+        "db/records/nc_03_resume_auth_validation.json",
+        "Current auth/source inspection during resumed NC-03"
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [
+          "nc03r1_password_reset.PasswordResetAcceptance.test_delivery_failure_conditional_cleanup_and_generic_response",
+          "nc03r1_password_reset.PasswordResetAcceptance.test_enumeration_digest_entropy_capture_ttl"
+        ],
+        "coverage_kind": "fresh automated + current source"
+      },
+      "notes": "Verified individually using fresh focused auth acceptance and current implementation; not inferred from phase completion.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\9459a6e5-427d-4a2e-8432-091f4b19ef45\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "A9",
+      "domain": "Auth / account",
+      "summary": "RESET TOKENS",
+      "classification": "PASS",
+      "implementation_locations": [
+        "password_reset_service.py:issue_reset",
+        "password_reset_service.py:token_digest",
+        "db/post-baseline/0011_nc_02g2_password_reset_sessions.sql"
+      ],
+      "evidence": [
+        "db/records/nc_03_resume_auth_validation.json",
+        "Current auth/source inspection during resumed NC-03"
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [
+          "nc03r1_password_reset.PasswordResetAcceptance.test_enumeration_digest_entropy_capture_ttl",
+          "nc03r1_password_reset.PasswordResetAcceptance.test_expired_invalid_and_malformed"
+        ],
+        "coverage_kind": "fresh automated + current source"
+      },
+      "notes": "Verified individually using fresh focused auth acceptance and current implementation; not inferred from phase completion.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\9459a6e5-427d-4a2e-8432-091f4b19ef45\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "A10",
+      "domain": "Auth / account",
+      "summary": "NEW RESET INVALIDATES PRIOR OUTSTANDING TOKENS",
+      "classification": "PASS",
+      "implementation_locations": [
+        "db/post-baseline/0011_nc_02g2_password_reset_sessions.sql:issue_password_reset"
+      ],
+      "evidence": [
+        "db/records/nc_03_resume_auth_validation.json",
+        "Current auth/source inspection during resumed NC-03"
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [
+          "nc03r1_password_reset.PasswordResetAcceptance.test_supersession_success_replay_and_single_increment"
+        ],
+        "coverage_kind": "fresh automated + current source"
+      },
+      "notes": "Verified individually using fresh focused auth acceptance and current implementation; not inferred from phase completion.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\9459a6e5-427d-4a2e-8432-091f4b19ef45\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "A11",
+      "domain": "Auth / account",
+      "summary": "SUCCESSFUL RESET INVALIDATES ALL RESET TOKENS",
+      "classification": "PASS",
+      "implementation_locations": [
+        "db/post-baseline/0011_nc_02g2_password_reset_sessions.sql:complete_password_reset"
+      ],
+      "evidence": [
+        "db/records/nc_03_resume_auth_validation.json",
+        "Current auth/source inspection during resumed NC-03"
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [
+          "nc03r1_password_reset.PasswordResetAcceptance.test_supersession_success_replay_and_single_increment"
+        ],
+        "coverage_kind": "fresh automated + current source"
+      },
+      "notes": "Verified individually using fresh focused auth acceptance and current implementation; not inferred from phase completion.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\9459a6e5-427d-4a2e-8432-091f4b19ef45\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "A12",
+      "domain": "Auth / account",
+      "summary": "PASSWORD RESET REVOKES EXISTING JWTs",
+      "classification": "PASS",
+      "implementation_locations": [
+        "app.py:decode_token",
+        "db/post-baseline/0011_nc_02g2_password_reset_sessions.sql:complete_password_reset"
+      ],
+      "evidence": [
+        "db/records/nc_03_resume_auth_validation.json",
+        "Current auth/source inspection during resumed NC-03"
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [
+          "nc03r1_password_reset.PasswordResetAcceptance.test_multidevice_and_legacy_revocation_new_login"
+        ],
+        "coverage_kind": "fresh automated + current source"
+      },
+      "notes": "Verified individually using fresh focused auth acceptance and current implementation; not inferred from phase completion.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\9459a6e5-427d-4a2e-8432-091f4b19ef45\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "A13",
+      "domain": "Auth / account",
+      "summary": "TOKEN/SESSION VERSIONING",
+      "classification": "PASS",
+      "implementation_locations": [
+        "app.py:generate_token",
+        "app.py:decode_token",
+        "db/post-baseline/0011_nc_02g2_password_reset_sessions.sql"
+      ],
+      "evidence": [
+        "db/records/nc_03_resume_auth_validation.json",
+        "Current auth/source inspection during resumed NC-03"
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [
+          "nc03r1_password_reset.PasswordResetAcceptance.test_jwt_bad_versions_missing_subject_and_admin_nonbypass",
+          "nc03r1_password_reset.PasswordResetAcceptance.test_multidevice_and_legacy_revocation_new_login"
+        ],
+        "coverage_kind": "fresh automated + current source"
+      },
+      "notes": "Verified individually using fresh focused auth acceptance and current implementation; not inferred from phase completion.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\9459a6e5-427d-4a2e-8432-091f4b19ef45\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "A14",
+      "domain": "Auth / account",
+      "summary": "KEEP NORMAL JWT MODEL LIGHTWEIGHT",
+      "classification": "PASS",
+      "implementation_locations": [
+        "app.py:generate_token",
+        "app.py:decode_token"
+      ],
+      "evidence": [
+        "db/records/nc_03_resume_auth_validation.json",
+        "Current auth/source inspection during resumed NC-03"
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [
+          "nc03r1_identity_auth_g2.IdentityAuthAcceptance.test_legacy_and_generic_login_and_jwt",
+          "nc03r1_password_reset.PasswordResetAcceptance.test_jwt_bad_versions_missing_subject_and_admin_nonbypass"
+        ],
+        "coverage_kind": "fresh automated + current source"
+      },
+      "notes": "Verified individually using fresh focused auth acceptance and current implementation; not inferred from phase completion.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\9459a6e5-427d-4a2e-8432-091f4b19ef45\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "A15",
+      "domain": "Auth / account",
+      "summary": "RESET COMPLETION UI",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\9459a6e5-427d-4a2e-8432-091f4b19ef45\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "A16",
+      "domain": "Auth / account",
+      "summary": "RESET TOKEN SECRECY",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\9459a6e5-427d-4a2e-8432-091f4b19ef45\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "A17",
+      "domain": "Auth / account",
+      "summary": "ACCOUNT EMAIL PRIVACY",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\1fe9a353-216c-41c9-80fb-1ec938599879\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "A18",
+      "domain": "Auth / account",
+      "summary": "ADMIN HAS NO CREDENTIAL/AUTH BYPASS",
+      "classification": "BLOCKED",
+      "implementation_locations": [],
+      "evidence": [
+        "NC03-SEC-002: new confirmed error-contract defect stopped broad validation."
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "not evaluated before new stop"
+      },
+      "notes": "Unverified in resumed audit because new NC03-SEC-002 triggered stop. This is not retention of the original stop reason; no product violation is inferred for this ID.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\1fe9a353-216c-41c9-80fb-1ec938599879\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "A19",
+      "domain": "Auth / account",
+      "summary": "NO USERNAME/EMAIL EDITING IN THIS PHASE",
+      "classification": "PASS",
+      "implementation_locations": [
+        "app.py:route inventory"
+      ],
+      "evidence": [
+        "db/records/nc_03_resume_auth_validation.json",
+        "Current auth/source inspection during resumed NC-03"
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [],
+        "coverage_kind": "direct static audit"
+      },
+      "notes": "Current complete Flask route inventory has only the five existing auth routes and no account/profile/user identity editor; no editor added by R1. Static direct audit, no new dedicated automated test.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\1fe9a353-216c-41c9-80fb-1ec938599879\\Pasted text.txt"
+    },
+    {
+      "requirement_id": "A20",
+      "domain": "Auth / account",
+      "summary": "NO NEW MANDATORY EMAIL VERIFICATION",
+      "classification": "PASS",
+      "implementation_locations": [
+        "app.py:register",
+        "app.py:login"
+      ],
+      "evidence": [
+        "db/records/nc_03_resume_auth_validation.json",
+        "Current auth/source inspection during resumed NC-03"
+      ],
+      "automated_coverage": {
+        "fresh_live_case_ids": [
+          "nc03r1_identity_auth_g2.IdentityAuthAcceptance.test_legacy_and_generic_login_and_jwt",
+          "nc03r1_auth_access.CurrentAuthBehavior.current_behavior__auth__valid_registration"
+        ],
+        "coverage_kind": "fresh automated + current source"
+      },
+      "notes": "Verified individually using fresh focused auth acceptance and current implementation; not inferred from phase completion.",
+      "contract_source": "C:\\Users\\pbosc\\.codex\\attachments\\1fe9a353-216c-41c9-80fb-1ec938599879\\Pasted text.txt"
+    }
+  ]
+}
