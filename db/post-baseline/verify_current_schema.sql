@@ -64,7 +64,7 @@ BEGIN
   IF (SELECT string_agg(c.relname, ',' ORDER BY c.relname COLLATE "C") FROM pg_class c WHERE c.relnamespace='public'::regnamespace AND c.relkind IN ('r','p','v','m','S','f') AND NOT EXISTS (SELECT 1 FROM pg_depend d WHERE d.classid='pg_class'::regclass AND d.objid=c.oid AND d.deptype='e')) IS DISTINCT FROM 'application_season,bracket_scores,bracket_view,brackets,leaderboard_history,leaderboard_history_competitors,leaderboard_history_id_seq,leaderboard_history_rows,leaderboard_history_snapshots,league_history_cutoffs,league_history_rows,league_history_seasons,league_members,leagues,matches,password_resets,password_resets_id_seq,season_rollover_audits,seasons,standings,standings_id_seq,teams,users' THEN
     RAISE EXCEPTION 'Baseline mismatch: application relation inventory';
   END IF;
-  IF (SELECT string_agg(p.proname, ',' ORDER BY p.proname COLLATE "C") FROM pg_proc p WHERE p.pronamespace='public'::regnamespace AND NOT EXISTS (SELECT 1 FROM pg_depend d WHERE d.classid='pg_proc'::regclass AND d.objid=p.oid AND d.deptype='e')) IS DISTINCT FROM '_set_bracket_scores_season_id,_set_matches_season_id,atomic_update_match,auth_identity_key,create_league_with_owner,create_master_bracket_atomic,delete_league_confirmed,execute_season_rollover_transition,finalize_season_transition,find_auth_user,fix_season_master_on_bracket_soft_delete,inspect_league_name,join_league_member,league_name_key,lock_league_history_membership,normalize_league_name,protect_final_leaderboard_history,protect_league_history,publish_current_bracket_scores,publish_current_standings,publish_leaderboard_snapshot,publish_league_history_cutoff,remove_league_membership,require_completed_rollover_master,run_season_rollover,set_master_bracket,set_winner_atomic,transfer_league_ownership,undo_prediction_atomic,update_league_settings,verify_league_history_cutoff' THEN
+  IF (SELECT string_agg(p.proname, ',' ORDER BY p.proname COLLATE "C") FROM pg_proc p WHERE p.pronamespace='public'::regnamespace AND NOT EXISTS (SELECT 1 FROM pg_depend d WHERE d.classid='pg_proc'::regclass AND d.objid=p.oid AND d.deptype='e')) IS DISTINCT FROM '_set_bracket_scores_season_id,_set_matches_season_id,atomic_update_match,auth_identity_key,cancel_password_reset,complete_password_reset,create_league_with_owner,create_master_bracket_atomic,delete_league_confirmed,execute_season_rollover_transition,finalize_season_transition,find_auth_user,fix_season_master_on_bracket_soft_delete,inspect_league_name,issue_password_reset,join_league_member,league_name_key,lock_league_history_membership,normalize_league_name,protect_final_leaderboard_history,protect_league_history,publish_current_bracket_scores,publish_current_standings,publish_leaderboard_snapshot,publish_league_history_cutoff,remove_league_membership,require_completed_rollover_master,run_season_rollover,set_master_bracket,set_winner_atomic,transfer_league_ownership,undo_prediction_atomic,update_league_settings,verify_league_history_cutoff' THEN
     RAISE EXCEPTION 'Baseline mismatch: application function inventory';
   END IF;
   IF (SELECT relkind::text FROM pg_class WHERE oid='public.bracket_scores'::regclass) IS DISTINCT FROM 'r' THEN
@@ -1294,7 +1294,7 @@ BEGIN
   IF (SELECT relkind::text FROM pg_class WHERE oid='public.password_resets'::regclass) IS DISTINCT FROM 'r' THEN
     RAISE EXCEPTION 'Baseline mismatch: password_resets kind';
   END IF;
-  IF (SELECT string_agg(attname, ',' ORDER BY attnum) FROM pg_attribute WHERE attrelid='public.password_resets'::regclass AND attnum>0 AND NOT attisdropped) IS DISTINCT FROM 'id,token,expires_at,used,created_at,user_id' THEN
+  IF (SELECT string_agg(attname, ',' ORDER BY attnum) FROM pg_attribute WHERE attrelid='public.password_resets'::regclass AND attnum>0 AND NOT attisdropped) IS DISTINCT FROM 'id,token_digest,expires_at,used,created_at,user_id' THEN
     RAISE EXCEPTION 'Baseline mismatch: password_resets columns/order';
   END IF;
   IF (SELECT format_type(a.atttypid,a.atttypmod) FROM pg_attribute a WHERE a.attrelid='public.password_resets'::regclass AND a.attname='id' AND a.attnum>0 AND NOT a.attisdropped) IS DISTINCT FROM 'integer' THEN
@@ -1309,19 +1309,19 @@ BEGIN
   IF (SELECT a.attidentity='' AND a.attgenerated='' AND a.attacl IS NULL FROM pg_attribute a WHERE a.attrelid='public.password_resets'::regclass AND a.attname='id' AND a.attnum>0 AND NOT a.attisdropped) IS DISTINCT FROM true THEN
     RAISE EXCEPTION 'Baseline mismatch: password_resets.id identity/generated/column ACL';
   END IF;
-  IF (SELECT format_type(a.atttypid,a.atttypmod) FROM pg_attribute a WHERE a.attrelid='public.password_resets'::regclass AND a.attname='token' AND a.attnum>0 AND NOT a.attisdropped) IS DISTINCT FROM 'text' THEN
-    RAISE EXCEPTION 'Baseline mismatch: password_resets.token type';
+  IF (SELECT format_type(a.atttypid,a.atttypmod) FROM pg_attribute a WHERE a.attrelid='public.password_resets'::regclass AND a.attname='token_digest' AND a.attnum>0 AND NOT a.attisdropped) IS DISTINCT FROM 'text' THEN
+    RAISE EXCEPTION 'Baseline mismatch: password_resets.token_digest type';
   END IF;
-  IF (SELECT a.attnotnull FROM pg_attribute a WHERE a.attrelid='public.password_resets'::regclass AND a.attname='token' AND a.attnum>0 AND NOT a.attisdropped) IS DISTINCT FROM true THEN
-    RAISE EXCEPTION 'Baseline mismatch: password_resets.token nullability';
+  IF (SELECT a.attnotnull FROM pg_attribute a WHERE a.attrelid='public.password_resets'::regclass AND a.attname='token_digest' AND a.attnum>0 AND NOT a.attisdropped) IS DISTINCT FROM true THEN
+    RAISE EXCEPTION 'Baseline mismatch: password_resets.token_digest nullability';
   END IF;
-  IF (SELECT pg_get_expr(d.adbin,d.adrelid,true) FROM pg_attribute a LEFT JOIN pg_attrdef d ON d.adrelid=a.attrelid AND d.adnum=a.attnum WHERE a.attrelid='public.password_resets'::regclass AND a.attname='token' AND a.attnum>0 AND NOT a.attisdropped) IS DISTINCT FROM NULL THEN
-    RAISE EXCEPTION 'Baseline mismatch: password_resets.token default';
+  IF (SELECT pg_get_expr(d.adbin,d.adrelid,true) FROM pg_attribute a LEFT JOIN pg_attrdef d ON d.adrelid=a.attrelid AND d.adnum=a.attnum WHERE a.attrelid='public.password_resets'::regclass AND a.attname='token_digest' AND a.attnum>0 AND NOT a.attisdropped) IS DISTINCT FROM NULL THEN
+    RAISE EXCEPTION 'Baseline mismatch: password_resets.token_digest default';
   END IF;
-  IF (SELECT a.attidentity='' AND a.attgenerated='' AND a.attacl IS NULL FROM pg_attribute a WHERE a.attrelid='public.password_resets'::regclass AND a.attname='token' AND a.attnum>0 AND NOT a.attisdropped) IS DISTINCT FROM true THEN
-    RAISE EXCEPTION 'Baseline mismatch: password_resets.token identity/generated/column ACL';
+  IF (SELECT a.attidentity='' AND a.attgenerated='' AND a.attacl IS NULL FROM pg_attribute a WHERE a.attrelid='public.password_resets'::regclass AND a.attname='token_digest' AND a.attnum>0 AND NOT a.attisdropped) IS DISTINCT FROM true THEN
+    RAISE EXCEPTION 'Baseline mismatch: password_resets.token_digest identity/generated/column ACL';
   END IF;
-  IF (SELECT format_type(a.atttypid,a.atttypmod) FROM pg_attribute a WHERE a.attrelid='public.password_resets'::regclass AND a.attname='expires_at' AND a.attnum>0 AND NOT a.attisdropped) IS DISTINCT FROM 'timestamp without time zone' THEN
+  IF (SELECT format_type(a.atttypid,a.atttypmod) FROM pg_attribute a WHERE a.attrelid='public.password_resets'::regclass AND a.attname='expires_at' AND a.attnum>0 AND NOT a.attisdropped) IS DISTINCT FROM 'timestamp with time zone' THEN
     RAISE EXCEPTION 'Baseline mismatch: password_resets.expires_at type';
   END IF;
   IF (SELECT a.attnotnull FROM pg_attribute a WHERE a.attrelid='public.password_resets'::regclass AND a.attname='expires_at' AND a.attnum>0 AND NOT a.attisdropped) IS DISTINCT FROM true THEN
@@ -1345,7 +1345,7 @@ BEGIN
   IF (SELECT a.attidentity='' AND a.attgenerated='' AND a.attacl IS NULL FROM pg_attribute a WHERE a.attrelid='public.password_resets'::regclass AND a.attname='used' AND a.attnum>0 AND NOT a.attisdropped) IS DISTINCT FROM true THEN
     RAISE EXCEPTION 'Baseline mismatch: password_resets.used identity/generated/column ACL';
   END IF;
-  IF (SELECT format_type(a.atttypid,a.atttypmod) FROM pg_attribute a WHERE a.attrelid='public.password_resets'::regclass AND a.attname='created_at' AND a.attnum>0 AND NOT a.attisdropped) IS DISTINCT FROM 'timestamp without time zone' THEN
+  IF (SELECT format_type(a.atttypid,a.atttypmod) FROM pg_attribute a WHERE a.attrelid='public.password_resets'::regclass AND a.attname='created_at' AND a.attnum>0 AND NOT a.attisdropped) IS DISTINCT FROM 'timestamp with time zone' THEN
     RAISE EXCEPTION 'Baseline mismatch: password_resets.created_at type';
   END IF;
   IF (SELECT a.attnotnull FROM pg_attribute a WHERE a.attrelid='public.password_resets'::regclass AND a.attname='created_at' AND a.attnum>0 AND NOT a.attisdropped) IS DISTINCT FROM false THEN
@@ -1360,7 +1360,7 @@ BEGIN
   IF (SELECT format_type(a.atttypid,a.atttypmod) FROM pg_attribute a WHERE a.attrelid='public.password_resets'::regclass AND a.attname='user_id' AND a.attnum>0 AND NOT a.attisdropped) IS DISTINCT FROM 'uuid' THEN
     RAISE EXCEPTION 'Baseline mismatch: password_resets.user_id type';
   END IF;
-  IF (SELECT a.attnotnull FROM pg_attribute a WHERE a.attrelid='public.password_resets'::regclass AND a.attname='user_id' AND a.attnum>0 AND NOT a.attisdropped) IS DISTINCT FROM false THEN
+  IF (SELECT a.attnotnull FROM pg_attribute a WHERE a.attrelid='public.password_resets'::regclass AND a.attname='user_id' AND a.attnum>0 AND NOT a.attisdropped) IS DISTINCT FROM true THEN
     RAISE EXCEPTION 'Baseline mismatch: password_resets.user_id nullability';
   END IF;
   IF (SELECT pg_get_expr(d.adbin,d.adrelid,true) FROM pg_attribute a LEFT JOIN pg_attrdef d ON d.adrelid=a.attrelid AND d.adnum=a.attnum WHERE a.attrelid='public.password_resets'::regclass AND a.attname='user_id' AND a.attnum>0 AND NOT a.attisdropped) IS DISTINCT FROM NULL THEN
@@ -1375,7 +1375,7 @@ BEGIN
   IF (SELECT relforcerowsecurity FROM pg_class WHERE oid='public.password_resets'::regclass) IS DISTINCT FROM false THEN
     RAISE EXCEPTION 'Baseline mismatch: password_resets RLS forced';
   END IF;
-  IF (SELECT COALESCE(string_agg(conname, ',' ORDER BY conname COLLATE "C"),'') FROM pg_constraint WHERE conrelid='public.password_resets'::regclass) IS DISTINCT FROM 'password_resets_pkey,password_resets_token_key,password_resets_user_id_fkey' THEN
+  IF (SELECT COALESCE(string_agg(conname, ',' ORDER BY conname COLLATE "C"),'') FROM pg_constraint WHERE conrelid='public.password_resets'::regclass) IS DISTINCT FROM 'nc_g2_reset_digest,nc_g2_reset_user,password_resets_pkey,password_resets_token_key,password_resets_user_id_fkey' THEN
     RAISE EXCEPTION 'Baseline mismatch: password_resets pg_constraint inventory';
   END IF;
   IF (SELECT COALESCE(string_agg(polname, ',' ORDER BY polname COLLATE "C"),'') FROM pg_policy WHERE polrelid='public.password_resets'::regclass) IS DISTINCT FROM 'Admins can manage all password resets,Users can insert their own password resets,Users can view their own password resets' THEN
@@ -1384,7 +1384,7 @@ BEGIN
   IF (SELECT COALESCE(string_agg(tgname, ',' ORDER BY tgname COLLATE "C"),'') FROM pg_trigger WHERE tgrelid='public.password_resets'::regclass AND NOT tgisinternal) IS DISTINCT FROM '' THEN
     RAISE EXCEPTION 'Baseline mismatch: password_resets pg_trigger inventory';
   END IF;
-  IF (SELECT string_agg(c.relname, ',' ORDER BY c.relname COLLATE "C") FROM pg_index i JOIN pg_class c ON c.oid=i.indexrelid WHERE i.indrelid='public.password_resets'::regclass) IS DISTINCT FROM 'password_resets_pkey,password_resets_token_key' THEN
+  IF (SELECT string_agg(c.relname, ',' ORDER BY c.relname COLLATE "C") FROM pg_index i JOIN pg_class c ON c.oid=i.indexrelid WHERE i.indrelid='public.password_resets'::regclass) IS DISTINCT FROM 'nc_g2_reset_user,password_resets_pkey,password_resets_token_key' THEN
     RAISE EXCEPTION 'Baseline mismatch: password_resets index inventory';
   END IF;
   IF (SELECT relkind::text FROM pg_class WHERE oid='public.seasons'::regclass) IS DISTINCT FROM 'r' THEN
@@ -1726,7 +1726,7 @@ BEGIN
   IF (SELECT relkind::text FROM pg_class WHERE oid='public.users'::regclass) IS DISTINCT FROM 'r' THEN
     RAISE EXCEPTION 'Baseline mismatch: users kind';
   END IF;
-  IF (SELECT string_agg(attname, ',' ORDER BY attnum) FROM pg_attribute WHERE attrelid='public.users'::regclass AND attnum>0 AND NOT attisdropped) IS DISTINCT FROM 'id,username,email,created_at,password,is_admin,reset_token,reset_token_expires' THEN
+  IF (SELECT string_agg(attname, ',' ORDER BY attnum) FROM pg_attribute WHERE attrelid='public.users'::regclass AND attnum>0 AND NOT attisdropped) IS DISTINCT FROM 'id,username,email,created_at,password,is_admin,reset_token,reset_token_expires,auth_version' THEN
     RAISE EXCEPTION 'Baseline mismatch: users columns/order';
   END IF;
   IF (SELECT format_type(a.atttypid,a.atttypmod) FROM pg_attribute a WHERE a.attrelid='public.users'::regclass AND a.attname='id' AND a.attnum>0 AND NOT a.attisdropped) IS DISTINCT FROM 'uuid' THEN
@@ -1831,7 +1831,7 @@ BEGIN
   IF (SELECT relforcerowsecurity FROM pg_class WHERE oid='public.users'::regclass) IS DISTINCT FROM false THEN
     RAISE EXCEPTION 'Baseline mismatch: users RLS forced';
   END IF;
-  IF (SELECT COALESCE(string_agg(conname, ',' ORDER BY conname COLLATE "C"),'') FROM pg_constraint WHERE conrelid='public.users'::regclass) IS DISTINCT FROM 'nc_g1_nonblank_identity,users_email_key,users_email_unique,users_pkey,users_username_unique' THEN
+  IF (SELECT COALESCE(string_agg(conname, ',' ORDER BY conname COLLATE "C"),'') FROM pg_constraint WHERE conrelid='public.users'::regclass) IS DISTINCT FROM 'nc_g1_nonblank_identity,nc_g2_auth_version,users_email_key,users_email_unique,users_pkey,users_username_unique' THEN
     RAISE EXCEPTION 'Baseline mismatch: users pg_constraint inventory';
   END IF;
   IF (SELECT COALESCE(string_agg(polname, ',' ORDER BY polname COLLATE "C"),'') FROM pg_policy WHERE polrelid='public.users'::regclass) IS DISTINCT FROM 'Service role can manage all users,Users can update their own data,Users can view their own data' THEN
@@ -2089,7 +2089,7 @@ BEGIN
   IF (SELECT contype::text || ':' || condeferrable::text || ':' || condeferred::text || ':' || convalidated::text FROM pg_constraint WHERE conrelid='public.password_resets'::regclass AND conname='password_resets_pkey') IS DISTINCT FROM 'p:false:false:true' THEN
     RAISE EXCEPTION 'Baseline mismatch: constraint flags password_resets_pkey';
   END IF;
-  IF (btrim(regexp_replace(replace(replace((SELECT pg_get_constraintdef(oid,true) FROM pg_constraint WHERE conrelid='public.password_resets'::regclass AND conname='password_resets_token_key'), '"', ''), 'public.', ''), E'\\s+', ' ', 'g'))) IS DISTINCT FROM 'UNIQUE (token)' THEN
+  IF (btrim(regexp_replace(replace(replace((SELECT pg_get_constraintdef(oid,true) FROM pg_constraint WHERE conrelid='public.password_resets'::regclass AND conname='password_resets_token_key'), '"', ''), 'public.', ''), E'\\s+', ' ', 'g'))) IS DISTINCT FROM 'UNIQUE (token_digest)' THEN
     RAISE EXCEPTION 'Baseline mismatch: constraint password_resets_token_key';
   END IF;
   IF (SELECT contype::text || ':' || condeferrable::text || ':' || condeferred::text || ':' || convalidated::text FROM pg_constraint WHERE conrelid='public.password_resets'::regclass AND conname='password_resets_token_key') IS DISTINCT FROM 'u:false:false:true' THEN
@@ -2323,7 +2323,7 @@ BEGIN
   IF (SELECT indisvalid AND indisready FROM pg_index WHERE indexrelid='public.password_resets_pkey'::regclass) IS DISTINCT FROM true THEN
     RAISE EXCEPTION 'Baseline mismatch: index ready password_resets_pkey';
   END IF;
-  IF (btrim(regexp_replace(replace(replace((SELECT pg_get_indexdef('public.password_resets_token_key'::regclass)), '"', ''), 'public.', ''), E'\\s+', ' ', 'g'))) IS DISTINCT FROM 'CREATE UNIQUE INDEX password_resets_token_key ON password_resets USING btree (token)' THEN
+  IF (btrim(regexp_replace(replace(replace((SELECT pg_get_indexdef('public.password_resets_token_key'::regclass)), '"', ''), 'public.', ''), E'\\s+', ' ', 'g'))) IS DISTINCT FROM 'CREATE UNIQUE INDEX password_resets_token_key ON password_resets USING btree (token_digest)' THEN
     RAISE EXCEPTION 'Baseline mismatch: index password_resets_token_key';
   END IF;
   IF (SELECT indisvalid AND indisready FROM pg_index WHERE indexrelid='public.password_resets_token_key'::regclass) IS DISTINCT FROM true THEN
@@ -4949,10 +4949,30 @@ DO $g1$ DECLARE f oid; BEGIN
  f:=to_regprocedure('public.find_auth_user(text,text)');
  IF f IS NULL THEN RAISE EXCEPTION 'G1 missing function find_auth_user'; END IF;
  IF (SELECT pg_get_userbyid(proowner)='postgres' AND prolang=(SELECT oid FROM pg_language WHERE lanname='sql') AND NOT prosecdef AND proconfig=ARRAY['search_path=pg_catalog, public'] AND provolatile='s' AND proisstrict IS false AND prorettype='jsonb'::regtype AND NOT proretset AND NOT proleakproof AND proparallel='u' AND prokind='f' FROM pg_proc WHERE oid=f) IS DISTINCT FROM true THEN RAISE EXCEPTION 'G1 function attributes mismatch'; END IF;
- IF (SELECT md5(btrim(replace(prosrc,E'\r',''),E' \n\t')) FROM pg_proc WHERE oid=f) IS DISTINCT FROM 'c87ebb9ebdfefc9dc1a9e95978679e93' THEN RAISE EXCEPTION 'G1 function body mismatch'; END IF;
+ IF (SELECT md5(btrim(replace(prosrc,E'\r',''),E' \n\t')) FROM pg_proc WHERE oid=f) IS DISTINCT FROM '330bff03b475132943622b0f5e185039' THEN RAISE EXCEPTION 'G1 function body mismatch'; END IF;
  IF EXISTS(SELECT 1 FROM pg_proc p,LATERAL aclexplode(coalesce(p.proacl,acldefault('f',p.proowner))) a WHERE p.oid=f AND (a.grantee NOT IN('postgres'::regrole,'service_role'::regrole) OR a.is_grantable OR a.privilege_type<>'EXECUTE' OR a.grantor<>'postgres'::regrole)) OR NOT has_function_privilege('postgres',f,'EXECUTE') OR NOT has_function_privilege('service_role',f,'EXECUTE') THEN RAISE EXCEPTION 'G1 function ACL mismatch'; END IF;
  IF (SELECT pg_get_expr(conbin,conrelid)='((username IS NOT NULL) AND (email IS NOT NULL) AND (auth_identity_key(username) <> ''''::text) AND (auth_identity_key(email) <> ''''::text))' AND contype='c' AND convalidated AND NOT condeferrable AND NOT condeferred FROM pg_constraint WHERE conrelid='public.users'::regclass AND conname='nc_g1_nonblank_identity') IS DISTINCT FROM true THEN RAISE EXCEPTION 'G1 identity constraint mismatch'; END IF;
  IF (SELECT indisunique AND indisvalid AND indisready AND indpred IS NULL AND indnatts=1 AND indnkeyatts=1 AND pg_get_indexdef(indexrelid)='CREATE UNIQUE INDEX nc_g1_username_key ON public.users USING btree (auth_identity_key(username))' FROM pg_index WHERE indexrelid=to_regclass('public.nc_g1_username_key')) IS DISTINCT FROM true THEN RAISE EXCEPTION 'G1 username normalized index mismatch'; END IF;
  IF (SELECT indisunique AND indisvalid AND indisready AND indpred IS NULL AND indnatts=1 AND indnkeyatts=1 AND pg_get_indexdef(indexrelid)='CREATE UNIQUE INDEX nc_g1_email_key ON public.users USING btree (auth_identity_key(email))' FROM pg_index WHERE indexrelid=to_regclass('public.nc_g1_email_key')) IS DISTINCT FROM true THEN RAISE EXCEPTION 'G1 email normalized index mismatch'; END IF;
 END $g1$;
+DO $g2$ DECLARE f oid; BEGIN
+ IF (SELECT format_type(atttypid,atttypmod)='integer' AND attnotnull AND attacl IS NULL FROM pg_attribute WHERE attrelid='public.users'::regclass AND attname='auth_version') IS DISTINCT FROM true THEN RAISE EXCEPTION 'G2 version column'; END IF;
+ IF (SELECT pg_get_expr(d.adbin,d.adrelid) FROM pg_attrdef d JOIN pg_attribute a ON a.attrelid=d.adrelid AND a.attnum=d.adnum WHERE a.attrelid='public.users'::regclass AND a.attname='auth_version') IS DISTINCT FROM '0' THEN RAISE EXCEPTION 'G2 version default'; END IF;
+ IF (SELECT pg_get_constraintdef(oid,true) FROM pg_constraint WHERE conrelid='public.users'::regclass AND conname='nc_g2_auth_version') IS DISTINCT FROM 'CHECK (auth_version >= 0)' THEN RAISE EXCEPTION 'G2 version constraint'; END IF;
+ IF (SELECT pg_get_constraintdef(oid,true) FROM pg_constraint WHERE conrelid='public.password_resets'::regclass AND conname='nc_g2_reset_user') IS DISTINCT FROM 'UNIQUE (user_id)' THEN RAISE EXCEPTION 'G2 reset user constraint'; END IF;
+ IF (SELECT pg_get_constraintdef(oid,true) FROM pg_constraint WHERE conrelid='public.password_resets'::regclass AND conname='nc_g2_reset_digest') IS DISTINCT FROM 'CHECK (token_digest ~ ''^[0-9a-f]{64}$''::text)' THEN RAISE EXCEPTION 'G2 digest constraint'; END IF;
+ IF pg_get_indexdef('public.nc_g2_reset_user'::regclass) IS DISTINCT FROM 'CREATE UNIQUE INDEX nc_g2_reset_user ON public.password_resets USING btree (user_id)' OR (SELECT indisunique AND indisvalid AND indisready FROM pg_index WHERE indexrelid='public.nc_g2_reset_user'::regclass) IS DISTINCT FROM true THEN RAISE EXCEPTION 'G2 reset index'; END IF;
+ f:=to_regprocedure('public.issue_password_reset(uuid,text)');
+ IF (SELECT pg_get_userbyid(proowner)='postgres' AND NOT prosecdef AND prorettype='boolean'::regtype AND prolang=(SELECT oid FROM pg_language WHERE lanname='plpgsql') AND proconfig=ARRAY['search_path=pg_catalog, public'] AND provolatile='v' AND NOT proisstrict AND NOT proretset AND NOT proleakproof AND proparallel='u' AND prokind='f' FROM pg_proc WHERE oid=f) IS DISTINCT FROM true THEN RAISE EXCEPTION 'G2 function attributes: issue_password_reset'; END IF;
+ IF (SELECT md5(btrim(replace(prosrc,E'\r',''),E' \n\t')) FROM pg_proc WHERE oid=f) IS DISTINCT FROM '0f904c9037543cd518eaf9e76f0a2e43' THEN RAISE EXCEPTION 'G2 function body: issue_password_reset'; END IF;
+ IF has_function_privilege('anon',f,'EXECUTE') OR has_function_privilege('authenticated',f,'EXECUTE') OR NOT has_function_privilege('service_role',f,'EXECUTE') OR EXISTS(SELECT 1 FROM pg_proc p,LATERAL aclexplode(p.proacl) a WHERE p.oid=f AND a.grantee=0) THEN RAISE EXCEPTION 'G2 function ACL: issue_password_reset'; END IF;
+ f:=to_regprocedure('public.cancel_password_reset(uuid,text)');
+ IF (SELECT pg_get_userbyid(proowner)='postgres' AND NOT prosecdef AND prorettype='void'::regtype AND prolang=(SELECT oid FROM pg_language WHERE lanname='plpgsql') AND proconfig=ARRAY['search_path=pg_catalog, public'] AND provolatile='v' AND NOT proisstrict AND NOT proretset AND NOT proleakproof AND proparallel='u' AND prokind='f' FROM pg_proc WHERE oid=f) IS DISTINCT FROM true THEN RAISE EXCEPTION 'G2 function attributes: cancel_password_reset'; END IF;
+ IF (SELECT md5(btrim(replace(prosrc,E'\r',''),E' \n\t')) FROM pg_proc WHERE oid=f) IS DISTINCT FROM '726eedf2275eb3103da63d84dcd2f99f' THEN RAISE EXCEPTION 'G2 function body: cancel_password_reset'; END IF;
+ IF has_function_privilege('anon',f,'EXECUTE') OR has_function_privilege('authenticated',f,'EXECUTE') OR NOT has_function_privilege('service_role',f,'EXECUTE') OR EXISTS(SELECT 1 FROM pg_proc p,LATERAL aclexplode(p.proacl) a WHERE p.oid=f AND a.grantee=0) THEN RAISE EXCEPTION 'G2 function ACL: cancel_password_reset'; END IF;
+ f:=to_regprocedure('public.complete_password_reset(text,text)');
+ IF (SELECT pg_get_userbyid(proowner)='postgres' AND NOT prosecdef AND prorettype='boolean'::regtype AND prolang=(SELECT oid FROM pg_language WHERE lanname='plpgsql') AND proconfig=ARRAY['search_path=pg_catalog, public'] AND provolatile='v' AND NOT proisstrict AND NOT proretset AND NOT proleakproof AND proparallel='u' AND prokind='f' FROM pg_proc WHERE oid=f) IS DISTINCT FROM true THEN RAISE EXCEPTION 'G2 function attributes: complete_password_reset'; END IF;
+ IF (SELECT md5(btrim(replace(prosrc,E'\r',''),E' \n\t')) FROM pg_proc WHERE oid=f) IS DISTINCT FROM '1e8f71884995b4a3b688ee900992356d' THEN RAISE EXCEPTION 'G2 function body: complete_password_reset'; END IF;
+ IF has_function_privilege('anon',f,'EXECUTE') OR has_function_privilege('authenticated',f,'EXECUTE') OR NOT has_function_privilege('service_role',f,'EXECUTE') OR EXISTS(SELECT 1 FROM pg_proc p,LATERAL aclexplode(p.proacl) a WHERE p.oid=f AND a.grantee=0) THEN RAISE EXCEPTION 'G2 function ACL: complete_password_reset'; END IF;
+END $g2$;
 COMMIT;

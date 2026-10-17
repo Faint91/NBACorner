@@ -168,7 +168,7 @@ def contention(sql, database):
     return findings
 
 
-def routes(sql):
+def routes(sql, *, versioned=False):
     """Actual G1 Flask routes + password/JWT helpers over the fresh fixed SQL DB."""
     import ast
     import json
@@ -236,9 +236,27 @@ def routes(sql):
                 raise ValueError("Only fixed G1 read functions admitted")
             return Query("SELECT jsonb_build_object('data'," + expression + ");")
 
-    tree = ast.parse(
-        (Path(__file__).resolve().parents[1] / "app.py").read_text(encoding="utf-8")
-    )
+    root = Path(__file__).resolve().parents[1]
+    if versioned:
+        source = (root / "app.py").read_text(encoding="utf-8")
+    else:
+        # Freeze the historical G1 proof before migration 0011. G2's proof
+        # explicitly requests current actual routes with versioned=True.
+        source = subprocess.run(
+            [
+                "git",
+                "-c",
+                "safe.directory=" + root.as_posix(),
+                "-C",
+                str(root),
+                "show",
+                "6eb31070c55b2a8b2c789fafcf90adea55f017b8:app.py",
+            ],
+            capture_output=True,
+            check=True,
+            env=child_environment(),
+        ).stdout.decode("utf-8")
+    tree = ast.parse(source)
     nodes = [
         n
         for n in tree.body
@@ -289,7 +307,11 @@ def routes(sql):
         response = client.post("/auth/login", json={field: value, "password": password})
         assert response.status_code == 200
         claims = jwt.decode(response.json["token"], key, algorithms=["HS256"])
-        assert set(claims) == {"user_id", "username", "is_admin", "exp"}
+        assert set(claims) == (
+            {"user_id", "username", "is_admin", "exp", "av"}
+            if versioned
+            else {"user_id", "username", "is_admin", "exp"}
+        )
         assert claims["user_id"] == registered.json["user"]["id"]
         assert (
             client.post(

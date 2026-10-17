@@ -628,7 +628,7 @@ ROLLBACK;
         identity_findings = g1.preflight(sql, g1_migration)
         sql(g1_migration)
         sql(
-            (ROOT / "db/post-baseline/verify_current_schema.sql").read_text(
+            (ROOT / "db/post-baseline/verify_nc_02g1_schema.sql").read_text(
                 encoding="utf-8"
             )
         )
@@ -636,7 +636,7 @@ ROLLBACK;
         identity_findings += g1.routes(sql)
         identity_findings += g1.contention(sql, PROOF_DB)
         sql(
-            (ROOT / "db/post-baseline/verify_current_schema.sql").read_text(
+            (ROOT / "db/post-baseline/verify_nc_02g1_schema.sql").read_text(
                 encoding="utf-8"
             )
         )

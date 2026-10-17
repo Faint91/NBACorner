@@ -98,7 +98,8 @@ def setup(data, p):
 
     sql = e_setup(data, p)
     extra = [u for u in data["users"] if u["id"] == identity("f2-member-d")]
-    insertion = f"INSERT INTO public.users SELECT * FROM jsonb_populate_recordset(NULL::public.users,{encoded(extra)});\n"
+    columns = ",".join(extra[0])
+    insertion = f"INSERT INTO public.users({columns}) SELECT {columns} FROM jsonb_populate_recordset(NULL::public.users,{encoded(extra)});\n"
     sql = sql.replace("BEGIN;\n", "BEGIN;\n" + insertion, 1)
     sql += f"""INSERT INTO public.leagues(id,name,owner_user_id) VALUES('{identity('f2-league')}','Synthetic F2 League','{identity('admin')}'),('{identity('f2-empty-league')}','Synthetic F2 Empty','{identity('admin')}');
 INSERT INTO public.league_members(league_id,user_id) SELECT '{identity('f2-league')}',id FROM public.users;
@@ -173,7 +174,8 @@ def ranking_and_immutability(sql):
     ]
     sid = identity("f2-rank-snapshot")
     lid = identity("f2-rank-league")
-    body = f"BEGIN; INSERT INTO public.users SELECT * FROM jsonb_populate_recordset(NULL::public.users,{encoded(users)}); INSERT INTO public.leagues(id,name,owner_user_id) VALUES('{lid}','Synthetic ranking','{identity('admin')}'); INSERT INTO public.league_members(league_id,user_id) VALUES('{lid}','{identity('admin')}');"
+    columns = ",".join(users[0])
+    body = f"BEGIN; INSERT INTO public.users({columns}) SELECT {columns} FROM jsonb_populate_recordset(NULL::public.users,{encoded(users)}); INSERT INTO public.leagues(id,name,owner_user_id) VALUES('{lid}','Synthetic ranking','{identity('admin')}'); INSERT INTO public.league_members(league_id,user_id) VALUES('{lid}','{identity('admin')}');"
     body += f"INSERT INTO public.leaderboard_history_snapshots(id,season_id,season_code,expected_rows,is_final,master_bracket_id) VALUES('{sid}','{identity('current')}','2025-26',7,false,'{identity('f2-rank-master')}');"
     global_ranks = [1, 2, 3, 3, 5, 6, 7]
     for i, (label, points, hits, stamp) in enumerate(entries, 1):

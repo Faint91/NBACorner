@@ -1,0 +1,154 @@
+{
+  "phase": "NC-02G2",
+  "superseded_assertions": [],
+  "selected_case_ids": [
+    "nc02g2_password_reset.PasswordResetAcceptance.test_delivery_failure_conditional_cleanup_and_generic_response",
+    "nc02g2_password_reset.PasswordResetAcceptance.test_enumeration_digest_entropy_capture_ttl",
+    "nc02g2_password_reset.PasswordResetAcceptance.test_expired_invalid_and_malformed",
+    "nc02g2_password_reset.PasswordResetAcceptance.test_jwt_bad_versions_missing_subject_and_admin_nonbypass",
+    "nc02g2_password_reset.PasswordResetAcceptance.test_multidevice_and_legacy_revocation_new_login",
+    "nc02g2_password_reset.PasswordResetAcceptance.test_password_exactness_unicode_long_and_boundaries",
+    "nc02g2_password_reset.PasswordResetAcceptance.test_request_input_and_username_normalization",
+    "nc02g2_password_reset.PasswordResetAcceptance.test_supersession_success_replay_and_single_increment",
+    "nc02g2_identity_auth_g2.IdentityAuthAcceptance.test_existing_registration_rate_limit_remains",
+    "nc02g2_identity_auth_g2.IdentityAuthAcceptance.test_identity_normalization_display_and_conflicts",
+    "nc02g2_identity_auth_g2.IdentityAuthAcceptance.test_legacy_and_generic_login_and_jwt",
+    "nc02g2_identity_auth_g2.IdentityAuthAcceptance.test_long_shared_prefix_never_authenticates",
+    "nc02g2_identity_auth_g2.IdentityAuthAcceptance.test_outer_password_whitespace_is_exact",
+    "nc02g2_identity_auth_g2.IdentityAuthAcceptance.test_password_boundaries_and_no_complexity",
+    "nc02g2_identity_auth_g2.IdentityAuthAcceptance.test_request_shapes_and_field_types",
+    "nc02g2_identity_auth_g2.IdentityAuthAcceptance.test_unicode_email_uses_database_normalization"
+  ],
+  "failed_case_ids": [
+    "nc02g2_password_reset.PasswordResetAcceptance.test_request_input_and_username_normalization"
+  ],
+  "passed": false,
+  "tests_run": 16,
+  "failures": 1,
+  "errors": 0,
+  "findings": [
+    {
+      "phase": "NC-02G2",
+      "scenario": "test_delivery_failure_conditional_cleanup_and_generic_response",
+      "passed": true,
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02G2",
+      "scenario": "test_enumeration_digest_entropy_capture_ttl",
+      "passed": true,
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02G2",
+      "scenario": "test_expired_invalid_and_malformed",
+      "passed": true,
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02G2",
+      "scenario": "test_jwt_bad_versions_missing_subject_and_admin_nonbypass",
+      "passed": true,
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02G2",
+      "scenario": "test_multidevice_and_legacy_revocation_new_login",
+      "passed": true,
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02G2",
+      "scenario": "test_password_exactness_unicode_long_and_boundaries",
+      "passed": true,
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02G2",
+      "scenario": "test_request_input_and_username_normalization",
+      "passed": true,
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02G2",
+      "scenario": "test_supersession_success_replay_and_single_increment",
+      "passed": true,
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02G2",
+      "scenario": "test_existing_registration_rate_limit_remains",
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02G2",
+      "scenario": "test_identity_normalization_display_and_conflicts",
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02G2",
+      "scenario": "test_legacy_and_generic_login_and_jwt",
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02G2",
+      "scenario": "test_long_shared_prefix_never_authenticates",
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02G2",
+      "scenario": "test_outer_password_whitespace_is_exact",
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02G2",
+      "scenario": "test_password_boundaries_and_no_complexity",
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02G2",
+      "scenario": "test_request_shapes_and_field_types",
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02G2",
+      "scenario": "test_unicode_email_uses_database_normalization",
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    }
+  ],
+  "readiness": {
+    "identity_verified": true,
+    "database_marker": "PASS",
+    "email": "PASS",
+    "providers": "PASS",
+    "external_credentials": "PASS",
+    "jobs": "PASS",
+    "jobs_enabled": false,
+    "fixture_state": "SEEDED",
+    "fixtures_reset": "PASS",
+    "integration_harness": "PASS",
+    "mutation_permitted": false,
+    "harness_state": "AVAILABLE_GUARDED",
+    "harness_scoped_mutation_permitted": false
+  },
+  "canonical_cleanup": {
+    "fixture_readiness": {
+      "identity": "PASS",
+      "marker": "PASS",
+      "email": "PASS",
+      "providers": "PASS",
+      "jobs": "PASS",
+      "fixture_reset": "PASS",
+      "harness": "UNMET",
+      "fixture_version": "nc-fixtures-v1",
+      "fixture_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "mutation_permitted": false
+    },
+    "flask_stopped": true,
+    "email_capture_empty": true,
+    "app_import_removed": true
+  },
+  "production_contact": false,
+  "historical_NC01_evidence_rewritten": false,
+  "development_note": "Preserved initial focused run. One identifier-format case failed before the controlled-400 correction. Findings passed flags described teardown cleanup only; failed_case_ids/overall result are authoritative. Final focused evidence is recorded separately by the completing run."
+}

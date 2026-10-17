@@ -43,7 +43,7 @@ F2_TABLES = (
     "leaderboard_history_competitors",
 )
 
-VERIFIER_SHA = "7be14d9d1f221d34f978236659d070e63b3c1376f634c986d40fd67511be9628"
+VERIFIER_SHA = "8032c6b5df145f6ded7e01087d4837212639a742d0b6adb0d063cb93b4f18430"
 
 
 def validate_inventory(tables, sequences, external_dependencies=()):
@@ -94,9 +94,12 @@ def state_sql(data=None):
             if data is None
             else f"jsonb_populate_recordset(NULL::public.{table},{literal(data[table])}) r"
         )
+        # nc-fixtures-v1 predates auth_version. Freeze its original projection;
+        # readiness separately requires all canonical auth versions to be zero.
+        row_json = "(to_jsonb(r)-'auth_version')" if table == "users" else "to_jsonb(r)"
         parts += [
             "'" + table + "'",
-            f"(SELECT coalesce(jsonb_agg(to_jsonb(r) ORDER BY to_jsonb(r)::text COLLATE \"C\"),'[]'::jsonb) FROM {source})",
+            f"(SELECT coalesce(jsonb_agg({row_json} ORDER BY {row_json}::text COLLATE \"C\"),'[]'::jsonb) FROM {source})",
         ]
     seq = []
     for name in SEQUENCES:
@@ -176,7 +179,8 @@ END $identity$;
     sql += "UPDATE nba_corner_test_control.test_environment_identity SET fixture_state='UNSEEDED',fixture_version=NULL,fixture_checksum=NULL WHERE singleton;\n"
     for table in TABLES:
         if data[table]:
-            sql += f"INSERT INTO public.{table} SELECT * FROM jsonb_populate_recordset(NULL::public.{table},{literal(data[table])});\n"
+            columns = ",".join(data[table][0])
+            sql += f"INSERT INTO public.{table}({columns}) SELECT {columns} FROM jsonb_populate_recordset(NULL::public.{table},{literal(data[table])});\n"
     sql += f"INSERT INTO public.application_season(singleton,season_id) VALUES(true,'{identity('current')}');\n"
     sql += "SELECT setval('public.standings_id_seq',30,true);\n"
     # Both other owned sequences remain freshly restarted at (1,false).
@@ -388,7 +392,7 @@ def verify_fixture_readiness(settings):
     f2_empty = " AND ".join(
         "NOT EXISTS(SELECT 1 FROM public." + t + ")" for t in F2_TABLES
     )
-    sql = f"BEGIN READ ONLY; SET LOCAL timezone='UTC'; SET LOCAL datestyle='ISO, YMD'; SET LOCAL extra_float_digits=3; SELECT jsonb_build_object('matches',(({actual})=({expected}) AND NOT EXISTS(SELECT 1 FROM public.season_rollover_audits)),'canonical',({f2_empty}) AND (SELECT count(*)=1 AND bool_and(singleton AND season_id='{identity('current')}'::uuid) FROM public.application_season),'checksum',{digest_sql(actual)}); COMMIT;"
+    sql = f"BEGIN READ ONLY; SET LOCAL timezone='UTC'; SET LOCAL datestyle='ISO, YMD'; SET LOCAL extra_float_digits=3; SELECT jsonb_build_object('matches',(({actual})=({expected}) AND NOT EXISTS(SELECT 1 FROM public.season_rollover_audits) AND NOT EXISTS(SELECT 1 FROM public.users WHERE auth_version<>0)),'canonical',({f2_empty}) AND (SELECT count(*)=1 AND bool_and(singleton AND season_id='{identity('current')}'::uuid) FROM public.application_season),'checksum',{digest_sql(actual)}); COMMIT;"
     result = subprocess.run(
         [
             "docker",

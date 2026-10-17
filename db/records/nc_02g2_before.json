@@ -1,0 +1,167 @@
+{
+  "phase": "NC-02G2",
+  "passed": true,
+  "tests_run": 4,
+  "findings": [
+    {
+      "scenario": "current_behavior__auth__reset_request_metadata",
+      "group": "Password reset",
+      "current_behavior": "Existing user request returns neutral 200; stores unused reset and captures a loopback link with ~24-hour expiry.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve lifetime, link contract, storage and delivery behavior?",
+      "evidence_source": "Live guarded local Flask API; canonical reset per case",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/forgot-password",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        }
+      ],
+      "facts": {
+        "captured": 1,
+        "reset_rows": 1,
+        "unused": true,
+        "expiry_hours": 24,
+        "link_loopback": true,
+        "token_matches_db": true,
+        "tokens_logged": false
+      },
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__auth__reset_request_repeated",
+      "group": "Password reset",
+      "current_behavior": "Repeated requests create distinct unused records and captured messages; older record remains unused.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Should newer requests invalidate earlier reset tokens?",
+      "evidence_source": "Live guarded local Flask API; canonical reset per case",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/forgot-password",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/forgot-password",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__auth__reset_delivery_failure",
+      "group": "Password reset",
+      "current_behavior": "A capture transport reporting delivery failure still yields neutral 200 and stored unused reset.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve ignored delivery result and operational visibility?",
+      "evidence_source": "Live guarded local Flask API; canonical reset per case",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/forgot-password",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        }
+      ],
+      "facts": {},
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "current_behavior__auth__reset_completion_and_sessions",
+      "group": "Password reset",
+      "current_behavior": "Valid unused reset changes password and marks token used; old password fails/new succeeds; pre-reset JWT still valid.",
+      "approved_requirement": null,
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Should password changes revoke existing sessions?",
+      "evidence_source": "Live guarded local Flask API; canonical reset per case",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/forgot-password",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/reset-password",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/auth/test-me",
+          "status": 200,
+          "shape": [
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/reset-password",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "facts": {
+        "old_password_rejected": true,
+        "new_password_accepted": true,
+        "token_marked_used": true,
+        "pre_reset_jwt_accepted": true
+      },
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    }
+  ],
+  "frontend_completion_missing": true,
+  "production_contact": false
+}

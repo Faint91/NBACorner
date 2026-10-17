@@ -1,0 +1,10 @@
+{
+  "reset_rows": 0,
+  "null_users": 0,
+  "users_with_multiple_tokens": 0,
+  "legacy_user_reset_fields": 0,
+  "auth_version_present": false,
+  "local_identity_verified": true,
+  "legacy_links_intentionally_invalidated": true,
+  "production_contact": false
+}

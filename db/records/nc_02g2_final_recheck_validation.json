@@ -1,0 +1,122 @@
+{
+  "phase": "NC-02G2",
+  "superseded_assertions": [
+    {
+      "test": "nc02g2_auth_access.CurrentAuthBehavior.current_behavior__auth__reset_completion_and_sessions",
+      "reason": "Approved G2 replaces raw-storage/24h/reusable-session reset contracts; covered by password_reset acceptance. Historical evidence unchanged."
+    },
+    {
+      "test": "nc02g2_auth_access.CurrentAuthBehavior.current_behavior__auth__reset_delivery_failure",
+      "reason": "Approved G2 replaces raw-storage/24h/reusable-session reset contracts; covered by password_reset acceptance. Historical evidence unchanged."
+    },
+    {
+      "test": "nc02g2_auth_access.CurrentAuthBehavior.current_behavior__auth__reset_expired_invalid",
+      "reason": "Approved G2 replaces raw-storage/24h/reusable-session reset contracts; covered by password_reset acceptance. Historical evidence unchanged."
+    },
+    {
+      "test": "nc02g2_auth_access.CurrentAuthBehavior.current_behavior__auth__reset_invalid_payload",
+      "reason": "Approved G2 replaces raw-storage/24h/reusable-session reset contracts; covered by password_reset acceptance. Historical evidence unchanged."
+    },
+    {
+      "test": "nc02g2_auth_access.CurrentAuthBehavior.current_behavior__auth__reset_request_metadata",
+      "reason": "Approved G2 replaces raw-storage/24h/reusable-session reset contracts; covered by password_reset acceptance. Historical evidence unchanged."
+    },
+    {
+      "test": "nc02g2_auth_access.CurrentAuthBehavior.current_behavior__auth__reset_request_repeated",
+      "reason": "Approved G2 replaces raw-storage/24h/reusable-session reset contracts; covered by password_reset acceptance. Historical evidence unchanged."
+    },
+    {
+      "test": "nc02g2_auth_access.CurrentAuthBehavior.current_behavior__auth__reset_request_unknown",
+      "reason": "Approved G2 replaces raw-storage/24h/reusable-session reset contracts; covered by password_reset acceptance. Historical evidence unchanged."
+    },
+    {
+      "test": "nc02g2_auth_access.CurrentAuthBehavior.current_behavior__auth__username_case_resolution",
+      "reason": "Approved A2/A6 normalized uniqueness replaces case-distinct accounts; covered by G1 live and DB race acceptance. Original evidence unchanged."
+    }
+  ],
+  "selected_case_ids": [
+    "nc02g2_auth_access.CurrentAuthBehavior.current_behavior__auth__login_metadata"
+  ],
+  "failed_case_ids": [],
+  "passed": true,
+  "tests_run": 1,
+  "failures": 0,
+  "errors": 0,
+  "findings": [
+    {
+      "scenario": "current_behavior__auth__login_metadata",
+      "group": "Login/session",
+      "current_behavior": "Additional av claim; original identity, algorithm and seven-day expiry assertions preserved",
+      "approved_requirement": "A13/A14",
+      "classification": "REQUIREMENT NOT YET REVIEWED",
+      "future_business_question": "Approve JWT lifetime, claims and email-login normalization?",
+      "evidence_source": "Live guarded local Flask API; canonical reset per case",
+      "phase": "NC-02G2",
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        }
+      ],
+      "facts": {
+        "jwt_claim_fields": [
+          "av",
+          "exp",
+          "is_admin",
+          "user_id",
+          "username"
+        ],
+        "expiry_days": 7,
+        "algorithm": "HS256",
+        "user_fields": [
+          "created_at",
+          "email",
+          "id",
+          "is_admin",
+          "username"
+        ]
+      },
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    }
+  ],
+  "readiness": {
+    "identity_verified": true,
+    "database_marker": "PASS",
+    "email": "PASS",
+    "providers": "PASS",
+    "external_credentials": "PASS",
+    "jobs": "PASS",
+    "jobs_enabled": false,
+    "fixture_state": "SEEDED",
+    "fixtures_reset": "PASS",
+    "integration_harness": "PASS",
+    "mutation_permitted": false,
+    "harness_state": "AVAILABLE_GUARDED",
+    "harness_scoped_mutation_permitted": false
+  },
+  "canonical_cleanup": {
+    "fixture_readiness": {
+      "identity": "PASS",
+      "marker": "PASS",
+      "email": "PASS",
+      "providers": "PASS",
+      "jobs": "PASS",
+      "fixture_reset": "PASS",
+      "harness": "UNMET",
+      "fixture_version": "nc-fixtures-v1",
+      "fixture_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "mutation_permitted": false
+    },
+    "flask_stopped": true,
+    "email_capture_empty": true,
+    "app_import_removed": true
+  },
+  "production_contact": false,
+  "historical_NC01_evidence_rewritten": false
+}

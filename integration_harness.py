@@ -1685,7 +1685,7 @@ class GuardedHarness:
         self._require_auth_scope()
         rows = (
             self.module.supabase.table("password_resets")
-            .select("id,user_id,token,expires_at,used,created_at")
+            .select("id,user_id,token_digest,expires_at,used,created_at")
             .execute()
             .data
             or []
@@ -1696,11 +1696,14 @@ class GuardedHarness:
 
     def expire_auth_reset(self, token):
         self._require_auth_scope()
-        if token not in {row["token"] for row in self.auth_reset_records()}:
+        from password_reset_service import token_digest
+
+        digest = token_digest(token)
+        if digest not in {row["token_digest"] for row in self.auth_reset_records()}:
             raise safety.SafetyError("Only existing synthetic reset may be expired.")
         self.module.supabase.table("password_resets").update(
-            {"expires_at": "2000-01-01T00:00:00"}
-        ).eq("token", token).execute()
+            {"expires_at": "2000-01-01T00:00:00+00:00"}
+        ).eq("token_digest", digest).execute()
 
     def verify_admission_denial(self):
         self._require_lease()

@@ -25,11 +25,10 @@ from job_safety import guard_runtime_job
 from collections import defaultdict
 import time
 import threading
-import secrets, requests
+import requests
 import jwt
 import re
 import os
-import bcrypt
 import uuid
 
 # --------------------------------------------------------
@@ -525,12 +524,13 @@ def season_status():
 # -------------------- Admin endpoints  ------------------
 # --------------------------------------------------------
 
-def generate_token(user_id, username, is_admin=False):
+def generate_token(user_id, username, is_admin=False, auth_version=0):
     payload = {
         "user_id": user_id,
         "username": username,
         "is_admin": is_admin,
-        "exp": datetime.utcnow() + timedelta(days=7)
+        "av": auth_version,
+        "exp": datetime.utcnow() + timedelta(days=7),
     }
     token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
     return token
@@ -538,11 +538,32 @@ def generate_token(user_id, username, is_admin=False):
 
 def decode_token(token):
     try:
-        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        payload = jwt.decode(
+            token, JWT_SECRET, algorithms=[JWT_ALGORITHM], options={"require": ["exp"]}
+        )
+        version = payload.get("av", 0)
+        if (
+            type(version) is not int
+            or version < 0
+            or not isinstance(payload.get("user_id"), str)
+        ):
+            return None
+        users = (
+            supabase.table("users")
+            .select("id,auth_version")
+            .eq("id", payload["user_id"])
+            .execute()
+            .data
+        )
+        if (
+            not users
+            or type(users[0].get("auth_version")) is not int
+            or users[0]["auth_version"] != version
+        ):
+            return None
         return payload
-    except jwt.ExpiredSignatureError:
-        return None
-    except jwt.InvalidTokenError:
+    except Exception:
+        # DB failures also fail closed; never log JWT or transport exception payloads.
         return None
 
 
@@ -683,7 +704,7 @@ def require_auth_for_league_scope(f):
 @app.route("/auth/test-me", methods=["GET"])
 @require_auth
 def test_me():
-    return jsonify({"user": request.user}), 200
+    return jsonify({"user": {k: v for k, v in request.user.items() if k != "av"}}), 200
 
 
 @app.route("/admin/env-check", methods=["GET"])
@@ -1508,7 +1529,10 @@ def login():
         if not verify_password(password, stored) or not user:
             return jsonify(failure[0]), failure[1]
         token = generate_token(
-            user["id"], user["username"], user.get("is_admin", False)
+            user["id"],
+            user["username"],
+            user.get("is_admin", False),
+            user["auth_version"],
         )
         return (
             jsonify(
@@ -1530,145 +1554,62 @@ def login():
         return jsonify({"error": "Login unavailable"}), 503
 @app.route("/auth/forgot-password", methods=["POST"])
 def forgot_password():
-    data = request.get_json() or {}
+    from password_reset_service import REQUEST_MESSAGE, request_identity, issue_reset
 
-    # 1) Per-IP limit for forgot-password
-    ip = get_client_ip()
-    if is_rate_limited("forgot_ip", ip):
-        # Same generic response to avoid info leaks
-        return jsonify({
-            "message": "If a username or email exists, a reset password email will be sent."
-        }), 200
-
-    # 2) Normalize identifier
-    identifier = (data.get("email") or data.get("username") or "").strip().lower()
-
-    if re.match(EMAIL_REGEX, identifier):
-        lookup_field = "email"
-    elif re.match(USERNAME_REGEX, identifier):
-        lookup_field = "username"
-    else:
-        return jsonify({"message": "If a username or email exists, a reset password email will be sent."}), 200
-
-    # 3) Per-identifier forgot-password limit
-    if is_rate_limited("forgot_identifier", identifier):
-        return jsonify({
-            "message": "If a username or email exists, a reset password email will be sent."
-        }), 200
-
-    # Perform a single, parameterized lookup (no string building / .or_)
+    data = request.get_json(silent=True)
     try:
-        user_res = (
-            supabase.table("users")
-            .select("id, email, username")
-            .eq(lookup_field, identifier)
+        field, identifier = request_identity(data, supabase)
+    except (ValueError, UnicodeError):
+        return jsonify({"error": "Enter a valid email or username"}), 400
+    except Exception:
+        safe_print("Password reset identity service unavailable")
+        return jsonify({"message": REQUEST_MESSAGE}), 200
+    if is_rate_limited("forgot_ip", get_client_ip()) or is_rate_limited(
+        "forgot_identifier", identifier
+    ):
+        return jsonify({"message": REQUEST_MESSAGE}), 200
+    try:
+        user = (
+            supabase.rpc("find_auth_user", {"p_field": field, "p_identity": identifier})
             .execute()
             .data
         )
-    except Exception as e:
-        safe_print("🔴 DB lookup failed (class):", type(e).__name__)
-        return jsonify({"error": "Database error"}), 500
-
-    # Always return neutral response if not found (no user enumeration)
-    if not user_res:
-        return jsonify({
-            "message": "If a username or email exists, a reset password email will be sent."
-        }), 200
-
-    user = user_res[0]
-    token = secrets.token_urlsafe(32)
-    expires_at = (datetime.utcnow() + timedelta(hours=24)).isoformat()
-
-    # Store reset token
-    try:
-        supabase.table("password_resets").insert({
-            "user_id": user["id"],
-            "token": token,
-            "expires_at": expires_at
-        }).execute()
-    except Exception as e:
-        # Do NOT log token or full exception text (it might include the payload)
-        safe_print("🔴 Error inserting reset token (class):", type(e).__name__)
-        return jsonify({"error": "Failed to save reset token"}), 500
-
-    # Send reset email via Brevo
-    reset_link = build_reset_link(token)
-    subject = "NBACorner Password Reset"
-    body = f"""
-        <html>
-          <body style="font-family: Arial, sans-serif; line-height: 1.6;">
-            <p>Hello <strong>{user['username']}</strong>,</p>
-            <p>A reset password has been requested. Please click the button below to set a new password:</p>
-            <p>
-              <a href="{reset_link}"
-                 style="display:inline-block; background-color:#007bff; color:#ffffff; text-decoration:none;
-                        padding:10px 20px; border-radius:5px; font-weight:bold;"
-                 target="_blank">
-                 Reset Password
-              </a>
-            </p>
-            <p>If the button doesn't work, you can also copy and paste this link into your browser:</p>
-            <p><a href="{reset_link}" target="_blank">{reset_link}</a></p>
-            <p>This link will stay active for 24 hours or until the password has been successfully reset.</p>
-            <p>Thanks,<br>NBA Corner</p>
-          </body>
-        </html>
-    """
-
-    send_email_via_brevo(user["email"], subject, body)
-
-    return jsonify({
-        "message": "If a username or email exists, a reset password email will be sent."
-    }), 200
+        if user:
+            issue_reset(
+                user, supabase, send_email_via_brevo, build_reset_link, safe_print
+            )
+    except Exception:
+        safe_print("Password reset request unavailable")
+    return jsonify({"message": REQUEST_MESSAGE}), 200
 
 
 @app.route("/auth/reset-password", methods=["POST"])
 def reset_password():
-    data = request.get_json()
-    token = data.get("token")
-    new_password = data.get("new_password")
+    from password_reset_service import complete_reset, INVALID_LINK
 
-    if not token or not new_password:
-        return jsonify({"error": "Token and new password are required"}), 400
-
-    # ✅ Enforce password policy on reset as well
-    ok, msg = is_strong_password(new_password)
-    if not ok:
-        return jsonify({"error": msg}), 400
-
-    # Lookup token
-    token_res = (
-        supabase.table("password_resets")
-        .select("id, user_id, expires_at, used")
-        .eq("token", token)
-        .execute()
-        .data
+    try:
+        completed = complete_reset(
+            request.get_json(silent=True), supabase, BCRYPT_ROUNDS
+        )
+    except (ValueError, UnicodeError):
+        # Fixed response even if a transport raises a ValueError subclass.
+        return (
+            jsonify(
+                {
+                    "error": "Invalid reset link or password. Password must contain 8 to 128 characters."
+                }
+            ),
+            400,
+        )
+    except Exception:
+        safe_print("Password reset completion unavailable")
+        return jsonify({"error": "Password reset unavailable"}), 503
+    if not completed:
+        return jsonify({"error": INVALID_LINK}), 400
+    return (
+        jsonify({"message": "Password reset successfully. Please log in again."}),
+        200,
     )
-
-    if not token_res:
-        return jsonify({"error": "Invalid or expired token"}), 400
-
-    reset = token_res[0]
-    if reset["used"]:
-        return jsonify({"error": "Token already used"}), 400
-
-    # Check expiry
-    if datetime.utcnow() > datetime.fromisoformat(reset["expires_at"]):
-        return jsonify({"error": "Token expired"}), 400
-
-    # ✅ Use explicit bcrypt cost
-    hashed_password = bcrypt.hashpw(
-        new_password.encode("utf-8"),
-        bcrypt.gensalt(rounds=BCRYPT_ROUNDS),
-    ).decode("utf-8")
-
-    # Update user password
-    supabase.table("users").update({"password": hashed_password}).eq("id", reset["user_id"]).execute()
-
-    # Mark token as used
-    supabase.table("password_resets").update({"used": True}).eq("id", reset["id"]).execute()
-
-    return jsonify({"message": "Password reset successfully"}), 200
 
 
 @app.route("/test-email", methods=["POST"])

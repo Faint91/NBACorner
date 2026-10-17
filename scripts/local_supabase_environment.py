@@ -221,6 +221,7 @@ def main():
             sql_file(ROOT / "db/post-baseline/0008_nc_02f1_league_lifecycle.sql")
             sql_file(ROOT / "db/post-baseline/0009_nc_02f2_league_history.sql")
             sql_file(ROOT / "db/post-baseline/0010_nc_02g1_identity_auth.sql")
+            sql_file(ROOT / "db/post-baseline/0011_nc_02g2_password_reset_sessions.sql")
             sql_file(ROOT / "db/post-baseline/verify_current_schema.sql")
             sql_file(WORK / "identity-marker.sql")
             sql_file(WORK / "fixture-marker-v2.sql")
