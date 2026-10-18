@@ -1,9 +1,10 @@
 # NC-04B deployment / rollback / smoke runbook — PLANNING ONLY
 
 **NO-GO. NC-04A is BLOCKED. Do not execute this runbook.**
-No deployment authorization was given. The confirmed reset-link local defect must
-first be repaired under a separately authorized NC-03R phase and relevant validation
-repeated. Then finish deferred NC-04A checks and resolve every prerequisite below.
+No deployment authorization was given. NC-03R3 repaired the reset-link defect locally
+at a2a930291e32a6f73e03c2acf4dd0732eac70263. Resumed NC-04A verified effective
+ACLs, master graph, lifecycle/history/reset state and www SPA deep links. Recovery,
+canonical identity, protected configuration and operational release gates remain NO-GO.
 This document does not start NC-04B or authorize any production write.
 
 ## Actual observed release gap
@@ -12,7 +13,12 @@ Production: Supabase NBA Corner/main/PRODUCTION `rpwesmvzmgoctrokrbhy`, PostgreS
 secured baseline-equivalent; none of the release0001-0011 migrations are present.
 Render `srv-d4239u6uk2gs73b8fts0`, live backend
 `5bcb0b43ae0c232381ae857cd40c3fd7b1e23422`, starts `gunicorn app:app`.
-Frontend production version/configuration is not yet verified. Do not substitute
+Actual public frontend is https://www.nbacorner.com. Tokenless /reset-password
+returns the same HTTP200 SPA HTML as /login; bundle contains the reset route and
+HTTPS Render API origin. Cloudflare response headers do not establish hosting
+provider. Hosting dashboard/build config and exact deployed frontend commit remain
+unverified; remote repository main is not assumed to be deployed.
+Frontend production version/configuration is not fully verified. Do not substitute
 local Vite settings or infer frontend readiness from the backend service.
 
 Only2025-26 has stored timing/master among nine seasons; no application_season table
@@ -22,12 +28,13 @@ season or invoke rollover as deployment preparation.
 
 ## Gates before any execution
 
-- Repair NC04A-CODE-001, verify trusted frontend origin, test real helper-to-UI
-  routing, preserve reset token isolation/TTL/revocation, rerun affected validation
-  and approve exact backend/frontend release commits. No silent change in this phase.
-- Complete remaining production-only checks: direct relation/column ACLs,sequence
-  metadata,recursive graph/current master completeness,source-score references,
-  active rollover/scheduler state,actual frontend origin/API/reset routing and config.
+- Preserve the completed R3 local repair and validation. Obtain boolean-only actual
+  runtime FRONTEND_ORIGIN validation: nonblank, valid HTTPS origin, actual www
+  frontend and distinct from Render API. Required name presence is not a pass.
+- Reuse resumed effective table/view/column/sequence/browser CREATE checks, all
+  seven app function body hashes,16 policies and complete21-match admin master proof.
+  Refresh critical data-sensitive checks immediately before release; no need to
+  repeat already-valid expensive scans without drift evidence.
 - Obtain boolean-only R1 validation of the existing runtime JWT secret. Name presence
   is insufficient. Do not reveal it or rotate it automatically. Render Free lacks
   Shell; choose a separately approved secure validation method rather than bypassing
@@ -55,14 +62,16 @@ rename users/leagues,drop constraints,merge identities or patch production ad ho
 
 1. Record approved repaired release commits,actual frontend version/runtime settings,
    production project and schema fingerprint. Confirm operator maintenance authority,
-   backup/recovery owner and all GO gates. Never deploy the currently defective
-   NC-03 candidate merely because its old checkpoint passed unit tests.
+   backup/recovery owner and all GO gates. Use the repaired R3 backend and matching approved frontend commits, never the
+   old incompatible production binary or an obsolete NC03 candidate.
 2. Announce the controlled window; verify the restorable backup and retain exact
    deployed runtime keys securely outside documentation/Git.
 3. Enter approved API write quiescence and pause actual external standings workflows
    and other mutation callers. Verify the old backend cannot serve mutation traffic
-   throughout the incompatible schema window. The exact platform pause/build/resume
-   procedure must be confirmed before GO; do not briefly resume old code on0011.
+   throughout the incompatible schema window. Existing Render Suspend Web Service is the proposed mechanism, not yet executed.
+   Prove deploy-while-suspended/resume behavior and capture Auto-Deploy state before
+   authorization; no old binary may resume on0011. If this cannot be established,
+   approve another supported quiescence mechanism before GO; do not briefly resume old code on0011.
 4. Rerun critical READ ONLY preflights:identity/schema,no collisions,owner/member,
    canonical-source decision/timing/master,history shape,no locks/unfinished work.
    Recheck safe config booleans and backup recovery point. Abort if state drifted.
@@ -101,14 +110,16 @@ rename users/leagues,drop constraints,merge identities or patch production ad ho
     counts while accounting for ordinary traffic only after maintenance ends.
 11. Verify expected current-season freeze and standings read state. Re-enable only
     previously approved required schedules after all checks pass. The local workflow
-    source runs09:00UTC; actual production registration remains unverified. Do not
+    source runs09:00UTC; actual GitHub registration is manually DISABLED and must stay held unless
+    separately approved. Render inventory contains3 Python web services, no cron
+    service; pg_cron is absent. No automatic rollover was found in reviewed scope. Do not
     manually refresh or invoke rollover as a smoke test.
 12. Monitor sanitized errors/auth/reset/league/history/standings/API/canonical results.
     Exit maintenance only after GO remains true. Preserve evidence and rollback owner.
 
 No exact production connection string,credential,synthetic user or destructive command
 is embedded here. Production-like dry-run strategy uses synthetic shapes only:
-53 synthetic users,21complete bracket graphs,1league/1membership,7legacy headers and
+57 synthetic users,21complete bracket graphs,1league/1membership,7legacy headers and
 140synthetic history rows,13synthetic legacy reset records and the observed null timing
 pattern. Existing NC-03 full-chain proofs already cover functionality/concurrency;
 a shape rehearsal has not been performed in NC-04A and must not copy real PII/hashes.
@@ -173,5 +184,36 @@ systemic failures before exiting maintenance. Compare to an approved baseline an
 assign operator ownership during the window. No alerts or monitoring settings were
 created/changed here;never log passwords,JWTs,reset values,keys or connection strings.
 
-**Current next step:explicit NC-03R repair authorization,then resume NC-04A.**
+**Current next step:resolve the resumed NC-04A GO gates under separate authorization.**
 NC-04B remains unstarted and unauthorized.
+
+## Resumed NC-04A addendum — 2026-10-18 (planning only)
+
+- Production now has57 users (formerly53); other aggregate scale unchanged:
+  21brackets/441matches/14scores/1league/1membership/7headers/140historyrows.
+  This audit made no product writes. Do not use stale counts as release invariants.
+- Recovery NO-GO:scheduled backups absent on Free; PITR not enabled; external
+  equivalent unverified. Choose and separately authorize exact-project backup and
+  credible restoration verification; document recovery point,retention,owner.
+- Canonical NO-GO:2025-26 alone has timing/master evidence; business intent is not
+  inferred from that fact.0002 intentionally creates no designation. Require exact
+  approved source/timings and separate write authorization after0002,before backend.
+- Config NO-GO:JWT_SECRET and FRONTEND_ORIGIN protected values never retrieved;
+  provider/sender validity and FLASK_ENV/rate-limit/debug state remain unknown.
+  Reuse pure R1/R3 validators in a separately approved secure operator/runtime
+  context with boolean-only output; do not add an executor,load local dotenv as
+  production evidence,reveal values,rotate keys or email users to prove config.
+- Old frontend/new backend:basic contracts conditional,full deployed build contract
+  unproved. New frontend/old backend unsafe; old backend/migratedDB unsafe; new
+  backend/oldDB unsafe. R3+www UI route passes static structure,actual runtime origin
+  remains unverified. Migrated backend+legacy emails invalidated by design.
+- During any migration failure:retain quiescence; the failing migration transaction
+  may roll back while earlier committed migrations remain. Inspect actual level;
+  never blindly replay or resume old code. Prefer audited compatible forward repair;
+  restore/down migration requires explicit review and recovery authorization.
+- Tokenless frontend route load is the only unconditional reset smoke. Reset mail,
+  password/version changes and designated account login require their own approved
+  account/mailbox scope. No smoke is performed in NC-04A.
+- Assign monitoring owner and baseline/abort thresholds for5xx,auth401/403,login,
+  reset,DB/RPC,league/history,standings,canonical and browser API errors before GO.
+- Full findings and57-item report: nc-04a-production-preflight-resumed.md.

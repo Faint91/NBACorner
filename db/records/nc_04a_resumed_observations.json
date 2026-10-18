@@ -1,0 +1,1208 @@
+{
+  "mode": "OFFLINE VERIFICATION OF EXPLICIT READ ONLY EXPORTS",
+  "status": "PASS",
+  "checks": {
+    "all_transactions_read_only": true,
+    "reader_identity": true,
+    "effective_browser_relation_grants_zero": true,
+    "effective_browser_sequence_grants_zero": true,
+    "effective_browser_mutation_rpc_grants_zero": true,
+    "no_column_grants": true,
+    "no_browser_schema_create": true,
+    "relations_trusted_only": true,
+    "three_owned_sequences": true,
+    "app_function_inventory": true,
+    "app_function_bodies_unchanged": true,
+    "policies_unchanged": true,
+    "identity_zero_findings": true,
+    "leagues_zero_findings": true,
+    "lifecycle_zero_findings": true,
+    "history_zero_findings": true,
+    "no_release_object_collision": true,
+    "no_auth_version_collision": true,
+    "no_live_rollover_observed": true,
+    "standings_seed_uniqueness": true,
+    "no_pg_cron_extension": true,
+    "single_master": true,
+    "master_identity_admin": true,
+    "master_complete_valid_graph": true
+  },
+  "check_count": 24,
+  "source_sha256": {
+    "catalog": "b841cfae6db4f871f7e54d6a4dfb19425c60d329efb1d09ad59658b291d5de4a",
+    "data": "f851c9f3c280df0222aa62c5a83fec65a0e6d6a8145284142b44126d1a854725",
+    "acl": "514364b150adc472429d9bee1937dd6413ae882679f01c389aa75ae3d3863599"
+  },
+  "catalog": {
+    "users": 57,
+    "reader": "postgres",
+    "resets": {
+      "total": 13,
+      "unused": 10,
+      "orphan_users": 0,
+      "legacy_fields": 0,
+      "unused_unexpired": 0
+    },
+    "database": "postgres",
+    "functions": [
+      {
+        "acl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+        "args": "",
+        "name": "_set_bracket_scores_season_id",
+        "owner": "postgres",
+        "config": null,
+        "definer": false,
+        "body_md5": "2f0613d13ad48777d6804d5fb974c7ed"
+      },
+      {
+        "acl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+        "args": "",
+        "name": "_set_matches_season_id",
+        "owner": "postgres",
+        "config": null,
+        "definer": false,
+        "body_md5": "2f0613d13ad48777d6804d5fb974c7ed"
+      },
+      {
+        "acl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+        "args": "",
+        "name": "fix_season_master_on_bracket_soft_delete",
+        "owner": "postgres",
+        "config": null,
+        "definer": false,
+        "body_md5": "a6ee42e59325aa92f86bd1e87b9d8708"
+      },
+      {
+        "acl": "{postgres=X/postgres,service_role=X/postgres}",
+        "args": "p_match_id uuid, p_action text, p_new_team text, p_games integer",
+        "name": "atomic_update_match",
+        "owner": "postgres",
+        "config": null,
+        "definer": true,
+        "body_md5": "19bda01bbb9b5bc7cf447eef41b4258d"
+      },
+      {
+        "acl": "{=X/supabase_admin,supabase_admin=X/supabase_admin,postgres=X/supabase_admin,anon=X/supabase_admin,authenticated=X/supabase_admin,service_role=X/supabase_admin}",
+        "args": "real",
+        "name": "set_limit",
+        "owner": "supabase_admin",
+        "config": null,
+        "definer": false,
+        "body_md5": "79156a0336c67021d9428bff7da30542"
+      },
+      {
+        "acl": "{=X/supabase_admin,supabase_admin=X/supabase_admin,postgres=X/supabase_admin,anon=X/supabase_admin,authenticated=X/supabase_admin,service_role=X/supabase_admin}",
+        "args": "",
+        "name": "show_limit",
+        "owner": "supabase_admin",
+        "config": null,
+        "definer": false,
+        "body_md5": "3ab6c68b603f0310182efe3695d82a92"
+      },
+      {
+        "acl": "{=X/supabase_admin,supabase_admin=X/supabase_admin,postgres=X/supabase_admin,anon=X/supabase_admin,authenticated=X/supabase_admin,service_role=X/supabase_admin}",
+        "args": "text",
+        "name": "show_trgm",
+        "owner": "supabase_admin",
+        "config": null,
+        "definer": false,
+        "body_md5": "bb20c15988887dca8023fcdec2e15705"
+      },
+      {
+        "acl": "{=X/supabase_admin,supabase_admin=X/supabase_admin,postgres=X/supabase_admin,anon=X/supabase_admin,authenticated=X/supabase_admin,service_role=X/supabase_admin}",
+        "args": "text, text",
+        "name": "similarity",
+        "owner": "supabase_admin",
+        "config": null,
+        "definer": false,
+        "body_md5": "a65b94a37c1cfdf8414dc6e5180328ee"
+      },
+      {
+        "acl": "{=X/supabase_admin,supabase_admin=X/supabase_admin,postgres=X/supabase_admin,anon=X/supabase_admin,authenticated=X/supabase_admin,service_role=X/supabase_admin}",
+        "args": "text, text",
+        "name": "similarity_op",
+        "owner": "supabase_admin",
+        "config": null,
+        "definer": false,
+        "body_md5": "4317659571d5d65d8c2c051c25c0cecd"
+      },
+      {
+        "acl": "{=X/supabase_admin,supabase_admin=X/supabase_admin,postgres=X/supabase_admin,anon=X/supabase_admin,authenticated=X/supabase_admin,service_role=X/supabase_admin}",
+        "args": "text, text",
+        "name": "word_similarity",
+        "owner": "supabase_admin",
+        "config": null,
+        "definer": false,
+        "body_md5": "b9d296bc7ed64b19e32192351e9b284f"
+      },
+      {
+        "acl": "{=X/supabase_admin,supabase_admin=X/supabase_admin,postgres=X/supabase_admin,anon=X/supabase_admin,authenticated=X/supabase_admin,service_role=X/supabase_admin}",
+        "args": "text, text",
+        "name": "word_similarity_op",
+        "owner": "supabase_admin",
+        "config": null,
+        "definer": false,
+        "body_md5": "5412212962db1aa604d6b20bbcf89c75"
+      },
+      {
+        "acl": "{=X/supabase_admin,supabase_admin=X/supabase_admin,postgres=X/supabase_admin,anon=X/supabase_admin,authenticated=X/supabase_admin,service_role=X/supabase_admin}",
+        "args": "text, text",
+        "name": "word_similarity_commutator_op",
+        "owner": "supabase_admin",
+        "config": null,
+        "definer": false,
+        "body_md5": "02611902707b5de0d52c0f6a91da6218"
+      },
+      {
+        "acl": "{=X/supabase_admin,supabase_admin=X/supabase_admin,postgres=X/supabase_admin,anon=X/supabase_admin,authenticated=X/supabase_admin,service_role=X/supabase_admin}",
+        "args": "text, text",
+        "name": "similarity_dist",
+        "owner": "supabase_admin",
+        "config": null,
+        "definer": false,
+        "body_md5": "ace88dc523cc3a38ee252b232a6f3233"
+      },
+      {
+        "acl": "{=X/supabase_admin,supabase_admin=X/supabase_admin,postgres=X/supabase_admin,anon=X/supabase_admin,authenticated=X/supabase_admin,service_role=X/supabase_admin}",
+        "args": "text, text",
+        "name": "word_similarity_dist_op",
+        "owner": "supabase_admin",
+        "config": null,
+        "definer": false,
+        "body_md5": "ba8863f446eceb450a04b6c324db7419"
+      },
+      {
+        "acl": "{=X/supabase_admin,supabase_admin=X/supabase_admin,postgres=X/supabase_admin,anon=X/supabase_admin,authenticated=X/supabase_admin,service_role=X/supabase_admin}",
+        "args": "text, text",
+        "name": "word_similarity_dist_commutator_op",
+        "owner": "supabase_admin",
+        "config": null,
+        "definer": false,
+        "body_md5": "d3dad69b1ecbf95b0cd4ad9d0b898eca"
+      },
+      {
+        "acl": "{=X/supabase_admin,supabase_admin=X/supabase_admin,postgres=X/supabase_admin,anon=X/supabase_admin,authenticated=X/supabase_admin,service_role=X/supabase_admin}",
+        "args": "cstring",
+        "name": "gtrgm_in",
+        "owner": "supabase_admin",
+        "config": null,
+        "definer": false,
+        "body_md5": "af406f0d6fd3f9f056beb474dc267883"
+      },
+      {
+        "acl": "{=X/supabase_admin,supabase_admin=X/supabase_admin,postgres=X/supabase_admin,anon=X/supabase_admin,authenticated=X/supabase_admin,service_role=X/supabase_admin}",
+        "args": "gtrgm",
+        "name": "gtrgm_out",
+        "owner": "supabase_admin",
+        "config": null,
+        "definer": false,
+        "body_md5": "809b516b4474d75b7ea2606e56263a8b"
+      },
+      {
+        "acl": "{=X/supabase_admin,supabase_admin=X/supabase_admin,postgres=X/supabase_admin,anon=X/supabase_admin,authenticated=X/supabase_admin,service_role=X/supabase_admin}",
+        "args": "internal, text, smallint, oid, internal",
+        "name": "gtrgm_consistent",
+        "owner": "supabase_admin",
+        "config": null,
+        "definer": false,
+        "body_md5": "520315289c6207994f47bd6b574fcbe2"
+      },
+      {
+        "acl": "{=X/supabase_admin,supabase_admin=X/supabase_admin,postgres=X/supabase_admin,anon=X/supabase_admin,authenticated=X/supabase_admin,service_role=X/supabase_admin}",
+        "args": "internal, text, smallint, oid, internal",
+        "name": "gtrgm_distance",
+        "owner": "supabase_admin",
+        "config": null,
+        "definer": false,
+        "body_md5": "96b6ebcb046f8c4a69cbe07f341d676e"
+      },
+      {
+        "acl": "{=X/supabase_admin,supabase_admin=X/supabase_admin,postgres=X/supabase_admin,anon=X/supabase_admin,authenticated=X/supabase_admin,service_role=X/supabase_admin}",
+        "args": "internal",
+        "name": "gtrgm_compress",
+        "owner": "supabase_admin",
+        "config": null,
+        "definer": false,
+        "body_md5": "0c5e51542dfa58ac5c28c29a37958c04"
+      },
+      {
+        "acl": "{=X/supabase_admin,supabase_admin=X/supabase_admin,postgres=X/supabase_admin,anon=X/supabase_admin,authenticated=X/supabase_admin,service_role=X/supabase_admin}",
+        "args": "internal",
+        "name": "gtrgm_decompress",
+        "owner": "supabase_admin",
+        "config": null,
+        "definer": false,
+        "body_md5": "92fd74d4efb9a0f25dd35b9b75f71a6b"
+      },
+      {
+        "acl": "{=X/supabase_admin,supabase_admin=X/supabase_admin,postgres=X/supabase_admin,anon=X/supabase_admin,authenticated=X/supabase_admin,service_role=X/supabase_admin}",
+        "args": "internal, internal, internal",
+        "name": "gtrgm_penalty",
+        "owner": "supabase_admin",
+        "config": null,
+        "definer": false,
+        "body_md5": "78a76e7fec267214504a675b59c13d82"
+      },
+      {
+        "acl": "{=X/supabase_admin,supabase_admin=X/supabase_admin,postgres=X/supabase_admin,anon=X/supabase_admin,authenticated=X/supabase_admin,service_role=X/supabase_admin}",
+        "args": "internal, internal",
+        "name": "gtrgm_picksplit",
+        "owner": "supabase_admin",
+        "config": null,
+        "definer": false,
+        "body_md5": "c2073eb2953664de02fe1c5070a2c0e3"
+      },
+      {
+        "acl": "{=X/supabase_admin,supabase_admin=X/supabase_admin,postgres=X/supabase_admin,anon=X/supabase_admin,authenticated=X/supabase_admin,service_role=X/supabase_admin}",
+        "args": "internal, internal",
+        "name": "gtrgm_union",
+        "owner": "supabase_admin",
+        "config": null,
+        "definer": false,
+        "body_md5": "ac59a0687df15075468862ca946ee148"
+      },
+      {
+        "acl": "{=X/supabase_admin,supabase_admin=X/supabase_admin,postgres=X/supabase_admin,anon=X/supabase_admin,authenticated=X/supabase_admin,service_role=X/supabase_admin}",
+        "args": "gtrgm, gtrgm, internal",
+        "name": "gtrgm_same",
+        "owner": "supabase_admin",
+        "config": null,
+        "definer": false,
+        "body_md5": "5b60e89adb1cae9e6b7e3b9e7512a859"
+      },
+      {
+        "acl": "{=X/supabase_admin,supabase_admin=X/supabase_admin,postgres=X/supabase_admin,anon=X/supabase_admin,authenticated=X/supabase_admin,service_role=X/supabase_admin}",
+        "args": "text, internal",
+        "name": "gin_extract_value_trgm",
+        "owner": "supabase_admin",
+        "config": null,
+        "definer": false,
+        "body_md5": "c75ed6efb95d6922885e652c3b1ae63f"
+      },
+      {
+        "acl": "{=X/supabase_admin,supabase_admin=X/supabase_admin,postgres=X/supabase_admin,anon=X/supabase_admin,authenticated=X/supabase_admin,service_role=X/supabase_admin}",
+        "args": "text, internal, smallint, internal, internal, internal, internal",
+        "name": "gin_extract_query_trgm",
+        "owner": "supabase_admin",
+        "config": null,
+        "definer": false,
+        "body_md5": "bcc3d1b35e67c79fdd7743051b5bb54e"
+      },
+      {
+        "acl": "{=X/supabase_admin,supabase_admin=X/supabase_admin,postgres=X/supabase_admin,anon=X/supabase_admin,authenticated=X/supabase_admin,service_role=X/supabase_admin}",
+        "args": "internal, smallint, text, integer, internal, internal, internal, internal",
+        "name": "gin_trgm_consistent",
+        "owner": "supabase_admin",
+        "config": null,
+        "definer": false,
+        "body_md5": "1a51ef4f90da1f8206849b90da034f15"
+      },
+      {
+        "acl": "{=X/supabase_admin,supabase_admin=X/supabase_admin,postgres=X/supabase_admin,anon=X/supabase_admin,authenticated=X/supabase_admin,service_role=X/supabase_admin}",
+        "args": "internal, smallint, text, integer, internal, internal, internal",
+        "name": "gin_trgm_triconsistent",
+        "owner": "supabase_admin",
+        "config": null,
+        "definer": false,
+        "body_md5": "2042fbe8e50aa61204b33362850572be"
+      },
+      {
+        "acl": "{=X/supabase_admin,supabase_admin=X/supabase_admin,postgres=X/supabase_admin,anon=X/supabase_admin,authenticated=X/supabase_admin,service_role=X/supabase_admin}",
+        "args": "text, text",
+        "name": "strict_word_similarity",
+        "owner": "supabase_admin",
+        "config": null,
+        "definer": false,
+        "body_md5": "658697160f2064b47734aebdbd38425f"
+      },
+      {
+        "acl": "{=X/supabase_admin,supabase_admin=X/supabase_admin,postgres=X/supabase_admin,anon=X/supabase_admin,authenticated=X/supabase_admin,service_role=X/supabase_admin}",
+        "args": "text, text",
+        "name": "strict_word_similarity_op",
+        "owner": "supabase_admin",
+        "config": null,
+        "definer": false,
+        "body_md5": "04fed7fd0767165a07b85c5ec4fd59a1"
+      },
+      {
+        "acl": "{=X/supabase_admin,supabase_admin=X/supabase_admin,postgres=X/supabase_admin,anon=X/supabase_admin,authenticated=X/supabase_admin,service_role=X/supabase_admin}",
+        "args": "text, text",
+        "name": "strict_word_similarity_commutator_op",
+        "owner": "supabase_admin",
+        "config": null,
+        "definer": false,
+        "body_md5": "d06f5838b6234053cb93ddd82002f172"
+      },
+      {
+        "acl": "{=X/supabase_admin,supabase_admin=X/supabase_admin,postgres=X/supabase_admin,anon=X/supabase_admin,authenticated=X/supabase_admin,service_role=X/supabase_admin}",
+        "args": "text, text",
+        "name": "strict_word_similarity_dist_op",
+        "owner": "supabase_admin",
+        "config": null,
+        "definer": false,
+        "body_md5": "4a6a81f56250df9a7e29bb72de12835f"
+      },
+      {
+        "acl": "{=X/supabase_admin,supabase_admin=X/supabase_admin,postgres=X/supabase_admin,anon=X/supabase_admin,authenticated=X/supabase_admin,service_role=X/supabase_admin}",
+        "args": "text, text",
+        "name": "strict_word_similarity_dist_commutator_op",
+        "owner": "supabase_admin",
+        "config": null,
+        "definer": false,
+        "body_md5": "21d307ff0ca968d7cb12e9ecdf15ed5e"
+      },
+      {
+        "acl": "{=X/supabase_admin,supabase_admin=X/supabase_admin,postgres=X/supabase_admin,anon=X/supabase_admin,authenticated=X/supabase_admin,service_role=X/supabase_admin}",
+        "args": "internal",
+        "name": "gtrgm_options",
+        "owner": "supabase_admin",
+        "config": null,
+        "definer": false,
+        "body_md5": "e959830838e9384393160a2b19d70bb7"
+      },
+      {
+        "acl": "{postgres=X/postgres,service_role=X/postgres}",
+        "args": "in_match uuid",
+        "name": "undo_prediction_atomic",
+        "owner": "postgres",
+        "config": null,
+        "definer": false,
+        "body_md5": "3d8f5aad02b91892683e46b8f3c75e1d"
+      },
+      {
+        "acl": "{postgres=X/postgres,service_role=X/postgres}",
+        "args": "season_id uuid, bracket_id uuid",
+        "name": "set_master_bracket",
+        "owner": "postgres",
+        "config": null,
+        "definer": true,
+        "body_md5": "9035d55ec6340222515f729350069598"
+      },
+      {
+        "acl": "{postgres=X/postgres,service_role=X/postgres}",
+        "args": "in_match uuid, in_new_team text, in_games integer",
+        "name": "set_winner_atomic",
+        "owner": "postgres",
+        "config": null,
+        "definer": false,
+        "body_md5": "48a93b89a4826bd740c4ba7f65b78c78"
+      }
+    ],
+    "read_only": "on",
+    "relations": [
+      {
+        "acl": "{postgres=arwdDxtm/postgres,service_role=arwdDxtm/postgres}",
+        "rls": false,
+        "kind": "r",
+        "name": "seasons",
+        "owner": "postgres",
+        "forced": false
+      },
+      {
+        "acl": "{postgres=arwdDxtm/postgres,service_role=arwdDxtm/postgres}",
+        "rls": false,
+        "kind": "v",
+        "name": "bracket_view",
+        "owner": "postgres",
+        "forced": false
+      },
+      {
+        "acl": "{postgres=arwdDxtm/postgres,service_role=arwdDxtm/postgres}",
+        "rls": true,
+        "kind": "r",
+        "name": "users",
+        "owner": "postgres",
+        "forced": false
+      },
+      {
+        "acl": "{postgres=arwdDxtm/postgres,service_role=arwdDxtm/postgres}",
+        "rls": false,
+        "kind": "r",
+        "name": "teams",
+        "owner": "postgres",
+        "forced": false
+      },
+      {
+        "acl": "{postgres=arwdDxtm/postgres,service_role=arwdDxtm/postgres}",
+        "rls": true,
+        "kind": "r",
+        "name": "brackets",
+        "owner": "postgres",
+        "forced": false
+      },
+      {
+        "acl": "{postgres=arwdDxtm/postgres,service_role=arwdDxtm/postgres}",
+        "rls": true,
+        "kind": "r",
+        "name": "matches",
+        "owner": "postgres",
+        "forced": false
+      },
+      {
+        "acl": "{postgres=arwdDxtm/postgres,service_role=arwdDxtm/postgres}",
+        "rls": true,
+        "kind": "r",
+        "name": "password_resets",
+        "owner": "postgres",
+        "forced": false
+      },
+      {
+        "acl": "{postgres=arwdDxtm/postgres,service_role=arwdDxtm/postgres}",
+        "rls": false,
+        "kind": "r",
+        "name": "leaderboard_history",
+        "owner": "postgres",
+        "forced": false
+      },
+      {
+        "acl": "{postgres=rwU/postgres,service_role=rwU/postgres}",
+        "rls": false,
+        "kind": "S",
+        "name": "leaderboard_history_id_seq",
+        "owner": "postgres",
+        "forced": false
+      },
+      {
+        "acl": "{postgres=rwU/postgres,service_role=rwU/postgres}",
+        "rls": false,
+        "kind": "S",
+        "name": "password_resets_id_seq",
+        "owner": "postgres",
+        "forced": false
+      },
+      {
+        "acl": "{postgres=arwdDxtm/postgres,service_role=arwdDxtm/postgres}",
+        "rls": false,
+        "kind": "r",
+        "name": "bracket_scores",
+        "owner": "postgres",
+        "forced": false
+      },
+      {
+        "acl": "{postgres=arwdDxtm/postgres,service_role=arwdDxtm/postgres}",
+        "rls": false,
+        "kind": "r",
+        "name": "leaderboard_history_snapshots",
+        "owner": "postgres",
+        "forced": false
+      },
+      {
+        "acl": "{postgres=arwdDxtm/postgres,service_role=arwdDxtm/postgres}",
+        "rls": false,
+        "kind": "r",
+        "name": "leaderboard_history_rows",
+        "owner": "postgres",
+        "forced": false
+      },
+      {
+        "acl": "{postgres=arwdDxtm/postgres,service_role=arwdDxtm/postgres}",
+        "rls": false,
+        "kind": "r",
+        "name": "standings",
+        "owner": "postgres",
+        "forced": false
+      },
+      {
+        "acl": "{postgres=rwU/postgres,service_role=rwU/postgres}",
+        "rls": false,
+        "kind": "S",
+        "name": "standings_id_seq",
+        "owner": "postgres",
+        "forced": false
+      },
+      {
+        "acl": "{postgres=arwdDxtm/postgres,service_role=arwdDxtm/postgres}",
+        "rls": false,
+        "kind": "r",
+        "name": "leagues",
+        "owner": "postgres",
+        "forced": false
+      },
+      {
+        "acl": "{postgres=arwdDxtm/postgres,service_role=arwdDxtm/postgres}",
+        "rls": false,
+        "kind": "r",
+        "name": "league_members",
+        "owner": "postgres",
+        "forced": false
+      }
+    ],
+    "sequences": [
+      {
+        "acl": "{postgres=rwU/postgres,service_role=rwU/postgres}",
+        "name": "leaderboard_history_id_seq",
+        "owner": "postgres",
+        "owned_by": [
+          {
+            "table": "leaderboard_history",
+            "column": "id"
+          }
+        ]
+      },
+      {
+        "acl": "{postgres=rwU/postgres,service_role=rwU/postgres}",
+        "name": "password_resets_id_seq",
+        "owner": "postgres",
+        "owned_by": [
+          {
+            "table": "password_resets",
+            "column": "id"
+          }
+        ]
+      },
+      {
+        "acl": "{postgres=rwU/postgres,service_role=rwU/postgres}",
+        "name": "standings_id_seq",
+        "owner": "postgres",
+        "owned_by": [
+          {
+            "table": "standings",
+            "column": "id"
+          }
+        ]
+      }
+    ],
+    "column_acls": null,
+    "observed_at": "2026-10-18T16:43:32.891297+00:00",
+    "default_acls": [
+      {
+        "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+        "type": "f",
+        "owner": "postgres",
+        "schema": "public"
+      },
+      {
+        "acl": "{postgres=rwU/supabase_admin,anon=rwU/supabase_admin,authenticated=rwU/supabase_admin,service_role=rwU/supabase_admin}",
+        "type": "S",
+        "owner": "supabase_admin",
+        "schema": "public"
+      },
+      {
+        "acl": "{postgres=arwdDxtm/supabase_admin,anon=arwdDxtm/supabase_admin,authenticated=arwdDxtm/supabase_admin,service_role=arwdDxtm/supabase_admin}",
+        "type": "r",
+        "owner": "supabase_admin",
+        "schema": "public"
+      },
+      {
+        "acl": "{postgres=X/supabase_admin,anon=X/supabase_admin,authenticated=X/supabase_admin,service_role=X/supabase_admin}",
+        "type": "f",
+        "owner": "supabase_admin",
+        "schema": "public"
+      },
+      {
+        "acl": "{postgres=arwdDxtm/postgres,service_role=arwdDxtm/postgres}",
+        "type": "r",
+        "owner": "postgres",
+        "schema": "public"
+      },
+      {
+        "acl": "{postgres=rwU/postgres,service_role=rwU/postgres}",
+        "type": "S",
+        "owner": "postgres",
+        "schema": "public"
+      }
+    ],
+    "advisory_locks": 0,
+    "bracket_states": [
+      {
+        "count": 1,
+        "saved": true,
+        "deleted": false,
+        "is_done": true,
+        "is_master": false
+      },
+      {
+        "count": 1,
+        "saved": true,
+        "deleted": false,
+        "is_done": true,
+        "is_master": false
+      },
+      {
+        "count": 1,
+        "saved": false,
+        "deleted": true,
+        "is_done": false,
+        "is_master": false
+      },
+      {
+        "count": 1,
+        "saved": false,
+        "deleted": true,
+        "is_done": false,
+        "is_master": false
+      },
+      {
+        "count": 1,
+        "saved": true,
+        "deleted": false,
+        "is_done": true,
+        "is_master": false
+      },
+      {
+        "count": 1,
+        "saved": true,
+        "deleted": false,
+        "is_done": true,
+        "is_master": false
+      },
+      {
+        "count": 1,
+        "saved": true,
+        "deleted": false,
+        "is_done": true,
+        "is_master": false
+      },
+      {
+        "count": 1,
+        "saved": true,
+        "deleted": false,
+        "is_done": true,
+        "is_master": false
+      },
+      {
+        "count": 1,
+        "saved": true,
+        "deleted": true,
+        "is_done": true,
+        "is_master": false
+      },
+      {
+        "count": 4,
+        "saved": false,
+        "deleted": false,
+        "is_done": false,
+        "is_master": false
+      },
+      {
+        "count": 1,
+        "saved": true,
+        "deleted": false,
+        "is_done": true,
+        "is_master": false
+      },
+      {
+        "count": 1,
+        "saved": true,
+        "deleted": false,
+        "is_done": true,
+        "is_master": false
+      },
+      {
+        "count": 1,
+        "saved": true,
+        "deleted": false,
+        "is_done": true,
+        "is_master": false
+      },
+      {
+        "count": 1,
+        "saved": true,
+        "deleted": false,
+        "is_done": true,
+        "is_master": false
+      },
+      {
+        "count": 1,
+        "saved": true,
+        "deleted": false,
+        "is_done": true,
+        "is_master": false
+      },
+      {
+        "count": 1,
+        "saved": true,
+        "deleted": false,
+        "is_done": true,
+        "is_master": false
+      },
+      {
+        "count": 1,
+        "saved": false,
+        "deleted": false,
+        "is_done": false,
+        "is_master": true
+      },
+      {
+        "count": 1,
+        "saved": true,
+        "deleted": false,
+        "is_done": true,
+        "is_master": false
+      }
+    ],
+    "history_columns": [
+      {
+        "type": "bigint",
+        "table": "leaderboard_history",
+        "column": "id"
+      },
+      {
+        "type": "uuid",
+        "table": "leaderboard_history",
+        "column": "season_id"
+      },
+      {
+        "type": "text",
+        "table": "leaderboard_history",
+        "column": "season_code"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "leaderboard_history",
+        "column": "snapshot_at"
+      },
+      {
+        "type": "integer",
+        "table": "leaderboard_history",
+        "column": "rank"
+      },
+      {
+        "type": "text",
+        "table": "leaderboard_history",
+        "column": "bracket_name"
+      },
+      {
+        "type": "text",
+        "table": "leaderboard_history",
+        "column": "username"
+      },
+      {
+        "type": "integer",
+        "table": "leaderboard_history",
+        "column": "total_points"
+      },
+      {
+        "type": "integer",
+        "table": "leaderboard_history",
+        "column": "full_hits"
+      },
+      {
+        "type": "integer",
+        "table": "leaderboard_history",
+        "column": "partial_hits"
+      },
+      {
+        "type": "integer",
+        "table": "leaderboard_history",
+        "column": "misses"
+      },
+      {
+        "type": "integer",
+        "table": "leaderboard_history",
+        "column": "bonus_finalists"
+      },
+      {
+        "type": "integer",
+        "table": "leaderboard_history",
+        "column": "bonus_champion"
+      },
+      {
+        "type": "jsonb",
+        "table": "leaderboard_history",
+        "column": "points_by_match"
+      },
+      {
+        "type": "uuid",
+        "table": "leaderboard_history",
+        "column": "bracket_id"
+      },
+      {
+        "type": "uuid",
+        "table": "leaderboard_history",
+        "column": "user_id"
+      },
+      {
+        "type": "uuid",
+        "table": "leaderboard_history_rows",
+        "column": "id"
+      },
+      {
+        "type": "uuid",
+        "table": "leaderboard_history_rows",
+        "column": "snapshot_id"
+      },
+      {
+        "type": "integer",
+        "table": "leaderboard_history_rows",
+        "column": "rank"
+      },
+      {
+        "type": "text",
+        "table": "leaderboard_history_rows",
+        "column": "display_name"
+      },
+      {
+        "type": "integer",
+        "table": "leaderboard_history_rows",
+        "column": "total_points"
+      },
+      {
+        "type": "integer",
+        "table": "leaderboard_history_rows",
+        "column": "bonus_finalists"
+      },
+      {
+        "type": "integer",
+        "table": "leaderboard_history_rows",
+        "column": "bonus_champion"
+      },
+      {
+        "type": "integer",
+        "table": "leaderboard_history_rows",
+        "column": "full_hits"
+      },
+      {
+        "type": "integer",
+        "table": "leaderboard_history_rows",
+        "column": "partial_hits"
+      },
+      {
+        "type": "integer",
+        "table": "leaderboard_history_rows",
+        "column": "misses"
+      },
+      {
+        "type": "jsonb",
+        "table": "leaderboard_history_rows",
+        "column": "per_match_points"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "leaderboard_history_rows",
+        "column": "created_at"
+      },
+      {
+        "type": "uuid",
+        "table": "leaderboard_history_snapshots",
+        "column": "id"
+      },
+      {
+        "type": "uuid",
+        "table": "leaderboard_history_snapshots",
+        "column": "season_id"
+      },
+      {
+        "type": "text",
+        "table": "leaderboard_history_snapshots",
+        "column": "season_code"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "leaderboard_history_snapshots",
+        "column": "snapshot_at"
+      },
+      {
+        "type": "jsonb",
+        "table": "leaderboard_history_snapshots",
+        "column": "columns"
+      },
+      {
+        "type": "text",
+        "table": "leaderboard_history_snapshots",
+        "column": "note"
+      },
+      {
+        "type": "uuid",
+        "table": "leaderboard_history_snapshots",
+        "column": "created_by"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "leaderboard_history_snapshots",
+        "column": "created_at"
+      }
+    ],
+    "rollover_objects": null,
+    "auth_version_columns": 0,
+    "browser_schema_create": {
+      "anon": false,
+      "authenticated": false
+    },
+    "active_rollover_queries": 0,
+    "standings_seed_duplicates": 0
+  },
+  "data": {
+    "counts": {
+      "users": 57,
+      "scores": 14,
+      "leagues": 1,
+      "matches": 441,
+      "brackets": 21,
+      "memberships": 1,
+      "history_rows": 140,
+      "legacy_history": 0,
+      "history_headers": 7
+    },
+    "history": {
+      "orphan_rows": 0,
+      "invalid_rank": 0,
+      "code_mismatch": 0,
+      "orphan_header_seasons": 0,
+      "duplicate_row_payloads": 0,
+      "duplicate_display_names": 0,
+      "duplicate_header_seasons": 0
+    },
+    "leagues": {
+      "missing_owners": 0,
+      "name_collisions": 0,
+      "owner_not_member": 0,
+      "duplicate_memberships": 0
+    },
+    "identity": {
+      "null_blank": 0,
+      "email_collisions": 0,
+      "username_collisions": 0
+    },
+    "lifecycle": {
+      "orphan_user": 0,
+      "orphan_scores": 0,
+      "orphan_season": 0,
+      "orphan_matches": 0,
+      "duplicate_slots": 0,
+      "draft_with_saved": 0,
+      "done_without_saved": 0,
+      "graph_counts_invalid": 0,
+      "match_season_mismatch": 0,
+      "duplicate_active_master": 0,
+      "deleted_actor_without_delete": 0,
+      "duplicate_active_user_season": 0
+    },
+    "read_only": "on",
+    "standings": {
+      "rows": 30,
+      "last_updated": "2026-04-12T09:52:05.489838",
+      "conference_seed_duplicates": 0
+    },
+    "observed_at": "2026-10-18T16:44:53.618625+00:00",
+    "collision_objects": null
+  },
+  "security": {
+    "policies": [
+      {
+        "cmd": "ALL",
+        "qual": "true",
+        "roles": [
+          "service_role"
+        ],
+        "tablename": "users",
+        "permissive": "PERMISSIVE",
+        "policyname": "Service role can manage all users",
+        "with_check": "true"
+      },
+      {
+        "cmd": "UPDATE",
+        "qual": "(auth.uid() = id)",
+        "roles": [
+          "public"
+        ],
+        "tablename": "users",
+        "permissive": "PERMISSIVE",
+        "policyname": "Users can update their own data",
+        "with_check": "(auth.uid() = id)"
+      },
+      {
+        "cmd": "SELECT",
+        "qual": "(auth.uid() = id)",
+        "roles": [
+          "public"
+        ],
+        "tablename": "users",
+        "permissive": "PERMISSIVE",
+        "policyname": "Users can view their own data",
+        "with_check": null
+      },
+      {
+        "cmd": "ALL",
+        "qual": "(EXISTS ( SELECT 1\n   FROM users u\n  WHERE ((u.id = auth.uid()) AND (u.is_admin = true))))",
+        "roles": [
+          "public"
+        ],
+        "tablename": "brackets",
+        "permissive": "PERMISSIVE",
+        "policyname": "Admins can manage all brackets",
+        "with_check": null
+      },
+      {
+        "cmd": "DELETE",
+        "qual": "(auth.uid() = user_id)",
+        "roles": [
+          "public"
+        ],
+        "tablename": "brackets",
+        "permissive": "PERMISSIVE",
+        "policyname": "Users can delete their own brackets",
+        "with_check": null
+      },
+      {
+        "cmd": "INSERT",
+        "qual": null,
+        "roles": [
+          "public"
+        ],
+        "tablename": "brackets",
+        "permissive": "PERMISSIVE",
+        "policyname": "Users can insert their own brackets",
+        "with_check": "(auth.uid() = user_id)"
+      },
+      {
+        "cmd": "UPDATE",
+        "qual": "(auth.uid() = user_id)",
+        "roles": [
+          "public"
+        ],
+        "tablename": "brackets",
+        "permissive": "PERMISSIVE",
+        "policyname": "Users can update their own brackets",
+        "with_check": null
+      },
+      {
+        "cmd": "SELECT",
+        "qual": "(auth.uid() = user_id)",
+        "roles": [
+          "public"
+        ],
+        "tablename": "brackets",
+        "permissive": "PERMISSIVE",
+        "policyname": "Users can view their own brackets",
+        "with_check": null
+      },
+      {
+        "cmd": "ALL",
+        "qual": "(EXISTS ( SELECT 1\n   FROM users u\n  WHERE ((u.id = auth.uid()) AND (u.is_admin = true))))",
+        "roles": [
+          "public"
+        ],
+        "tablename": "matches",
+        "permissive": "PERMISSIVE",
+        "policyname": "Admins can manage all matches",
+        "with_check": null
+      },
+      {
+        "cmd": "DELETE",
+        "qual": "(EXISTS ( SELECT 1\n   FROM brackets b\n  WHERE ((b.id = matches.bracket_id) AND (b.user_id = auth.uid()))))",
+        "roles": [
+          "public"
+        ],
+        "tablename": "matches",
+        "permissive": "PERMISSIVE",
+        "policyname": "Users can delete matches of their own brackets",
+        "with_check": null
+      },
+      {
+        "cmd": "INSERT",
+        "qual": null,
+        "roles": [
+          "public"
+        ],
+        "tablename": "matches",
+        "permissive": "PERMISSIVE",
+        "policyname": "Users can insert matches of their own brackets",
+        "with_check": "(EXISTS ( SELECT 1\n   FROM brackets b\n  WHERE ((b.id = matches.bracket_id) AND (b.user_id = auth.uid()))))"
+      },
+      {
+        "cmd": "UPDATE",
+        "qual": "(EXISTS ( SELECT 1\n   FROM brackets b\n  WHERE ((b.id = matches.bracket_id) AND (b.user_id = auth.uid()))))",
+        "roles": [
+          "public"
+        ],
+        "tablename": "matches",
+        "permissive": "PERMISSIVE",
+        "policyname": "Users can update matches of their own brackets",
+        "with_check": null
+      },
+      {
+        "cmd": "SELECT",
+        "qual": "(EXISTS ( SELECT 1\n   FROM brackets b\n  WHERE ((b.id = matches.bracket_id) AND (b.user_id = auth.uid()))))",
+        "roles": [
+          "public"
+        ],
+        "tablename": "matches",
+        "permissive": "PERMISSIVE",
+        "policyname": "Users can view matches of their own brackets",
+        "with_check": null
+      },
+      {
+        "cmd": "ALL",
+        "qual": "(EXISTS ( SELECT 1\n   FROM users u\n  WHERE ((u.id = auth.uid()) AND (u.is_admin = true))))",
+        "roles": [
+          "public"
+        ],
+        "tablename": "password_resets",
+        "permissive": "PERMISSIVE",
+        "policyname": "Admins can manage all password resets",
+        "with_check": null
+      },
+      {
+        "cmd": "ALL",
+        "qual": null,
+        "roles": [
+          "public"
+        ],
+        "tablename": "password_resets",
+        "permissive": "PERMISSIVE",
+        "policyname": "Users can insert their own password resets",
+        "with_check": "(EXISTS ( SELECT 1\n   FROM users u\n  WHERE ((u.id = auth.uid()) AND (u.id = password_resets.user_id))))"
+      },
+      {
+        "cmd": "ALL",
+        "qual": "(EXISTS ( SELECT 1\n   FROM users u\n  WHERE ((u.id = auth.uid()) AND (u.id = password_resets.user_id))))",
+        "roles": [
+          "public"
+        ],
+        "tablename": "password_resets",
+        "permissive": "PERMISSIVE",
+        "policyname": "Users can view their own password resets",
+        "with_check": null
+      }
+    ],
+    "read_only": "on",
+    "extensions": [
+      {
+        "name": "plpgsql",
+        "version": "1.0"
+      },
+      {
+        "name": "pg_stat_statements",
+        "version": "1.11"
+      },
+      {
+        "name": "uuid-ossp",
+        "version": "1.1"
+      },
+      {
+        "name": "pgcrypto",
+        "version": "1.3"
+      },
+      {
+        "name": "supabase_vault",
+        "version": "0.3.1"
+      },
+      {
+        "name": "pg_trgm",
+        "version": "1.6"
+      }
+    ],
+    "observed_at": "2026-10-18T16:47:24.452747+00:00",
+    "public_relations": 17,
+    "effective_browser_relation_grants": 0,
+    "effective_browser_sequence_grants": 0,
+    "effective_browser_mutation_rpc_grants": 0
+  },
+  "master_summary": {
+    "admin": true,
+    "bracket": "080992c1-8d70-4c90-a4ce-31c314d89527",
+    "deleted": false,
+    "pointer": "080992c1-8d70-4c90-a4ce-31c314d89527",
+    "is_master": true,
+    "season_id": "994f58bc-bdbc-422e-9786-bb5c8559ea0f",
+    "season_code": "2025-26",
+    "match_count": 21,
+    "edge_count": 22,
+    "graph_sha256": "3dbc8e71402942a05d24520f935a49863063a4a34fa3a1d9220f5d3e7907937f",
+    "master_validation_error": null,
+    "complete_graph_validation_error": null
+  },
+  "production_writes": 0,
+  "no_credentials_or_product_identity_payloads": true
+}

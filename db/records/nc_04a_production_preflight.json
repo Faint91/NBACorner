@@ -1,13 +1,13 @@
 {
   "phase": "NC-04A",
   "mode": "CONTROLLED PRODUCTION READ-ONLY PREFLIGHT",
-  "observed_at_utc": "2026-10-17T21:53:37.499773+00:00",
-  "status": "BLOCKED \u2014 PRODUCTION REMEDIATION/DECISION REQUIRED",
-  "completed": false,
-  "stop_reason": "Confirmed local release defect NC04A-CODE-001; section37 requires return to an NC-03R repair phase without patching.",
+  "observed_at_utc": "2026-10-18T16:52:36.948733+00:00",
+  "status": "BLOCKED — PRODUCTION REMEDIATION/DECISION REQUIRED",
+  "completed": true,
+  "stop_reason": "Read-only audit complete; recovery, canonical decision and protected configuration/hosting/maintenance gates remain unresolved.",
   "local_start": {
     "backend_branch": "main",
-    "backend_head": "bb73a7a4610ba742da4a9796663cdda7cf3348af",
+    "backend_head": "a2a930291e32a6f73e03c2acf4dd0732eac70263",
     "backend_tree": "clean",
     "frontend_branch": "main",
     "frontend_head": "4fa0e9fc11d49354e3da137ee43e9d1ddbc87357",
@@ -29,7 +29,8 @@
     "backend_origin": "https://nbacorner.onrender.com",
     "deployed_backend_commit": "5bcb0b43ae0c232381ae857cd40c3fd7b1e23422",
     "build_command": "pip install -r requirements.txt",
-    "start_command": "gunicorn app:app"
+    "start_command": "gunicorn app:app",
+    "resumed_read_only_verified_at_utc": "2026-10-18T16:43:32.891297+00:00"
   },
   "read_safety": {
     "database_queries": "Fixed identity/catalog/aggregate/supplement SELECTs only, each BEGIN READ ONLY + timeout + COMMIT; no mutation RPC or arbitrary executor. Query text checked in editor against fixed local string, allowing only Windows line endings/editor indentation.",
@@ -37,8 +38,9 @@
     "reason_no_live_reset_probe": "Exact deployed backend has a before_request season bootstrap; no application GET/HEAD was attempted because existing startup logic may write. Defect proved offline.",
     "credential_values_revealed_copied_or_retrieved": false,
     "test_harness_production_admission": "Known production denylist remains in unchanged local code; no test client connected to production.",
-    "supplement_query": "Executed read-only before stop; completed result was not collected/exported. Do not treat supplemental ACL/sequence/recursive-graph/active-query checks as verified.",
-    "auto_review_rejection": "Post-stop attempt to export the already-completed supplemental result was denied by browser automatic approval review because continued production access violated the stop rule. No retry or workaround performed."
+    "supplement_query": "Resumed authorized explicit READ ONLY queries collected successfully; effective ACL, graph, lifecycle/history/reset checks verified offline.",
+    "auto_review_rejection": "Post-stop attempt to export the already-completed supplemental result was denied by browser automatic approval review because continued production access violated the stop rule. No retry or workaround performed.",
+    "static_frontend_reads": "No JavaScript or backend API calls; tokenless HTML and first-party bundle only."
   },
   "schema": {
     "comparison": {
@@ -96,7 +98,9 @@
     "latest_successful_backup_utc": null,
     "retention": null,
     "evidence": "Supabase FREE project backup/PITR screens",
-    "classification": "DEPLOYMENT PREREQUISITE; equivalent external backup was not independently verified"
+    "classification": "BLOCKED — no verified restore-capable mechanism",
+    "external_equivalent": "UNKNOWN",
+    "reverified": true
   },
   "config": {
     "names_only": [
@@ -133,10 +137,10 @@
     "sender_name_present": true,
     "frontend_origin_name_present": true,
     "values_validated": false,
-    "frontend_deployment_config": "NOT VERIFIED \u2014 mandatory stop",
+    "frontend_deployment_config": "www static SPA deep link/API destination verified; hosting/build environment and deployed commit unknown",
     "production_reset_route_finding": {
       "finding_id": "NC04A-CODE-001",
-      "classification": "CONFIRMED LOCAL RELEASE DEFECT / STOP",
+      "classification": "REPAIRED LOCALLY / PRODUCTION CONFIG VALIDATION BLOCKED",
       "production_email_link_origin": "https://nbacorner.onrender.com",
       "production_email_link_path": "/reset-password",
       "backend_route_match_status": 404,
@@ -145,16 +149,18 @@
       "hosting_evidence": "Render NBACorner web service srv-d4239u6uk2gs73b8fts0 serves that origin via gunicorn app:app",
       "root_cause": "Production link builder always selects API origin; FRONTEND_ORIGIN cannot override it, and API route map has no GET reset UI/redirect.",
       "scope": "Offline actual helper plus exact current AST route-map proof; no live product HTTP probe or real token used.",
-      "required_repair_phase": "NC-03R3 (separate explicit authorization required)",
+      "required_repair_phase": "NC-03R3 completed; no further local repair identified",
       "production_mutations": 0,
       "production_requests": 0,
       "email_sends": 0,
-      "credentials_read_or_emitted": false
-    }
+      "credentials_read_or_emitted": false,
+      "current_contract": "Explicit FRONTEND_ORIGIN; actual protected runtime value not validated"
+    },
+    "frontend_origin_runtime_validation": "UNKNOWN — protected value not retrieved"
   },
   "data": {
     "counts": {
-      "users": 53,
+      "users": 57,
       "scores": 14,
       "leagues": 1,
       "matches": 441,
@@ -166,11 +172,11 @@
       "global_history_structured_rows": 140
     },
     "resets": {
-      "legacy_records": 13,
-      "unused_records": 10,
-      "unused_unexpired": 0,
-      "legacy_user_fields": 0,
-      "orphan_reset_users": 0
+      "total": 13,
+      "unused": 10,
+      "orphan_users": 0,
+      "legacy_fields": 0,
+      "unused_unexpired": 0
     },
     "history": {
       "headers": [
@@ -352,7 +358,7 @@
       "email_collision_groups": 0,
       "username_collision_groups": 0
     },
-    "observed_at": "2026-10-17T21:46:07.331486+00:00",
+    "observed_at": "2026-10-18T16:44:53.618625+00:00",
     "advisory_lock_count": 0
   },
   "findings": [
@@ -360,15 +366,21 @@
       "id": "NC04A-CODE-001",
       "affected": "Password-reset delivery/release; NC-03 regression guard section37",
       "count": 1,
-      "severity": "HIGH / mandatory stop",
-      "reason": "Actual production link helper selects the Render API host; that service starts gunicorn app:app and current backend route map has no GET reset UI or redirect. Reset UI is in separate frontend.",
+      "severity": "DEPLOYMENT BLOCKER — runtime compatibility unverified",
+      "reason": "Local defect repaired in R3. FRONTEND_ORIGIN name exists but actual protected value has not passed boolean-only real-runtime validation.",
       "options": [
-        "Authorize NC-03R3 to route reset links to the explicitly approved frontend using trusted server configuration, validate origin and rerun relevant reset/contract tests.",
-        "A deliberately reviewed backend-to-frontend redirect could be designed separately; none added here."
+        "Obtain secure boolean-only real-runtime R3 origin validation for actual www frontend; no secret reveal, edits or test email."
       ],
-      "business_decision_required": "Confirm intended production frontend origin; implementation authorization required.",
+      "business_decision_required": "Confirm actual configured origin and safe validator outcome; no new code repair requested.",
       "downtime": "Repair can be developed/tested offline; deployment remains separate and gated.",
-      "scriptable": "Yes, in a separate authorized code-repair phase; no changes performed."
+      "scriptable": "Yes, in a separate authorized code-repair phase; no changes performed.",
+      "type": "Deployment gate",
+      "migration_impacted": "Password-reset delivery/release; NC-03 regression guard section37",
+      "production_write_required": "No for read-only verification; separate authorization required for any remediation",
+      "affected_rows": 1,
+      "proposed_remediation": [
+        "Obtain secure boolean-only real-runtime R3 origin validation for actual www frontend; no secret reveal, edits or test email."
+      ]
     },
     {
       "id": "NC04A-BACKUP-001",
@@ -381,7 +393,14 @@
       ],
       "business_decision_required": true,
       "downtime": "Depends on separately chosen backup/restore verification strategy.",
-      "scriptable": "Potentially; not authorized or executed in NC-04A."
+      "scriptable": "Potentially; not authorized or executed in NC-04A.",
+      "type": "Deployment gate",
+      "migration_impacted": "All future production migrations / NC-04B backup gate",
+      "production_write_required": "No for read-only verification; separate authorization required for any remediation",
+      "affected_rows": 0,
+      "proposed_remediation": [
+        "Separately authorize creation and verification of an equivalent restorable backup, or an approved platform backup/PITR arrangement."
+      ]
     },
     {
       "id": "NC04A-SEASON-001",
@@ -395,7 +414,15 @@
       ],
       "business_decision_required": true,
       "downtime": "Coordinate designation with migrations before starting new backend.",
-      "scriptable": "Yes after explicit season identity and write authorization; not performed."
+      "scriptable": "Yes after explicit season identity and write authorization; not performed.",
+      "type": "Deployment gate",
+      "migration_impacted": "0002 canonical designation / new backend startup",
+      "production_write_required": "No for read-only verification; separate authorization required for any remediation",
+      "affected_rows": 0,
+      "proposed_remediation": [
+        "Confirm intended source season and timing, then separately authorize exact canonical designation after0002 during maintenance.",
+        "If intended season differs, require an explicit lifecycle/data plan rather than rerolling or automatic rollover."
+      ]
     },
     {
       "id": "NC04A-CONFIG-001",
@@ -409,7 +436,15 @@
       ],
       "business_decision_required": "Only if validation fails or existing key is unsafe.",
       "downtime": "Validation itself need not change runtime; any later configuration change requires separate approval.",
-      "scriptable": "Fixed boolean validator could be used through an approved available runtime; no generic remote executor added."
+      "scriptable": "Fixed boolean validator could be used through an approved available runtime; no generic remote executor added.",
+      "type": "Deployment gate",
+      "migration_impacted": "R1 / mandatory JWT_SECRET configuration",
+      "production_write_required": "No for read-only verification; separate authorization required for any remediation",
+      "affected_rows": 1,
+      "proposed_remediation": [
+        "Obtain safe boolean-only R1 validation from an explicitly approved runtime/secure operator procedure; preserve the existing valid key.",
+        "If absent/weak, obtain a separate credential decision; do not generate or rotate automatically."
+      ]
     },
     {
       "id": "NC04A-CONFIG-002",
@@ -422,7 +457,14 @@
       ],
       "business_decision_required": "Confirm runtime origins and intended operational configuration.",
       "downtime": "Check is read-only; eventual changes belong to separately authorized preparation/deployment.",
-      "scriptable": "Names-only inventory plus approved boolean checks; no hidden-value inspection workaround."
+      "scriptable": "Names-only inventory plus approved boolean checks; no hidden-value inspection workaround.",
+      "type": "Deployment gate",
+      "migration_impacted": "Runtime guard/environment and email/frontend configuration",
+      "production_write_required": "No for read-only verification; separate authorization required for any remediation",
+      "affected_rows": null,
+      "proposed_remediation": [
+        "After code repair, resume the remaining read-only configuration/deployment checks; verify production classification, intended origins, provider sender readiness, no synthetic/capture settings and no enabled test admission."
+      ]
     }
   ],
   "compatibility": {
@@ -452,5 +494,890 @@
   "frontend_changed": false,
   "one_on_one_ball_changed": false,
   "remediation_performed": false,
-  "next_phase": "NC-03R3 reset-link routing repair, only after explicit authorization; then resume remaining NC-04A checks. NC-04B NOT STARTED."
+  "next_phase": "Resolve documented GO gates only under explicit authorization; NC-04B NOT STARTED.",
+  "first_pass_preserved": {
+    "phase": "NC-04A",
+    "mode": "CONTROLLED PRODUCTION READ-ONLY PREFLIGHT",
+    "observed_at_utc": "2026-10-17T21:53:37.499773+00:00",
+    "status": "BLOCKED — PRODUCTION REMEDIATION/DECISION REQUIRED",
+    "completed": false,
+    "stop_reason": "Confirmed local release defect NC04A-CODE-001; section37 requires return to an NC-03R repair phase without patching.",
+    "local_start": {
+      "backend_branch": "main",
+      "backend_head": "bb73a7a4610ba742da4a9796663cdda7cf3348af",
+      "backend_tree": "clean",
+      "frontend_branch": "main",
+      "frontend_head": "4fa0e9fc11d49354e3da137ee43e9d1ddbc87357",
+      "frontend_tree": "clean"
+    },
+    "production_identity": {
+      "verified": true,
+      "project_name": "NBA Corner",
+      "project_ref": "rpwesmvzmgoctrokrbhy",
+      "supabase_host": "rpwesmvzmgoctrokrbhy.supabase.co",
+      "branch": "main",
+      "dashboard_classification": "PRODUCTION",
+      "database": "postgres",
+      "reader": "postgres",
+      "engine": "PostgreSQL17.6",
+      "read_only_transaction_confirmed": true,
+      "first_read_utc": "2026-10-17T21:42:21.159015+00:00",
+      "render_service": "srv-d4239u6uk2gs73b8fts0",
+      "backend_origin": "https://nbacorner.onrender.com",
+      "deployed_backend_commit": "5bcb0b43ae0c232381ae857cd40c3fd7b1e23422",
+      "build_command": "pip install -r requirements.txt",
+      "start_command": "gunicorn app:app"
+    },
+    "read_safety": {
+      "database_queries": "Fixed identity/catalog/aggregate/supplement SELECTs only, each BEGIN READ ONLY + timeout + COMMIT; no mutation RPC or arbitrary executor. Query text checked in editor against fixed local string, allowing only Windows line endings/editor indentation.",
+      "application_HTTP_requests": 0,
+      "reason_no_live_reset_probe": "Exact deployed backend has a before_request season bootstrap; no application GET/HEAD was attempted because existing startup logic may write. Defect proved offline.",
+      "credential_values_revealed_copied_or_retrieved": false,
+      "test_harness_production_admission": "Known production denylist remains in unchanged local code; no test client connected to production.",
+      "supplement_query": "Executed read-only before stop; completed result was not collected/exported. Do not treat supplemental ACL/sequence/recursive-graph/active-query checks as verified.",
+      "auto_review_rejection": "Post-stop attempt to export the already-completed supplemental result was denied by browser automatic approval review because continued production access violated the stop rule. No retry or workaround performed."
+    },
+    "schema": {
+      "comparison": {
+        "mode": "NC-04A READ-ONLY PREFLIGHT; offline metadata comparison",
+        "source_file_sha256": "7aa3215eac8406c7101048dbf97f517d44f5343f7267197ead06e2548acaf81d",
+        "observed_at": "2026-10-17T21:43:55.787337+00:00",
+        "status": "PASS",
+        "differences": [],
+        "counts": {
+          "views": 1,
+          "columns": 122,
+          "indexes": 38,
+          "policies": 16,
+          "triggers": 3,
+          "functions": 7,
+          "constraints": 55,
+          "default_acls": 6
+        },
+        "known_release_migrations_present": [],
+        "release_migrations_pending": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "production_marker_table": null,
+        "canonical_table": null,
+        "app_schema_matches_secured_baseline": true,
+        "scope": "Columns/defaults, constraints, indexes, triggers, policies, view and function definitions/modes/owners. Supplemental live SELECT covers ACL/sequence metadata. No product rows or credentials imported."
+      },
+      "tables": 13,
+      "views": 1,
+      "sequences": 3,
+      "application_functions": 7,
+      "columns": 122,
+      "indexes": 38,
+      "constraints": 55,
+      "triggers": 3,
+      "policies": 16,
+      "security_containment_phases": "Catalog/function/default ACL evidence consistent with applied NC-SEC-01A/B/C/D1; final direct relation ACL supplement was not collected.",
+      "migration_history_marker": "No supabase_migrations.schema_migrations table; dashboard reports No migrations.",
+      "release_level": "Secured NC-ENV baseline-equivalent / pre-0001; all release0001-0011 signatures absent.",
+      "unknown_structural_drift": []
+    },
+    "backup": {
+      "scheduled_backups": false,
+      "pitr": false,
+      "latest_successful_backup_utc": null,
+      "retention": null,
+      "evidence": "Supabase FREE project backup/PITR screens",
+      "classification": "DEPLOYMENT PREREQUISITE; equivalent external backup was not independently verified"
+    },
+    "config": {
+      "names_only": [
+        "BALLDONTLIE_API_KEY",
+        "BCRYPT_ROUNDS",
+        "BREVO_API_KEY",
+        "BREVO_SENDER_EMAIL",
+        "BREVO_SENDER_NAME",
+        "CURRENT_SEASON_CODE",
+        "DISABLE_RATE_LIMITS",
+        "ENABLE_DEBUG_LOGS",
+        "FLASK_ENV",
+        "FRONTEND_ORIGIN",
+        "HEALTHCHECK_TOKEN",
+        "JWT_ALGORITHM",
+        "JWT_SECRET",
+        "PLAYOFFS_START_UTC",
+        "PYTHON_VERSION",
+        "REGULAR_SEASON_END_UTC",
+        "STANDINGS_CRON_TOKEN",
+        "SUPABASE_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_URL"
+      ],
+      "jwt_presence": true,
+      "jwt_nonempty": null,
+      "jwt_R1_validator_pass": null,
+      "jwt_configuration_result": "BLOCKED / not verified",
+      "shell_available": false,
+      "shell_reason": "Render Free compute does not support Shell; no upgrade/access change attempted.",
+      "NBA_CORNER_ENV_present": false,
+      "test_specific_keys_observed": [],
+      "email_provider_key_name_present": true,
+      "sender_name_present": true,
+      "frontend_origin_name_present": true,
+      "values_validated": false,
+      "frontend_deployment_config": "NOT VERIFIED — mandatory stop",
+      "production_reset_route_finding": {
+        "finding_id": "NC04A-CODE-001",
+        "classification": "CONFIRMED LOCAL RELEASE DEFECT / STOP",
+        "production_email_link_origin": "https://nbacorner.onrender.com",
+        "production_email_link_path": "/reset-password",
+        "backend_route_match_status": 404,
+        "backend_route_rules_checked": 46,
+        "frontend_reset_route_exists": true,
+        "hosting_evidence": "Render NBACorner web service srv-d4239u6uk2gs73b8fts0 serves that origin via gunicorn app:app",
+        "root_cause": "Production link builder always selects API origin; FRONTEND_ORIGIN cannot override it, and API route map has no GET reset UI/redirect.",
+        "scope": "Offline actual helper plus exact current AST route-map proof; no live product HTTP probe or real token used.",
+        "required_repair_phase": "NC-03R3 (separate explicit authorization required)",
+        "production_mutations": 0,
+        "production_requests": 0,
+        "email_sends": 0,
+        "credentials_read_or_emitted": false
+      }
+    },
+    "data": {
+      "counts": {
+        "users": 53,
+        "scores": 14,
+        "leagues": 1,
+        "matches": 441,
+        "brackets": 21,
+        "standings": 30,
+        "memberships": 1,
+        "global_history_headers": 7,
+        "global_history_legacy_rows": 0,
+        "global_history_structured_rows": 140
+      },
+      "resets": {
+        "legacy_records": 13,
+        "unused_records": 10,
+        "unused_unexpired": 0,
+        "legacy_user_fields": 0,
+        "orphan_reset_users": 0
+      },
+      "history": {
+        "headers": [
+          {
+            "rows": 22,
+            "season_id": "5409aaaa-17b8-431b-b5e7-5779e138a5a1",
+            "null_ranks": 0,
+            "season_code": "2017-18"
+          },
+          {
+            "rows": 22,
+            "season_id": "609c86eb-d16a-447d-b288-0d2ad3386bc8",
+            "null_ranks": 0,
+            "season_code": "2018-19"
+          },
+          {
+            "rows": 28,
+            "season_id": "d270287b-f0e5-4a20-a572-77281d328c40",
+            "null_ranks": 0,
+            "season_code": "2019-20"
+          },
+          {
+            "rows": 14,
+            "season_id": "3fd2c273-2038-44c0-9305-97588782c8c2",
+            "null_ranks": 0,
+            "season_code": "2020-21"
+          },
+          {
+            "rows": 17,
+            "season_id": "d80869ad-9568-43ab-b692-7c7eeb20803c",
+            "null_ranks": 0,
+            "season_code": "2021-22"
+          },
+          {
+            "rows": 15,
+            "season_id": "30dfcdf0-cc29-4e8d-b87e-d0ce5a684bb9",
+            "null_ranks": 0,
+            "season_code": "2022-23"
+          },
+          {
+            "rows": 22,
+            "season_id": "59bf65b2-528c-46c1-8e49-9df5c25af4b0",
+            "null_ranks": 0,
+            "season_code": "2024-25"
+          }
+        ],
+        "orphan_rows": 0,
+        "duplicate_header_season_groups": 0
+      },
+      "leagues": {
+        "untrimmed_names": 0,
+        "owner_not_member": 0,
+        "invalid_name_rows": 0,
+        "owner_missing_user": 0,
+        "duplicate_memberships": 0,
+        "normalized_collision_groups": 0
+      },
+      "seasons": [
+        {
+          "id": "5409aaaa-17b8-431b-b5e7-5779e138a5a1",
+          "code": "2017-18",
+          "pointer_valid": null,
+          "master_bracket_id": null,
+          "playoffs_start_utc": null,
+          "active_master_count": 0,
+          "regular_season_end_utc": null,
+          "active_master_match_count": 0
+        },
+        {
+          "id": "609c86eb-d16a-447d-b288-0d2ad3386bc8",
+          "code": "2018-19",
+          "pointer_valid": null,
+          "master_bracket_id": null,
+          "playoffs_start_utc": null,
+          "active_master_count": 0,
+          "regular_season_end_utc": null,
+          "active_master_match_count": 0
+        },
+        {
+          "id": "d270287b-f0e5-4a20-a572-77281d328c40",
+          "code": "2019-20",
+          "pointer_valid": null,
+          "master_bracket_id": null,
+          "playoffs_start_utc": null,
+          "active_master_count": 0,
+          "regular_season_end_utc": null,
+          "active_master_match_count": 0
+        },
+        {
+          "id": "3fd2c273-2038-44c0-9305-97588782c8c2",
+          "code": "2020-21",
+          "pointer_valid": null,
+          "master_bracket_id": null,
+          "playoffs_start_utc": null,
+          "active_master_count": 0,
+          "regular_season_end_utc": null,
+          "active_master_match_count": 0
+        },
+        {
+          "id": "d80869ad-9568-43ab-b692-7c7eeb20803c",
+          "code": "2021-22",
+          "pointer_valid": null,
+          "master_bracket_id": null,
+          "playoffs_start_utc": null,
+          "active_master_count": 0,
+          "regular_season_end_utc": null,
+          "active_master_match_count": 0
+        },
+        {
+          "id": "30dfcdf0-cc29-4e8d-b87e-d0ce5a684bb9",
+          "code": "2022-23",
+          "pointer_valid": null,
+          "master_bracket_id": null,
+          "playoffs_start_utc": null,
+          "active_master_count": 0,
+          "regular_season_end_utc": null,
+          "active_master_match_count": 0
+        },
+        {
+          "id": "28d27287-0536-493f-8738-25ff702c49f2",
+          "code": "2023-24",
+          "pointer_valid": null,
+          "master_bracket_id": null,
+          "playoffs_start_utc": null,
+          "active_master_count": 0,
+          "regular_season_end_utc": null,
+          "active_master_match_count": 0
+        },
+        {
+          "id": "59bf65b2-528c-46c1-8e49-9df5c25af4b0",
+          "code": "2024-25",
+          "pointer_valid": null,
+          "master_bracket_id": null,
+          "playoffs_start_utc": null,
+          "active_master_count": 0,
+          "regular_season_end_utc": null,
+          "active_master_match_count": 0
+        },
+        {
+          "id": "994f58bc-bdbc-422e-9786-bb5c8559ea0f",
+          "code": "2025-26",
+          "pointer_valid": true,
+          "master_bracket_id": "080992c1-8d70-4c90-a4ce-31c314d89527",
+          "playoffs_start_utc": "2026-04-15T00:00:00+00:00",
+          "active_master_count": 1,
+          "regular_season_end_utc": "2026-04-13T03:00:00+00:00",
+          "active_master_match_count": 21
+        }
+      ],
+      "brackets": {
+        "orphan_user": 0,
+        "season_mismatch": 0,
+        "active_graph_not_21": 0,
+        "invalid_series_games": 0,
+        "winner_not_participant": 0,
+        "cross_bracket_next_match": 0,
+        "submitted_without_saved_time": 0,
+        "duplicate_active_master_groups": 0,
+        "duplicate_active_user_season_groups": 0
+      },
+      "read_only": "on",
+      "standings": {
+        "rows": 30,
+        "bad_seed": 0,
+        "bad_record": 0,
+        "last_updated": "2026-04-12T09:52:05.489838",
+        "distinct_codes": 30,
+        "conference_counts": {
+          "East": 15,
+          "West": 15
+        },
+        "missing_team_codes": 0,
+        "unknown_team_codes": 0,
+        "duplicate_code_groups": 0
+      },
+      "identities": {
+        "null_or_blank": 0,
+        "missing_password": 0,
+        "email_collision_groups": 0,
+        "username_collision_groups": 0
+      },
+      "observed_at": "2026-10-17T21:46:07.331486+00:00",
+      "advisory_lock_count": 0
+    },
+    "findings": [
+      {
+        "id": "NC04A-CODE-001",
+        "affected": "Password-reset delivery/release; NC-03 regression guard section37",
+        "count": 1,
+        "severity": "HIGH / mandatory stop",
+        "reason": "Actual production link helper selects the Render API host; that service starts gunicorn app:app and current backend route map has no GET reset UI or redirect. Reset UI is in separate frontend.",
+        "options": [
+          "Authorize NC-03R3 to route reset links to the explicitly approved frontend using trusted server configuration, validate origin and rerun relevant reset/contract tests.",
+          "A deliberately reviewed backend-to-frontend redirect could be designed separately; none added here."
+        ],
+        "business_decision_required": "Confirm intended production frontend origin; implementation authorization required.",
+        "downtime": "Repair can be developed/tested offline; deployment remains separate and gated.",
+        "scriptable": "Yes, in a separate authorized code-repair phase; no changes performed."
+      },
+      {
+        "id": "NC04A-BACKUP-001",
+        "affected": "All future production migrations / NC-04B backup gate",
+        "count": 0,
+        "severity": "DEPLOYMENT PREREQUISITE",
+        "reason": "Free-plan dashboard reports no scheduled backups; PITR is unavailable as an unenabled paid add-on. No latest backup timestamp or retention is available.",
+        "options": [
+          "Separately authorize creation and verification of an equivalent restorable backup, or an approved platform backup/PITR arrangement."
+        ],
+        "business_decision_required": true,
+        "downtime": "Depends on separately chosen backup/restore verification strategy.",
+        "scriptable": "Potentially; not authorized or executed in NC-04A."
+      },
+      {
+        "id": "NC04A-SEASON-001",
+        "affected": "0002 canonical designation / new backend startup",
+        "count": 0,
+        "severity": "DEPLOYMENT BLOCKER / decision required",
+        "reason": "application_season is absent. Nine season rows exist; only2025-26 has timing/master data. No canonical identity may be inferred from date or latest row.",
+        "options": [
+          "Confirm intended source season and timing, then separately authorize exact canonical designation after0002 during maintenance.",
+          "If intended season differs, require an explicit lifecycle/data plan rather than rerolling or automatic rollover."
+        ],
+        "business_decision_required": true,
+        "downtime": "Coordinate designation with migrations before starting new backend.",
+        "scriptable": "Yes after explicit season identity and write authorization; not performed."
+      },
+      {
+        "id": "NC04A-CONFIG-001",
+        "affected": "R1 / mandatory JWT_SECRET configuration",
+        "count": 1,
+        "severity": "DEPLOYMENT BLOCKER / unverified",
+        "reason": "JWT_SECRET name is present and masked. Nonempty/validator>=32 pass and exact deployed-runtime delivery cannot be proved from names. Free Render Shell is unavailable. No value was revealed, copied or retrieved.",
+        "options": [
+          "Obtain safe boolean-only R1 validation from an explicitly approved runtime/secure operator procedure; preserve the existing valid key.",
+          "If absent/weak, obtain a separate credential decision; do not generate or rotate automatically."
+        ],
+        "business_decision_required": "Only if validation fails or existing key is unsafe.",
+        "downtime": "Validation itself need not change runtime; any later configuration change requires separate approval.",
+        "scriptable": "Fixed boolean validator could be used through an approved available runtime; no generic remote executor added."
+      },
+      {
+        "id": "NC04A-CONFIG-002",
+        "affected": "Runtime guard/environment and email/frontend configuration",
+        "count": null,
+        "severity": "DEPLOYMENT PREREQUISITE / partially verified",
+        "reason": "Required DB/Brevo/sender/FRONTEND_ORIGIN names exist but values remain masked. NBA_CORNER_ENV is not in the observed key list. DISABLE_RATE_LIMITS and ENABLE_DEBUG_LOGS are configured but their booleans were not exposed. No test-only NBA_CORNER_* keys were observed. Frontend hosting/bundle settings and active job registration verification stopped.",
+        "options": [
+          "After code repair, resume the remaining read-only configuration/deployment checks; verify production classification, intended origins, provider sender readiness, no synthetic/capture settings and no enabled test admission."
+        ],
+        "business_decision_required": "Confirm runtime origins and intended operational configuration.",
+        "downtime": "Check is read-only; eventual changes belong to separately authorized preparation/deployment.",
+        "scriptable": "Names-only inventory plus approved boolean checks; no hidden-value inspection workaround."
+      }
+    ],
+    "compatibility": {
+      "old_frontend_new_backend": "Conditionally compatible basic login/read contracts only; complete feature compatibility not assumed. Actual frontend version not verified before stop.",
+      "new_frontend_old_backend": "UNSAFE for complete G2/canonical/league contracts; live backend lacks canonical/auth_version code.",
+      "old_backend_migrated_database": "UNSAFE; old raw reset-token storage and version-unaware JWT validation conflict with0011.",
+      "new_backend_current_database": "UNSAFE; canonical table, version fields and required new RPCs absent.",
+      "release_requirement": "Maintenance/coordinated migrations and matching backend/frontend; no mixed-version live mutation window."
+    },
+    "session_effects": {
+      "same_valid_signing_key": "Pre-G2 tokens without av behave as version0 until successful reset increments version; no session changes made here.",
+      "legacy_reset_records": 13,
+      "legacy_unused_unexpired": 0,
+      "0011_effect": "Deletes all13 legacy reset records and clears legacy user reset fields; all old emails invalidated. No tokens read.",
+      "support_window": "Use a low-support/maintenance window and communicate that old emails require a fresh reset link; zero unexpired unused rows at observation does not waive backup/config gates."
+    },
+    "dry_run": {
+      "performed": false,
+      "plan": "Use existing full synthetic baseline-to0011 proof plus a PII-free shape rehearsal:53 synthetic users,21 bracket graphs,1 league/1 membership,7 legacy headers/140 synthetic rows,13 synthetic expired/used reset rows; preserve observed null timing pattern and current-master21 shape. Never copy real account hashes,emails,verifiers,names or row payloads.",
+      "limitation": "Production-like shape rehearsal remains planning after mandatory stop; existing NC-03 proof is not retroactively called a production rehearsal."
+    },
+    "production_writes": 0,
+    "deployments": 0,
+    "jobs_triggered": 0,
+    "emails_sent": 0,
+    "application_code_changes": false,
+    "frontend_changed": false,
+    "one_on_one_ball_changed": false,
+    "remediation_performed": false,
+    "next_phase": "NC-03R3 reset-link routing repair, only after explicit authorization; then resume remaining NC-04A checks. NC-04B NOT STARTED."
+  },
+  "resumed_pass": {
+    "observed_at_utc": "2026-10-18T16:52:36.948733+00:00",
+    "backend_head": "a2a930291e32a6f73e03c2acf4dd0732eac70263",
+    "frontend_head": "4fa0e9fc11d49354e3da137ee43e9d1ddbc87357",
+    "status": "BLOCKED — PRODUCTION REMEDIATION/DECISION REQUIRED",
+    "phase_execution_complete": true,
+    "deployment_ready": false,
+    "report": [
+      {
+        "number": 1,
+        "item": "Local starting state",
+        "result": "Both main/clean. Backend a2a930291e32a6f73e03c2acf4dd0732eac70263; frontend 4fa0e9fc11d49354e3da137ee43e9d1ddbc87357."
+      },
+      {
+        "number": 2,
+        "item": "Production identity/read-only mode",
+        "result": "Fresh dashboard: NBA Corner, rpwesmvzmgoctrokrbhy, main/PRODUCTION. All executed SQL explicitly BEGIN READ ONLY; observed transaction_read_only=on. No app mutation admission or RPC invocation."
+      },
+      {
+        "number": 3,
+        "item": "NC04A-CODE-001 re-verification",
+        "result": "REPAIRED LOCALLY; production configuration compatibility remains BLOCKED. Do not misclassify masked variable presence as a validator pass."
+      },
+      {
+        "number": 4,
+        "item": "FRONTEND_ORIGIN readiness",
+        "result": "Name present, value protected. Nonblank/absolute/HTTPS/actual frontend/distinct API not validated from runtime. Actual public frontend confirmed by user: https://www.nbacorner.com. API is separate Render origin."
+      },
+      {
+        "number": 5,
+        "item": "Reset deep-link hosting readiness",
+        "result": "PASS for confirmed www origin: token-free static /login and /reset-password each HTTP200, identical SPA HTML; deployed first-party bundle contains /reset-password. No JavaScript executed, email sent or backend reset request."
+      },
+      {
+        "number": 6,
+        "item": "Backup/PITR/equivalent readiness",
+        "result": "BLOCKED. Free dashboard has no scheduled backups; PITR is an unavailable Pro add-on. External restore-capable equivalent UNKNOWN; no creation/upgrade/restore attempted."
+      },
+      {
+        "number": 7,
+        "item": "JWT_SECRET readiness",
+        "result": "Present by name; nonblank/final >=32 validator/unsafe fallback exclusion UNKNOWN. Render Free Shell unavailable per first-pass evidence. No value retrieved or exposed; safe operator validation is a deployment gate."
+      },
+      {
+        "number": 8,
+        "item": "Email/provider readiness",
+        "result": "BREVO_API_KEY, BREVO_SENDER_EMAIL and BREVO_SENDER_NAME names present. Actual provider authorization/sender/config validity unverified; no mail sent."
+      },
+      {
+        "number": 9,
+        "item": "Environment/guard readiness",
+        "result": "No NBA_CORNER_ENV or test-specific settings in observed names; final code treats absent identity as legacy production/real transport and retains test-production denylist. FLASK_ENV, rate-limit/debug values protected; no unsafe default assumed safe. Explicit production/no capture/no fixtures/no test admission must be verified before release."
+      },
+      {
+        "number": 10,
+        "item": "Current migration level",
+        "result": "Secured baseline-equivalent pre-0001; all 0001-0011 outstanding. Canonical/auth_version/new history/rollover objects absent. No migration execution."
+      },
+      {
+        "number": 11,
+        "item": "Schema drift result",
+        "result": "Reuse first structural comparison PASS. Fresh seven app-function body hashes and all16 policies match; relation inventory17 including3 sequences unchanged. No observed unknown drift; not a fresh full-column/index re-audit."
+      },
+      {
+        "number": 12,
+        "item": "Supplemental table ACL result",
+        "result": "PASS: all13 application tables plus bracket_view owned by postgres; grants only postgres/service_role. Effective anon/authenticated table privileges=0; column ACL grants absent; browser schema CREATE=false."
+      },
+      {
+        "number": 13,
+        "item": "Sequence privilege result",
+        "result": "PASS: leaderboard_history_id_seq/password_resets_id_seq/standings_id_seq owned by postgres with correct table-column ownership. Effective browser SELECT/UPDATE/USAGE=0; trusted roles only."
+      },
+      {
+        "number": 14,
+        "item": "Function/RPC privilege result",
+        "result": "PASS within baseline scope: seven app-owned functions unchanged; four mutation RPCs trusted-only with effective browser EXECUTE=0. Two legacy DEFINER helpers and legacy unpinned search paths retained as known baseline. Three trigger-only helpers retain baseline ordinary EXECUTE; no app mutation RPC called. Managed pg_trgm functions excluded from app-owned inventory. New migration functions individually close browser execution and pin search_path."
+      },
+      {
+        "number": 15,
+        "item": "RLS/policy result",
+        "result": "PASS:16 policies unchanged; RLS enabled users/brackets/matches/password_resets, not forced. Other relations remain ACL-contained. Broad legacy policies are not effective grants. Post-chain verifier must preserve containment; postgres function default ACL still requires explicit per-function revocation. Managed supabase_admin defaults are not app creator defaults."
+      },
+      {
+        "number": 16,
+        "item": "0001-0007 supplemental result",
+        "result": "PASS for observed structural/data prerequisites, conditional on separate canonical designation and maintenance. No collision/partial new object; master graph passes. Reused NC03 synthetic full-chain proof; no production dry-run or new full-suite rerun."
+      },
+      {
+        "number": 17,
+        "item": "0008 league collision result",
+        "result": "0 normalized collision groups in first full Unicode trim observation; fresh lower/btrim collision count0. Existing one league unchanged by count. Recheck exact migration normalization immediately before deployment."
+      },
+      {
+        "number": 18,
+        "item": "0008 owner/member result",
+        "result": "0 missing owner users, owner-not-member or duplicate membership groups. One league/one membership."
+      },
+      {
+        "number": 19,
+        "item": "0009 history result",
+        "result": "No conflicting new history/mapping objects; seven legacy structured headers/140 rows, no orphan/duplicate payload/header-season/code mismatch. 0009 adds empty mapping/cutoff/league history structures, no identity reconstruction or backfill."
+      },
+      {
+        "number": 20,
+        "item": "0010 username result",
+        "result": "Fresh exact Unicode-trim/lower normalized collision groups0 for57 users."
+      },
+      {
+        "number": 21,
+        "item": "0010 email result",
+        "result": "Fresh exact Unicode-trim/lower normalized collision groups0 for57 users."
+      },
+      {
+        "number": 22,
+        "item": "0010 blank/null result",
+        "result": "Fresh null/blank identities0; earlier full Unicode blank check0. No identities/hashes exported. Critical exact migration preflight must run at release."
+      },
+      {
+        "number": 23,
+        "item": "0011 reset state",
+        "result": "Fresh13 total,10 unused,0 unused+unexpired,0 orphan users,0 legacy user reset fields. Counts only; no tokens read."
+      },
+      {
+        "number": 24,
+        "item": "0011 auth_version readiness",
+        "result": "No pre-existing auth_version column/object collision;57 users compatible with deterministic default0. No version written."
+      },
+      {
+        "number": 25,
+        "item": "Canonical season evidence",
+        "result": "Nine seasons2017-18 through2025-26; only2025-26 has timing and active master. Opening/freeze2026-04-13T03:00Z, final lock2026-04-15T00:00Z; complete21-match admin master. Standings baseline has no season_id; seven old history headers. CURRENT_SEASON_CODE value remains masked. Chronology alone is not designation."
+      },
+      {
+        "number": 26,
+        "item": "Canonical season decision/readiness",
+        "result": "BLOCKED. 2025-26 is the sole evidenced stored timing/master candidate for preserving current state, not an approved canonical decision. User must confirm source season and timings. 0002 intentionally inserts no canonical row; do not auto-select latest/date or trigger rollover."
+      },
+      {
+        "number": 27,
+        "item": "Master validation",
+        "result": "PASS:one active valid pointer to admin-owned nondeleted master.21 matches, unique slots,22 derived winner/loser edges, no cycle/conflicting dependency or propagation/winner/game error under both existing master and complete-graph pure validators."
+      },
+      {
+        "number": 28,
+        "item": "Bracket lifecycle validation",
+        "result": "PASS observed:21 brackets/441 matches;0 duplicate active user-season/master, orphan user/season/match/score, done-without-saved, draft-with-saved, delete-actor-without-delete, bad graph count, season mismatch or duplicate slots. Soft-deleted saved brackets are valid history, not automatic repair targets."
+      },
+      {
+        "number": 29,
+        "item": "Standings validation",
+        "result": "30 known teams,15 per conference from first observation; fresh30 rows and conference-seed duplicate groups0. Last timestamp2026-04-12T09:52:05.489838 WITHOUT time zone; no fabricated UTC conversion or season association. No refresh."
+      },
+      {
+        "number": 30,
+        "item": "Global history validation",
+        "result": "7 headers/140 rows/0 legacy-only rows. Fresh0 duplicate payload/display-name groups, invalid rank, orphan/header-season/code mismatch. Legacy structured rows have no user/bracket/source identity, so duplicate-user proof cannot be fabricated. 0006 preserves legacy markers as NULL; not newly verified final snapshots. No backfill."
+      },
+      {
+        "number": 31,
+        "item": "League history validation",
+        "result": "PASS prerequisites: all four0009 table names absent, no partial structures; live membership valid. No historical league membership inferred from current membership or names."
+      },
+      {
+        "number": 32,
+        "item": "Scheduler/jobs result",
+        "result": "Actual GitHub Actions inventory shows only Daily NBA standings sync, manually DISABLED. Latest visible run successful Apr12. Source schedule09:00UTC; actual enablement remains disabled. Render all3 services are Python web services (NBA Corner and2 Telegram services), no cron service. pg_cron extension absent. No automatic rollover found in reviewed source/registrations; external systems outside inspected accounts not certified. No jobs triggered or enabled."
+      },
+      {
+        "number": 33,
+        "item": "Rollover safety result",
+        "result": "Fresh advisory locks0, other active rollover/transition queries0, no post-chain audit/transition tables yet. New code rollover is explicit admin action; no observed live transition. Recheck immediately before maintenance."
+      },
+      {
+        "number": 34,
+        "item": "Frontend deployment config",
+        "result": "User-confirmed www.nbacorner.com; Cloudflare response header is CDN evidence, not proof of hosting provider. Static bundle uses HTTPS Render API, no loopback API; no JWT_SECRET/SUPABASE_SERVICE_ROLE_KEY/BREVO_API_KEY names found. This limited scan does not prove absence of arbitrary embedded secret literals. Hosting dashboard/build env/commit unverified. GitHub frontend main ce54143 differs from local release; repository HEAD is not asserted as deployed commit."
+      },
+      {
+        "number": 35,
+        "item": "Backend deployment config",
+        "result": "Render service srv-d4239u6uk2gs73b8fts0 live commit5bcb0b43ae0c232381ae857cd40c3fd7b1e23422 unchanged. main, pip install -r requirements.txt, gunicorn app:app, Free. Auto-deploy selected value not exposed safely; no push/deploy performed. Existing old before_request can bootstrap writes, so no product API GET probes."
+      },
+      {
+        "number": 36,
+        "item": "Aggregate production scale",
+        "result": "Fresh57 users (previous53),21 brackets,441 matches,14 scores,1 league,1 membership,7 history headers/140 rows,0 legacy-only rows;30 standings. User-count drift is observed external activity, not attributed to this read-only audit."
+      },
+      {
+        "number": 37,
+        "item": "Mixed-version compatibility",
+        "result": "Old frontend/new backend only conditionally basic-compatible; current deployed frontend full G2/league/history contract not proved. New frontend/old backend unsafe; old backend/migrated DB unsafe; new backend/old DB unsafe. R3+current frontend route structurally compatible, runtime origin still unverified. Migrated backend rejects legacy reset links. Coordinated window required."
+      },
+      {
+        "number": 38,
+        "item": "Existing JWT effect",
+        "result": "Final code missing av=>0; same valid signing key preserves existing sessions until successful reset increments auth_version. Then old token version fails. Production key quality still gate; no rotation or arbitrary authentication."
+      },
+      {
+        "number": 39,
+        "item": "Reset-link migration effect",
+        "result": "0011 intentionally invalidates all legacy reset rows and legacy user fields.0 currently usable links makes immediate disruption low, not zero forever. Recount just before migration; old emails require fresh links. No reset request/completion here."
+      },
+      {
+        "number": 40,
+        "item": "Migration-chain compatibility",
+        "result": "Conditional structural compatibility with secured baseline plus existing NC03 synthetic proof. Apply outstanding0001 through0011 in order only after gates; separately approved exact designation after0002. Never replay empty baseline or old containment migrations. No migration edits/execution or production-shape rehearsal claimed."
+      },
+      {
+        "number": 41,
+        "item": "Read-only preflight tooling completeness",
+        "result": "Existing nc03_before_migrations_readonly.sql plus new nc04a_resumed_supplement_readonly.sql cover counts/collisions/lifecycle/ACL/functions/reset/history/locks. New offline nc04a_verify_resumed_evidence.py verifies exports and existing pure master validator without IO to production. Provider/config/business gates cannot be replaced by SQL.24 offline evidence checks pass."
+      },
+      {
+        "number": 42,
+        "item": "Required remediation items",
+        "result": "Verified restorable recovery mechanism; explicit canonical source/timing decision; boolean-only JWT and actual FRONTEND_ORIGIN validation; email/env guard readiness; actual frontend hosting/build config/version; verified pause/deploy/resume and auto-deploy strategy. No remediation performed."
+      },
+      {
+        "number": 43,
+        "item": "Recovery/backup GO gate",
+        "result": "NO-GO until exact-project dated recovery point, retention/access/restore steps and credible restore proof are verified under separate authorization."
+      },
+      {
+        "number": 44,
+        "item": "Canonical-season GO gate",
+        "result": "NO-GO until explicit approved identity/timings and authorized designation plan;2025-26 candidate is not implicit approval."
+      },
+      {
+        "number": 45,
+        "item": "Configuration GO gate",
+        "result": "NO-GO. JWT/FRONTEND_ORIGIN/provider/env protected readiness unknown. API origin and www SPA deep-link contract pass; those do not waive protected-config checks."
+      },
+      {
+        "number": 46,
+        "item": "Exact deployment order",
+        "result": "Approve commits/gates/window; establish API write quiescence and keep disabled jobs held; verify recovery; fresh critical read-only checks; migrate0001->0011 with canonical designation after0002 under separate write authorization; final schema/ACL/count verification; start compatible backend; deploy matching frontend; approved safe smoke; verify reset routing and version behavior; resume only intended schedules; monitor; exit maintenance. Do not execute."
+      },
+      {
+        "number": 47,
+        "item": "Maintenance/write-quiescence recommendation",
+        "result": "Use existing Render Suspend Web Service control under separate deployment authorization, verify API quiescence, keep GitHub workflow disabled and block auto-deploy races. Platform deploy-while-suspended/resume procedure must be verified to ensure no old binary resumes against0011; if unavailable approve a supported alternative before GO. Frontend-only maintenance is insufficient. No suspend performed."
+      },
+      {
+        "number": 48,
+        "item": "Rollback runbook",
+        "result": "Before migrations abort cleanly. During failed migration keep quiescent, inspect transaction/earlier committed steps; no blind down migration. After migrations before backend never restart incompatible old code. After backend choose only schema/version-compatible rollback and same key. Frontend rollback must retain matching API/reset contract. Restore needs explicit approval; deleted links, completed resets/versions, immutable history and future hard deletes have distinct recovery consequences."
+      },
+      {
+        "number": 49,
+        "item": "Safe smoke plan",
+        "result": "Planning only: safe new /season and authorized /health; READ ONLY standings SQL; supported public league/history reads; designated account login/protected/private-denial checks only if authorized. Static tokenless frontend reset load; reset request/completion only with separately approved mailbox/account. No rollout/refresh/snapshot/destructive smoke or arbitrary user authentication."
+      },
+      {
+        "number": 50,
+        "item": "Monitoring plan",
+        "result": "Planning only:5xx,401/403 shifts,registration/login/reset failures,DB/RPC,league/history,standings and frontend API errors; canonical status and expected scheduler outcomes; redact credentials/verifiers. Assign owner/abort thresholds before release; no alerts/config edited."
+      },
+      {
+        "number": 51,
+        "item": "Production writes performed",
+        "result": "0 DB/config/deploy/job/email/product mutations. SELECT/catalog/static first-party asset reads only; no browser app JS execution, mutation RPC, tokens or user payload exports. One SELECT failed due to baseline used_at naming; corrected to used before successful read; no data change."
+      },
+      {
+        "number": 52,
+        "item": "Application-code changes",
+        "result": "None. Frontend and C:/1on1ball untouched. Existing NC03/R3 PASS evidence unchanged; prior NC04A chronology retained."
+      },
+      {
+        "number": 53,
+        "item": "Files changed",
+        "result": "Audit report/progress record/runbook, sanitized resumed observations, SELECT-only supplement and offline verifier; exact Git diff recorded at completion."
+      },
+      {
+        "number": 54,
+        "item": "Git result",
+        "result": "Normal audit-only commit NC-04A complete resumed production preflight; no amendment/push/deployment. Commit hash supplied after commit."
+      },
+      {
+        "number": 55,
+        "item": "Final NC-04A status",
+        "result": "BLOCKED — PRODUCTION REMEDIATION/DECISION REQUIRED."
+      },
+      {
+        "number": 56,
+        "item": "Readiness for NC-04B",
+        "result": "Not ready. No deployment authorization implied; NC04B not started."
+      },
+      {
+        "number": 57,
+        "item": "Recommended next step",
+        "result": "Resolve recovery, canonical decision and secure boolean config/hosting/maintenance evidence in explicitly authorized scopes, then recheck remaining GO gates. No further phase started."
+      }
+    ],
+    "evidence": "db/records/nc_04a_resumed_observations.json",
+    "static_frontend": {
+      "user_confirmed_url": "https://www.nbacorner.com/login",
+      "login_http": 200,
+      "reset_http": 200,
+      "identical_html_sha256": "bea70094a1fcdc26d0b77e5e64e662be0b80e75ff428450afefeacd6df27e750",
+      "bundle_sha256": "405d5ed94ffc67705ffba3a8df380eb6662957170c517ee70741de874ea15183",
+      "bundle_bytes": 682638,
+      "reset_route_present": true,
+      "api_origin_matches_render": true,
+      "no_javascript_executed": true,
+      "hosting_provider_not_inferred_from_cdn": true
+    },
+    "production_writes": 0,
+    "application_code_changes": false,
+    "frontend_changed": false,
+    "one_on_one_ball_changed": false,
+    "findings": [
+      {
+        "id": "NC04A-CODE-001",
+        "affected": "Password-reset delivery/release; NC-03 regression guard section37",
+        "count": 1,
+        "severity": "DEPLOYMENT BLOCKER — runtime compatibility unverified",
+        "reason": "Local defect repaired in R3. FRONTEND_ORIGIN name exists but actual protected value has not passed boolean-only real-runtime validation.",
+        "options": [
+          "Obtain secure boolean-only real-runtime R3 origin validation for actual www frontend; no secret reveal, edits or test email."
+        ],
+        "business_decision_required": "Confirm actual configured origin and safe validator outcome; no new code repair requested.",
+        "downtime": "Repair can be developed/tested offline; deployment remains separate and gated.",
+        "scriptable": "Yes, in a separate authorized code-repair phase; no changes performed.",
+        "type": "Deployment gate",
+        "migration_impacted": "Password-reset delivery/release; NC-03 regression guard section37",
+        "production_write_required": "No for read-only verification; separate authorization required for any remediation",
+        "affected_rows": 1,
+        "proposed_remediation": [
+          "Obtain secure boolean-only real-runtime R3 origin validation for actual www frontend; no secret reveal, edits or test email."
+        ]
+      },
+      {
+        "id": "NC04A-BACKUP-001",
+        "affected": "All future production migrations / NC-04B backup gate",
+        "count": 0,
+        "severity": "DEPLOYMENT PREREQUISITE",
+        "reason": "Free-plan dashboard reports no scheduled backups; PITR is unavailable as an unenabled paid add-on. No latest backup timestamp or retention is available.",
+        "options": [
+          "Separately authorize creation and verification of an equivalent restorable backup, or an approved platform backup/PITR arrangement."
+        ],
+        "business_decision_required": true,
+        "downtime": "Depends on separately chosen backup/restore verification strategy.",
+        "scriptable": "Potentially; not authorized or executed in NC-04A.",
+        "type": "Deployment gate",
+        "migration_impacted": "All future production migrations / NC-04B backup gate",
+        "production_write_required": "No for read-only verification; separate authorization required for any remediation",
+        "affected_rows": 0,
+        "proposed_remediation": [
+          "Separately authorize creation and verification of an equivalent restorable backup, or an approved platform backup/PITR arrangement."
+        ]
+      },
+      {
+        "id": "NC04A-SEASON-001",
+        "affected": "0002 canonical designation / new backend startup",
+        "count": 0,
+        "severity": "DEPLOYMENT BLOCKER / decision required",
+        "reason": "application_season is absent. Nine season rows exist; only2025-26 has timing/master data. No canonical identity may be inferred from date or latest row.",
+        "options": [
+          "Confirm intended source season and timing, then separately authorize exact canonical designation after0002 during maintenance.",
+          "If intended season differs, require an explicit lifecycle/data plan rather than rerolling or automatic rollover."
+        ],
+        "business_decision_required": true,
+        "downtime": "Coordinate designation with migrations before starting new backend.",
+        "scriptable": "Yes after explicit season identity and write authorization; not performed.",
+        "type": "Deployment gate",
+        "migration_impacted": "0002 canonical designation / new backend startup",
+        "production_write_required": "No for read-only verification; separate authorization required for any remediation",
+        "affected_rows": 0,
+        "proposed_remediation": [
+          "Confirm intended source season and timing, then separately authorize exact canonical designation after0002 during maintenance.",
+          "If intended season differs, require an explicit lifecycle/data plan rather than rerolling or automatic rollover."
+        ]
+      },
+      {
+        "id": "NC04A-CONFIG-001",
+        "affected": "R1 / mandatory JWT_SECRET configuration",
+        "count": 1,
+        "severity": "DEPLOYMENT BLOCKER / unverified",
+        "reason": "JWT_SECRET name is present and masked. Nonempty/validator>=32 pass and exact deployed-runtime delivery cannot be proved from names. Free Render Shell is unavailable. No value was revealed, copied or retrieved.",
+        "options": [
+          "Obtain safe boolean-only R1 validation from an explicitly approved runtime/secure operator procedure; preserve the existing valid key.",
+          "If absent/weak, obtain a separate credential decision; do not generate or rotate automatically."
+        ],
+        "business_decision_required": "Only if validation fails or existing key is unsafe.",
+        "downtime": "Validation itself need not change runtime; any later configuration change requires separate approval.",
+        "scriptable": "Fixed boolean validator could be used through an approved available runtime; no generic remote executor added.",
+        "type": "Deployment gate",
+        "migration_impacted": "R1 / mandatory JWT_SECRET configuration",
+        "production_write_required": "No for read-only verification; separate authorization required for any remediation",
+        "affected_rows": 1,
+        "proposed_remediation": [
+          "Obtain safe boolean-only R1 validation from an explicitly approved runtime/secure operator procedure; preserve the existing valid key.",
+          "If absent/weak, obtain a separate credential decision; do not generate or rotate automatically."
+        ]
+      },
+      {
+        "id": "NC04A-CONFIG-002",
+        "affected": "Runtime guard/environment and email/frontend configuration",
+        "count": null,
+        "severity": "DEPLOYMENT PREREQUISITE / partially verified",
+        "reason": "Required DB/Brevo/sender/FRONTEND_ORIGIN names exist but values remain masked. NBA_CORNER_ENV is not in the observed key list. DISABLE_RATE_LIMITS and ENABLE_DEBUG_LOGS are configured but their booleans were not exposed. No test-only NBA_CORNER_* keys were observed. Frontend hosting/bundle settings and active job registration verification stopped.",
+        "options": [
+          "After code repair, resume the remaining read-only configuration/deployment checks; verify production classification, intended origins, provider sender readiness, no synthetic/capture settings and no enabled test admission."
+        ],
+        "business_decision_required": "Confirm runtime origins and intended operational configuration.",
+        "downtime": "Check is read-only; eventual changes belong to separately authorized preparation/deployment.",
+        "scriptable": "Names-only inventory plus approved boolean checks; no hidden-value inspection workaround.",
+        "type": "Deployment gate",
+        "migration_impacted": "Runtime guard/environment and email/frontend configuration",
+        "production_write_required": "No for read-only verification; separate authorization required for any remediation",
+        "affected_rows": null,
+        "proposed_remediation": [
+          "After code repair, resume the remaining read-only configuration/deployment checks; verify production classification, intended origins, provider sender readiness, no synthetic/capture settings and no enabled test admission."
+        ]
+      }
+    ],
+    "local_validation": {
+      "evidence_checks": 24,
+      "negative_controls": 4,
+      "status": "PASS",
+      "first_pass_preserved": true,
+      "python_compile": "PASS",
+      "black": "PASS",
+      "application_tests_rerun": false
+    }
+  },
+  "deployment_ready": false,
+  "historical_top_level_fields_notice": "Original schema/config/data/findings retained as dated first-pass evidence. Current results are resumed_pass and linked observations; first_pass_preserved is the original complete record."
 }
