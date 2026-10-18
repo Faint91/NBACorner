@@ -26,9 +26,11 @@ transition uses the validated lifecycle only after the migrated app is stable.
 - Target frontend:4fa0e9fc11d49354e3da137ee43e9d1ddbc87357. Existing public www UI
   fingerprint and route/API evidence are in the prior pass. Exact deployed source
   SHA/provider build record is unknown; remote GitHub main is not deployment proof.
-- Recovery:BLOCKED. Supabase scheduled backups absent on Free; PITR not enabled.
-  No verified equivalent identified. Local NBA Corner audit archive is schema/catalog
-  evidence, not a complete database recovery backup. No exhaustive disk search claimed.
+- Recovery mechanism:PASS under the authorized 2026-10-18 private logical backup/restore
+  proof. See nc-04a2-recovery-verification.md. Platform scheduled backups/PITR remain
+  absent;this is the verified private equivalent. A fresh backup after write quiescence
+  immediately before migrations is still mandatory. Schema/catalog-only archives are
+  not substituted for the complete backup.
 - Protected JWT/origin/email/flags:BLOCKED. Masked names cannot establish runtime
   validity. Use restricted procedure nc-04a-production-config-validation.md in a
   separately approved secure context; no generic executor/environment dump.
@@ -196,6 +198,13 @@ systemic failure; do not exit maintenance because a deploy merely reports live.
 - https://render.com/docs/free : idle wake-up differs from suspension; Free lacks Shell.
 
 Reviewed2026-10-18; paraphrased applicability only. No provider API mutation called.
-Remaining gates:recovery,protected config and deterministic release fence. Frontend
+Remaining gates:the documented diagnostic-debug/rate-limit-bypass failures and deterministic release fence. Recovery mechanism now passes;deployment-day backup freshness remains mandatory. Frontend
 old-SHA uncertainty is conditionally tolerable only with full known replacement and
 that verified fence. NC-04B remains not ready and not authorized.
+
+
+## Recovery proof update — 2026-10-18
+
+Recovery mechanism gate is now PASS;the preceding unavailable-recovery statements are historical and superseded by nc-04a2-recovery-verification.md and db/records/nc_04a2_recovery_verification.json. A private logical backup was restored and verified,then its disposable restore removed. Backup remains private and available. NC04B MUST create a new backup after established write quiescence immediately before0001;this proof does not replace it.
+
+Overall NC04A remains BLOCKED:diagnostic-debug check FAIL,rate-limit-bypass check FAIL,and deterministic write-fence/deploy/resume unresolved. No remediation or NC04B operation authorized/performed.

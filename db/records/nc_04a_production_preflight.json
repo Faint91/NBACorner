@@ -4,7 +4,7 @@
   "observed_at_utc": "2026-10-18T17:26:42.196707+00:00",
   "status": "BLOCKED — PRODUCTION REMEDIATION/DECISION REQUIRED",
   "completed": true,
-  "stop_reason": "NC04A2 authorized;operational checks cannot complete without existing PostgreSQL connection credentials and Render API access. No backup/restore or runtime validation proof yet.",
+  "stop_reason": "Recovery mechanism proved;diagnostic-debug and rate-limit-bypass config checks FAIL;deterministic write-fence/deploy/resume unresolved.",
   "local_start": {
     "backend_branch": "main",
     "backend_head": "a2a930291e32a6f73e03c2acf4dd0732eac70263",
@@ -98,9 +98,12 @@
     "latest_successful_backup_utc": null,
     "retention": null,
     "evidence": "Supabase FREE project backup/PITR screens",
-    "classification": "BLOCKED — no verified restore-capable mechanism",
+    "classification": "PASS — private logical backup/restore mechanism verified",
     "external_equivalent": "UNKNOWN",
-    "reverified": true
+    "reverified": true,
+    "equivalent_verified": true,
+    "recovery_evidence": "db/records/nc_04a2_recovery_verification.json",
+    "deployment_day_fresh_backup_required": true
   },
   "config": {
     "names_only": [
@@ -386,12 +389,12 @@
       "id": "NC04A-BACKUP-001",
       "affected": "All future production migrations / NC-04B backup gate",
       "count": 0,
-      "severity": "DEPLOYMENT PREREQUISITE",
-      "reason": "Free-plan dashboard reports no scheduled backups; PITR is unavailable as an unenabled paid add-on. No latest backup timestamp or retention is available.",
+      "severity": "RESOLVED — RECOVERY MECHANISM VERIFIED",
+      "reason": "Private logical backup restored and verified in isolated disposable database;restore removed;backup retained. Deployment-day fresh backup remains mandatory.",
       "options": [
         "Separately authorize creation and verification of an equivalent restorable backup, or an approved platform backup/PITR arrangement."
       ],
-      "business_decision_required": true,
+      "business_decision_required": false,
       "downtime": "Depends on separately chosen backup/restore verification strategy.",
       "scriptable": "Potentially; not authorized or executed in NC-04A.",
       "type": "Deployment gate",
@@ -400,7 +403,9 @@
       "affected_rows": 0,
       "proposed_remediation": [
         "Separately authorize creation and verification of an equivalent restorable backup, or an approved platform backup/PITR arrangement."
-      ]
+      ],
+      "resolved": true,
+      "recovery_evidence": "db/records/nc_04a2_recovery_verification.json"
     },
     {
       "id": "NC04A-SEASON-001",
@@ -496,7 +501,7 @@
   "frontend_changed": false,
   "one_on_one_ball_changed": false,
   "remediation_performed": false,
-  "next_phase": "Resolve only remaining documented gates under separate authorization;NC04B not started.",
+  "next_phase": "Stop. Separate review/authorization needed for remaining config/fence blockers;NC04B not started.",
   "first_pass_preserved": {
     "phase": "NC-04A",
     "mode": "CONTROLLED PRODUCTION READ-ONLY PREFLIGHT",
@@ -1656,5 +1661,138 @@
     "production_config_changes": 0,
     "application_changes": 0,
     "nc04b_started": false
-  }
+  },
+  "recovery_verification_pass": {
+    "phase": "NC-04A recovery verification",
+    "status": "PASS — RECOVERY MECHANISM VERIFIED",
+    "project_id": "rpwesmvzmgoctrokrbhy",
+    "backup_completed_utc": "2026-10-18T21:34:44.853887+00:00",
+    "verified_at_utc": "2026-10-18T21:37:28.192262+00:00",
+    "private_directory": "C:\\NBA-Corner-Private-Backups\\20261018T212752Z",
+    "method": "Supabase CLI2.120.0 roles/schema/COPY data plus complete PostgreSQL17.6 custom archive and complete password-free role metadata",
+    "server_version": "17.6",
+    "postgres_client_version": "17.6",
+    "supabase_cli_version": "2.120.0",
+    "files": [
+      {
+        "filename": "roles.sql",
+        "size_bytes": 358,
+        "sha256": "4350a72b5ec109888e740c17f3eb4da2fcd95ab73af26499538ed0bf615db543"
+      },
+      {
+        "filename": "schema.sql",
+        "size_bytes": 50146,
+        "sha256": "6f185af1df9115a0a59d7e340b616c6749d75cd87f4b6d6e53ef7950a5cd8dfd"
+      },
+      {
+        "filename": "data.sql",
+        "size_bytes": 251409,
+        "sha256": "985f5f3ff2f7006fcf690a81a85ab8917b8be25bda8e2b95779f2dc60a61dbf7"
+      },
+      {
+        "filename": "database.dump",
+        "size_bytes": 487323,
+        "sha256": "43463d57b98b4813af9d60e6ecd89a0d97b5bf4bdef03ec1053e2d11286bb4d6"
+      },
+      {
+        "filename": "roles-complete.sql",
+        "size_bytes": 5641,
+        "sha256": "6dd307a6d66b5beedc50244d4b137d1012352c47573e7f78f41490bc7129155c"
+      }
+    ],
+    "source_read_only": true,
+    "schema_data_archive_shared_snapshot": true,
+    "role_password_verifiers_excluded": true,
+    "restore": {
+      "engine": "Supabase PostgreSQL17.6 image;separate template0 database",
+      "network": "none",
+      "published_ports": false,
+      "data_storage": "tmpfs",
+      "roles_restored": true,
+      "archive_restore": "single-transaction/exit-on-error PASS",
+      "platform_role_bootstrap_required": true,
+      "platform_role_note": "Fresh target lacked supabase_realtime_admin;complete role backup supplied it locally. No production role changes.",
+      "verification": {
+        "verification_pass": true,
+        "checks": {
+          "version": true,
+          "read_only": true,
+          "table_counts": true,
+          "columns": true,
+          "constraints": true,
+          "indexes": true,
+          "relations": true,
+          "policies": true,
+          "functions": true,
+          "triggers": true,
+          "extensions": true,
+          "masters": true,
+          "orphans": true
+        },
+        "compared_table_counts": 51,
+        "public_tables": 13,
+        "application_counts": {
+          "public.bracket_scores": 14,
+          "public.brackets": 21,
+          "public.leaderboard_history_rows": 140,
+          "public.leaderboard_history_snapshots": 7,
+          "public.league_members": 1,
+          "public.leagues": 1,
+          "public.matches": 441,
+          "public.standings": 30,
+          "public.users": 57
+        },
+        "master_validation": [
+          {
+            "master": true,
+            "active": true,
+            "admin": true,
+            "match_count": 21,
+            "master_error": null,
+            "complete_error": null,
+            "edges": 22
+          }
+        ],
+        "orphans": {
+          "brackets": 0,
+          "matches": 0,
+          "history": 0
+        },
+        "rows_output": false,
+        "policy_comparison": "Exact deparsed equality with matched visible search_path;no policy edits or expression stripping"
+      },
+      "foreign_key_count": 20,
+      "unvalidated_foreign_keys": 0,
+      "disposable_restore_removed": true,
+      "temporary_clients_removed": true
+    },
+    "backup_retained": true,
+    "private_access": {
+      "inheritance_disabled": true,
+      "access_entries": 2,
+      "public_access": false
+    },
+    "production_database_writes": 0,
+    "production_migrations": 0,
+    "production_password_reset_by_agent": false,
+    "initial_connection_issue": "Pooler authentication initially rejected credential;user confirmed reset action;retry then succeeded. Direct IPv6 endpoint unreachable,official session pooler used.",
+    "unexpected_production_dependency": false,
+    "deployment_day_fresh_backup_required": true,
+    "overall_nc04a_status": "BLOCKED — PRODUCTION REMEDIATION/DECISION REQUIRED",
+    "remaining_blockers": [
+      "Diagnostic-debug production security/config check FAIL",
+      "Rate-limit-bypass production security/config check FAIL",
+      "Deterministic write-fence/deployment/resume procedure unresolved"
+    ],
+    "nc04b_started": false,
+    "credentials_values_in_evidence": false,
+    "production_rows_in_evidence": false,
+    "base_exports_completed_utc": "2026-10-18T21:32:55.259820+00:00",
+    "local_docker_restored_to_initial_stopped_state": true
+  },
+  "current_blockers": [
+    "Diagnostic-debug production security/config check FAIL",
+    "Rate-limit-bypass production security/config check FAIL",
+    "Deterministic write-fence/deployment/resume procedure unresolved"
+  ]
 }
