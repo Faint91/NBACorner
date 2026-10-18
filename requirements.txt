@@ -1,11 +1,1 @@
-flask
-flask-cors
-flask-bcrypt
-flask-mail==0.9.1
-requests
-PyJWT==2.10.1
-python-dotenv
-supabase
-bcrypt
-gunicorn
-itsdangerous
+# Temporary maintenance branch: Python standard library only; no package installs.

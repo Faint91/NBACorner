@@ -1,0 +1,105 @@
+{
+  "phase": "NC-04A5",
+  "verified_utc": "2026-10-18T22:12:44.178732+00:00",
+  "status": "WRITE-FENCE DESIGN = PASS / pending NC-04B execution",
+  "NC03": "PASS",
+  "NC04A": "BLOCKED",
+  "main_backend_sha": "ff341dfa556a08ae396aacf33b74cb6c56a0ab71",
+  "frontend_sha": "4fa0e9fc11d49354e3da137ee43e9d1ddbc87357",
+  "maintenance_branch": "nc04-maintenance",
+  "maintenance_sha_resolution": "git rev-parse nc04-maintenance; exact hash returned in final report",
+  "production_observation": {
+    "service": "srv-d4239u6uk2gs73b8fts0",
+    "live_sha": "5bcb0b43ae0c232381ae857cd40c3fd7b1e23422",
+    "deploy": "dep-dbajssc9v7es738q8nu0",
+    "build_command": "pip install -r requirements.txt",
+    "start_command": "gunicorn app:app",
+    "predeploy": null,
+    "root_dir": "",
+    "runtime": "python",
+    "plan": "free",
+    "health_path": "",
+    "auto_deploy": "off",
+    "queue": "idle"
+  },
+  "maintenance": {
+    "entrypoint": "maintenance_app.py",
+    "future_start_command": "python -B maintenance_app.py",
+    "dependencies": "Python standard library only; comment-only requirements on temporary branch",
+    "port": "0.0.0.0:$PORT",
+    "normal_routes": 503,
+    "health": {
+      "path": "/__maintenance_health",
+      "methods": [
+        "GET",
+        "HEAD"
+      ],
+      "status": 200
+    },
+    "imports": [
+      "os",
+      "socketserver",
+      "wsgiref.simple_server"
+    ],
+    "environment_reads": [
+      "PORT"
+    ],
+    "db_independent": true
+  },
+  "validation": {
+    "test_count": 6,
+    "result": "PASS",
+    "network_and_db_guard": "Import denylist plus outbound network/DNS audit hook",
+    "file_mutation_guard": true,
+    "email_provider_blocked": true,
+    "jobs_imports_blocked": true,
+    "logs_empty": true,
+    "static_import_and_env_proof": true,
+    "shared_application_changed": false,
+    "full_application_suite": "Not rerun; no shared application implementation changes",
+    "black": "PASS",
+    "memory_compilation": "PASS",
+    "secret_scan": "PASS",
+    "whitespace": "PASS",
+    "empty_requirements_no_index_install": "PASS; no package installation",
+    "main_app_byte_identical": true,
+    "main_ref_unchanged": true,
+    "local_server_cleanup": "Subprocess terminated; stdout/stderr empty; no database or persistent file mutation"
+  },
+  "future_deployment": {
+    "method": "Render API explicit commitId from linked repository",
+    "branch_push": "Deferred until authorized execution; no push here",
+    "auto_deploy_must_stay_off": true,
+    "rollback": "Restore maintenance-only start command then deploy exact retained maintenance SHA; verify fence/drain again",
+    "old_workers_must_terminate": true,
+    "fresh_post_quiescence_backup_required": true,
+    "migration_order": [
+      "0001",
+      "0002",
+      "designate canonical2025-26 singleton",
+      "0003-0011",
+      "schema/security verification"
+    ],
+    "unsafe_flags": "Stage only two safe values while maintenance remains live; activate with target",
+    "failures_keep_fence": "Build/start failure keeps previous maintenance; post-cutover failure needs explicit maintenance redeploy, not instantaneous"
+  },
+  "production_changes": {
+    "deploys": 0,
+    "configuration_writes": 0,
+    "db_writes": 0,
+    "migrations": 0,
+    "emails": 0,
+    "jobs": 0
+  },
+  "remaining_gates": [
+    "Both production flags remain unsafe",
+    "Actual maintenance activation and writer drain unexecuted",
+    "Fresh backup and migration/config/target/frontend/smoke require explicit NC-04B authorization"
+  ],
+  "sources": [
+    "https://render.com/docs/deploys",
+    "https://render.com/docs/health-checks",
+    "https://api-docs.render.com/reference/create-deploy",
+    "https://api-docs.render.com/reference/update-service"
+  ]
+}
