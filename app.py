@@ -238,6 +238,7 @@ RATE_LIMITS = {
     "forgot_identifier": (3, 300),     # 3 forgot-password per email/username per 5min
 
     "register_ip": (3, 3600),          # 3 registrations per IP per hour (example)
+    "test_email_ip": (5, 900),        # Admin test email: 5 per IP per rolling 15min
 
     # ✅ Added: rate limit bucket for /health when token missing/wrong
     "health_ip": (30, 60),             # 30 checks per IP per minute

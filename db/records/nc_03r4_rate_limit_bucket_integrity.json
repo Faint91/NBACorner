@@ -1,0 +1,137 @@
+{
+  "phase": "NC-03R4",
+  "finding": "NC04A-CODE-002",
+  "status": "REPAIRED LOCALLY / pending final production deployment",
+  "verified_utc": "2026-10-18T22:00:09.165809+00:00",
+  "starting_backend_head": "1d0dcea7b109edc593728e0f431788cbcf3b52be",
+  "starting_frontend_head": "4fa0e9fc11d49354e3da137ee43e9d1ddbc87357",
+  "root_cause": "Runtime test_email_ip reference absent from RATE_LIMITS; unknown bucket returns False before recording attempts.",
+  "before_repair": {
+    "synthetic_attempts": 100,
+    "throttled": 0,
+    "recorded_events": 0,
+    "bypass_disabled": true,
+    "historical_app_versions_checked": 126,
+    "historical_numeric_policy_found": false
+  },
+  "approved_policy": {
+    "source": "User explicit NC-03R4 continuation authorization",
+    "max_requests": 5,
+    "window_seconds": 900,
+    "scope": "per IP",
+    "semantics": "rolling; first five permitted, sixth HTTP429; events expire at age900seconds"
+  },
+  "repair": "Add only test_email_ip=(5,900) to centralized RATE_LIMITS; no function, import or route change.",
+  "inventory": {
+    "referenced": [
+      "forgot_identifier",
+      "forgot_ip",
+      "health_ip",
+      "login_identifier",
+      "login_ip",
+      "register_ip",
+      "test_email_ip"
+    ],
+    "missing": [],
+    "dynamic_calls": 0,
+    "duplicate_keys": 0
+  },
+  "acceptance": {
+    "focused_tests": 11,
+    "result": "PASS",
+    "http_statuses_first_six": [
+      200,
+      200,
+      200,
+      200,
+      200,
+      429
+    ],
+    "rolling_exact_expiry": "PASS",
+    "independent_ips": "PASS",
+    "mail_transport": "Mock; no delivery",
+    "admin_authorization": "anonymous401,nonadmin403,claim_without_database_admin403",
+    "bypass_enabled": "unchanged; attempts not recorded",
+    "bypass_disabled": "enforces approved policy",
+    "all_six_existing_bucket_boundaries_and_expiry": "PASS",
+    "login_and_register_http429": "PASS",
+    "forgot_password_generic200_without_lookup_when_throttled": "PASS",
+    "health_http429_and_existing_token_exemption": "PASS"
+  },
+  "regressions": {
+    "offline_suite": {
+      "tests": 370,
+      "failures": 0,
+      "errors": 0,
+      "result": "PASS"
+    },
+    "R1": {
+      "unsafe_startup_cases": 7,
+      "auth_outcomes": 14,
+      "result": "PASS"
+    },
+    "R2": {
+      "outcomes": 46,
+      "result": "PASS"
+    },
+    "R3": {
+      "result": "PASS",
+      "proof": {
+        "finding": "NC04A-CODE-001",
+        "status": "REPAIRED LOCALLY / pending NC-04A re-verification",
+        "configuration_variable": "FRONTEND_ORIGIN",
+        "synthetic_config_check": {
+          "frontend_origin_present": true,
+          "frontend_origin_valid": true,
+          "api_origin_valid": true,
+          "frontend_distinct_from_api": true,
+          "route": "/reset-password",
+          "token_location": "query",
+          "token_parameter": "token",
+          "routing_contract_valid": true
+        },
+        "backend_reset_UI_or_redirect_added": false,
+        "frontend_route_unchanged": true,
+        "missing_or_API_origin_blocks_preflight": true,
+        "production_contact": false,
+        "no_tokens_or_full_reset_URLs_recorded": true
+      }
+    }
+  },
+  "static_checks": {
+    "imports_unchanged": true,
+    "all_application_functions_and_classes_unchanged": true,
+    "memory_compilation": "PASS",
+    "black_new_test": "PASS",
+    "whitespace": "PASS",
+    "secret_privacy_scan": "PASS; scoped changed content; no credential files read"
+  },
+  "advisory": {
+    "id": "NC-03R4-ADV-001",
+    "summary": "Unknown bucket lookup still fails open; generic fail-closed design is future separate hardening.",
+    "changed": false,
+    "existing_other_exemption": "Valid HEALTHCHECK_TOKEN bypasses health throttle; unchanged documented route behavior."
+  },
+  "cleanup": {
+    "canonical_fixture_source_files_byte_identical": true,
+    "fixture_database_accessed": false,
+    "fixture_database_checksum_requeried": false,
+    "flask_port_55410_stopped": true,
+    "mailbox_empty": true,
+    "application_module_imported": false,
+    "rate_state": "isolated per-test memory only; process exited",
+    "jobs_started": false,
+    "mutation_admission_enabled": false,
+    "disposable_database_created": false
+  },
+  "production": {
+    "contact": false,
+    "database_writes": 0,
+    "render_changes": 0,
+    "deployments": 0,
+    "emails": 0
+  },
+  "NC03": "PASS",
+  "NC04A": "BLOCKED",
+  "git": "Normal backend-only repair commit; no amend; final hash reported separately."
+}
