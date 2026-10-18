@@ -1,3 +1,97 @@
+# NC-04A final gate-closure pass
+
+**BLOCKED — PRODUCTION REMEDIATION/DECISION REQUIRED**
+
+Recorded 2026-10-18T17:26:42.196707+00:00. Canonical decision is now resolved;prior unresolved canonical statements below are historical and superseded. No deployment or production mutation authorized/performed.
+
+1. **Local starting state.** Backend main/clean at ce44ea59d0789f3f86a11ea6224bf0b5129357ff; frontend main/clean at4fa0e9fc11d49354e3da137ee43e9d1ddbc87357. No unexpected product change.
+
+2. **Canonical decision recorded.** 2025-26; APPROVED BUSINESS DECISION, locked by explicit user prompt. No new season or transition included.
+
+3. **Canonical deployment point.** After successful0002, before0003:designate existing approved2025-26,verify exactly one canonical row and correct pointer/timings/master. No designation now.
+
+4. **Recovery mechanism result.** BLOCKED. Fresh Supabase dashboard still excludes scheduled backups on Free; PITR requires unenabled Pro add-on. No verified existing equivalent identified. Local audit exports/archive are not complete recovery artifacts.
+
+5. **Deployment-time backup gate.** After verified write quiescence/drained transactions,create and verify fresh exact-project restorable backup immediately before0001. A usable mechanism/control/restore process must first be established under separate authorization; no backup created here.
+
+6. **JWT_SECRET validation.** BLOCKED:masked name exists,actual nonblank/final validator/fallback exclusion/service-effective quality not safely validated. No value,length,hash or substring read/output; no rotation.
+
+7. **FRONTEND_ORIGIN validation.** BLOCKED:masked name exists; actual runtime HTTPS www.nbacorner.com/distinct API/R3 contract outcome unknown. Known frontend route alone does not prove backend setting.
+
+8. **Email/provider validation.** BLOCKED:Brevo credential and sender key names present; actual nonblank credential/approved sender/real mode readiness not established. No email or provider write.
+
+9. **Production environment validation.** BLOCKED:configuration remains masked. No NBA_CORNER_ENV/test-specific keys observed; supported legacy production branch is documented,not inferred as all flags safe.
+
+10. **Debug/test-mode validation.** BLOCKED pending booleans for FLASK_ENV/FLASK_DEBUG/ENABLE_DEBUG_LOGS,no capture/fixture/test-admission configuration. Gunicorn start is known; no app import or route probe used.
+
+11. **Rate-limit/security flag validation.** BLOCKED:DISABLE_RATE_LIMITS value unknown; validate actual code semantics and intended limits. No bypass flag changed. Restricted configuration procedure specified,not executed.
+
+12. **Frontend deployed revision evidence.** Existing www HTML/bundle fingerprints identify observed build but not exact source SHA. Hosting/deploy record unavailable. Conditionally acceptable operationally ONLY for full pinned target replacement with verified maintenance and stale-client handling; otherwise blocker. Target4fa0e9fc11d49354e3da137ee43e9d1ddbc87357. No speculative hosting-provider claim/redeploy.
+
+13. **Backend deployed revision evidence.** Fresh Render metadata confirms5bcb0b43ae0c232381ae857cd40c3fd7b1e23422. Proposed repaired sourcece44ea59d0789f3f86a11ea6224bf0b5129357ff/product-equivalent audit completion; exact deployment SHA requires later authorization. Old binary cannot run against migrated DB.
+
+14. **Reset deep-link readiness.** Reuse PASS tokenless www /login and /reset-password HTTP200 same SPA HTML;deployed bundle reset route and HTTPS Render API. Actual backend FRONTEND_ORIGIN validation remains separate blocked gate. No reset mail/request or JavaScript execution.
+
+15. **Write-quiescence method.** Proposed backend Render suspension plus independent job holds and drained writes; still BLOCKED until deterministic target deploy/resume/fallback and Auto-Deploy semantics are verified. No suspend/resume or ingress/config mutation.
+
+16. **Render suspension analysis.** Official docs document503 while suspended and suspend/resume operations. Separate Supabase persistence is architectural separation,not recovery proof. Docs reviewed do not establish deploy-while-suspended,revision selection/restart/fallback or request draining for this service;do not assume. Idle Free spin-down wakes on traffic and is not quiescence.
+
+17. **Scheduler/job quiescence.** Retain prior verified GitHub standings workflow DISABLED,no Render cron/pg_cron/automatic rollover in inspected scope. No fresh expensive DB scan. Reconfirm independent writers before migration;re-enable only intended approved scheduler after migrated schema,canonical,target backend/frontend and smoke verified,never during migration.
+
+18. **Frontend maintenance behavior.** Lowest-change plan:announced brief API outage while static UI remains;backend fence must stay effective through smoke. Target client has direct fetch/no reviewed retry/offline queue. Exact old bundle/upstream pending requests unproved;drain writes and require reload. Frontend-only hiding cannot enforce maintenance.
+
+19. **Final mixed-version compatibility.** Current old frontend/backend/DB is legacy observed state. Existing frontend+suspension is conditional outage safety. Existing frontend+new backend full compatibility unproved;do not intentionally reopen it. Target frontend+new backend+migrated DB intended validated state. Old backend+migrated DB inaccessible;new backend+old DB prohibited.
+
+20. **Existing JWT behavior.** Same valid key preserves missing-av tokens as version0;successful reset increments auth_version and revokes prior versions. No rotation/authentication/session mutation;runtime key gate remains.
+
+21. **Reset-link migration behavior.** 0011 intentionally invalidates legacy links. Previous13/10/0 counts reused,not freshly claimed. Recheck unused/unexpired count,actual origin and frontend route immediately before deployment.
+
+22. **Schema/data preflight standing.** Prior24 evidence checks/4 negative controls and original schema/data proof retained,nonblocking. Approved canonical decision removes business ambiguity. No current DB queries or repeated application suite;critical deployment-day preflights mandatory.
+
+23. **Exact deployment sequence.** Approve immutable releases/gates;announce;hold workflows/independent writers;quiesce/drain;fresh verified backup;critical data/config checks;0001;0002;approved2025-26 designation+verification;0003->0011;schema/security/count check;pinned backend under fence;target frontend;approved smoke;intended scheduler decision;open writes/reload;monitor. Full ordered files in runbook.
+
+24. **Canonical designation step.** Existing season994f58bc-bdbc-422e-9786-bb5c8559ea0f/code2025-26;verify singleton and source pointer before0003. No2026-27 designation or rollover. Business approval does not authorize NC04A production write.
+
+25. **Migration failure boundaries.** Before0001 abort unchanged.0001-0002 failure retains any earlier committed stage. After designation account for canonical row/schema in recovery.0003-0011 may partly commit;no invented reverse migrations or old-code restart. Keep fence;assess approved forward repair versus verified backup restoration.
+
+26. **Recovery/restore procedure.** Stop rollout/keep backend+jobs fenced;identify committed boundary;authorized recovery owner verifies exact backup,target and dependencies;restore only with explicit scope;verify schema/data/ACL/auth/history then compatible code. Git rollback is not DB rollback;completed resets/versions and immutable history need explicit recovery treatment.
+
+27. **Post-deploy smoke prerequisites.** Approved safe account/mailbox if login/reset tests are required;otherwise coverage limitation. Safe season/health,READ ONLY standings,supported history/league reads,tokenless frontend route. No rollover/refresh/snapshot/destructive smoke or arbitrary real-user reset. Not performed.
+
+28. **Monitoring prerequisites.** Assign owner,baseline/abort thresholds and sanitized5xx/auth/login/reset/DB/RPC/canonical/standings/league/history/frontend observation before reopening. No monitoring changes.
+
+29. **Remaining blockers.** Verified recovery mechanism;actual protected JWT/origin/email/env/debug/rate-limit validation;deterministic suspension/deploy/resume/fallback and auto-deploy control. Frontend unknown old SHA conditionally tolerable only with full known replacement and verified fence.
+
+30. **Production writes performed.** 0. Only dashboard/config-name reads,official provider docs and local audit reads/edits. No backup,DB query/DML/DDL,canonical write,email,deploy,suspend/resume,job,standings or rollover operation.
+
+31. **Application-code changes.** 0. Frontend and C:/1on1ball untouched;no migrations changed;NC03 PASS and historical NC04A chronology preserved.
+
+32. **Files changed.** Updated resumed preflight report,machine evidence and planning-only runbook;added restricted configuration-validation procedure specification. No product files.
+
+33. **Git result.** Normal audit-only commit NC-04A close production readiness gates;no amendment or push. Final hash/tree verified after commit.
+
+34. **Final NC-04A status.** BLOCKED — PRODUCTION REMEDIATION/DECISION REQUIRED.
+
+35. **NC-04B readiness.** NOT READY;NOT AUTHORIZED;not started. Canonical business decision resolved does not waive remaining gates.
+
+36. **Recommended next step.** Separately authorize recovery mechanism/proof and obtain boolean-only service-effective config evidence plus provider-confirmed safe release fence. Reassess remaining gates;do not start NC04B automatically.
+
+## References and validation limits
+
+Official Render documentation was read without invoking its API operations:
+
+- https://render.com/docs/troubleshooting-deploys
+- https://api-docs.render.com/reference/suspend-service-1
+- https://api-docs.render.com/reference/resume-service-1
+- https://render.com/docs/deploys
+- https://render.com/docs/free
+
+The config procedure is a specification,not executed production proof. Missing operational evidence remains BLOCKED. No completed data audit was repeated.
+
+---
+
+## Historical resumed preflight (preserved)
+
 # NC-04A resumed production read-only preflight
 
 **BLOCKED — PRODUCTION REMEDIATION/DECISION REQUIRED**

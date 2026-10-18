@@ -1,10 +1,10 @@
 {
   "phase": "NC-04A",
   "mode": "CONTROLLED PRODUCTION READ-ONLY PREFLIGHT",
-  "observed_at_utc": "2026-10-18T16:52:36.948733+00:00",
+  "observed_at_utc": "2026-10-18T17:26:42.196707+00:00",
   "status": "BLOCKED — PRODUCTION REMEDIATION/DECISION REQUIRED",
   "completed": true,
-  "stop_reason": "Read-only audit complete; recovery, canonical decision and protected configuration/hosting/maintenance gates remain unresolved.",
+  "stop_reason": "Canonical business decision resolved;recovery,protected config and deterministic release fence remain blocked.",
   "local_start": {
     "backend_branch": "main",
     "backend_head": "a2a930291e32a6f73e03c2acf4dd0732eac70263",
@@ -406,13 +406,13 @@
       "id": "NC04A-SEASON-001",
       "affected": "0002 canonical designation / new backend startup",
       "count": 0,
-      "severity": "DEPLOYMENT BLOCKER / decision required",
-      "reason": "application_season is absent. Nine season rows exist; only2025-26 has timing/master data. No canonical identity may be inferred from date or latest row.",
+      "severity": "RESOLVED BUSINESS DECISION",
+      "reason": "User explicitly approved2025-26;designation after0002 only in authorized deployment.",
       "options": [
         "Confirm intended source season and timing, then separately authorize exact canonical designation after0002 during maintenance.",
         "If intended season differs, require an explicit lifecycle/data plan rather than rerolling or automatic rollover."
       ],
-      "business_decision_required": true,
+      "business_decision_required": false,
       "downtime": "Coordinate designation with migrations before starting new backend.",
       "scriptable": "Yes after explicit season identity and write authorization; not performed.",
       "type": "Deployment gate",
@@ -422,7 +422,9 @@
       "proposed_remediation": [
         "Confirm intended source season and timing, then separately authorize exact canonical designation after0002 during maintenance.",
         "If intended season differs, require an explicit lifecycle/data plan rather than rerolling or automatic rollover."
-      ]
+      ],
+      "resolved": true,
+      "production_write_performed": false
     },
     {
       "id": "NC04A-CONFIG-001",
@@ -494,7 +496,7 @@
   "frontend_changed": false,
   "one_on_one_ball_changed": false,
   "remediation_performed": false,
-  "next_phase": "Resolve documented GO gates only under explicit authorization; NC-04B NOT STARTED.",
+  "next_phase": "Resolve only remaining documented gates under separate authorization;NC04B not started.",
   "first_pass_preserved": {
     "phase": "NC-04A",
     "mode": "CONTROLLED PRODUCTION READ-ONLY PREFLIGHT",
@@ -1379,5 +1381,241 @@
     }
   },
   "deployment_ready": false,
-  "historical_top_level_fields_notice": "Original schema/config/data/findings retained as dated first-pass evidence. Current results are resumed_pass and linked observations; first_pass_preserved is the original complete record."
+  "historical_top_level_fields_notice": "Original schema/config/data/findings retained as dated first-pass evidence. Current results are resumed_pass and linked observations; first_pass_preserved is the original complete record.",
+  "gate_closure_pass": {
+    "observed_at_utc": "2026-10-18T17:26:42.196707+00:00",
+    "status": "BLOCKED — PRODUCTION REMEDIATION/DECISION REQUIRED",
+    "canonical_decision": {
+      "season": "2025-26",
+      "status": "APPROVED BUSINESS DECISION",
+      "approved_at_recorded_utc": "2026-10-18T17:26:42.196707+00:00",
+      "source": "Explicit user gate-closure prompt",
+      "season_id": "994f58bc-bdbc-422e-9786-bb5c8559ea0f",
+      "locked": true,
+      "production_designation_performed": false,
+      "deployment_point": "After0002 success and before0003; verify singleton and pointer",
+      "season_transition_included": false
+    },
+    "starting_backend": "ce44ea59d0789f3f86a11ea6224bf0b5129357ff",
+    "starting_frontend": "4fa0e9fc11d49354e3da137ee43e9d1ddbc87357",
+    "backend_deployed_reconfirmed": "5bcb0b43ae0c232381ae857cd40c3fd7b1e23422",
+    "gates": {
+      "recovery": "BLOCKED",
+      "canonical": "RESOLVED",
+      "jwt": "BLOCKED",
+      "frontend_origin": "BLOCKED",
+      "email": "BLOCKED",
+      "production_flags": "BLOCKED",
+      "frontend_revision": "CONDITIONALLY ACCEPTABLE ONLY WITH FULL PINNED REPLACEMENT AND VERIFIED FENCE",
+      "quiescence": "BLOCKED",
+      "schema_data": "PRIOR PASS RETAINED; deployment-day refresh required"
+    },
+    "report": [
+      {
+        "number": 1,
+        "item": "Local starting state",
+        "result": "Backend main/clean at ce44ea59d0789f3f86a11ea6224bf0b5129357ff; frontend main/clean at4fa0e9fc11d49354e3da137ee43e9d1ddbc87357. No unexpected product change."
+      },
+      {
+        "number": 2,
+        "item": "Canonical decision recorded",
+        "result": "2025-26; APPROVED BUSINESS DECISION, locked by explicit user prompt. No new season or transition included."
+      },
+      {
+        "number": 3,
+        "item": "Canonical deployment point",
+        "result": "After successful0002, before0003:designate existing approved2025-26,verify exactly one canonical row and correct pointer/timings/master. No designation now."
+      },
+      {
+        "number": 4,
+        "item": "Recovery mechanism result",
+        "result": "BLOCKED. Fresh Supabase dashboard still excludes scheduled backups on Free; PITR requires unenabled Pro add-on. No verified existing equivalent identified. Local audit exports/archive are not complete recovery artifacts."
+      },
+      {
+        "number": 5,
+        "item": "Deployment-time backup gate",
+        "result": "After verified write quiescence/drained transactions,create and verify fresh exact-project restorable backup immediately before0001. A usable mechanism/control/restore process must first be established under separate authorization; no backup created here."
+      },
+      {
+        "number": 6,
+        "item": "JWT_SECRET validation",
+        "result": "BLOCKED:masked name exists,actual nonblank/final validator/fallback exclusion/service-effective quality not safely validated. No value,length,hash or substring read/output; no rotation."
+      },
+      {
+        "number": 7,
+        "item": "FRONTEND_ORIGIN validation",
+        "result": "BLOCKED:masked name exists; actual runtime HTTPS www.nbacorner.com/distinct API/R3 contract outcome unknown. Known frontend route alone does not prove backend setting."
+      },
+      {
+        "number": 8,
+        "item": "Email/provider validation",
+        "result": "BLOCKED:Brevo credential and sender key names present; actual nonblank credential/approved sender/real mode readiness not established. No email or provider write."
+      },
+      {
+        "number": 9,
+        "item": "Production environment validation",
+        "result": "BLOCKED:configuration remains masked. No NBA_CORNER_ENV/test-specific keys observed; supported legacy production branch is documented,not inferred as all flags safe."
+      },
+      {
+        "number": 10,
+        "item": "Debug/test-mode validation",
+        "result": "BLOCKED pending booleans for FLASK_ENV/FLASK_DEBUG/ENABLE_DEBUG_LOGS,no capture/fixture/test-admission configuration. Gunicorn start is known; no app import or route probe used."
+      },
+      {
+        "number": 11,
+        "item": "Rate-limit/security flag validation",
+        "result": "BLOCKED:DISABLE_RATE_LIMITS value unknown; validate actual code semantics and intended limits. No bypass flag changed. Restricted configuration procedure specified,not executed."
+      },
+      {
+        "number": 12,
+        "item": "Frontend deployed revision evidence",
+        "result": "Existing www HTML/bundle fingerprints identify observed build but not exact source SHA. Hosting/deploy record unavailable. Conditionally acceptable operationally ONLY for full pinned target replacement with verified maintenance and stale-client handling; otherwise blocker. Target4fa0e9fc11d49354e3da137ee43e9d1ddbc87357. No speculative hosting-provider claim/redeploy."
+      },
+      {
+        "number": 13,
+        "item": "Backend deployed revision evidence",
+        "result": "Fresh Render metadata confirms5bcb0b43ae0c232381ae857cd40c3fd7b1e23422. Proposed repaired sourcece44ea59d0789f3f86a11ea6224bf0b5129357ff/product-equivalent audit completion; exact deployment SHA requires later authorization. Old binary cannot run against migrated DB."
+      },
+      {
+        "number": 14,
+        "item": "Reset deep-link readiness",
+        "result": "Reuse PASS tokenless www /login and /reset-password HTTP200 same SPA HTML;deployed bundle reset route and HTTPS Render API. Actual backend FRONTEND_ORIGIN validation remains separate blocked gate. No reset mail/request or JavaScript execution."
+      },
+      {
+        "number": 15,
+        "item": "Write-quiescence method",
+        "result": "Proposed backend Render suspension plus independent job holds and drained writes; still BLOCKED until deterministic target deploy/resume/fallback and Auto-Deploy semantics are verified. No suspend/resume or ingress/config mutation."
+      },
+      {
+        "number": 16,
+        "item": "Render suspension analysis",
+        "result": "Official docs document503 while suspended and suspend/resume operations. Separate Supabase persistence is architectural separation,not recovery proof. Docs reviewed do not establish deploy-while-suspended,revision selection/restart/fallback or request draining for this service;do not assume. Idle Free spin-down wakes on traffic and is not quiescence."
+      },
+      {
+        "number": 17,
+        "item": "Scheduler/job quiescence",
+        "result": "Retain prior verified GitHub standings workflow DISABLED,no Render cron/pg_cron/automatic rollover in inspected scope. No fresh expensive DB scan. Reconfirm independent writers before migration;re-enable only intended approved scheduler after migrated schema,canonical,target backend/frontend and smoke verified,never during migration."
+      },
+      {
+        "number": 18,
+        "item": "Frontend maintenance behavior",
+        "result": "Lowest-change plan:announced brief API outage while static UI remains;backend fence must stay effective through smoke. Target client has direct fetch/no reviewed retry/offline queue. Exact old bundle/upstream pending requests unproved;drain writes and require reload. Frontend-only hiding cannot enforce maintenance."
+      },
+      {
+        "number": 19,
+        "item": "Final mixed-version compatibility",
+        "result": "Current old frontend/backend/DB is legacy observed state. Existing frontend+suspension is conditional outage safety. Existing frontend+new backend full compatibility unproved;do not intentionally reopen it. Target frontend+new backend+migrated DB intended validated state. Old backend+migrated DB inaccessible;new backend+old DB prohibited."
+      },
+      {
+        "number": 20,
+        "item": "Existing JWT behavior",
+        "result": "Same valid key preserves missing-av tokens as version0;successful reset increments auth_version and revokes prior versions. No rotation/authentication/session mutation;runtime key gate remains."
+      },
+      {
+        "number": 21,
+        "item": "Reset-link migration behavior",
+        "result": "0011 intentionally invalidates legacy links. Previous13/10/0 counts reused,not freshly claimed. Recheck unused/unexpired count,actual origin and frontend route immediately before deployment."
+      },
+      {
+        "number": 22,
+        "item": "Schema/data preflight standing",
+        "result": "Prior24 evidence checks/4 negative controls and original schema/data proof retained,nonblocking. Approved canonical decision removes business ambiguity. No current DB queries or repeated application suite;critical deployment-day preflights mandatory."
+      },
+      {
+        "number": 23,
+        "item": "Exact deployment sequence",
+        "result": "Approve immutable releases/gates;announce;hold workflows/independent writers;quiesce/drain;fresh verified backup;critical data/config checks;0001;0002;approved2025-26 designation+verification;0003->0011;schema/security/count check;pinned backend under fence;target frontend;approved smoke;intended scheduler decision;open writes/reload;monitor. Full ordered files in runbook."
+      },
+      {
+        "number": 24,
+        "item": "Canonical designation step",
+        "result": "Existing season994f58bc-bdbc-422e-9786-bb5c8559ea0f/code2025-26;verify singleton and source pointer before0003. No2026-27 designation or rollover. Business approval does not authorize NC04A production write."
+      },
+      {
+        "number": 25,
+        "item": "Migration failure boundaries",
+        "result": "Before0001 abort unchanged.0001-0002 failure retains any earlier committed stage. After designation account for canonical row/schema in recovery.0003-0011 may partly commit;no invented reverse migrations or old-code restart. Keep fence;assess approved forward repair versus verified backup restoration."
+      },
+      {
+        "number": 26,
+        "item": "Recovery/restore procedure",
+        "result": "Stop rollout/keep backend+jobs fenced;identify committed boundary;authorized recovery owner verifies exact backup,target and dependencies;restore only with explicit scope;verify schema/data/ACL/auth/history then compatible code. Git rollback is not DB rollback;completed resets/versions and immutable history need explicit recovery treatment."
+      },
+      {
+        "number": 27,
+        "item": "Post-deploy smoke prerequisites",
+        "result": "Approved safe account/mailbox if login/reset tests are required;otherwise coverage limitation. Safe season/health,READ ONLY standings,supported history/league reads,tokenless frontend route. No rollover/refresh/snapshot/destructive smoke or arbitrary real-user reset. Not performed."
+      },
+      {
+        "number": 28,
+        "item": "Monitoring prerequisites",
+        "result": "Assign owner,baseline/abort thresholds and sanitized5xx/auth/login/reset/DB/RPC/canonical/standings/league/history/frontend observation before reopening. No monitoring changes."
+      },
+      {
+        "number": 29,
+        "item": "Remaining blockers",
+        "result": "Verified recovery mechanism;actual protected JWT/origin/email/env/debug/rate-limit validation;deterministic suspension/deploy/resume/fallback and auto-deploy control. Frontend unknown old SHA conditionally tolerable only with full known replacement and verified fence."
+      },
+      {
+        "number": 30,
+        "item": "Production writes performed",
+        "result": "0. Only dashboard/config-name reads,official provider docs and local audit reads/edits. No backup,DB query/DML/DDL,canonical write,email,deploy,suspend/resume,job,standings or rollover operation."
+      },
+      {
+        "number": 31,
+        "item": "Application-code changes",
+        "result": "0. Frontend and C:/1on1ball untouched;no migrations changed;NC03 PASS and historical NC04A chronology preserved."
+      },
+      {
+        "number": 32,
+        "item": "Files changed",
+        "result": "Updated resumed preflight report,machine evidence and planning-only runbook;added restricted configuration-validation procedure specification. No product files."
+      },
+      {
+        "number": 33,
+        "item": "Git result",
+        "result": "Normal audit-only commit NC-04A close production readiness gates;no amendment or push. Final hash/tree verified after commit."
+      },
+      {
+        "number": 34,
+        "item": "Final NC-04A status",
+        "result": "BLOCKED — PRODUCTION REMEDIATION/DECISION REQUIRED."
+      },
+      {
+        "number": 35,
+        "item": "NC-04B readiness",
+        "result": "NOT READY;NOT AUTHORIZED;not started. Canonical business decision resolved does not waive remaining gates."
+      },
+      {
+        "number": 36,
+        "item": "Recommended next step",
+        "result": "Separately authorize recovery mechanism/proof and obtain boolean-only service-effective config evidence plus provider-confirmed safe release fence. Reassess remaining gates;do not start NC04B automatically."
+      }
+    ],
+    "production_writes": 0,
+    "database_queries": 0,
+    "credentials_retrieved": false,
+    "configuration_procedure_executed": false,
+    "config_procedure": "docs/operations/nc-04a-production-config-validation.md",
+    "provider_references": [
+      "https://render.com/docs/troubleshooting-deploys",
+      "https://api-docs.render.com/reference/suspend-service-1",
+      "https://api-docs.render.com/reference/resume-service-1",
+      "https://render.com/docs/deploys",
+      "https://render.com/docs/free"
+    ],
+    "nc04b_started": false,
+    "deployment_ready": false
+  },
+  "canonical_decision": {
+    "season": "2025-26",
+    "status": "APPROVED BUSINESS DECISION",
+    "approved_at_recorded_utc": "2026-10-18T17:26:42.196707+00:00",
+    "source": "Explicit user gate-closure prompt",
+    "season_id": "994f58bc-bdbc-422e-9786-bb5c8559ea0f",
+    "locked": true,
+    "production_designation_performed": false,
+    "deployment_point": "After0002 success and before0003; verify singleton and pointer",
+    "season_transition_included": false
+  }
 }
