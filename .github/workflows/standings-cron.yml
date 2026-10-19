@@ -25,10 +25,7 @@ jobs:
 
       - name: Run standings sync script
         env:
-          BALLDONTLIE_API_KEY: ${{ secrets.BALLDONTLIE_API_KEY }}
-          BACKEND_BASE_URL: ${{ secrets.BACKEND_BASE_URL }}
-          STANDINGS_CRON_TOKEN: ${{ secrets.STANDINGS_CRON_TOKEN }}
-          NBA_SEASON_YEAR: "2025"  # adjust if needed
+          # Season selection comes from application_season; legacy NBA_SEASON_YEAR removed.
           SUPABASE_URL: ${{ secrets.supabase_url }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.supabase_key }}
         run: python scripts/update_standings.py
