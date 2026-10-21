@@ -3,7 +3,7 @@ name: Daily NBA standings sync
 on:
   schedule:
     # Runs every day at 09:00 UTC
-    - cron: "0 9 * * *"
+    - cron: "17 9 * * *"
   # Allow manual runs
   workflow_dispatch: {}
 
