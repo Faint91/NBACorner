@@ -1,0 +1,24 @@
+{
+  "phase": "NC-06E",
+  "status": "PASS",
+  "groups": [
+    "fresh_0001_through_0012_and_exact_semantic_verifier",
+    "unique_30_rows_15_15_exact_positions_zero_master",
+    "all_tied_30_rows_15_15_exact_positions_zero_master",
+    "partial_ties_and_gaps_30_rows_15_15_exact_positions_zero_master",
+    "duplicate_team_rejected_preserves_last_good",
+    "incomplete_rejected_preserves_last_good",
+    "extra_rejected_preserves_last_good",
+    "conference_rejected_preserves_last_good",
+    "invalid_seed_rejected_preserves_last_good",
+    "null_seed_rejected_preserves_last_good",
+    "invalid_wins_rejected_preserves_last_good",
+    "canonical_mismatch_rejected_preserves_last_good",
+    "mid_insert_failure_rolls_back_delete_and_inserts",
+    "database_freeze_preserves_last_good",
+    "function_security_acl_and_schema_unchanged_after_tests"
+  ],
+  "group_count": 15,
+  "disposable_database_removed": true,
+  "production_contact": false
+}

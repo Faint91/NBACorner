@@ -1,0 +1,10 @@
+{
+  "all_python_files_compile": 157,
+  "app_changed_function_names": [
+    "create_bracket_for_user"
+  ],
+  "historical_verifier_frozen_byte_exact": true,
+  "current_verifier_checksum": "PASS",
+  "workflow_files_changed": 0,
+  "production_contact": false
+}

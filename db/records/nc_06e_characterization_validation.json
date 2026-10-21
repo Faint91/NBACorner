@@ -1,0 +1,4609 @@
+{
+  "phase": "NC-06E",
+  "passed": true,
+  "tests_run": 41,
+  "failures": 0,
+  "errors": 0,
+  "findings": [
+    {
+      "phase": "NC-02C2",
+      "scenario": "test_c2_authorization_and_retired_bypasses",
+      "passed": true,
+      "requirements": [
+        "S3",
+        "S4",
+        "S5",
+        "S6",
+        "S7",
+        "S8",
+        "S9",
+        "S13"
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02C2",
+      "scenario": "test_c2_freeze_at_after_all_paths_no_fetch",
+      "passed": true,
+      "requirements": [
+        "S3",
+        "S4",
+        "S5",
+        "S6",
+        "S7",
+        "S8",
+        "S9",
+        "S13"
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02C2",
+      "scenario": "test_c2_freeze_distinct_from_bracket_lock",
+      "passed": true,
+      "requirements": [
+        "S3",
+        "S4",
+        "S5",
+        "S6",
+        "S7",
+        "S8",
+        "S9",
+        "S13"
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02C2",
+      "scenario": "test_c2_invalid_data_and_provider_failures_preserve_rows",
+      "passed": true,
+      "requirements": [
+        "S3",
+        "S4",
+        "S5",
+        "S6",
+        "S7",
+        "S8",
+        "S9",
+        "S13"
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02C2",
+      "scenario": "test_c2_success_scheduled_admin_cron_equivalent",
+      "passed": true,
+      "requirements": [
+        "S3",
+        "S4",
+        "S5",
+        "S6",
+        "S7",
+        "S8",
+        "S9",
+        "S13"
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02C2",
+      "scenario": "test_nc06e_ambiguous_manual_master_has_no_writes",
+      "passed": true,
+      "requirements": [
+        "S3",
+        "S4",
+        "S5",
+        "S6",
+        "S7",
+        "S8",
+        "S9",
+        "S13"
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02C2",
+      "scenario": "test_nc06e_source_identity_failures_preserve_last_good",
+      "passed": true,
+      "requirements": [
+        "S3",
+        "S4",
+        "S5",
+        "S6",
+        "S7",
+        "S8",
+        "S9",
+        "S13"
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02C2",
+      "scenario": "test_nc06e_tied_publication_never_creates_master",
+      "passed": true,
+      "requirements": [
+        "S3",
+        "S4",
+        "S5",
+        "S6",
+        "S7",
+        "S8",
+        "S9",
+        "S13"
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02C1",
+      "scenario": "test_c1_explicit_switch_visible_without_restart",
+      "passed": true,
+      "requirements": [
+        "S1",
+        "S2",
+        "S12",
+        "S14"
+      ],
+      "production_contact": false
+    },
+    {
+      "phase": "NC-02C1",
+      "scenario": "test_c1_missing_state_503_and_restored_next_request",
+      "passed": true,
+      "requirements": [
+        "S1",
+        "S2",
+        "S12",
+        "S14"
+      ],
+      "production_contact": false
+    },
+    {
+      "phase": "NC-02C1",
+      "scenario": "test_c1_status_and_bracket_share_canonical_identity",
+      "passed": true,
+      "requirements": [
+        "S1",
+        "S2",
+        "S12",
+        "S14"
+      ],
+      "production_contact": false
+    },
+    {
+      "phase": "NC-02B3",
+      "scenario": "test_b3_cross_season_and_same_season_uniqueness",
+      "requirements": [
+        "B10",
+        "B11",
+        "B12",
+        "B13",
+        "B14",
+        "B15"
+      ],
+      "facts": {
+        "cross_season_allowed": true,
+        "same_season_duplicate_denied": true,
+        "different_users_allowed": true
+      },
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "message"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "message"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02B3",
+      "scenario": "test_b3_current_ids_not_exposed_through_public_history",
+      "requirements": [
+        "B10",
+        "B11",
+        "B12",
+        "B13",
+        "B14",
+        "B15"
+      ],
+      "facts": {
+        "current_auth_contract_preserved": true,
+        "historical_surface_not_current_bypass": true
+      },
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/history/bracket/<id>",
+          "status": 404,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/history/bracket/<id>",
+          "status": 404,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/bracket/<id>",
+          "status": 401,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/bracket/<id>",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "matches"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02B3",
+      "scenario": "test_b3_historical_draft_owner_private_no_public_leak",
+      "requirements": [
+        "B10",
+        "B11",
+        "B12",
+        "B13",
+        "B14",
+        "B15"
+      ],
+      "facts": {
+        "historical_draft_owner_read": true,
+        "anonymous_other_admin_denied": true,
+        "no_autopromotion": true
+      },
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/history/bracket/<id>",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "matches"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/history/bracket/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/history/bracket/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/history/bracket/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02B3",
+      "scenario": "test_b3_historical_submitted_public_safe_and_immutable",
+      "requirements": [
+        "B10",
+        "B11",
+        "B12",
+        "B13",
+        "B14",
+        "B15"
+      ],
+      "facts": {
+        "public_submitted_history": true,
+        "safe_serialization": true,
+        "historical_writes_denied": true
+      },
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/history/bracket/<id>",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "matches"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/history/bracket/<id>",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "matches"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/history/bracket/<id>",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "matches"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/history/bracket/<id>",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "matches"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/bracket/<id>",
+          "status": 404,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02B3",
+      "scenario": "test_b3_master_create_explicit_replace_and_delete_protection",
+      "requirements": [
+        "B10",
+        "B11",
+        "B12",
+        "B13",
+        "B14",
+        "B15"
+      ],
+      "facts": {
+        "explicit_replace": true,
+        "one_active_master": true,
+        "old_retired_records_retained": true
+      },
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "message"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 409,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/bracket/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "message"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02B3",
+      "scenario": "test_b3_nonowner_and_admin_arbitrary_delete_denied",
+      "requirements": [
+        "B10",
+        "B11",
+        "B12",
+        "B13",
+        "B14",
+        "B15"
+      ],
+      "facts": {
+        "nonowner_delete_denied": true,
+        "admin_arbitrary_delete_denied": true
+      },
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/bracket/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/bracket/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02B3",
+      "scenario": "test_b3_ordinary_replacement_and_malformed_intent_refused",
+      "requirements": [
+        "B10",
+        "B11",
+        "B12",
+        "B13",
+        "B14",
+        "B15"
+      ],
+      "facts": {
+        "ordinary_replace_denied": true,
+        "explicit_boolean_required": true
+      },
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "message"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02B3",
+      "scenario": "test_b3_postlock_draft_delete_and_no_recreation",
+      "requirements": [
+        "B10",
+        "B11",
+        "B12",
+        "B13",
+        "B14",
+        "B15"
+      ],
+      "facts": {
+        "postlock_draft_delete": true,
+        "postlock_recreation_denied": true
+      },
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/bracket/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02B3",
+      "scenario": "test_b3_postlock_master_replace_other_season_preserved",
+      "requirements": [
+        "B10",
+        "B11",
+        "B12",
+        "B13",
+        "B14",
+        "B15"
+      ],
+      "facts": {
+        "postlock_master_replace": true,
+        "other_season_master_unchanged": true
+      },
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "message"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "message"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02B3",
+      "scenario": "test_b3_predeadline_delete_recreate_and_closed_window",
+      "requirements": [
+        "B10",
+        "B11",
+        "B12",
+        "B13",
+        "B14",
+        "B15"
+      ],
+      "facts": {
+        "soft_delete_retains_matches": true,
+        "open_recreate": true,
+        "early_recreate_denied": true
+      },
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/bracket/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "message"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/bracket/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02B3",
+      "scenario": "test_b3_replacement_failure_rolls_back_retirement_pointer_and_graph",
+      "requirements": [
+        "B10",
+        "B11",
+        "B12",
+        "B13",
+        "B14",
+        "B15"
+      ],
+      "facts": {
+        "forced_fk_failure": true,
+        "whole_replacement_rolled_back": true
+      },
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "message"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "phase": "NC-02B3",
+      "scenario": "test_b3_submitted_delete_at_and_after_deadline_preserves_all_data",
+      "requirements": [
+        "B10",
+        "B11",
+        "B12",
+        "B13",
+        "B14",
+        "B15"
+      ],
+      "facts": {
+        "submitted_delete_denied_at_and_after": true,
+        "competitive_history_and_rows_preserved": true
+      },
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "owner",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 200,
+          "shape": [
+            "message",
+            "name",
+            "saved_at"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/bracket/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/bracket/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "test_b2_counts_both_routes_and_playin",
+      "phase": "NC-02B2",
+      "requirements": [
+        "B6",
+        "B7",
+        "B8",
+        "B9"
+      ],
+      "facts": {
+        "strict_counts": true,
+        "playin_fixed": true
+      },
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 200,
+          "shape": [
+            "ok"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 200,
+          "shape": [
+            "ok"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 200,
+          "shape": [
+            "ok"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 200,
+          "shape": [
+            "ok"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "test_b2_finals_dependency",
+      "phase": "NC-02B2",
+      "requirements": [
+        "B6",
+        "B7",
+        "B8",
+        "B9"
+      ],
+      "facts": {
+        "action": "change",
+        "upstream_slot": 10,
+        "recursive_clear": true,
+        "unrelated_branch_preserved": true,
+        "master": false
+      },
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 200,
+          "shape": [
+            "message",
+            "name",
+            "saved_at"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "test_b2_master_participants_and_incremental_save",
+      "phase": "NC-02B2",
+      "requirements": [
+        "B6",
+        "B7",
+        "B8",
+        "B9"
+      ],
+      "facts": {
+        "one_sided_refused": true,
+        "natural_progression": true,
+        "partial_master_persisted": true
+      },
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 200,
+          "shape": [
+            "message",
+            "name",
+            "saved_at"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 200,
+          "shape": [
+            "message",
+            "name",
+            "saved_at"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "test_b2_master_recursive_change",
+      "phase": "NC-02B2",
+      "requirements": [
+        "B6",
+        "B7",
+        "B8",
+        "B9"
+      ],
+      "facts": {
+        "action": "change",
+        "upstream_slot": 7,
+        "recursive_clear": true,
+        "unrelated_branch_preserved": true,
+        "master": true
+      },
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 200,
+          "shape": [
+            "message",
+            "name",
+            "saved_at"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 200,
+          "shape": [
+            "message",
+            "name",
+            "saved_at"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "test_b2_master_recursive_undo",
+      "phase": "NC-02B2",
+      "requirements": [
+        "B6",
+        "B7",
+        "B8",
+        "B9"
+      ],
+      "facts": {
+        "action": "undo",
+        "upstream_slot": 7,
+        "recursive_clear": true,
+        "unrelated_branch_preserved": true,
+        "master": true
+      },
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 200,
+          "shape": [
+            "message",
+            "name",
+            "saved_at"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 200,
+          "shape": [
+            "message",
+            "name",
+            "saved_at"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "test_b2_ordinary_participants_and_draft_progression",
+      "phase": "NC-02B2",
+      "requirements": [
+        "B6",
+        "B7",
+        "B8",
+        "B9"
+      ],
+      "facts": {
+        "one_sided_refused": true,
+        "natural_progression": true,
+        "partial_master_persisted": false
+      },
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "test_b2_playin_dual_feed",
+      "phase": "NC-02B2",
+      "requirements": [
+        "B6",
+        "B7",
+        "B8",
+        "B9"
+      ],
+      "facts": {
+        "action": "change",
+        "upstream_slot": 2,
+        "recursive_clear": true,
+        "unrelated_branch_preserved": true,
+        "master": false
+      },
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 200,
+          "shape": [
+            "message",
+            "name",
+            "saved_at"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "test_b2_submission_rejects_faults_and_accepts_only_complete",
+      "phase": "NC-02B2",
+      "requirements": [
+        "B6",
+        "B7",
+        "B8",
+        "B9"
+      ],
+      "facts": {
+        "submission_faults_rejected": 9,
+        "explicit_complete_submission": true,
+        "no_autofill": true
+      },
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 200,
+          "shape": [
+            "message",
+            "name",
+            "saved_at"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "test_b2_undo_recursive_opponent_dependency",
+      "phase": "NC-02B2",
+      "requirements": [
+        "B6",
+        "B7",
+        "B8",
+        "B9"
+      ],
+      "facts": {
+        "action": "undo",
+        "upstream_slot": 7,
+        "recursive_clear": true,
+        "unrelated_branch_preserved": true,
+        "master": false
+      },
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 200,
+          "shape": [
+            "message",
+            "name",
+            "saved_at"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "test_b2_winner_change_recursive_opponent_dependency",
+      "phase": "NC-02B2",
+      "requirements": [
+        "B6",
+        "B7",
+        "B8",
+        "B9"
+      ],
+      "facts": {
+        "action": "change",
+        "upstream_slot": 7,
+        "recursive_clear": true,
+        "unrelated_branch_preserved": true,
+        "master": false
+      },
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 200,
+          "shape": [
+            "message",
+            "name",
+            "saved_at"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 400,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "test_admin_own_ordinary_denied",
+      "phase": "NC-02B1",
+      "requirements": [
+        "B1",
+        "B2",
+        "B3",
+        "B4",
+        "B5",
+        "B16"
+      ],
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "facts": {
+        "admin_ordinary_owner_denied": true
+      },
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "test_create_hard_lock_overrides_inconsistent_open_window",
+      "phase": "NC-02B1",
+      "requirements": [
+        "B1",
+        "B2",
+        "B3",
+        "B4",
+        "B5",
+        "B16"
+      ],
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "facts": {
+        "hard_lock_independent_of_opening": true
+      },
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "test_draft_after_boundary_frozen_readable_ineligible",
+      "phase": "NC-02B1",
+      "requirements": [
+        "B1",
+        "B2",
+        "B3",
+        "B4",
+        "B5",
+        "B16"
+      ],
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/bracket/<id>",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "matches"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/brackets",
+          "status": 200,
+          "shape": "list"
+        },
+        {
+          "method": "GET",
+          "path": "/leaderboard/history",
+          "status": 200,
+          "shape": [
+            "seasons"
+          ]
+        }
+      ],
+      "facts": {
+        "boundary": "after",
+        "frozen": true,
+        "submitted": false,
+        "reads_allowed": true
+      },
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "test_draft_at_boundary_frozen_readable_ineligible",
+      "phase": "NC-02B1",
+      "requirements": [
+        "B1",
+        "B2",
+        "B3",
+        "B4",
+        "B5",
+        "B16"
+      ],
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/bracket/<id>",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "matches"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/brackets",
+          "status": 200,
+          "shape": "list"
+        },
+        {
+          "method": "GET",
+          "path": "/leaderboard/history",
+          "status": 200,
+          "shape": [
+            "seasons"
+          ]
+        }
+      ],
+      "facts": {
+        "boundary": "at",
+        "frozen": true,
+        "submitted": false,
+        "reads_allowed": true
+      },
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "test_nonadmin_master_owner_denied_admin_postlock_permitted",
+      "phase": "NC-02B1",
+      "requirements": [
+        "B1",
+        "B2",
+        "B3",
+        "B4",
+        "B5",
+        "B16"
+      ],
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 200,
+          "shape": [
+            "ok"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 200,
+          "shape": [
+            "message",
+            "name",
+            "saved_at"
+          ]
+        }
+      ],
+      "facts": {
+        "nonadmin_master_owner_denied": true,
+        "admin_master_different_owner_postlock": true
+      },
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "test_nonowner_and_admin_ordinary_content_denied",
+      "phase": "NC-02B1",
+      "requirements": [
+        "B1",
+        "B2",
+        "B3",
+        "B4",
+        "B5",
+        "B16"
+      ],
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-b",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "admin",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        }
+      ],
+      "facts": {
+        "nonowner_denied": true,
+        "arbitrary_admin_denied": true
+      },
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "test_ordinary_before_boundary_all_content_and_resave",
+      "phase": "NC-02B1",
+      "requirements": [
+        "B1",
+        "B2",
+        "B3",
+        "B4",
+        "B5",
+        "B16"
+      ],
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 200,
+          "shape": [
+            "ok"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 200,
+          "shape": [
+            "message",
+            "name",
+            "saved_at"
+          ]
+        }
+      ],
+      "facts": {
+        "boundary": "one microsecond before",
+        "all_content_permitted": true
+      },
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    },
+    {
+      "scenario": "test_saved_at_boundary_no_mutation_or_invalidation",
+      "phase": "NC-02B1",
+      "requirements": [
+        "B1",
+        "B2",
+        "B3",
+        "B4",
+        "B5",
+        "B16"
+      ],
+      "evidence": [
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "status": 200,
+          "role": "user-a",
+          "shape": [
+            "message",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 200,
+          "shape": [
+            "message"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 200,
+          "shape": [
+            "message",
+            "name",
+            "saved_at"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/match/<id>",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/match/<id>/games",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/bracket/<id>/save",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/bracket/create",
+          "status": 403,
+          "shape": [
+            "error"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/bracket/<id>",
+          "status": 200,
+          "shape": [
+            "bracket",
+            "matches"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/brackets",
+          "status": 200,
+          "shape": "list"
+        },
+        {
+          "method": "GET",
+          "path": "/leaderboard/history",
+          "status": 200,
+          "shape": [
+            "seasons"
+          ]
+        }
+      ],
+      "facts": {
+        "boundary": "at",
+        "frozen": true,
+        "submitted": true,
+        "reads_allowed": true
+      },
+      "cleanup_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0"
+    }
+  ],
+  "readiness": {
+    "identity_verified": true,
+    "database_marker": "PASS",
+    "email": "PASS",
+    "providers": "PASS",
+    "external_credentials": "PASS",
+    "jobs": "PASS",
+    "jobs_enabled": false,
+    "fixture_state": "SEEDED",
+    "fixtures_reset": "PASS",
+    "integration_harness": "PASS",
+    "mutation_permitted": false,
+    "harness_state": "AVAILABLE_GUARDED",
+    "harness_scoped_mutation_permitted": false
+  },
+  "canonical_cleanup": {
+    "fixture_readiness": {
+      "identity": "PASS",
+      "marker": "PASS",
+      "email": "PASS",
+      "providers": "PASS",
+      "jobs": "PASS",
+      "fixture_reset": "PASS",
+      "harness": "UNMET",
+      "fixture_version": "nc-fixtures-v1",
+      "fixture_checksum": "a96f2c44f571e830624cef17e91ba02ae883d8a5768a81730d29d6a42adad1b0",
+      "mutation_permitted": false
+    },
+    "flask_stopped": true,
+    "email_capture_empty": true,
+    "app_import_removed": true
+  },
+  "production_contact": false,
+  "historical_NC01_evidence_rewritten": false
+}

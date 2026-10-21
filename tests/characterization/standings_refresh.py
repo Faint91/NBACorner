@@ -118,7 +118,6 @@ class StandingsAcceptance(unittest.TestCase):
             "rank16",
             "missing_rank",
             "fraction_rank",
-            "duplicate_rank",
             "wins",
             "losses",
             "identity",
@@ -144,8 +143,6 @@ class StandingsAcceptance(unittest.TestCase):
                 rows[0]["stats"].pop()
             if kind == "fraction_rank":
                 rows[0]["stats"][3]["value"] = 1.5
-            if kind == "duplicate_rank":
-                rows[1]["stats"][3]["value"] = 1
             if kind == "wins":
                 rows[0]["stats"][0]["value"] = None
             if kind == "losses":
@@ -186,3 +183,78 @@ class StandingsAcceptance(unittest.TestCase):
             409,
         )
         self.assertEqual(before, self.snapshot())
+
+    def test_nc06e_tied_publication_never_creates_master(self):
+        self.c.bracket_timing("early")
+        self.c.login("admin")
+        data = json.loads(
+            (
+                Path(__file__).resolve().parents[1]
+                / "fixtures/providers/espn-standings-complete-2026.json"
+            ).read_text()
+        )
+        for entry in data["standings"]["entries"]:
+            next(s for s in entry["stats"] if s["type"] == "playoffseed")["value"] = 1
+        for kind in ["scheduled", "admin", "cron"]:
+            with patch.object(service, "fetch_espn", return_value=data):
+                status, body = self.c.standings_request(
+                    kind, role="admin" if kind == "admin" else None
+                )
+            self.assertEqual((status, body["team_count"]), (200, 30))
+            self.assertEqual([r["seed"] for r in self.snapshot()], [1] * 30)
+            self.assertEqual(
+                self.c.module.supabase.table("brackets").select("id").execute().data, []
+            )
+            self.assertEqual(
+                self.c.module.supabase.table("matches").select("id").execute().data, []
+            )
+
+    def test_nc06e_source_identity_failures_preserve_last_good(self):
+        self.c.bracket_timing("early")
+        self.c.login("admin")
+        before = self.snapshot()
+        for missing in [False, True]:
+            data = json.loads(
+                (
+                    Path(__file__).resolve().parents[1]
+                    / "fixtures/providers/espn-standings-complete-2026.json"
+                ).read_text()
+            )
+            if missing:
+                del data["season"]
+            else:
+                data["season"]["year"] = 2027
+            with patch.object(service, "fetch_espn", return_value=data):
+                self.assertEqual(
+                    self.c.standings_request("admin", role="admin")[0], 502
+                )
+            self.assertEqual(before, self.snapshot())
+
+    def test_nc06e_ambiguous_manual_master_has_no_writes(self):
+        self.c.bracket_timing("early")
+        self.c.login("admin")
+        data = json.loads(
+            (
+                Path(__file__).resolve().parents[1]
+                / "fixtures/providers/espn-standings-complete-2026.json"
+            ).read_text()
+        )
+        for entry in data["standings"]["entries"]:
+            next(s for s in entry["stats"] if s["type"] == "playoffseed")["value"] = 1
+        with patch.object(service, "fetch_espn", return_value=data):
+            self.assertEqual(self.c.standings_request("scheduled")[0], 200)
+        before = self.snapshot()
+        status, body = self.c.request(
+            "POST", "/bracket/create", role="admin", payload={}
+        )
+        self.assertEqual(status, 409)
+        self.assertEqual(
+            body["error"], "Standings do not yet provide unambiguous playoff seeding."
+        )
+        self.assertEqual(before, self.snapshot())
+        self.assertEqual(
+            self.c.module.supabase.table("brackets").select("id").execute().data, []
+        )
+        self.assertEqual(
+            self.c.module.supabase.table("matches").select("id").execute().data, []
+        )

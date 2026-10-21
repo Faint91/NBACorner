@@ -43,7 +43,6 @@ class StandingsServiceTests(unittest.TestCase):
         mutated(lambda rows: rows[0]["team"].update(conference="west"))
         for value in [0, 16, None, 1.5, True, "1.5"]:
             mutated(lambda rows, value=value: rows[0]["stats"][3].update(value=value))
-        mutated(lambda rows: rows[1]["stats"][3].update(value=1))
         mutated(lambda rows: rows[0]["stats"].pop())
         for value in [None, -1, 1.2, True, "bad"]:
             mutated(lambda rows, value=value: rows[0]["stats"][0].update(value=value))

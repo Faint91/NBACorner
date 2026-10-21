@@ -11,6 +11,7 @@ from scoring_service import (
     ScoringError,
 )
 from standings_service import refresh_current_standings, StandingsRefreshError, log_result
+from playoff_seeding import required_playoff_teams, AmbiguousPlayoffSeeding
 from canonical_season import get_current_season, SeasonConfigurationError
 from bracket_rules import game_count_error, apply_prediction, submission_error
 # app.py
@@ -1803,76 +1804,15 @@ def create_bracket_for_user():
         )
 
     # ------------------------------------------------------------------
-    # 🧮 Build seeded lists per conference using the seed column
-    # ------------------------------------------------------------------
-    east_seed_pairs = []  # list of (seed, team_dict)
-    west_seed_pairs = []
-
-    for row in standings_rows:
-        seed = row.get("seed")
-        if seed is None:
-            continue
-
-        code = (row.get("code") or "").strip().upper()
-        if not code:
-            continue
-
-        team = team_by_code.get(code)
-        if not team:
-            app.logger.error(
-                "Standings row has code %s but no matching team in teams table",
-                code,
-            )
-            continue
-
-        conf = (team.get("conference") or "").strip().lower()
-        if conf == "east":
-            east_seed_pairs.append((seed, team))
-        elif conf == "west":
-            west_seed_pairs.append((seed, team))
-        else:
-            app.logger.warning(
-                "Team %s (code %s) has unexpected conference %r",
-                team.get("name"),
-                code,
-                team.get("conference"),
-            )
-
-    # Sort by seed and pick first 10
-    east_seed_pairs.sort(key=lambda p: p[0])
-    west_seed_pairs.sort(key=lambda p: p[0])
-
-    east_teams = [team for (seed, team) in east_seed_pairs[:10]]
-    west_teams = [team for (seed, team) in west_seed_pairs[:10]]
-
-    if len(east_teams) < 10 or len(west_teams) < 10:
-        app.logger.error(
-            "Not enough seeded teams: EAST=%d, WEST=%d (need at least 10 each)",
-            len(east_teams),
-            len(west_teams),
+    # Only explicit, unambiguous seeds may populate the 21-match graph.
+    # Standings publication may preserve regular-season ties independently.
+    try:
+        east_teams, west_teams = required_playoff_teams(standings_rows, team_by_code)
+    except AmbiguousPlayoffSeeding:
+        return (
+            jsonify({"error": "Standings do not yet provide unambiguous playoff seeding."}),
+            409,
         )
-        if len(east_teams) < 10:
-            return (
-                jsonify(
-                    {
-                        "error": f"Not enough seeded teams (need 10) for conference EAST, found {len(east_teams)}. "
-                        "Check that the standings script has set seeds 1–10 for EAST."
-                    }
-                ),
-                400,
-            )
-        else:
-            return (
-                jsonify(
-                    {
-                        "error": f"Not enough seeded teams (need 10) for conference WEST, found {len(west_teams)}. "
-                        "Check that the standings script has set seeds 1–10 for WEST."
-                    }
-                ),
-                400,
-            )
-
-    # 🧱 From here on, east_teams[0..9] and west_teams[0..9] are seeds 1..10
 
     def create_conference_matches(conference, teams_):
         matches = []

@@ -681,7 +681,7 @@ ROLLBACK;
         )
         sql(g2_migration)
         sql(
-            (ROOT / "db/post-baseline/verify_current_schema.sql").read_text(
+            (ROOT / "db/post-baseline/verify_nc_02g2_schema.sql").read_text(
                 encoding="utf-8"
             )
         )
@@ -700,7 +700,7 @@ ROLLBACK;
             + "' OR (SELECT count(*) FROM public.users)<>4 OR EXISTS(SELECT 1 FROM public.users WHERE auth_version<>0) OR EXISTS(SELECT 1 FROM public.password_resets) THEN RAISE EXCEPTION 'Final G2 seed/checksum failed'; END IF; END $g2_final$;"
         )
         sql(
-            (ROOT / "db/post-baseline/verify_current_schema.sql").read_text(
+            (ROOT / "db/post-baseline/verify_nc_02g2_schema.sql").read_text(
                 encoding="utf-8"
             )
         )
