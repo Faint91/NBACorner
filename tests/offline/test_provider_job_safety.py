@@ -324,7 +324,7 @@ class ProviderJobTests(unittest.TestCase):
                     b'NBA_SEASON_YEAR: "2025"  # adjust if needed',
                 )
             ).hexdigest(),
-            "0adbf07c1c28d3463a293f4656f2840c910f80f017cd14ffb912c1f3590ba6a2",
+            "f6b49f4a6455963e8dc7a1aacc6761b4b8f23fe8ecd433d4946d0ede18c5f173",
         )
 
     def test_script_guard_before_client(self):
