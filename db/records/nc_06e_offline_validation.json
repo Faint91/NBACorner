@@ -1,0 +1,49 @@
+{
+  "phase": "NC-06E",
+  "verified_utc": "2026-10-21T03:41:31.050654+00:00",
+  "full_offline_tests": 383,
+  "focused_standings_tests": 17,
+  "focused_master_tests": 5,
+  "failures": 0,
+  "errors": 0,
+  "passed": true,
+  "production_contact": false,
+  "observed_tied_shape": {
+    "east": [
+      1,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      15
+    ],
+    "west": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "standings_dry_run": "PASS",
+    "master_ambiguity_guard": "REJECTS_BEFORE_WRITES"
+  }
+}

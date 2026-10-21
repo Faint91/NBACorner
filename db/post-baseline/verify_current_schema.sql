@@ -4489,8 +4489,7 @@ DECLARE selected_id uuid; season_row public.seasons%ROWTYPE; stamp timestamp; BE
   OR (r->>''losses'')::numeric<0 OR (r->>''losses'')::numeric<>trunc((r->>''losses'')::numeric)
   OR (r->>''win_pct'')::numeric NOT BETWEEN 0 AND 1)
  OR (SELECT count(*) FROM jsonb_array_elements(p_rows) r WHERE r->>''conference''=''east'')<>15
- OR (SELECT count(*) FROM jsonb_array_elements(p_rows) r WHERE r->>''conference''=''west'')<>15
- OR EXISTS(SELECT 1 FROM jsonb_array_elements(p_rows) r GROUP BY r->>''conference'',(r->>''seed'')::numeric HAVING count(*)<>1) THEN RAISE EXCEPTION ''Invalid standings ranks or results''; END IF;
+ OR (SELECT count(*) FROM jsonb_array_elements(p_rows) r WHERE r->>''conference''=''west'')<>15 THEN RAISE EXCEPTION ''Invalid standings ranks or results''; END IF;
  -- Defensive validation completed. DELETE and INSERT are one transaction.
  stamp := timezone(''UTC'',clock_timestamp());
  DELETE FROM public.standings WHERE id IS NOT NULL;

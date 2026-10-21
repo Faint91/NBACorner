@@ -68,7 +68,7 @@ def validate_rows(rows, teams):
     canonical = canonical_teams(teams)
     if not isinstance(rows, list) or len(rows) != 30:
         raise StandingsRefreshError("validation_failure")
-    seen, ranks = set(), {"east": set(), "west": set()}
+    seen, counts = set(), {"east": 0, "west": 0}
     for row in rows:
         if not isinstance(row, dict) or set(row) != {
             "code",
@@ -88,11 +88,7 @@ def validate_rows(rows, teams):
         ):
             raise StandingsRefreshError("validation_failure")
         seed = integer(row["seed"])
-        if (
-            type(row["seed"]) is not int
-            or not 1 <= seed <= 15
-            or seed in ranks[row["conference"]]
-        ):
+        if type(row["seed"]) is not int or not 1 <= seed <= 15:
             raise StandingsRefreshError("validation_failure")
         for key in ("wins", "losses"):
             if integer(row[key]) < 0 or type(row[key]) is not int:
@@ -109,16 +105,41 @@ def validate_rows(rows, teams):
         ):
             raise StandingsRefreshError("validation_failure")
         seen.add(code)
-        ranks[row["conference"]].add(seed)
-    if seen != set(canonical) or any(
-        value != set(range(1, 16)) for value in ranks.values()
-    ):
+        counts[row["conference"]] += 1
+    if seen != set(canonical) or any(value != 15 for value in counts.values()):
         raise StandingsRefreshError("validation_failure")
     return sorted(rows, key=lambda row: row["code"])
 
 
-def parse_espn(data, teams):
+def validate_provider_season(data, expected_year=None):
+    """Require the actual ESPN season identity, never infer it from request order."""
+    try:
+        year = data["season"]["year"]
+        if type(year) is not int or not 1000 <= year <= 9999:
+            raise ValueError()
+        if expected_year is not None and (
+            type(expected_year) is not int or year != expected_year
+        ):
+            raise ValueError()
+        label = f"{year - 1:04d}-{year % 100:02d}"
+        if "displayName" in data["season"] and data["season"]["displayName"] != label:
+            raise ValueError()
+        groups = data["standings"]
+        groups = groups if isinstance(groups, list) else [groups]
+        for group in groups:
+            if "season" in group and (
+                type(group["season"]) is not int or group["season"] != year
+            ):
+                raise ValueError()
+            if "seasonDisplayName" in group and group["seasonDisplayName"] != label:
+                raise ValueError()
+    except (KeyError, TypeError, ValueError):
+        raise StandingsRefreshError("season_identity_failure") from None
+
+
+def parse_espn(data, teams, *, expected_year=None):
     canonical = canonical_teams(teams)
+    validate_provider_season(data, expected_year)
     try:
         if not isinstance(data, dict):
             raise ValueError()
@@ -241,7 +262,7 @@ def refresh_current_standings(client, *, now=None):
             client.table("teams").select("id, code, name, conference").execute().data
             or []
         )
-        rows = parse_espn(data, teams)
+        rows = parse_espn(data, teams, expected_year=espn_season_year(season.code))
         result = (
             client.rpc(
                 "publish_current_standings", {"p_season_id": season.id, "p_rows": rows}

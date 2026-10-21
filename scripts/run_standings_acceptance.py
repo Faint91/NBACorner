@@ -40,7 +40,16 @@ def main():
         action="store_true",
         help="Run affected bracket source checks without importing the app or accessing the DB",
     )
+    parser.add_argument(
+        "--nc06e",
+        action="store_true",
+        help="Save new-phase evidence without replacing NC-02C2 records",
+    )
     args = parser.parse_args()
+    if args.nc06e and not args.lifecycle_only:
+        parser.error(
+            "NC-06E evidence requires lifecycle-only standings characterization"
+        )
     if not args.allow_local_mutations:
         print("REFUSED: explicit guarded local mutation opt-in required.")
         return 2
@@ -72,7 +81,17 @@ def main():
     ]:
         if args.static_only and file != "bracket_static":
             continue
-        if args.lifecycle_only and file != "standings_refresh":
+        if args.lifecycle_only and file not in (
+            {
+                "standings_refresh",
+                "bracket_lifecycle",
+                "bracket_validity",
+                "bracket_lock",
+                "canonical_source",
+            }
+            if args.nc06e
+            else {"standings_refresh"}
+        ):
             continue
         spec = importlib.util.spec_from_file_location(
             "nc02c2_" + file, ROOT / ("tests/characterization/" + file + ".py")
@@ -110,7 +129,7 @@ def main():
     )
     if args.static_only:
         evidence = {
-            "phase": "NC-02C2",
+            "phase": "NC-06E" if args.nc06e else "NC-02C2",
             "passed": result.wasSuccessful(),
             "tests_run": result.testsRun,
             "failures": len(result.failures),
@@ -143,7 +162,7 @@ def main():
     assert not test_mailbox().inspect_messages(), "Email capture was not cleared"
     assert "app" not in sys.modules, "Guarded application import remains active"
     evidence = {
-        "phase": "NC-02C2",
+        "phase": "NC-06E" if args.nc06e else "NC-02C2",
         "passed": result.wasSuccessful(),
         "tests_run": result.testsRun,
         "failures": len(result.failures),
@@ -160,9 +179,13 @@ def main():
         "historical_NC01_evidence_rewritten": False,
     }
     path = ROOT / (
-        "db/records/nc_02c2_lifecycle_validation.json"
-        if args.lifecycle_only
-        else "db/records/nc_02c2_validation.json"
+        "db/records/nc_06e_characterization_validation.json"
+        if args.nc06e
+        else (
+            "db/records/nc_02c2_lifecycle_validation.json"
+            if args.lifecycle_only
+            else "db/records/nc_02c2_validation.json"
+        )
     )
     path.write_text(
         json.dumps(evidence, indent=2) + "\n", encoding="utf-8", newline="\n"

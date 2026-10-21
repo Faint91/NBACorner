@@ -69,7 +69,11 @@ def provider_get(production_get, url, *, settings=None, ambient=None, **kwargs):
         query = parse_qs(parsed.query)
         if query.get("season") not in (["2026"], ["2027"]) or kwargs.get("params"):
             raise SafetyError("ESPN fixture supports only its explicit season.")
-        return FixtureResponse("espn-standings-complete-2026.json")
+        return FixtureResponse(
+            "espn-standings-complete-2027.json"
+            if query["season"] == ["2027"]
+            else "espn-standings-complete-2026.json"
+        )
     if (parsed.scheme, parsed.netloc, parsed.path) == (
         "https",
         "api.balldontlie.io",
