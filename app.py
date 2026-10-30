@@ -32,6 +32,7 @@ import jwt
 import re
 import os
 import uuid
+from daily_assertion_service import issue_daily_assertion, daily_assertion_private_response
 
 # --------------------------------------------------------
 # ----------------- Environment variables  ---------------
@@ -231,6 +232,8 @@ def serve_logo(filename):
 # --------------------------------------------------------
 
 RATE_LIMITS = {
+    "daily_assertion_ip": (60, 60),
+    "daily_assertion_user": (30, 60),
     # bucket_name: (max_attempts, window_seconds)
     "login_ip": (10, 60),              # 10 login attempts per IP per 60s
     "login_identifier": (5, 60),       # 5 login attempts per email/username per 60s
@@ -702,6 +705,27 @@ def require_auth_for_league_scope(f):
         return f(*args, **kwargs)
 
     return wrapper
+
+
+@app.route("/auth/daily-assertion", methods=["POST"])
+@daily_assertion_private_response
+@require_auth
+def daily_assertion():
+    # The existing decorator checks signature, expiry, user existence and av.
+    # Never derive identity from the body, cached browser profile or headers.
+    payload = request.get_json(silent=True)
+    if request.args or (request.get_data() and payload != {}):
+        return jsonify({"error": "Invalid assertion request"}), 400
+    if is_rate_limited("daily_assertion_ip", get_client_ip()) or is_rate_limited(
+        "daily_assertion_user", request.user["user_id"]
+    ):
+        return jsonify({"error": "Too many requests"}), 429
+    try:
+        return jsonify(issue_daily_assertion(request.user["user_id"])), 200
+    except Exception:
+        # Includes unavailable/invalid dedicated key configuration. No diagnostics,
+        # token, key, user profile or ordinary NBA signing secret enters the response.
+        return jsonify({"error": "Daily authentication unavailable"}), 503
 
 
 @app.route("/auth/test-me", methods=["GET"])

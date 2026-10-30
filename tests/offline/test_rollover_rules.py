@@ -170,6 +170,8 @@ class RolloverRoutePreservation(unittest.TestCase):
                     ):
                         inventory.append([node.name, ast.dump(deco)])
         additions = {
+            # AUTH-STATS adds this one reviewed route; preserve every older route.
+            "daily_assertion",
             "update_league",
             "transfer_league_owner",
             "remove_league_member",
