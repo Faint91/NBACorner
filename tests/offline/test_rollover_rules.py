@@ -172,6 +172,8 @@ class RolloverRoutePreservation(unittest.TestCase):
         additions = {
             # AUTH-STATS adds this one reviewed route; preserve every older route.
             "daily_assertion",
+            # STATS-02D adds the authenticated read facade; older contracts stay pinned.
+            "daily_stats",
             "update_league",
             "transfer_league_owner",
             "remove_league_member",

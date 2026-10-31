@@ -115,6 +115,7 @@ class RateLimitIntegrityTests(unittest.TestCase):
         self.assertEqual(self.rates, dict(
             BASELINE, test_email_ip=(5, 900),
             daily_assertion_ip=(60, 60), daily_assertion_user=(30, 60),
+            daily_stats_ip=(60, 60), daily_stats_user=(30, 60),
         ))
 
     def test_runtime_inventory_and_no_duplicate_definitions(self):

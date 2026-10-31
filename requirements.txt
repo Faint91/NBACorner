@@ -9,3 +9,4 @@ supabase
 bcrypt
 gunicorn
 itsdangerous
+tzdata==2025.2

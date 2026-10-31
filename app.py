@@ -33,6 +33,7 @@ import re
 import os
 import uuid
 from daily_assertion_service import issue_daily_assertion, daily_assertion_private_response
+from daily_stats_service import get_daily_stats, StatsInvalidMonth
 
 # --------------------------------------------------------
 # ----------------- Environment variables  ---------------
@@ -232,6 +233,8 @@ def serve_logo(filename):
 # --------------------------------------------------------
 
 RATE_LIMITS = {
+    "daily_stats_ip": (60, 60),
+    "daily_stats_user": (30, 60),
     "daily_assertion_ip": (60, 60),
     "daily_assertion_user": (30, 60),
     # bucket_name: (max_attempts, window_seconds)
@@ -726,6 +729,25 @@ def daily_assertion():
         # Includes unavailable/invalid dedicated key configuration. No diagnostics,
         # token, key, user profile or ordinary NBA signing secret enters the response.
         return jsonify({"error": "Daily authentication unavailable"}), 503
+
+
+@app.route("/daily/stats", methods=["GET"])
+@daily_assertion_private_response
+@require_auth
+def daily_stats():
+    # Subject comes only from normal signature/existence/auth_version verification.
+    if set(request.args) - {"month"} or len(request.args.getlist("month")) > 1:
+        return jsonify({"error": "Invalid month"}), 400
+    if is_rate_limited("daily_stats_ip", get_client_ip()) or is_rate_limited(
+        "daily_stats_user", request.user["user_id"]
+    ):
+        return jsonify({"error": "Too many requests"}), 429
+    try:
+        return jsonify(get_daily_stats(request.user["user_id"], request.args.get("month"), supabase)), 200
+    except StatsInvalidMonth:
+        return jsonify({"error": "Invalid month"}), 400
+    except Exception:
+        return jsonify({"error": "Daily stats unavailable"}), 503
 
 
 @app.route("/auth/test-me", methods=["GET"])
