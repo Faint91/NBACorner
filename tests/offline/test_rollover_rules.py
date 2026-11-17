@@ -170,6 +170,8 @@ class RolloverRoutePreservation(unittest.TestCase):
                     ):
                         inventory.append([node.name, ast.dump(deco)])
         additions = {
+            # QA-FIX-03B1 adds only the public stored-standings read endpoint.
+            "public_standings",
             # AUTH-STATS adds this one reviewed route; preserve every older route.
             "daily_assertion",
             # STATS-02D adds the authenticated read facade; older contracts stay pinned.

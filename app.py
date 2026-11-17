@@ -11,6 +11,7 @@ from scoring_service import (
     ScoringError,
 )
 from standings_service import refresh_current_standings, StandingsRefreshError, log_result
+from public_standings_service import read_public_standings
 from playoff_seeding import required_playoff_teams, AmbiguousPlayoffSeeding
 from canonical_season import get_current_season, SeasonConfigurationError
 from bracket_rules import game_count_error, apply_prediction, submission_error
@@ -527,6 +528,26 @@ def _season_bootstrap():
 @app.route("/season", methods=["GET"])
 def season_status():
     return jsonify(current_season().status(now_utc()))
+
+
+@app.route("/standings", methods=["GET"])
+def public_standings():
+    try:
+        return jsonify(read_public_standings(supabase, current_season()))
+    except Exception as error:  # noqa: BLE001 -- Sanitize failures at the public boundary.
+        safe_print("Public standings read failed (class):", type(error).__name__)
+        return jsonify(
+            {"status": "unavailable", "error": "Current standings unavailable"}
+        ), 503
+
+
+@app.after_request
+def _public_standings_no_cache(response):
+    # Also covers a canonical-season failure returned by the existing bootstrap.
+    if request.endpoint == "public_standings":
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+    return response
 
 
 # --------------------------------------------------------
