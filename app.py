@@ -2,6 +2,7 @@ from history_service import (
     create_final_leaderboard_snapshot,
     SnapshotError,
     public_snapshot_rows,
+    historical_bracket_links,
     public_columns,
 )
 from scoring_engine import rank_live_rows
@@ -3442,7 +3443,7 @@ def leaderboard_history_season(season_code):
     # Find the most recent snapshot for this season
     snap_res = (
         supabase.table("leaderboard_history_snapshots")
-        .select("id, season_code, snapshot_at, columns")
+        .select("id, season_id, season_code, snapshot_at, columns")
         .eq("season_code", code)
         .or_("is_final.is.null,is_final.eq.true")
         .order("snapshot_at", desc=True)
@@ -3491,13 +3492,23 @@ def leaderboard_history_season(season_code):
         row["per_match_points"] = pm_clean
         sanitized_rows.append(row)
 
+    public_rows = public_snapshot_rows(sanitized_rows)
+    try:
+        links = historical_bracket_links(supabase, snap, public_rows, current_season())
+    except Exception:
+        # The frozen leaderboard remains available if optional link resolution fails.
+        safe_print("Historical bracket links unavailable")
+        links = {}
+    for row in public_rows:
+        row["historical_bracket_id"] = links.get(row["id"])
+
     return (
         jsonify(
             {
                 "season_code": snap.get("season_code"),
                 "snapshot_at": snap.get("snapshot_at"),
                 "columns": public_columns(snap.get("columns")),
-                "rows": public_snapshot_rows(sanitized_rows),
+                "rows": public_rows,
             }
         ),
         200,

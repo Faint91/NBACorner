@@ -1,5 +1,8 @@
 """Canonical final snapshots; structured publication is the only preservation gate."""
 
+from collections import Counter
+import re
+
 from scoring_service import (
     get_current_scoring_master,
     recompute_current_scores,
@@ -252,6 +255,50 @@ def public_snapshot_rows(rows):
             )
         output.append(row)
     return output
+
+
+def historical_bracket_links(client, snapshot, rows, current):
+    """Resolve public viewer destinations without exposing private competitor IDs."""
+    season, code = snapshot.get("season_id"), snapshot.get("season_code")
+    if not season or season == current.id or not re.fullmatch(r"[0-9]{4}-[0-9]{2}", code or "") or code >= current.code:
+        return {}
+
+    def batches(ids):
+        # Bound the size of each PostgREST IN filter.
+        for start in range(0, len(ids), 64):
+            yield ids[start:start + 64]
+
+    mappings = []
+    for ids in batches([row["id"] for row in rows]):
+        mappings.extend(client.table("leaderboard_history_competitors")
+                        .select("snapshot_row_id,user_id").in_("snapshot_row_id", ids)
+                        .execute().data)
+    row_counts = Counter(m["snapshot_row_id"] for m in mappings)
+    user_counts = Counter(m["user_id"] for m in mappings)
+    row_for_user = {m["user_id"]: m["snapshot_row_id"] for m in mappings
+                    if row_counts[m["snapshot_row_id"]] == user_counts[m["user_id"]] == 1}
+
+    links = {}
+    for users in batches(list(row_for_user)):
+        archive = (client.table("leaderboard_history").select("user_id,bracket_id", count="exact")
+                   .eq("season_id", season).eq("season_code", code).in_("user_id", users)
+                   .execute())
+        # A truncated archive response cannot establish uniqueness.
+        if len(archive.data) != archive.count:
+            continue
+        counts = Counter(a["user_id"] for a in archive.data)
+        refs = {a["user_id"]: a["bracket_id"] for a in archive.data
+                if counts[a["user_id"]] == 1 and a["bracket_id"]}
+        if not refs:
+            continue
+        public = (client.table("brackets").select("id,user_id,seasons!brackets_season_id_fkey!inner(code)")
+                  .in_("id", list(refs.values())).eq("season_id", season).eq("seasons.code", code)
+                  .eq("is_done", True).is_("deleted_at", "null").execute().data)
+        for bracket in public:
+            owner = bracket["user_id"]
+            if refs.get(owner) == bracket["id"]:
+                links[row_for_user[owner]] = bracket["id"]
+    return links
 
 
 def public_columns(columns):
