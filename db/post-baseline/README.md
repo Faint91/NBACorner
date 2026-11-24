@@ -238,3 +238,23 @@ real concurrent normalized identity races. See `docs/repairs/nc-02g1-identity-au
 and G1 evidence for hash compatibility, canonical fixture checksum and separately
 authorized production prerequisites. Reset/session changes remain G2 work.
 No production contact or deployment is authorized by this local phase.
+
+## QA-FIX-03K1 current score readiness
+
+Apply `0013_qa_fix_03k1_score_readiness.sql` after 0012. It adds a nullable
+published revision. Existing scores are retained and initially treated as
+pending until an authorized recompute validates and publishes the current inputs.
+No historical rows or predictions are rewritten. Deploy a compatible backend
+with the migration before allowing master changes.
+
+Current leaderboard and champion-picks responses expose `scoring_status`
+(`pending` or `ready`). Pending leaderboard rows and score-derived matchup
+summaries are empty, while champion-pick counts remain independent. Explicit
+historical season reads preserve their existing contract.
+
+After an interrupted operation, read the canonical season and master and use
+the existing admin recompute against that master. No active master remains
+pending until an authorized creation. Never reattach a retired master just to
+recover scores. Roll back application code only with scoring reads and master
+operations suspended, because older code does not enforce readiness. Prefer a
+forward repair that keeps the retirement audit and original prediction rows.

@@ -545,7 +545,7 @@ def public_standings():
 @app.after_request
 def _public_standings_no_cache(response):
     # Also covers a canonical-season failure returned by the existing bootstrap.
-    if request.endpoint == "public_standings":
+    if request.endpoint in {"public_standings", "leaderboard", "champion_pick_stats"}:
         response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
         response.headers["Pragma"] = "no-cache"
     return response
@@ -1285,10 +1285,15 @@ def recompute_scores(master_bracket_id=None):
     if not admins or admins[0].get("is_admin") is not True:
         return jsonify({"error": "Forbidden"}), 403
     try:
-        result = recompute_current_scores(
-            supabase,
-            expected_season_id=current_season().id,
+        season, master = get_current_scoring_master(
+            supabase, expected_season_id=current_season().id,
             expected_master_id=master_bracket_id,
+        )
+        supabase.rpc("begin_current_score_recompute", {
+            "p_season_id": season.id, "p_master_id": master["id"],
+        }).execute()
+        result = recompute_current_scores(
+            supabase, expected_season_id=season.id, expected_master_id=master["id"],
         )
     except ScoringError as error:
         status = 400 if error.stage == "caller_master_mismatch" else 503
@@ -1296,6 +1301,9 @@ def recompute_scores(master_bracket_id=None):
             jsonify({"error": str(error), "code": "SCORE_RECOMPUTATION_FAILED"}),
             status,
         )
+    except Exception:
+        return jsonify({"error": "Could not start score recomputation",
+                        "code": "SCORE_RECOMPUTATION_FAILED"}), 503
     return jsonify(dict(result, message="Scores recomputed")), 200
 
 
@@ -1324,100 +1332,15 @@ def recompute_after_master_change(bracket, *, truth_changed=True):
     return None
 
 
-def _build_leaderboard_rows_for_current_season():
-    """
-    Build leaderboard-style rows for the CURRENT season, similar to /leaderboard
-    but without master_matchups or master bracket info.
-
-    Returns a list of dicts with:
-      - bracket_id
-      - bracket_name
-      - user_id
-      - username
-      - total_points, full_hits, partial_hits, misses
-      - bonus_finalists, bonus_champion
-      - points_by_match
-    """
-    # 1) Scores for current season
-    scores_res = (
-        with_current_season(
-            supabase.table("bracket_scores").select(
-                "season_id, bracket_id, total_points, full_hits, "
-                "partial_hits, misses, bonus_finalists, bonus_champion, "
-                "points_by_match, updated_at"
-            )
-        )
-        .execute()
-    )
-
-    scores = scores_res.data or []
-    if not scores:
-        return []
-
-    # 2) Brackets (non-deleted) for those scores
-    bracket_ids = list({
-        s.get("bracket_id")
-        for s in scores
-        if s.get("bracket_id")
-    })
-
-    if not bracket_ids:
-        return []
-
-    br_res = (
-        with_current_season(
-            supabase.table("brackets")
-            .select("id, user_id, name, is_done, deleted_at, season_id")
-            .in_("id", bracket_ids)
-            .is_("deleted_at", None)
-        )
-        .execute()
-    )
-    br_rows = [b for b in (br_res.data or []) if competitive_bracket_eligible(b)]
-    br_by_id = {b["id"]: b for b in br_rows}
-
-    # 3) Users for those brackets
-    user_ids = list({
-        b.get("user_id")
-        for b in br_rows
-        if b.get("user_id")
-    })
-
-    users_by_id = {}
-    if user_ids:
-        users_res = (
-            supabase.table("users")
-            .select("id, username")
-            .in_("id", user_ids)
-            .execute()
-        )
-        users = users_res.data or []
-        users_by_id = {u["id"]: u for u in users}
-
-    # 4) Build rows in the same shape as /leaderboard
-    rows_out = []
-    for s in scores:
-        bid = s.get("bracket_id")
-        b = br_by_id.get(bid)
-        if not bid or not b:
-            continue
-
-        u = users_by_id.get(b["user_id"], {})
-        rows_out.append({
-            "bracket_id": bid,
-            "bracket_name": b.get("name") or "Unnamed bracket",
-            "user_id": b.get("user_id"),
-            "username": u.get("username") or "unknown",
-            "total_points": int(s.get("total_points") or 0),
-            "full_hits": int(s.get("full_hits") or 0),
-            "partial_hits": int(s.get("partial_hits") or 0),
-            "misses": int(s.get("misses") or 0),
-            "bonus_finalists": int(s.get("bonus_finalists") or 0),
-            "bonus_champion": int(s.get("bonus_champion") or 0),
-            "points_by_match": s.get("points_by_match") or {},
-        })
-
-    return rows_out
+def current_score_snapshot(season_id):
+    snapshot = supabase.rpc(
+        "read_current_score_snapshot", {"p_season_id": season_id}
+    ).execute().data
+    if (not isinstance(snapshot, dict) or snapshot.get("scoring_status") not in {"ready", "pending"}
+            or not isinstance(snapshot.get("scores"), list)
+            or not isinstance(snapshot.get("matches"), list)):
+        raise ScoringError("score_snapshot_unavailable")
+    return snapshot
 
 
 def _snapshot_leaderboard_for_current_season():
@@ -2003,6 +1926,8 @@ def create_bracket_for_user():
             ).execute()
     except Exception as error:
         code = getattr(error, "code", None)
+        if code == "PT409":
+            return jsonify({"error": "The canonical season changed"}), 409
         if code == "P0001":
             return (
                 jsonify({"error": "Explicit master replacement confirmation required"}),
@@ -2541,6 +2466,31 @@ def delete_bracket(bracket_id):
     return jsonify({"message": "Bracket deleted successfully"})
 
 
+@app.route("/admin/bracket/master/<bracket_id>/retire", methods=["POST"])
+@require_auth
+def retire_master(bracket_id):
+    if not is_uuid(bracket_id):
+        return jsonify({"error": "Invalid bracket id"}), 400
+    user = request.user or {}
+    if not user.get("is_admin"):
+        return jsonify({"error": "Forbidden"}), 403
+    season_id = current_season().id
+    try:
+        result = supabase.rpc("retire_current_master", {
+            "p_admin_id": user["user_id"],
+            "p_season_id": season_id,
+            "p_expected_master_id": bracket_id,
+        }).execute().data
+    except Exception as error:
+        code = getattr(error, "code", None)
+        if code == "42501":
+            return jsonify({"error": "Forbidden"}), 403
+        if code == "PT409":
+            return jsonify({"error": "The active master or season changed"}), 409
+        return jsonify({"error": "Could not confirm master retirement"}), 503
+    return jsonify(result), 200
+
+
 @app.route("/bracket/<bracket_id>/match/<match_id>", methods=["PATCH"])
 @require_auth
 def update_match(bracket_id, match_id):
@@ -2754,32 +2704,10 @@ def leaderboard():
             )
             league_user_ids = {m["user_id"] for m in members if m.get("user_id")}
 
-        # -------- 1) Scores for current season --------
-        scores_q = supabase.table("bracket_scores").select(
-            "season_id, bracket_id, master_bracket_id, total_points, full_hits, "
-            "partial_hits, misses, bonus_finalists, bonus_champion, "
-            "points_by_match, updated_at"
-        )
-        if current_season().id is None:
-            scores_q = scores_q.is_("season_id", None)
-        else:
-            scores_q = scores_q.eq("season_id", current_season().id)
-
-        scores = (scores_q.execute().data) or []
-        if not scores:
-            return (
-                jsonify(
-                    {
-                        "rows": [],
-                        "master_bracket_id": None,
-                        "master_updated_at": None,
-                        "master_matchups": {},
-                    }
-                ),
-                200,
-            )
-
-        master_bracket_id = None
+        snapshot = current_score_snapshot(current_season().id)
+        scores = snapshot["scores"]
+        master_bracket_id = snapshot["master_bracket_id"]
+        scoring_status = snapshot["scoring_status"]
 
         # -------- 3) Brackets & owners (current season, not deleted) --------
         bracket_ids = list({s["bracket_id"] for s in scores if s.get("bracket_id")})
@@ -2788,6 +2716,7 @@ def leaderboard():
                 jsonify(
                     {
                         "rows": [],
+                        "scoring_status": scoring_status,
                         "master_bracket_id": master_bracket_id,
                         "master_updated_at": None,
                         "master_matchups": {},
@@ -2818,22 +2747,14 @@ def leaderboard():
                 jsonify(
                     {
                         "rows": [],
-                        "master_bracket_id": None,
+                        "scoring_status": scoring_status,
+                        "master_bracket_id": master_bracket_id,
                         "master_updated_at": None,
                         "master_matchups": {},
                     }
                 ),
                 200,
             )
-
-        _, scoring_master = get_current_scoring_master(
-            supabase, expected_season_id=current_season().id
-        )
-        master_bracket_id = scoring_master["id"]
-        # Replaced-master rows cannot masquerade as scores for current truth.
-        scores = [
-            row for row in scores if row.get("master_bracket_id") == master_bracket_id
-        ]
 
         user_ids = list({b["user_id"] for b in br_rows if b.get("user_id")})
         users = (
@@ -2916,13 +2837,7 @@ def leaderboard():
                 }
 
             # (b) Load actual matches from the master bracket
-            matches = (
-                supabase.table("matches")
-                .select("conference, round, slot, team_a, team_b")
-                .eq("bracket_id", master_bracket_id)
-                .execute()
-                .data
-            ) or []
+            matches = snapshot["matches"]
 
             # Collect unique team IDs
             team_ids = set()
@@ -2980,6 +2895,7 @@ def leaderboard():
             jsonify(
                 {
                     "rows": rows_out,
+                    "scoring_status": scoring_status,
                     "master_bracket_id": master_bracket_id,
                     "master_updated_at": master_updated_at,
                     "master_matchups": master_matchups,
@@ -3009,6 +2925,7 @@ def leaderboard():
             jsonify(
                 {
                     "rows": [],
+                    "scoring_status": "pending",
                     "master_bracket_id": None,
                     "master_updated_at": None,
                     "master_matchups": {},
@@ -3070,19 +2987,6 @@ def champion_pick_stats():
             mem_rows = mem_res.data or []
             league_user_ids = {m["user_id"] for m in mem_rows if m.get("user_id")}
 
-            if not league_user_ids:
-                return (
-                    jsonify(
-                        {
-                            "scope": scope,
-                            "league_id": league_id,
-                            "total_brackets": 0,
-                            "rows": [],
-                        }
-                    ),
-                    200,
-                )
-
         target_season_id = None
 
         if season_code:
@@ -3097,6 +3001,26 @@ def champion_pick_stats():
             if not season_rows:
                 return jsonify({"error": "Season not found"}), 404
             target_season_id = season_rows[0]["id"]
+
+        live_scores = not target_season_id or target_season_id == current_season().id
+        snapshot = current_score_snapshot(current_season().id) if live_scores else None
+        scoring_metadata = (
+            {"scoring_status": snapshot["scoring_status"]} if snapshot is not None else {}
+        )
+
+        if league_user_ids is not None and not league_user_ids:
+            return (
+                jsonify(
+                    {
+                        "scope": scope,
+                        **scoring_metadata,
+                        "league_id": league_id,
+                        "total_brackets": 0,
+                        "rows": [],
+                    }
+                ),
+                200,
+            )
 
         # --- Load brackets for current season, done, not deleted ---
         base_brackets = (
@@ -3130,6 +3054,7 @@ def champion_pick_stats():
                 jsonify(
                     {
                         "scope": scope,
+                        **scoring_metadata,
                         "league_id": league_id,
                         "total_brackets": 0,
                         "rows": [],
@@ -3144,6 +3069,7 @@ def champion_pick_stats():
                 jsonify(
                     {
                         "scope": scope,
+                        **scoring_metadata,
                         "league_id": league_id,
                         "total_brackets": 0,
                         "rows": [],
@@ -3153,20 +3079,24 @@ def champion_pick_stats():
             )
 
         # --- Aggregate per-match points across these brackets to find least/most predicted matchups ---
-        scores_res = (
-            supabase.table("bracket_scores")
-            .select("bracket_id, master_bracket_id, points_by_match")
-            .in_("bracket_id", bracket_ids)
-            .execute()
-        )
-        scores_rows = scores_res.data or []
+        if snapshot is not None:
+            eligible_ids = set(bracket_ids)
+            scores_rows = [row for row in snapshot["scores"] if row["bracket_id"] in eligible_ids]
+        else:
+            scores_rows = (
+                supabase.table("bracket_scores")
+                .select("bracket_id, master_bracket_id, points_by_match")
+                .eq("season_id", target_season_id)
+                .in_("bracket_id", bracket_ids)
+                .execute().data or []
+            )
 
         totals_by_key = {}
         master_freq = {}
 
         for s in scores_rows:
             mid = s.get("master_bracket_id")
-            if mid:
+            if mid and snapshot is None:
                 master_freq[mid] = master_freq.get(mid, 0) + 1
 
             points_by_match = s.get("points_by_match") or {}
@@ -3209,14 +3139,16 @@ def champion_pick_stats():
                 key=lambda kv: (kv[1]["total_points"], kv[0]),
             )
 
-            # Resolve team names / codes from the master bracket, if we can
+            # Current labels use the same snapshot as the scores.
             master_bracket_id = None
             if master_freq:
                 master_bracket_id = max(master_freq, key=master_freq.get)
 
             match_map = {}
             teams_by_id = {}
-            if master_bracket_id:
+            if snapshot is not None:
+                matches_rows2 = snapshot["matches"]
+            elif master_bracket_id:
                 matches_res2 = (
                     supabase.table("matches")
                     .select("conference, round, slot, team_a, team_b")
@@ -3224,6 +3156,9 @@ def champion_pick_stats():
                     .execute()
                 )
                 matches_rows2 = matches_res2.data or []
+            else:
+                matches_rows2 = []
+            if matches_rows2:
                 team_ids = set()
 
                 for m in matches_rows2:
@@ -3307,6 +3242,7 @@ def champion_pick_stats():
                 jsonify(
                     {
                         "scope": scope,
+                        **scoring_metadata,
                         "league_id": league_id,
                         "total_brackets": len(br_rows),
                         "rows": [],
@@ -3353,6 +3289,7 @@ def champion_pick_stats():
             jsonify(
                 {
                     "scope": scope,
+                    **scoring_metadata,
                     "league_id": league_id,
                     "total_brackets": total_picks,
                     "rows": rows_out,

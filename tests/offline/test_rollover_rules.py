@@ -181,8 +181,13 @@ class RolloverRoutePreservation(unittest.TestCase):
             "remove_league_member",
             "league_history_seasons",
             "league_history_season",
+            "retire_master",
         }
         self.assertEqual({n for n, _ in inventory} & additions, additions)
+        self.assertIn(
+            "'/admin/bracket/master/<bracket_id>/retire'",
+            next(route for name, route in inventory if name == "retire_master"),
+        )
         actual = hashlib.sha256(
             json.dumps(
                 sorted(item for item in inventory if item[0] not in additions),
