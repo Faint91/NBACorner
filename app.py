@@ -2041,9 +2041,10 @@ def save_bracket(bracket_id):
             .data
         )
 
-        validity_error = submission_error(
-            matches, master=current_master_bracket(bracket)
-        )
+        # An ordinary plan already excludes the master; the write RPC checks
+        # that classification again under the season and bracket locks.
+        is_master = current_master_bracket(bracket) if plan is None else False
+        validity_error = submission_error(matches, master=is_master)
         if validity_error:
             return jsonify({"error": validity_error}), 400
 
