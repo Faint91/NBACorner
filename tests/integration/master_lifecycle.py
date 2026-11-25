@@ -192,7 +192,7 @@ def exercise(app, sql):
     )
 
 
-def main(pg, postgrest):
+def main(pg, postgrest, *, server_timing=False):
     pgport, apiport = free_port(), free_port()
     assert pgport != apiport
     api = f"http://127.0.0.1:{apiport}"
@@ -249,7 +249,7 @@ def main(pg, postgrest):
             "-l",
             work / "pg.log",
             "-o",
-            f"-h 127.0.0.1 -p {pgport}",
+            f"-h 127.0.0.1 -p {pgport}" + (" -c shared_preload_libraries=pg_stat_statements" if server_timing else ""),
             "-w",
             "start",
             stdout=subprocess.DEVNULL,
@@ -300,7 +300,8 @@ def main(pg, postgrest):
         """)
         sql("SET check_function_bodies=false;\n-- Application DDL preserved" + schema)
         migrations = sorted((ROOT / "db/post-baseline").glob("00[0-9][0-9]*.sql"))
-        for migration in migrations[:-1]:
+        score_migration = next(i for i, migration in enumerate(migrations) if migration.name.startswith("0013_"))
+        for migration in migrations[:score_migration]:
             sql(migration.read_text(encoding="utf-8"))
 
         fixture = bracket_scenario("master")
@@ -337,7 +338,8 @@ def main(pg, postgrest):
           INSERT INTO leaderboard_history(season_id,season_code,rank,bracket_name,username,total_points,full_hits,partial_hits,misses,bonus_finalists,bonus_champion)
            VALUES ('{historic}','2024-25',1,'Archived fixture','archive',14,0,0,0,0,0);
         """)
-        sql(migrations[-1].read_text(encoding="utf-8"))
+        for migration in migrations[score_migration:]:
+            sql(migration.read_text(encoding="utf-8"))
         assert (
             sql(
                 "SELECT has_function_privilege('anon','public.retire_current_master(uuid,uuid,uuid)','EXECUTE')"
@@ -359,6 +361,7 @@ def main(pg, postgrest):
                 "PGRST_DB_ANON_ROLE": "service_role",
                 "PGRST_SERVER_PORT": str(apiport),
                 "PGRST_SERVER_HOST": "127.0.0.1",
+                "PGRST_SERVER_TIMING_ENABLED": str(server_timing).lower(),
             },
             stdout=rest_log,
             stderr=subprocess.STDOUT,

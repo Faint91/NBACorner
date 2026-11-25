@@ -1703,6 +1703,46 @@ def send_email_via_brevo(to_email, subject, body):
 # --------------------------------------------------------
 
 
+def ordinary_plan(bracket_id, actor):
+    # One consistent read supplies both the version and the graph used by Python.
+    return supabase.rpc("ordinary_bracket_plan", {
+        "p_bracket": bracket_id, "p_actor": actor,
+    }).execute().data
+
+
+def revision_for_write(plan, body):
+    if "expected_revision" not in body:
+        if body.get("authoritative_response") is True:
+            return None, (jsonify({"error": "An expected bracket revision is required"}), 400)
+        return plan["revision"], None
+    revision = body["expected_revision"]
+    if not isinstance(revision, str) or not re.fullmatch(r"0|[1-9][0-9]{0,18}", revision) or int(revision) > 2**63 - 1:
+        return None, (jsonify({"error": "Invalid bracket revision"}), 400)
+    if revision != plan["revision"]:
+        return None, (jsonify({"error": "The bracket changed in another session. Refresh and try again."}), 409)
+    return revision, None
+
+
+def commit_ordinary(plan, action, body, *, changes=None, name=None):
+    revision, error = revision_for_write(plan, body)
+    if error:
+        return None, error
+    snapshot = action == "prediction" and body.get("authoritative_response") is True
+    try:
+        result = supabase.rpc("write_ordinary_bracket", {
+            "p_bracket": plan["bracket"]["id"], "p_season": current_season().id,
+            "p_actor": request.user["user_id"], "p_auth_version": request.user.get("av", 0),
+            "p_revision": revision, "p_action": action, "p_changes": changes,
+            "p_name": name, "p_snapshot": snapshot,
+        }).execute().data
+    except Exception as error:
+        code = getattr(error, "code", None)
+        if code in ("PT400", "PT401", "PT403", "PT404", "PT409"):
+            return None, (jsonify({"error": error.message}), int(code[2:]))
+        return None, (jsonify({"error": "Could not confirm the bracket update"}), 503)
+    return result, None
+
+
 @app.route("/bracket/create", methods=["POST"])
 @require_auth
 def create_bracket_for_user():
@@ -1915,19 +1955,16 @@ def create_bracket_for_user():
                 .data
             )
         else:
-            bracket = (
-                supabase.table("brackets")
-                .insert({"user_id": user_id, "season_id": current_season().id})
-                .execute()
-                .data[0]
-            )
-            supabase.table("matches").insert(
-                [dict(m, bracket_id=bracket["id"]) for m in all_matches]
-            ).execute()
+            bracket = supabase.rpc("create_ordinary_bracket", {
+                "p_season": current_season().id, "p_actor": user_id,
+                "p_auth_version": request.user.get("av", 0), "p_matches": all_matches,
+            }).execute().data
     except Exception as error:
         code = getattr(error, "code", None)
         if code == "PT409":
             return jsonify({"error": "The canonical season changed"}), 409
+        if not is_admin and code in ("PT400", "PT401", "PT403"):
+            return jsonify({"error": error.message}), int(code[2:])
         if code == "P0001":
             return (
                 jsonify({"error": "Explicit master replacement confirmation required"}),
@@ -1967,7 +2004,8 @@ def save_bracket(bracket_id):
             return jsonify({"error": "Bracket name is required"}), 400
 
         # Bracket must exist, be active, and be in CURRENT season
-        bracket_res = (
+        plan = ordinary_plan(bracket_id, user_id)
+        bracket_res = [plan["bracket"]] if plan is not None else (
             supabase.table("brackets")
             .select("id, user_id, deleted_at, season_id, is_master")
             .eq("id", bracket_id)
@@ -1987,8 +2025,13 @@ def save_bracket(bracket_id):
         if access_error:
             return access_error
 
+        if plan is not None:
+            _, conflict = revision_for_write(plan, data)
+            if conflict:
+                return conflict
+
         # Validate fully predicted
-        matches = (
+        matches = plan["matches"] if plan is not None else (
             supabase.table("matches")
             .select(
                 "id, round, slot, conference, team_a, team_b, predicted_winner, predicted_winner_games, next_match_id, next_slot"
@@ -2003,6 +2046,15 @@ def save_bracket(bracket_id):
         )
         if validity_error:
             return jsonify({"error": validity_error}), 400
+
+        if plan is not None:
+            result, error = commit_ordinary(plan, "save", data, name=name)
+            if error:
+                return error
+            payload = {"message": "Bracket saved", "saved_at": result["saved_at"], "name": result["name"]}
+            if "expected_revision" in data:
+                payload["revision"] = result["revision"]
+            return jsonify(payload), 200
 
         now = datetime.utcnow().isoformat()
         supabase.table("brackets").update(
@@ -2183,6 +2235,18 @@ def get_bracket_by_id(bracket_id):
         bracket, season_id=bracket["season_id"] if historical else current_season().id
     ):
         return jsonify({"error": "Bracket not yet saved or not accessible"}), 403
+
+    if (not historical and is_owner and not derived_is_master and
+            request.args.get("authoritative") == "1"):
+        snapshot = supabase.rpc("ordinary_bracket_snapshot", {
+            "p_bracket": bracket_id, "p_actor": viewer_id,
+        }).execute().data
+        if snapshot is not None:
+            return jsonify(snapshot), 200
+        # An admin viewing their own ordinary bracket keeps the existing read-only
+        # view. Concurrent season/deletion changes must use the usual read guards.
+        if not viewer.get("is_admin"):
+            return jsonify({"error": "Bracket is no longer available for editing"}), 409
 
     matches_res = (
         supabase.table("matches")
@@ -2406,7 +2470,8 @@ def delete_bracket(bracket_id):
         return jsonify({"error": "User not found"}), 404
     is_admin = user_res[0].get("is_admin", False)
 
-    bracket_res = (
+    plan = ordinary_plan(bracket_id, user_id)
+    bracket_res = [plan["bracket"]] if plan is not None else (
         supabase.table("brackets")
         .select("id, user_id, deleted_at, season_id, is_master, is_done")
         .eq("id", bracket_id)
@@ -2444,6 +2509,12 @@ def delete_bracket(bracket_id):
             ),
             403,
         )
+
+    if plan is not None:
+        _, error = commit_ordinary(plan, "delete", {})
+        if error:
+            return error
+        return jsonify({"message": "Bracket deleted successfully"}), 200
 
     update_fields = {
         "deleted_at": datetime.utcnow().isoformat(),
@@ -2507,7 +2578,8 @@ def update_match(bracket_id, match_id):
     #  - do in-memory updates with a single scan.
     # This removes the extra "single match by id" query in the normal path.
     # ------------------------------------------------------------------
-    matches_resp = (
+    plan = ordinary_plan(bracket_id, user_id)
+    all_matches = plan["matches"] if plan is not None else (
         supabase.table("matches")
         .select(
             "id, bracket_id, conference, round, slot, "
@@ -2515,9 +2587,12 @@ def update_match(bracket_id, match_id):
             "next_match_id, next_slot"
         )
         .eq("bracket_id", bracket_id)
-        .execute()
+        .execute().data or []
     )
-    all_matches = matches_resp.data or []
+    if plan is not None and plan["bracket"]["user_id"] != user_id:
+        if plan["bracket"].get("season_id") != current_season().id:
+            return jsonify({"error": "Bracket is not in the current season"}), 403
+        return bracket_content_mutation_error(plan["bracket"], user_id)
     matches_by_id = {m["id"]: m for m in all_matches}
 
     # Find the match we are updating from the bracket's matches
@@ -2538,7 +2613,7 @@ def update_match(bracket_id, match_id):
         return jsonify({"error": "Match does not belong to the specified bracket"}), 400
 
     # Ownership/admin and SEASON guard
-    bracket_check = (
+    bracket_check = [plan["bracket"]] if plan is not None else (
         supabase.table("brackets")
         .select("id, user_id, season_id, is_master")
         .eq("id", match["bracket_id"])
@@ -2556,6 +2631,11 @@ def update_match(bracket_id, match_id):
     access_error = bracket_content_mutation_error(bracket_check[0], user_id)
     if access_error:
         return access_error
+
+    if plan is not None:
+        _, conflict = revision_for_write(plan, data)
+        if conflict:
+            return conflict
 
     if action == "set_winner":
         team = data.get("team")
@@ -2592,6 +2672,14 @@ def update_match(bracket_id, match_id):
         changed = apply_prediction(all_matches, match_id, team, games)
     except (ValueError, KeyError, TypeError):
         return jsonify({"error": "Bracket dependencies are invalid."}), 400
+    if plan is not None:
+        snapshot, error = commit_ordinary(plan, "prediction", data, changes=changed)
+        if error:
+            return error
+        payload = {"message": "Prediction undone" if action == "undo" else "Winner updated"}
+        if data.get("authoritative_response") is True:
+            payload["snapshot"] = snapshot
+        return jsonify(payload), 200
     now_iso = datetime.utcnow().isoformat()
     for row in changed:
         supabase.table("matches").update(
@@ -2642,7 +2730,8 @@ def set_match_games(match_id):
         return jsonify({"error": "match not found"}), 404
     match = m_resp.data[0]
 
-    br = (
+    plan = ordinary_plan(match["bracket_id"], user_id)
+    br = [plan["bracket"]] if plan is not None else (
         supabase.table("brackets")
         .select("id, user_id, season_id, is_master")
         .eq("id", match["bracket_id"])
@@ -2662,9 +2751,27 @@ def set_match_games(match_id):
     if access_error:
         return access_error
 
+    if plan is not None:
+        match = next((row for row in plan["matches"] if row["id"] == match_id), None)
+        if match is None:
+            return jsonify({"error": "match not found"}), 404
+    if plan is not None:
+        _, conflict = revision_for_write(plan, body)
+        if conflict:
+            return conflict
+
     count_error = game_count_error(match, games, count_edit=True)
     if count_error:
         return jsonify({"error": count_error}), 400
+
+    if plan is not None:
+        snapshot, error = commit_ordinary(plan, "prediction", body, changes=[dict(match, predicted_winner_games=games)])
+        if error:
+            return error
+        payload = {"ok": True}
+        if body.get("authoritative_response") is True:
+            payload["snapshot"] = snapshot
+        return jsonify(payload), 200
 
     supabase.table("matches").update(
         {"predicted_winner_games": games, "updated_at": datetime.utcnow().isoformat()}
