@@ -2180,12 +2180,16 @@ def get_bracket_by_id(bracket_id):
 
     viewer = getattr(request, "user", None) or {}
     viewer_id = viewer.get("user_id")
+    historical = request.path.startswith("/history/bracket/")
+    bracket_fields = (
+        "id, user_id, is_done, deleted_at, name, created_at, saved_at, season_id, is_master"
+    )
+    if historical:
+        bracket_fields += ",season:seasons!brackets_season_id_fkey(code,master_bracket_id)"
 
     br_res = (
         supabase.table("brackets")
-        .select(
-            "id, user_id, is_done, deleted_at, name, created_at, saved_at, season_id, is_master"
-        )
+        .select(bracket_fields)
         .eq("id", bracket_id)
         .is_("deleted_at", None)
         .limit(1)
@@ -2197,13 +2201,12 @@ def get_bracket_by_id(bracket_id):
 
     bracket = br_rows[0]
 
-    historical = request.path.startswith("/history/bracket/")
     if not historical and bracket.get("season_id") != current_season().id:
         return jsonify({"error": "Bracket is not in the current season"}), 404
 
     # 🔎 Derive true master flag from season.master_bracket_id OR brackets.is_master
-    season_row = None
-    if bracket.get("season_id"):
+    season_row = bracket.pop("season", None)
+    if not historical and bracket.get("season_id"):
         season_res = (
             supabase.table("seasons")
             .select("id, code, master_bracket_id")
@@ -2248,32 +2251,36 @@ def get_bracket_by_id(bracket_id):
         if not viewer.get("is_admin"):
             return jsonify({"error": "Bracket is no longer available for editing"}), 409
 
+    team_fields = "name,code,logo_url,primary_color,secondary_color"
+    match_fields = "*"
+    if historical:
+        # Left embeds retain matches with an empty team slot.
+        match_fields += (
+            f",team_a_info:teams!matches_team_a_fkey({team_fields})"
+            f",team_b_info:teams!matches_team_b_fkey({team_fields})"
+        )
     matches_res = (
         supabase.table("matches")
-        .select("*")
+        .select(match_fields)
         .eq("bracket_id", bracket["id"])
         .order("round", desc=False)
         .execute()
     )
     matches = matches_res.data or []
 
-    team_ids = set()
-    for m in matches:
-        if m.get("team_a"):
-            team_ids.add(m["team_a"])
-        if m.get("team_b"):
-            team_ids.add(m["team_b"])
-
     teams_by_id = {}
-    if team_ids:
-        teams_res = (
-            supabase.table("teams")
-            .select("id, name, code, logo_url, primary_color, secondary_color")
-            .in_("id", list(team_ids))
-            .execute()
-        )
-        team_rows = teams_res.data or []
-        teams_by_id = {t["id"]: t for t in team_rows}
+    if not historical:
+        team_ids = {
+            match[side] for match in matches for side in ("team_a", "team_b") if match.get(side)
+        }
+        if team_ids:
+            teams_res = (
+                supabase.table("teams")
+                .select(f"id,{team_fields}")
+                .in_("id", list(team_ids))
+                .execute()
+            )
+            teams_by_id = {team["id"]: team for team in (teams_res.data or [])}
 
     grouped = {}
     for match in matches:
@@ -2282,8 +2289,12 @@ def get_bracket_by_id(bracket_id):
         grouped.setdefault(conf, {}).setdefault(rnd, [])
         enriched = dict(match)
 
-        ta = teams_by_id.get(match.get("team_a"))
-        tb = teams_by_id.get(match.get("team_b"))
+        if historical:
+            ta = enriched.pop("team_a_info")
+            tb = enriched.pop("team_b_info")
+        else:
+            ta = teams_by_id.get(match.get("team_a"))
+            tb = teams_by_id.get(match.get("team_b"))
         if ta:
             enriched.update(
                 {

@@ -14,11 +14,12 @@ from history_service import historical_bracket_links, public_columns, public_sna
 
 
 class ReadQuery:
-    def __init__(self, rows):
+    def __init__(self, rows, tables):
         self.rows = copy.deepcopy(rows)
+        self.tables = tables
 
     def select(self, fields, **kwargs):
-        self.fields = fields.replace(" ", "").split(",")
+        self.fields = re.split(r",(?![^()]*\))", fields.replace(" ", ""))
         return self
 
     def eq(self, key, value):
@@ -45,9 +46,33 @@ class ReadQuery:
         return self
 
     def execute(self):
-        rows = self.rows if self.fields == ["*"] else [
-            {k: r.get(k) for k in self.fields} for r in self.rows
-        ]
+        rows = []
+        for source in self.rows:
+            row = {}
+            for field in self.fields:
+                if field == "*":
+                    row.update(source)
+                elif ":" in field:
+                    alias, expression = field.split(":", 1)
+                    relationship, columns = expression[:-1].split("(", 1)
+                    table, foreign_key = relationship.split("!")
+                    key = {
+                        "brackets_season_id_fkey": "season_id",
+                        "matches_team_a_fkey": "team_a",
+                        "matches_team_b_fkey": "team_b",
+                    }[foreign_key]
+                    related = next(
+                        (item for item in self.tables.get(table, []) if item["id"] == source.get(key)),
+                        None,
+                    )
+                    row[alias] = (
+                        {column: related.get(column) for column in columns.split(",")}
+                        if related is not None
+                        else None
+                    )
+                else:
+                    row[field] = source.get(field)
+            rows.append(row)
         return SimpleNamespace(data=rows, count=len(rows))
 
 
@@ -75,7 +100,7 @@ class HistoryLinks(unittest.TestCase):
         self.reads = []
         def table(name):
             self.reads.append(name)
-            return ReadQuery(self.tables[name])
+            return ReadQuery(self.tables[name], self.tables)
 
         app = Flask(__name__)
         env = dict(app=app, jsonify=jsonify, request=request, wraps=wraps, re=re,
