@@ -3536,6 +3536,11 @@ def leaderboard_history_season(season_code):
 
         if isinstance(pm_raw, dict):
             for mk, cell in pm_raw.items():
+                # Newly exposed legacy columns carry stored numeric cells only.
+                if not re.fullmatch(r"(?:east|west|nba)-[0-4]-[0-9]+", str(mk)):
+                    if type(cell) is int and cell >= 0:
+                        pm_clean[str(mk)] = cell
+                    continue
                 if isinstance(cell, dict):
                     pts = cell.get("points")
                 else:
@@ -3548,7 +3553,7 @@ def leaderboard_history_season(season_code):
         row["per_match_points"] = pm_clean
         sanitized_rows.append(row)
 
-    public_rows = public_snapshot_rows(sanitized_rows)
+    public_rows = public_snapshot_rows(sanitized_rows, snapshot=snap)
     try:
         links = historical_bracket_links(supabase, snap, public_rows, current_season())
     except Exception:
@@ -3563,7 +3568,7 @@ def leaderboard_history_season(season_code):
             {
                 "season_code": snap.get("season_code"),
                 "snapshot_at": snap.get("snapshot_at"),
-                "columns": public_columns(snap.get("columns")),
+                "columns": public_columns(snap.get("columns"), snapshot=snap),
                 "rows": public_rows,
             }
         ),

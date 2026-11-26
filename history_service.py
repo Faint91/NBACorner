@@ -9,6 +9,7 @@ from scoring_service import (
     ScoringError,
 )
 from scoring_engine import rank_live_rows
+from historical_snapshot_presentation import presentation_for
 from job_safety import guard_runtime_job
 
 
@@ -226,9 +227,8 @@ def create_final_leaderboard_snapshot(
         raise SnapshotError("source_or_publication_failure") from None
 
 
-def public_snapshot_rows(rows):
-    import re
-
+def public_snapshot_rows(rows, *, snapshot=None):
+    legacy_keys, _ = presentation_for(snapshot)
     output = []
     for source in rows:
         row = {
@@ -246,7 +246,7 @@ def public_snapshot_rows(rows):
                     k: v
                     for k, v in raw.items()
                     if isinstance(k, str)
-                    and re.fullmatch(pattern, k)
+                    and (re.fullmatch(pattern, k) or (field == "per_match_points" and k in legacy_keys))
                     and type(v) is int
                     and v >= 0
                 }
@@ -301,9 +301,8 @@ def historical_bracket_links(client, snapshot, rows, current):
     return links
 
 
-def public_columns(columns):
-    import re
-
+def public_columns(columns, *, snapshot=None):
+    legacy_keys, team_labels = presentation_for(snapshot)
     if not isinstance(columns, list):
         return []
     output = []
@@ -314,6 +313,7 @@ def public_columns(columns):
             or (
                 c["key"] not in SUMMARY
                 and not re.fullmatch(r"(?:east|west|nba)-[0-4]-[0-9]+", c["key"])
+                and not (c.get("type") == "matchup" and c["key"] in legacy_keys)
             )
             or not isinstance(c.get("label"), str)
             or c.get("type") not in {"matchup", "bonus", "summary"}
@@ -322,5 +322,7 @@ def public_columns(columns):
         clean = {k: c[k] for k in ("key", "label", "type")}
         if type(c.get("round")) is int:
             clean["round"] = c["round"]
+        if clean["type"] == "matchup" and clean["key"] in team_labels:
+            clean["team_label"], clean["short_label"] = team_labels[clean["key"]]
         output.append(clean)
     return output
